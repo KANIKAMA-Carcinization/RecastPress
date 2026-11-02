@@ -1,0 +1,6 @@
+[workspace]
+members = ["source/mysql_async-0.37.1"]
+resolver = "3"
+
+[patch.crates-io]
+mysql_common = { path = "source/mysql_common-0.37.3" }

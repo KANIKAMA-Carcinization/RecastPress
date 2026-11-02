@@ -333,6 +333,17 @@ def frozen_checker(source):
 def prepared_gate(mapping, source):
     name = PREFIX + 'prepare.py'
     constants = source.constants(name)
+    functions = {node.name: node for node in source.tree(name).body if isinstance(node, ast.FunctionDef)}
+    metadata_return = functions['metadata'].body[-1]
+    derivation_return = functions['derivation_gate'].body[-1]
+    require(isinstance(metadata_return, ast.Return) and isinstance(metadata_return.value, ast.Dict)
+        and isinstance(derivation_return, ast.Return) and isinstance(derivation_return.value, ast.Dict),
+        'frozen_preparation_return_shapes')
+    metadata_fields = {ast.literal_eval(key): value
+        for key, value in zip(metadata_return.value.keys, metadata_return.value.values)}
+    derivation_fields = {ast.literal_eval(key): value
+        for key, value in zip(derivation_return.value.keys, derivation_return.value.values)}
+    exact(set(mapping), set(metadata_fields), 'complete_prepared_receipt_fields')
     old_prefix = 'experiments/wpdb-bridge-probe/fixtures/'
     names = constants['FIXTURES']
     original = {n: source.read(old_prefix + n) for n in names}
@@ -377,6 +388,22 @@ def prepared_gate(mapping, source):
         and mapping['derivation']['fixed_old_source_commit'] == constants['OLD_COMMIT']
         and mapping['derivation']['old_git_objects_verified_by_preparer'] is False,
         'whole_corpus_and_business_unchanged')
+    expected_derivation = {
+        'fixed_old_source_commit': constants['OLD_COMMIT'], 'old_git_objects_verified_by_preparer': False,
+        'old_sources': {n: identity(wire) for n, wire in original.items()},
+        'derived_sources': {n: identity(derived[n]) for n in names},
+        'corpus_bytes_unchanged': True, 'adapter_business_bytes_unchanged': True,
+        'adapter_business_sha256': sha(business),
+        'allowed_helper_changes': ast.literal_eval(derivation_fields['allowed_helper_changes']),
+        'allowed_transport_changes': ast.literal_eval(derivation_fields['allowed_transport_changes']),
+    }
+    exact(mapping['derivation'], expected_derivation, 'entire_frozen_preparation_derivation')
+    exact(set(archive), {'path', 'bytes', 'sha256', 'members_checked', 'declared_expanded_bytes_checked'},
+        'complete_source_archive_metadata_fields')
+    exact(mapping['wordpress_version'], ast.literal_eval(metadata_fields['wordpress_version']),
+        'fixed_wordpress_version_metadata')
+    exact(mapping['guest_path_labels'], ast.literal_eval(metadata_fields['guest_path_labels']),
+        'fixed_guest_mirror_label_scope')
     return {'finite_readonly_guest_files': 9, 'wordpress_source_files': 5,
         'source_archive_binary_reverified_offline': False, 'all_fixture_derivations_verified': True}
 

@@ -1,0 +1,63 @@
+{
+  "schema": "recastpress.wpdb-raw-error-plan.v0.5",
+  "base_inputs": {
+    "experiments/wpdb-rpc-probe/prepare_driver.py": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c",
+    "experiments/wpdb-rpc-probe/driver-plan.json": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "experiments/binlog-probe/Cargo.toml": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377",
+    "experiments/binlog-probe/Cargo.lock": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c"
+  },
+  "production_change": "one-borrowed-Conn-last_error_packet-accessor-only",
+  "base_patch_files": [
+    "src/conn/mod.rs",
+    "src/opts/mod.rs"
+  ],
+  "patch": {
+    "path": "experiments/wpdb-raw-error-probe/patches/0001-expose-retained-raw-error.patch",
+    "bytes": 3373,
+    "sha256": "e7bcbceedafe17072b51b6a2b652de5bd33e255d78c9ac6a5a102cc1d5b2f8b0",
+    "files": [
+      {
+        "path": "src/conn/mod.rs",
+        "before": {
+          "bytes": 104105,
+          "sha256": "6b81c04ef23a98b8557198041291255f663c5d39b40c30931a5393cc3af3d05f"
+        },
+        "after": {
+          "bytes": 107316,
+          "sha256": "78e81729702a253c28a097a134ccd7406e03a7ddfb53e859affcfdf442a42f25"
+        }
+      }
+    ],
+    "context_lines": 0
+  },
+  "test_fixture": {
+    "path": "experiments/wpdb-raw-error-probe/fixtures/raw_error_tests.rs",
+    "bytes": 2903,
+    "sha256": "e118e9bd3243b89e42b272592fc4ae6b981eb2c1447921c17c0cdfe5ed8e74a1"
+  },
+  "source_trees_after": {
+    "mysql_async": {
+      "files": 63,
+      "inventory_sha256": "ac4102f6a2cbf9dda612e62ada45270df6807915505f26467eeef42941f4353c"
+    },
+    "mysql_common": {
+      "files": 85,
+      "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+    }
+  },
+  "tests": [
+    "conn::rp_raw_error_tests::rp_raw_error_retains_bytes_while_existing_string_is_lossy",
+    "conn::rp_raw_error_tests::rp_raw_error_replaces_previous_error_fields",
+    "conn::rp_raw_error_tests::rp_raw_error_clears_after_existing_ok_handler"
+  ],
+  "database_started": false,
+  "database_connected": false,
+  "php_executed": false,
+  "product_driver_selected": false,
+  "driver_lock_seed": {
+    "path": "experiments/wpdb-raw-error-probe/driver.Cargo.lock",
+    "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0",
+    "origin": "byte-identical fork of previously resolved original driver-unit workspace lock; prior lock is not rewritten or required at runtime"
+  }
+}

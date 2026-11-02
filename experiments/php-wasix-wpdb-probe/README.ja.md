@@ -30,6 +30,12 @@ frame 16KiB／reply 64KiB、総要求128KiB／総応答512KiB、64操作、16行
 
 初回[CI 41458933505](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41458933505)は、両DBともPHPをCGI実行した後、mysqli拡張の入口条件で失敗した。通常PHPの比較hostと異なり、この固定WASIX候補にはmysqliが組み込まれている。0 RPC・0 API・Rust DB未接続のままで、所有DBの正常停止・削除は確認した。修正では組込み拡張の存在を実記録・固定profileとして検査し、接続後のwpdb handleがmysqliではなくRust RPC用opaque handleであることも実検査する。元の27ケースとadapterの業務ロジックは変更しない。
 
+後続[CI 41464666030](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41464666030)、source `2bea0da`では、MySQL 8.4.13／MariaDB 11.8.9の両jobが通過した。実PHP-WASIX CGIからprivate file channelを経由してRust所有の物理接続へ到達し、元の27 API観測が固定native基準と一致した。各34 RPCはhello 1・query 29（session準備4＋公開25）・escape 3・close 1であり、生frame・PHPのSQL trace・bytes収支を照合した。Linuxの16 unitも通過した。
+
+両jobともmysqli拡張の存在とopaque handleを実検査し、PHPへDB資格情報やnetworkを供給していない。guestの正常終了、完全CGI応答、両stream EOF、未読／pending／open channelなし、物理disconnect、actor exit/join、別admin接続からの最終行、所有containerの正常停止・削除を確認した。raw JSONと元Gitの入力照合は[MySQL証跡](evidence/ci-41464666030-mysql/provenance.json)・[MariaDB証跡](evidence/ci-41464666030-mariadb/provenance.json)に保存する。元の失敗記録も保持する。
+
+今回のmodule compileはMySQL jobで10,482ms・MariaDB jobで10,651ms、CGI実行は109ms・102msだった。個別CIのhost側経過時間であり、製品性能・純粋なSQL／PHP時間・同時負荷性能を示すものではない。通常WP起動までの不足は[次の実装順](../../docs/v0.5-wp-bootstrap-plan.ja.md)で管理する。
+
 ```powershell
 python experiments/php-wasix-wpdb-probe/prepare.py
 python experiments/php-wasix-wpdb-probe/run_check.py --build-only --record

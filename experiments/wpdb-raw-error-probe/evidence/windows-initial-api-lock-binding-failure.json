@@ -1,0 +1,255 @@
+{
+  "schema": "recastpress.wpdb-raw-error-units.v0.5",
+  "passed": false,
+  "outcome": "public_api_witness_failed",
+  "observed_at_utc": "2026-11-02T15:00:54.334238+00:00",
+  "platform": "Windows",
+  "steps": [
+    {
+      "name": "rustc-version",
+      "owned_pid": 26132,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.098,
+      "stdout_sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078",
+      "stderr_sha256": "10e63320d683322715a9a473668c970eae2b3e0f026174c9bb72f47794421d71"
+    },
+    {
+      "name": "cargo-version",
+      "owned_pid": 24120,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.093,
+      "stdout_sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068",
+      "stderr_sha256": "10e63320d683322715a9a473668c970eae2b3e0f026174c9bb72f47794421d71"
+    },
+    {
+      "name": "metadata",
+      "owned_pid": 28884,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 120,
+      "elapsed_seconds": 0.688,
+      "stdout_sha256": "6594c21a808cde60559f233ae76f9fb099e48fba3c9feb25a81fd634d6901070",
+      "stderr_sha256": "591e45e538b733ab57173403b0cecaf9696111984d9b70686f23a2006c3a3455"
+    },
+    {
+      "name": "driver-test-build",
+      "owned_pid": 23360,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 1.233,
+      "stdout_sha256": "424cf600aea21e26682e307169363d8bd2ebd23bde171c46b6ff4155e0fd87a6",
+      "stderr_sha256": "c1fe8f7aa9d233abbec726154c06a6080cf046ad3fb42a1b7d4b5a50fa9dad39"
+    },
+    {
+      "name": "driver-test-list",
+      "owned_pid": 21980,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.838,
+      "stdout_sha256": "9bf19b2232e68571eef5611fd3e294de494f3b5c82dc6acb0010b193e51a73e7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "driver-tests",
+      "owned_pid": 18308,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 30,
+      "elapsed_seconds": 0.047,
+      "stdout_sha256": "a16834764ff817ac85239ccb57212677d5a1b923232abc3263fd19848f845b1b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "public-api-build",
+      "owned_pid": 19176,
+      "owned_reaped": true,
+      "exit_code": 101,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 0.219,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "699976399001ebfc97916512c21474d3424268469fd57dfdb4680390a53c8723"
+    }
+  ],
+  "locked_offline": true,
+  "dependency_network_access_enabled": false,
+  "database_started": false,
+  "database_connected": false,
+  "php_executed": false,
+  "real_server_err_observed": false,
+  "transport_packet_frame_preserved": false,
+  "native_wpdb_comparison_passed": false,
+  "standard_wpdb_compatibility_verified": false,
+  "product_driver_selected": false,
+  "product_abi_selected": false,
+  "existing_server_error_string_api_changed": false,
+  "owned_cleanup_completed": true,
+  "original_inputs_unchanged_after": true,
+  "old_stage_unchanged_after": true,
+  "source_trees_reverified_after": true,
+  "raw_error_tests_passed": 3,
+  "original_policy_regressions_passed": 2,
+  "input_files": {
+    "experiments/binlog-probe/Cargo.lock": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
+    "experiments/binlog-probe/Cargo.toml": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377",
+    "experiments/wpdb-raw-error-probe/Cargo.lock": "0fc356619606bae7fa1e979939c813d9deb04ecfa68a65fc77972a4eae6db667",
+    "experiments/wpdb-raw-error-probe/Cargo.toml": "2cced0cd164869a2f024c2e57f7fde7d0c7bd5d0507090697566b5f390b54fe4",
+    "experiments/wpdb-raw-error-probe/README.ja.md": "99a98730f8295086635ad9611d5fada5021ef0639e818009b8c47f6381a4799e",
+    "experiments/wpdb-raw-error-probe/check.py": "795b14f822b4c44f539e2f62fe1769b773f9242a5fc9e9e8a51d1efffce0c47f",
+    "experiments/wpdb-raw-error-probe/driver-workspace.toml": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa",
+    "experiments/wpdb-raw-error-probe/driver.Cargo.lock": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0",
+    "experiments/wpdb-raw-error-probe/fixtures/raw_error_tests.rs": "2d3b95106c188d57ce975f87557ba911aaea1e24f8f44738e9a827baf883c0f0",
+    "experiments/wpdb-raw-error-probe/patch-plan.json": "8564c60b80266d8d5d7dd832d10a83eeb08bdc4b5f8e64b91fb7069e25101ef3",
+    "experiments/wpdb-raw-error-probe/patches/0001-expose-retained-raw-error.patch": "31d1a260cf1bd15c43286e79ff86819742018d9c3099a929f4c3821bd2aa3e3a",
+    "experiments/wpdb-raw-error-probe/prepare_driver.py": "151a3e14053f4056d3bc931b37140789f95239021d45e403272f46a7c58995a5",
+    "experiments/wpdb-raw-error-probe/src/lib.rs": "cfaa2ee2a90dd243986165eb7698c160ee6f20041fd2837e8d33a156e2953740",
+    "experiments/wpdb-rpc-probe/Cargo.lock": "7524f51ce82ba934b787e69da09c40facef9b5a5154685fb4c18de69250a188a",
+    "experiments/wpdb-rpc-probe/Cargo.toml": "bc464f7c81e6271b16289b6e8853bc627a8b53193d539ee9bcbb03a85bd97bd7",
+    "experiments/wpdb-rpc-probe/driver-plan.json": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "experiments/wpdb-rpc-probe/prepare_driver.py": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c",
+    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+  },
+  "old_stage_before": {
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "94666cfd911233c5c60ee9e24d2c8f5311e9c89d2829a9e632c3ee259933590f"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "workspace_files": {
+      "Cargo.toml": {
+        "bytes": 141,
+        "sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa"
+      },
+      "Cargo.lock": {
+        "bytes": 60763,
+        "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+      },
+      "seed-binlog.Cargo.lock": {
+        "bytes": 44593,
+        "sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c"
+      }
+    }
+  },
+  "preparation_before": {
+    "schema": "recastpress.wpdb-raw-error-preparation.v0.5",
+    "outcome": "fixed_raw_error_driver_staged",
+    "plan_sha256": "8564c60b80266d8d5d7dd832d10a83eeb08bdc4b5f8e64b91fb7069e25101ef3",
+    "base_plan_sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "base_patch_sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "raw_patch_sha256": "31d1a260cf1bd15c43286e79ff86819742018d9c3099a929f4c3821bd2aa3e3a",
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "22cf553913b38d5d4ff1880100f0aafaed178b6ff3fe9f0685ba3300ae422e1a"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "new_stage": "target/wpdb-raw-error-probe/workspace",
+    "workspace_manifest": {
+      "bytes": 141,
+      "sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa"
+    },
+    "workspace_lock": {
+      "bytes": 60763,
+      "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+    },
+    "registry_and_old_stage_modified": false,
+    "network_used": false,
+    "database_started": false,
+    "database_connected": false,
+    "product_driver_selected": false
+  },
+  "toolchain": {
+    "rustc-version": "rustc 1.96.0 (ac68faa20 2026-05-25)\nbinary: rustc\ncommit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96\ncommit-date: 2026-05-25\nhost: x86_64-pc-windows-msvc\nrelease: 1.96.0\nLLVM version: 22.1.2",
+    "cargo-version": "cargo 1.96.0 (30a34c682 2026-05-25)"
+  },
+  "driver_registry_package_count": 253,
+  "test_artifact": {
+    "path": "target/wpdb-raw-error-probe/cargo-target/debug/deps/mysql_async-5879fef46fe34600.exe",
+    "bytes": 16391168,
+    "sha256": "984d43c0fefe5b26eb2aa40c80543c96527610340bea50bc3bc8d288f5a17ca8"
+  },
+  "listed_tests": [
+    "conn::rp_raw_error_tests::rp_raw_error_clears_after_existing_ok_handler",
+    "conn::rp_raw_error_tests::rp_raw_error_replaces_previous_error_fields",
+    "conn::rp_raw_error_tests::rp_raw_error_retains_bytes_while_existing_string_is_lossy",
+    "opts::test::rp_legacy_handshake_capability_defaults_are_preserved",
+    "opts::test::rp_wpdb_handshake_clears_only_selected_optional_capabilities"
+  ],
+  "test_output": "\nrunning 5 tests\ntest conn::rp_raw_error_tests::rp_raw_error_clears_after_existing_ok_handler ... ok\ntest conn::rp_raw_error_tests::rp_raw_error_replaces_previous_error_fields ... ok\ntest conn::rp_raw_error_tests::rp_raw_error_retains_bytes_while_existing_string_is_lossy ... ok\ntest opts::test::rp_legacy_handshake_capability_defaults_are_preserved ... ok\ntest opts::test::rp_wpdb_handshake_clears_only_selected_optional_capabilities ... ok\n\nsuccesses:\n\nsuccesses:\n    conn::rp_raw_error_tests::rp_raw_error_clears_after_existing_ok_handler\n    conn::rp_raw_error_tests::rp_raw_error_replaces_previous_error_fields\n    conn::rp_raw_error_tests::rp_raw_error_retains_bytes_while_existing_string_is_lossy\n    opts::test::rp_legacy_handshake_capability_defaults_are_preserved\n    opts::test::rp_wpdb_handshake_clears_only_selected_optional_capabilities\n\ntest result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 90 filtered out; finished in 0.00s\n\n",
+  "parsed_err_fields_and_non_utf8_bytes_verified": true,
+  "child_diagnostics": "warn: could not canonicalize path <user-home>\nerror: cannot update the lock file <workspace>\\experiments\\wpdb-raw-error-probe\\Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.\n",
+  "failure_class": "ValueError",
+  "old_stage_after": {
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "94666cfd911233c5c60ee9e24d2c8f5311e9c89d2829a9e632c3ee259933590f"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "workspace_files": {
+      "Cargo.toml": {
+        "bytes": 141,
+        "sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa"
+      },
+      "Cargo.lock": {
+        "bytes": 60763,
+        "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+      },
+      "seed-binlog.Cargo.lock": {
+        "bytes": 44593,
+        "sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c"
+      }
+    }
+  },
+  "preparation_after": {
+    "schema": "recastpress.wpdb-raw-error-preparation.v0.5",
+    "outcome": "fixed_raw_error_driver_staged",
+    "plan_sha256": "8564c60b80266d8d5d7dd832d10a83eeb08bdc4b5f8e64b91fb7069e25101ef3",
+    "base_plan_sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "base_patch_sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "raw_patch_sha256": "31d1a260cf1bd15c43286e79ff86819742018d9c3099a929f4c3821bd2aa3e3a",
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "22cf553913b38d5d4ff1880100f0aafaed178b6ff3fe9f0685ba3300ae422e1a"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "new_stage": "target/wpdb-raw-error-probe/workspace",
+    "workspace_manifest": {
+      "bytes": 141,
+      "sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa"
+    },
+    "workspace_lock": {
+      "bytes": 60763,
+      "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+    },
+    "registry_and_old_stage_modified": false,
+    "network_used": false,
+    "database_started": false,
+    "database_connected": false,
+    "product_driver_selected": false
+  }
+}
