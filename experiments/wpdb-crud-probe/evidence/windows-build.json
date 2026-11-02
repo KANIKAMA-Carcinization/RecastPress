@@ -1,0 +1,322 @@
+{
+  "schema": "recastpress.wpdb-crud-build.v0.5",
+  "outcome": "locked_offline_crud_build_passed",
+  "passed": true,
+  "observed_at_utc": "2026-11-02T23:33:05.086033+00:00",
+  "platform": "Windows",
+  "locked_offline": true,
+  "commands": [
+    {
+      "stage": "unit-build",
+      "owned_pid": 16224,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 1.177,
+      "stdout_sha256": "9f9171873a23c9b8251c83d1fa9c8aaa895a1dc8f4f52bfa114beebcf88675d8",
+      "stderr_sha256": "b89efd0146378eba4f44015721eda2416cdd6d8b81af99cbeccffc958be83109"
+    },
+    {
+      "stage": "unit-list",
+      "owned_pid": 28808,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.051,
+      "stdout_sha256": "0ef8ff0f788165f0531b6ed141c340f95897cad5088e292454b078992e93a778",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "unit-run",
+      "owned_pid": 22148,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 30,
+      "elapsed_seconds": 0.047,
+      "stdout_sha256": "3dfb6708307a4e3e22357d6decb20c0f5743ea15aaf9e0031801cfe979ff5e12",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "normal-build",
+      "owned_pid": 20816,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 1.117,
+      "stdout_sha256": "d18f726b7f3c54ba66a846921d689cd40ec2ebae74f6a69d46c2c829f7b83385",
+      "stderr_sha256": "003be7f7ec991f896dc0119c3563683ac1b036b2d5456904a05b578daf77acd2"
+    }
+  ],
+  "owned_build_reaped": true,
+  "owned_cleanup_completed": true,
+  "source_reverified_after": true,
+  "database_started": false,
+  "php_executed": false,
+  "wasm_executed": false,
+  "native_wpdb_comparison_passed": false,
+  "product_driver_selected": false,
+  "product_abi_selected": false,
+  "input_files": {
+    ".reference/mariadb-11.8.9/recastpress-tool.json": "ed78965916d0c581bf2e6ec5abaadc5995b12c37ba37e30f5eefcc31802aed53",
+    ".reference/mysql-8.4.13/recastpress-tool.json": "36b03fcac1643420f653d5e3c63e66fcdca088dfa27f0a09cad6968639b96b82",
+    ".reference/mysql-8.4.13-winx64.zip.asc": "81501212b6c52222bcf86e1af1b5c73f9c157f1191405c03936bc9e89f5495ee",
+    ".reference/mysql-release-key.asc": "a4bcd9f16a53cc763f87b9955dbcdced33c7aa90296b157eb6ceef0f156f4327",
+    ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "Cargo.lock": "f85f9fcd4ffc85079f7596f700286d497a4c48663b5e214c535ca6eb98d75c1c",
+    "experiments/binlog-probe/Cargo.lock": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
+    "experiments/binlog-probe/Cargo.toml": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377",
+    "experiments/wpdb-bridge-probe/build_check.py": "6d6f20da091abcd6cfac434df1da67e3fe6e3f668f5f4e374214bf896047b1b6",
+    "experiments/wpdb-bridge-probe/Cargo.lock": "23a74d8f0372344a78721404fc946130d64d01be22f5b1908c2f7ff2b1570cd4",
+    "experiments/wpdb-bridge-probe/Cargo.toml": "a0e85c13b83c8968eadeff85237c50c73aa1a39036d6fa659d4cd593b199fbf0",
+    "experiments/wpdb-bridge-probe/database_check.py": "8d8b19c8c6013bb8b47c3e0913212ea4429f8b1eefefc069fa40d3fa2ee12160",
+    "experiments/wpdb-bridge-probe/fixtures/adapter.php": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d",
+    "experiments/wpdb-bridge-probe/fixtures/bridge.php": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f",
+    "experiments/wpdb-bridge-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+    "experiments/wpdb-bridge-probe/fixtures/helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1",
+    "experiments/wpdb-bridge-probe/fixtures/native.php": "f328b253db15bceae1d34b6f6888317ae8ac013c0ed61a5b121a11693203e83e",
+    "experiments/wpdb-bridge-probe/owned_database.py": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c",
+    "experiments/wpdb-bridge-probe/src/main.rs": "f9d7c5007adc8bb0fc76eda77f0c9e47f57fb43a77041e9e2e47a39299281379",
+    "experiments/wpdb-crud-probe/build_check.py": "185355515f04296133597092bf7d0cb0eefff2c843e598d1092cf89609055d02",
+    "experiments/wpdb-crud-probe/Cargo.lock": "3907eb2975d378ac96a50a831bb32287de0b31ae5474c9c6f1c7b3209fc420f9",
+    "experiments/wpdb-crud-probe/Cargo.toml": "325cee530ee6ff79a5c6ab624cbad06e4fd98314c96b96cbc74455886fb03f22",
+    "experiments/wpdb-crud-probe/database_check.py": "5e8fba2d4daa0731a4a609ac5639a58ebc242d233ce13e314d00f3e5333a78af",
+    "experiments/wpdb-crud-probe/derivation_gate.py": "0c8693132a9b9df72981fc780c9cf18b35e82cc910fbc469cd7ad70101117968",
+    "experiments/wpdb-crud-probe/fixtures/bridge.php": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa",
+    "experiments/wpdb-crud-probe/fixtures/corpus.php": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950",
+    "experiments/wpdb-crud-probe/fixtures/entry.php": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa",
+    "experiments/wpdb-crud-probe/fixtures/native.php": "97b3e6e737328de0a4d6f129dfd73dddf04568689d47ddf755269570c03c56a8",
+    "experiments/wpdb-crud-probe/native_check.py": "ae8116f1d149c3afe0d21969f5cb5b3679d0375568b437c57f2d2df01514de87",
+    "experiments/wpdb-crud-probe/owned_database.py": "bf275a13036b764f080485bd61e2ab2873ce90c14fe047a119bba32bd11b6c86",
+    "experiments/wpdb-crud-probe/src/completion.rs": "0fa10b2c0b96f34cfbef0abc9295e284247298c6cca3caf494657eeb93f780ad",
+    "experiments/wpdb-crud-probe/src/main.rs": "daea2b381ef24b8eb285052eaca95a864c489fbbc0b5bdbd6d42b11314c073fe",
+    "experiments/wpdb-rpc-probe/Cargo.lock": "7524f51ce82ba934b787e69da09c40facef9b5a5154685fb4c18de69250a188a",
+    "experiments/wpdb-rpc-probe/Cargo.toml": "bc464f7c81e6271b16289b6e8853bc627a8b53193d539ee9bcbb03a85bd97bd7",
+    "experiments/wpdb-rpc-probe/database_check.py": "86e9e6ddc38aa579013f7281ff5295e5a26f3a4907b1eebb70440b0fc9e83900",
+    "experiments/wpdb-rpc-probe/driver-plan.json": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "experiments/wpdb-rpc-probe/driver_check.py": "affb048450c674436dcf2d784c225a20483bbc0357938cb7077a6a56b178320b",
+    "experiments/wpdb-rpc-probe/fixtures/native_wpdb.php": "1773508c4764cbceea3e827141890dd87a9df550341be169bd14e079a1befd8e",
+    "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0",
+    "experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "experiments/wpdb-rpc-probe/prepare_driver.py": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c",
+    "experiments/wpdb-rpc-probe/wire_check.py": "5293179ba3ee1b42bbe9b79186c08b0aeca2fb4048e04766ff83d32df31f532d",
+    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "scripts/pinned_zip_tool.py": "5986aad74d5ad1b6e33ea594ec55cb64024bfb4e90085d9274e5007f1610651f",
+    "scripts/setup_mariadb.py": "8beed162f951e8fb0306aaffce60a478d69a9e05af6ee1e3669ac4a8d7a55caa",
+    "scripts/setup_mysql.py": "4b139d532a1c6f3cb9e1c6f0ad1a5677e589f21f8c326b2473b4ab58a0408e6a",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+  },
+  "corpus_gate": {
+    "schema": "recastpress.wpdb-crud-fixture-inputs.v0.5",
+    "fixtures": {
+      "bridge.php": {
+        "bytes": 86,
+        "sha256": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa"
+      },
+      "native.php": {
+        "bytes": 86,
+        "sha256": "97b3e6e737328de0a4d6f129dfd73dddf04568689d47ddf755269570c03c56a8"
+      },
+      "entry.php": {
+        "bytes": 9507,
+        "sha256": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa"
+      },
+      "corpus.php": {
+        "bytes": 5186,
+        "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+      }
+    },
+    "unchanged_original_php_sources": {
+      "adapter.php": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d",
+      "helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1"
+    },
+    "rust_derivation": {
+      "schema": "recastpress.wpdb-crud-host-derivation.v0.5",
+      "original_path": "experiments/wpdb-bridge-probe/src/main.rs",
+      "original_sha256": "f9d7c5007adc8bb0fc76eda77f0c9e47f57fb43a77041e9e2e47a39299281379",
+      "derived_path": "experiments/wpdb-crud-probe/src/main.rs",
+      "derived_sha256": "daea2b381ef24b8eb285052eaca95a864c489fbbc0b5bdbd6d42b11314c073fe",
+      "replacement_groups": 9,
+      "original_db_tcp_session_cleanup_bytes_preserved": true,
+      "private_transport_input_schema_changed": false,
+      "product_implementation_selected": false
+    },
+    "wasm_executed": false,
+    "product_abi_selected": false
+  },
+  "native_reference": {
+    "php_archive_sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477",
+    "php_verified_file_count": 78,
+    "php_file_sha256": {
+      "brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
+      "brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
+      "deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
+      "dev/php8.lib": "5eb1aec626025d84850f4ada1a9e4513fd33cb207a82e6ff40079e7b1e1fb0cc",
+      "ext/php_bz2.dll": "a798baf67801a6119ac95ad68bda39592d86d4c286b18632693522f6c4e8319d",
+      "ext/php_com_dotnet.dll": "4461b3a3450b05c02032d77982f03b83242c01761c9d5f083b30d37cee4f2bc1",
+      "ext/php_curl.dll": "4b8278e6ce4a935b6f9ef927fdf24210f8f52c6fe4ea1f067eb7f5e943caf481",
+      "ext/php_dba.dll": "9c1368cc487e611b43be46afb84da34e779e9f3e06c829a203d3ef79c48818b1",
+      "ext/php_dl_test.dll": "c7695720c8281947752621dc17469a51e9ae5394b5d98ba1e6d572bd0bb65141",
+      "ext/php_enchant.dll": "365ee99829f66e3d473e721be22b86f69ed23cf1d7824776647419cefd44d3ba",
+      "ext/php_exif.dll": "9b63971feb9a680dd373e4a2a998062815e6f51613984357e8dacbc07979cd45",
+      "ext/php_ffi.dll": "90dfeb7d653b8ed6ecd0b1b104f84669eb7a52076af17ad3b6cc54ec891c3557",
+      "ext/php_fileinfo.dll": "d41911eef97afef2b01d0dc3609fd7189d8f40235ca84efc4259917effca3604",
+      "ext/php_ftp.dll": "d2301ec6191daf7e34c16b239a1f82c16fe98292ecc78a781f5299e6d4f81ce7",
+      "ext/php_gd.dll": "7bef1d2b57f03b482429a48696c44990c791a78aee3bc5825ce832c7c9bd64a5",
+      "ext/php_gettext.dll": "c94480f3bc3c5369079b7b68bf7b62071bc3b730582539b0f9a9c15f074f9638",
+      "ext/php_gmp.dll": "da1e8abd2fbac98911fdf57551d7ac315fd32285854c6ae7bb9cd8ff48ac88b7",
+      "ext/php_intl.dll": "80622855920ddb7a1cf442200be614355e379aaf647529f90d164201a20807b4",
+      "ext/php_ldap.dll": "39ca453f83911c724cc6c05968ed20043bd9eb95f4e74f3752831a983e14a935",
+      "ext/php_mbstring.dll": "b2b8382bc757ad97848896e5e0fbec03b5545ed368bd841bd0ad60bfc7ed0811",
+      "ext/php_mysqli.dll": "e5a6a8eafccbed628988c1ab4fdefcc834a90452539e0c9e8b0ebbfc57de602a",
+      "ext/php_odbc.dll": "4d4c71df31bfbaa4c85a093e26c7bc3a311dccaa35cad1ac88e4b11c0d5a95be",
+      "ext/php_openssl.dll": "289057e0322925aac26a7d0079d18518e6ea5b4b59e7ce10185df49f4ab51ce4",
+      "ext/php_pdo_firebird.dll": "b164ff5b8503ecb23950485654e4669b71896c4837b780ba62277afd23e40ad4",
+      "ext/php_pdo_mysql.dll": "155e3facfe906805dcfa74234a4bfca123861969f21eb5874dfe5e0e45576790",
+      "ext/php_pdo_odbc.dll": "f683b8572f4ea8ae0062c765bde239fa4d9c0ab6520dff81a81dcd9bf652039b",
+      "ext/php_pdo_pgsql.dll": "bdbbf46ee71d59bdffaf6f9121581c70c710eeecd252cc3d37987aa6fd8365c1",
+      "ext/php_pdo_sqlite.dll": "40a1c01bc319be8e9c8ace2107ac37306885bd847d045ddadcc62bd851b37edf",
+      "ext/php_pgsql.dll": "9e6bdc720bca2cd6537fbb0665d18b3ca9a8f7e80ec281c063ac0e7f21e8ffb1",
+      "ext/php_shmop.dll": "c7973f5df9c37ebbcbab3fe16ddaed0419443ff88ba81eaa9bee487265094098",
+      "ext/php_snmp.dll": "0c28647b9183f610abde1e829073b08c5d670eae99ff0a905c9e8b61e3c80c34",
+      "ext/php_soap.dll": "21fb43f13dc2d53f9ebcaa9d21bfc4ca9340b942f09bd0d612757058a5cac9ee",
+      "ext/php_sockets.dll": "d7763c61626ce96448ed3460e909d7d50545f2bffd19085650e306ce21a3c87c",
+      "ext/php_sodium.dll": "862ae3fad7c0ac67670aabd68444e9784804e72ec924465d5a3ed0d70899bc57",
+      "ext/php_sqlite3.dll": "f5f26bc9a2677e99afb9903abdf7da0e8d325d0a765af74c60a52f225f7f607b",
+      "ext/php_sysvshm.dll": "8370f7eedd5b3cad34c5567ba5d2318fa8b9f52e061a106b8522b354b5a250b8",
+      "ext/php_tidy.dll": "0a8470d897461e2f95584ac84980059d043a49394ea26b0e9e9918f307b64017",
+      "ext/php_xsl.dll": "0b77747cd6299e9e54f2b974c352289f7aa7c9b40ef3890dd7fe38863f57af38",
+      "ext/php_zend_test.dll": "cfaf18f106965b4d6150923ab0ad205224edb1bf91b583c8352a95640b65ed7a",
+      "ext/php_zip.dll": "397f63319c7984353037faae925dccf90d43ebbcb4c39d8fdca58a028d2e4dc5",
+      "extras/ssl/legacy.dll": "eae05aafd0c77398162a89c15701e17ebce50d8dd12574b108786cd270fb0757",
+      "extras/ssl/openssl.cnf": "a65a2cb9f4ee8ffdc7ef4f0ac600c0bdafb95b7b1ab457188ac610a62f5ad6b3",
+      "glib-2.dll": "8fff1ad28097fcc30581a46ed7f287c60281e8656f39b2217d4bb3bf7f059eb6",
+      "gmodule-2.dll": "224bac40c38201c53f34863e467a3f2a6a230f4727cd45cdeaf4c9c97b87c12a",
+      "gobject-2.dll": "7ca92bb46fc3c0944dec1d651c25fd3bf483ff78ed6771b9f1543d1545b23c65",
+      "icudt77.dll": "d649c8878be9e8a25c2e074235892ece77371950f8395729cc9158815894a5e7",
+      "icuin77.dll": "b5e225648c1c7067577a74c41b5371c047af26448eb783b640e7ada7d52fe283",
+      "icuio77.dll": "a3046cdda552b55b5a169d4daee8e06595be01aa2fc6395f84b412a6d639135f",
+      "icuuc77.dll": "7954ea7a3fe9bb9bbf565212ec388bf3d0831131a16e7518aeb21deddf00948e",
+      "lib/enchant/libenchant2_hunspell.dll": "3b005a1dc6201d5299d092f10d696ce3627036a81c1cb2d4861193bde1c8f465",
+      "libcrypto-3-x64.dll": "43e20b8c6e3d0d38f184329eacea180be6bdbbdc89871626f1e05c11cbb70fe4",
+      "libenchant2.dll": "96c606dc4e2af422650b53527d0e6a277c99e587341dc274009e0c1ace13ea72",
+      "libpq.dll": "1cf919d33177d1840bbe50a8f0a0b1b25c84767526fc9890008afcd27f0f9958",
+      "libsasl.dll": "f8f3546b80250e24454e52044e1750ef7aff81fa7edec8240880546fa2c183b9",
+      "libsodium.dll": "de64aa6e9078fb32dcb7f9dd275d0ce121999e961498018b8c0f47d3825a8f65",
+      "libsqlite3.dll": "ffa33720407b29c0eb1526344ee006372c47b68589b0389804ccc27528c4e254",
+      "libssh2.dll": "0197a9e0352215235e6a6627298506db65c58ffe3c46ae7a4f6e4144666ff195",
+      "libssl-3-x64.dll": "7574fc9816458b44dbc61d3a28b2b2200084472765bb995775f671aac19d1972",
+      "license.txt": "098bdc5b9808fc16bef4b7154e876ac08ca249549727cde3b3f3f3b431e27cca",
+      "news.txt": "eddb4156f6782b64c63ff9b8665f9109193b414cc31475fdcfa007d20d5f354a",
+      "nghttp2.dll": "4bee6c3aa3270c49395ff528db1ebd1e3d78c211503a7b9ea6c23aa9ad2dec85",
+      "phar.phar.bat": "ef0f0bd1e919ee96c7d20547f7a823218cd73452f36c47d1a22f2726d5d64308",
+      "pharcommand.phar": "1855bdc09ffd9e6f2e890817141ba6c691db57add0cfddf0bb5ca871506a0d48",
+      "php-cgi.exe": "f6007e19a06eddaa6c275539f8c8a4b34991bd8b3db061eb965b40e372dfb4a3",
+      "php-win.exe": "96e5b113d0198340b11fd8ed963d647994fb01e6fff128d3375c8b896d1fe78d",
+      "php.exe": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+      "php.ini-development": "b809158db575a44e10f4e8101ea977e25ed505ce02b3f91523c3614d9d8cb3c7",
+      "php.ini-production": "02004cf8c7beda520b2333e2033f5820b7f22b81c3bd2a68de9385dcce88b27d",
+      "php8.dll": "7af6c47fee46995865a3ac3aaa04915b19547e3ffd7072b6242b0f7a027d5754",
+      "php8embed.lib": "4893a5f493f5bfb970184e5361dd6e5f0bbdd60874742f0f0fbeb714789bc8a8",
+      "php8phpdbg.dll": "ed8b94ca273c04ac093e39a3456646ac63ec5be4db767bf484a4f2281dd49ec6",
+      "phpdbg.exe": "4eea926ee567b5f5102e56959039f8241085faf8adc19f716c38c5e24671e0d0",
+      "README.md": "82549e7bf7ec308e9093ad3efaaaa64362397d79c6dc9253be992bfe09856521",
+      "snapshot.txt": "fb6732d8f6f59b5566fb108e712a4cfcc7e3dd94b0b05292b00dd94081e50c95",
+      "readme-redist-bins.txt": "30c4973c42f2a47666da40fcadf55789a9e305557b3ab520cf806dad2724330f",
+      "extras/sbom/php.cdx.json": "3055220a9ad121bfe8295ecd5c60f364b37bb241415b54a0cd0c54eddc8e4c3e",
+      "extras/sbom/php.spdx.json": "e19b079d30f05156f4d3bf58d62520e85d7025d7fb8a7f008a165c8c4369aab0",
+      "extras/sbom/php.openvex.json": "7a05b90f57d6275762a15283a2f6c3e5d44dbd6d8f60fe76e09dc45cc21ba3d5"
+    },
+    "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "wordpress_loaded_source_sha256": {
+      "wp-includes/load.php": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a",
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+      "wp-includes/class-wp-filter-sentinel.php": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c",
+      "wp-includes/class-wpdb.php": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd",
+      "wp-includes/functions.php": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c",
+      "wp-includes/option.php": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0",
+      "wp-includes/class-wp-error.php": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94"
+    },
+    "full_wp_bootstrap_verified": false,
+    "wordpress_verified_source_count": 8
+  },
+  "driver_before": {
+    "schema": "recastpress.wpdb-crud-readonly-driver.v0.5",
+    "plan_sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "patch_sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "94666cfd911233c5c60ee9e24d2c8f5311e9c89d2829a9e632c3ee259933590f"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "stage_workspace_manifest_sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa",
+    "stage_lock": {
+      "bytes": 60763,
+      "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+    },
+    "seed_lock_sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
+    "stage_modified": false
+  },
+  "units": {
+    "passed": true,
+    "tests": [
+      "tests::input_requires_every_key_and_closed_destination",
+      "tests::request_hex_ascii_and_frame_quotas_fail_closed",
+      "tests::request_nonce_sequence_and_phase_are_checked_before_dispatch",
+      "tests::script_argument_is_normal_and_binds_the_canonical_fixture",
+      "tests::unknown_and_duplicate_fields_are_rejected"
+    ],
+    "build_owned_pid": 16224,
+    "owned_build_reaped": true,
+    "list_owned_pid": 28808,
+    "owned_list_reaped": true,
+    "test_owned_pid": 22148,
+    "owned_tests_reaped": true,
+    "executable": "target/wpdb-crud-probe/cargo-target/debug/deps/recastpress_wpdb_crud_probe-c99c17e3a5d5207f.exe",
+    "executable_identity": {
+      "bytes": 2449920,
+      "sha256": "f9b8eaea1becfbb8223510d3e70a7e16723e8553daa781c695d581e140e3da78"
+    },
+    "stdout_sha256": "3dfb6708307a4e3e22357d6decb20c0f5743ea15aaf9e0031801cfe979ff5e12",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build_timeout_seconds": 1200,
+    "list_timeout_seconds": 10,
+    "test_timeout_seconds": 30
+  },
+  "owned_build_pid": 20816,
+  "exit_code": 0,
+  "stdout_sha256": "d18f726b7f3c54ba66a846921d689cd40ec2ebae74f6a69d46c2c829f7b83385",
+  "stderr_sha256": "003be7f7ec991f896dc0119c3563683ac1b036b2d5456904a05b578daf77acd2",
+  "executable": "target/wpdb-crud-probe/cargo-target/debug/recastpress-wpdb-crud-probe.exe",
+  "executable_identity": {
+    "bytes": 10939904,
+    "sha256": "d9e715b0b95345d2d8753cb8512172bf8c5944aa71cf5a78c32496b195c9866a"
+  },
+  "driver_after": {
+    "schema": "recastpress.wpdb-crud-readonly-driver.v0.5",
+    "plan_sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220",
+    "patch_sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd",
+    "source_trees": {
+      "mysql_async": {
+        "files": 63,
+        "inventory_sha256": "94666cfd911233c5c60ee9e24d2c8f5311e9c89d2829a9e632c3ee259933590f"
+      },
+      "mysql_common": {
+        "files": 85,
+        "inventory_sha256": "137b46503cbbb774cc86610b65e9489290791a7c0960548430c399fff8ff209b"
+      }
+    },
+    "stage_workspace_manifest_sha256": "9135d92182bc552f1093064f9808f6c0b30d6755e4ccadc9b2a94b11ceaa24fa",
+    "stage_lock": {
+      "bytes": 60763,
+      "sha256": "5a9fa8a5ce89f1abc15be8594eac30d2cdde2c79702c3cd8ad5242bdc3b49cb0"
+    },
+    "seed_lock_sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
+    "stage_modified": false
+  }
+}
