@@ -189,7 +189,8 @@ function rp_run_entry(string $variant): never {
     try {
         $input = rp_entry_input($variant);
         rp_check(PHP_VERSION_ID === 80512 && PHP_INT_SIZE === 8, 'fixed_native_php_version');
-        rp_check(extension_loaded('mysqli') === ($variant === 'native'), 'entry_mysqli_profile');
+        $report['native_driver_extension_present'] = extension_loaded('mysqli');
+        rp_check($variant === 'bridge' && $report['native_driver_extension_present'] === true, 'entry_wasix_mysqli_profile');
         $report['runtime'] = ['version' => PHP_VERSION, 'version_id' => PHP_VERSION_ID,
             'int_size' => PHP_INT_SIZE, 'sapi' => PHP_SAPI];
         rp_load_wordpress($report);
@@ -209,6 +210,8 @@ function rp_run_entry(string $variant): never {
         $report['suppress_errors_previous'] = $db->suppress_errors(true);
         rp_check($db->db_connect(false) === true && $db->ready, 'db_connect_failed');
         $report['connected'] = true;
+        $report['native_mysqli_handle_supplied'] = $db->dbh instanceof mysqli;
+        rp_check($db instanceof RpBridgeWpdb && !$report['native_mysqli_handle_supplied'], 'rpc_opaque_driver_handle');
         $report['rust_driver_executed'] = $variant === 'bridge';
         $report['server_info_hex'] = bin2hex($db->db_server_info());
         $report['capabilities'] = [];

@@ -1,0 +1,637 @@
+{
+  "schema": "recastpress.php-wasix-wpdb-ci-import.v0.5",
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "repository_id": 1432882501,
+  "run_id": 41458933505,
+  "run_attempt": 1,
+  "source_commit": "40bd998e00f0f938a24788b3a7b20822c6686d0e",
+  "backend": "mariadb",
+  "run_conclusion": "failure",
+  "job": {
+    "id": 125322685725,
+    "name": "Cranelift wpdb / mariadb",
+    "conclusion": "failure",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare only nine readonly guest files",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify units and execute php-wasm wpdb against an owned database",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Record CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload JSON evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13150855124,
+    "name": "php-wasix-wpdb-mariadb-1",
+    "size_in_bytes": 33636,
+    "digest": "sha256:0e3e3a53217f0a6b03937efd4fbb8069c122652ebd0cd095276e7f8028ed6612"
+  },
+  "api_metadata_sha256": "6f91128648711a211992ecf0b721fad39bd32e4f3e813e828afd0b0497e97b4f",
+  "archive_member_map": {
+    "run.json": "experiments/php-wasix-wpdb-probe/evidence/linux-mariadb.json",
+    "build.json": "experiments/php-wasix-managed-access-probe/evidence/build.json",
+    "ci-stages.json": "experiments/php-wasix-wpdb-probe/evidence/ci-stages.json",
+    "toolchain.json": "experiments/php-wasix-cgi-build/evidence/toolchain.json",
+    "prepared.json": "target/php-wasix-wpdb-probe/prepared.json"
+  },
+  "raw_json": {
+    "run.json": {
+      "bytes": 69620,
+      "sha256": "e8439f7c90facc5c856ce2c057731ce66fd34c05beda04d915a630b93a3a7dfe"
+    },
+    "build.json": {
+      "bytes": 55653,
+      "sha256": "d7db7912d0b27e4146ef25c96ea76d33d5e85a9d15d0371f547a7704901551cd"
+    },
+    "ci-stages.json": {
+      "bytes": 434,
+      "sha256": "88692a50bbfef129308c5f32ecb83149b6fa6c69aa3d3296a55b88dedc1abcc3"
+    },
+    "toolchain.json": {
+      "bytes": 5229,
+      "sha256": "b3d7d524b1850cad4eb7b3b45473ff0b34a2861e8187e4c1484edb6a6e90de43"
+    },
+    "prepared.json": {
+      "bytes": 7953,
+      "sha256": "9f23da65e7f83c630cc106254a826dca63b0f76c61ab87636fdaee438a47f710"
+    }
+  },
+  "original_git_sources": {
+    ".github/workflows/php-wasix-cgi-build.yml": {
+      "bytes": 11451,
+      "sha256": "d31457fddd3e2a72a097b6d133af5bfb5cb514952f07ca423d026c60f62f2b43"
+    },
+    ".github/workflows/php-wasix-wpdb.yml": {
+      "bytes": 11773,
+      "sha256": "4a8c5dd4422b4436874a7ab6f79bb7f64ac735dd391071af4b64815ff2d281bf"
+    },
+    "experiments/binlog-probe/Cargo.lock": {
+      "bytes": 44593,
+      "sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c"
+    },
+    "experiments/binlog-probe/Cargo.toml": {
+      "bytes": 706,
+      "sha256": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377"
+    },
+    "experiments/php-runtime-candidate-probe/evidence/native-contract.json": {
+      "bytes": 12125,
+      "sha256": "10265c9acf7935f09678911d43e3093c62bbcec868d0b236fed3714d8be7b0b2"
+    },
+    "experiments/php-runtime-candidate-probe/fixtures/runtime_contract.php": {
+      "bytes": 6728,
+      "sha256": "5ab341e1207fc6bfb8634758bc38b6af7f6b60ba3c621c8acf52b603e5023080"
+    },
+    "experiments/php-runtime-candidate-probe/native_contract.py": {
+      "bytes": 11530,
+      "sha256": "d4b7268982df8cc9c223d7610cc2c0242db05f18f5ed65f470ed143639807b82"
+    },
+    "experiments/php-wasi-host-probe/src/cgi_response.rs": {
+      "bytes": 13116,
+      "sha256": "d7ef796e0bea093c862e67b3591d97ecf4a8ce53428e17196a22a7d06551bc49"
+    },
+    "experiments/php-wasi-host-probe/wordpress-fixture.json": {
+      "bytes": 559,
+      "sha256": "f25b298591e266cb2eaa8001807ff89aff44c60d46bade4224f7834ba0385543"
+    },
+    "experiments/php-wasix-cgi-build/README.ja.md": {
+      "bytes": 11482,
+      "sha256": "f9b2523bcacdbca3438d21d3fc96cd919873daa182298a244d2ac683542e4508"
+    },
+    "experiments/php-wasix-cgi-build/build.py": {
+      "bytes": 19693,
+      "sha256": "66428ef0b96a40c0185e6bb4080d342d5beb743e7414bb441489680d8a1817e1"
+    },
+    "experiments/php-wasix-cgi-build/import_link_evidence.py": {
+      "bytes": 32037,
+      "sha256": "8edffc7fd117b25db54f020621cd682d5aeae7d78d1167ca3dcfca12025792ac"
+    },
+    "experiments/php-wasix-cgi-build/link_audit.py": {
+      "bytes": 13944,
+      "sha256": "df83c879f445773bb394c98d5936a3cba03bcc7f0f92d31628884e8b3b895caa"
+    },
+    "experiments/php-wasix-cgi-build/link_map.py": {
+      "bytes": 17295,
+      "sha256": "9fc3f09ff551c6a69af1e8e437df9074465030b6b330fd35d658543a347be4af"
+    },
+    "experiments/php-wasix-cgi-build/manifest.json": {
+      "bytes": 5268,
+      "sha256": "8c625e73920e6dc3fa7f842da0f553b75b6f65ff17e64349dcb98359a62ffd28"
+    },
+    "experiments/php-wasix-cgi-build/patch_source.py": {
+      "bytes": 2605,
+      "sha256": "751fa61d9e81af55098bc1a8f67fd87c188490b30bdef30664969cb29b9e8d9d"
+    },
+    "experiments/php-wasix-cgi-build/patches/0001-wasi-disable-cgi-prefork.patch": {
+      "bytes": 673,
+      "sha256": "941f0f2ce80edcc0077e746bb7e080b163e837a1e60fb3a2faa21ca4008da1e2"
+    },
+    "experiments/php-wasix-cgi-build/prepare.py": {
+      "bytes": 14676,
+      "sha256": "b21138e94eb32f33f8cd51412e1fd9708211c480888e934fca800ba727578540"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/evidence/native-cgi-runtime-contract.json": {
+      "bytes": 27531,
+      "sha256": "513fb91461b0e8638c3f075c8ccae63a753dae80bd8d2713c39f722063d7a20b"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/fixtures/runtime_cgi_contract.php": {
+      "bytes": 6874,
+      "sha256": "9690cbe445386e7a779bf6ec2719f17953c9f818ae1e220bdd17a3ea2230d8f1"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/manifest.json": {
+      "bytes": 3309,
+      "sha256": "c3b9f61263d01a980434c0d8fb4e81311b62482845146b1f24c2686a3970b76f"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/native_contract.py": {
+      "bytes": 28293,
+      "sha256": "4981126bf27b3750fa623f520d865d6617b50aa3e499dc8c6f9b94e6132b6ada"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/prepare.py": {
+      "bytes": 9288,
+      "sha256": "875a70887883b199eee33f13d08ff932d2a6c65cd5192831a1f3ea46d4ae81b8"
+    },
+    "experiments/php-wasix-cgi-runtime-probe/runtime_check.py": {
+      "bytes": 15645,
+      "sha256": "aef17a00fda4c8cad4651958f31815f4e01636fc9618529fe9a1e23e1f15aa4d"
+    },
+    "experiments/php-wasix-context-probe/fixtures/context_contract.c": {
+      "bytes": 15250,
+      "sha256": "0a27a13ceeede80b0af9677fbd0bfe9b4b7ee757993d417181ed1baccc9bde37"
+    },
+    "experiments/php-wasix-context-probe/fixtures/stack_adapter.S": {
+      "bytes": 1130,
+      "sha256": "f5be8b435353a655547ac85a076af1af012182c5a11aef95d1db858f4470a3a1"
+    },
+    "experiments/php-wasix-context-probe/fixtures/stack_adapter.c": {
+      "bytes": 2859,
+      "sha256": "7a18d8121e58b07c92c2270f59b4a8285a4abf0d91f703f74e49a3108a4f0bb5"
+    },
+    "experiments/php-wasix-context-probe/fixtures/stack_adapter.h": {
+      "bytes": 579,
+      "sha256": "16977226b643017517dc94ea11771f3d7aba07d4642bdb2fd640349e8ba0e437"
+    },
+    "experiments/php-wasix-context-probe/manifest.json": {
+      "bytes": 3400,
+      "sha256": "f0239d83ebab0d1a15c48f1273cda579f45bdbc05a68650660fbe6366dfc9e8f"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/build.py": {
+      "bytes": 33750,
+      "sha256": "94835a38f075d8fc73530294891f6200dd986da8b2fe0314a3b6b93b7640a50a"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/evidence/native-cgi-fiber-contract.json": {
+      "bytes": 36090,
+      "sha256": "58ff09bac489a0e1416968255f30f217c9a76e0eba0b24ea07ae959ce64e9a04"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/fiber_cgi_check.py": {
+      "bytes": 21698,
+      "sha256": "9b2c618b6dacbcff5a03cd069aa7b7e3f4c159e23701ad5cb9b82d1090094c4f"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/fixtures/fiber_cgi_contract.php": {
+      "bytes": 10654,
+      "sha256": "3d6b17234b12d1f391293b79366ab1575f0d9322e699ef76131c86818eadeff2"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/manifest.json": {
+      "bytes": 5826,
+      "sha256": "b0fdc9d3bff6b0e2cc92a7c4961111c5b1ed959ca1a3ecf87916780779bb39f8"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/native_contract.py": {
+      "bytes": 21143,
+      "sha256": "fbb1d1466eac3e85b2f5ff6bf10ea0a764c828230086fe0bdb99bacaca631fe7"
+    },
+    "experiments/php-wasix-fiber-cgi-probe/patch_source.py": {
+      "bytes": 7156,
+      "sha256": "70d985f23d0cb24d4c6aea7db5bff9a1f18f9a87a579a8b52cff00381a3babad"
+    },
+    "experiments/php-wasix-fiber-probe/build.py": {
+      "bytes": 31882,
+      "sha256": "b1aaaea4379d966bdde8493ff5979884e546c85544c7dbeaf51e0765a63bc774"
+    },
+    "experiments/php-wasix-fiber-probe/evidence/native-fiber-contract.json": {
+      "bytes": 18643,
+      "sha256": "243ac46e0aff1cf2a476e3208a35ac0739978d141815096757ec29b1d65779ce"
+    },
+    "experiments/php-wasix-fiber-probe/fixtures/fiber_contract.php": {
+      "bytes": 10510,
+      "sha256": "9da4b5ffb45677eaa0e81ddbac8c101c692663bf685bbc1157a4689c61c17831"
+    },
+    "experiments/php-wasix-fiber-probe/fixtures/zend_wasix_fiber.S": {
+      "bytes": 1153,
+      "sha256": "c0f44bef8e8a4d54713e3ba989be064995ae527924724edcd4bec1f8e4040c19"
+    },
+    "experiments/php-wasix-fiber-probe/manifest.json": {
+      "bytes": 12622,
+      "sha256": "81cd79838d653453e27e2bb69ad3afefbbd01293846372080e2db8eb134b5c87"
+    },
+    "experiments/php-wasix-fiber-probe/native_contract.py": {
+      "bytes": 14112,
+      "sha256": "14e768a301284cb462d526491af39448a580391584052430571f4d2469850f08"
+    },
+    "experiments/php-wasix-fiber-probe/patch_source.py": {
+      "bytes": 6391,
+      "sha256": "607140f77676773d34053d67c46e03241c5e1bf1dd87d871b2409469045f2793"
+    },
+    "experiments/php-wasix-fiber-probe/patches/0001-nts-fresh-wasi-zend-fibers.patch": {
+      "bytes": 19479,
+      "sha256": "2c334bcfcc34cb518971a8b7965ede50032b2813fa0c426ddfde206a8105d231"
+    },
+    "experiments/php-wasix-host-probe/Cargo.lock": {
+      "bytes": 105700,
+      "sha256": "028ce5e3747f78459e0fe6776901cb5c340b1920dfdca882ff61f8ee09b89be5"
+    },
+    "experiments/php-wasix-host-probe/Cargo.toml": {
+      "bytes": 998,
+      "sha256": "9e39660f960e4d4cf91eca63a3d24f660a87f9c10ed2a0bc58090fe151c89545"
+    },
+    "experiments/php-wasix-host-probe/check.py": {
+      "bytes": 11659,
+      "sha256": "11a80feee6a4ba608dd6ffec1a1a677776cfeeb3ad399db0114e3408e8ed9fac"
+    },
+    "experiments/php-wasix-host-probe/fixtures/cgi_contract.php": {
+      "bytes": 1573,
+      "sha256": "ac0e2fb549a7fb0c8620effcbe7cc40dd84f171f0b6dfad639f1fafb65e51bc0"
+    },
+    "experiments/php-wasix-host-probe/language_check.py": {
+      "bytes": 13169,
+      "sha256": "3e23ba2d10cdbc8df24e6f1c446212cb9c26c9c66fc16824ebe877667591d6b2"
+    },
+    "experiments/php-wasix-host-probe/src/cgi_contract.rs": {
+      "bytes": 19020,
+      "sha256": "511e4025cf544954d10b965d330450a620cdab976c1961868327b60ca8b8b703"
+    },
+    "experiments/php-wasix-host-probe/src/cgi_execution.rs": {
+      "bytes": 6446,
+      "sha256": "70b49921299ca27d263a3dce55635c1643eb49ba1c39458e55a8253f3834a6b0"
+    },
+    "experiments/php-wasix-host-probe/src/cgi_runtime_contract.rs": {
+      "bytes": 13529,
+      "sha256": "addca76d6b0d4fde368961815352b660d22913d5528e857a0458513e95c629a9"
+    },
+    "experiments/php-wasix-host-probe/src/context_contract.rs": {
+      "bytes": 36751,
+      "sha256": "0b3bacd902e9c967ec96262d478ee6a57cb1d5aa4b2751e3e62f8e38545fd0f6"
+    },
+    "experiments/php-wasix-host-probe/src/fiber_adapter.rs": {
+      "bytes": 23356,
+      "sha256": "526626757dc93cb59e24b19912362c39f57a8b8e1eb088b04f8b4fefb9b91df9"
+    },
+    "experiments/php-wasix-host-probe/src/fiber_cgi_contract.rs": {
+      "bytes": 13162,
+      "sha256": "9b8d4500832d372e1c85aa2f5552f4f6a1bb0dddc1d3b8abc152a6d6e131cf21"
+    },
+    "experiments/php-wasix-host-probe/src/fiber_contract.rs": {
+      "bytes": 15528,
+      "sha256": "896fb24560462bb5d73f4d1ee6de8740cf81883d49f7f94d680e3baad201bfd3"
+    },
+    "experiments/php-wasix-host-probe/src/language_contract.rs": {
+      "bytes": 12005,
+      "sha256": "02d314e638a54e3d7d5165467535badff0a4eba7e0220b0f14977d0a5dd620ff"
+    },
+    "experiments/php-wasix-host-probe/src/main.rs": {
+      "bytes": 27301,
+      "sha256": "3b5620ebcaf88938b117e02f8df3da7a9a355d1280b00ee33a576eaf1697104e"
+    },
+    "experiments/php-wasix-host-probe/src/managed_access_fs.rs": {
+      "bytes": 33708,
+      "sha256": "6ab85fc73932616b1e91a0971906053a5196490ed86942a986f705fcd7e875c4"
+    },
+    "experiments/php-wasix-host-probe/src/managed_contract.rs": {
+      "bytes": 11422,
+      "sha256": "a4f9f6102ea41024b5e302537854bd086813a19dfd5ed4f48cbdc395bbbd71be"
+    },
+    "experiments/php-wasix-host-probe/src/managed_rpc_contract.rs": {
+      "bytes": 5329,
+      "sha256": "d41f53c9f904f51530bf8eafa1c4a82e420be5d5ea43bbd7ee940db21172c3da"
+    },
+    "experiments/php-wasix-host-probe/src/memory_limits.rs": {
+      "bytes": 6486,
+      "sha256": "497f44ff22db8b20b7601bdfe41731fe22b53cd328f2d11ad0c667c2314cd550"
+    },
+    "experiments/php-wasix-host-probe/src/memory_policy.rs": {
+      "bytes": 4821,
+      "sha256": "290d71d9d13320e731085f9ecfc1b96a729d307ed31576de7bf41a2732c932c8"
+    },
+    "experiments/php-wasix-host-probe/src/metering_limits.rs": {
+      "bytes": 9244,
+      "sha256": "b06d830c9e4f2fa87be00f8eeaa02ef727b4fd2e6a43c844a45bc2d46fe9f4d0"
+    },
+    "experiments/php-wasix-host-probe/src/module_reuse.rs": {
+      "bytes": 11453,
+      "sha256": "8616b0033cee1a969a28b0ac90fcf7e0f9ff90c2be8e7efa201fd49f7f8c30a4"
+    },
+    "experiments/php-wasix-host-probe/src/php_memory_cap.rs": {
+      "bytes": 23266,
+      "sha256": "82b16685537e0d58b34ed08b1c30024dd648e19587475d7bef56ad88544e3af1"
+    },
+    "experiments/php-wasix-host-probe/src/php_operation_budget.rs": {
+      "bytes": 39432,
+      "sha256": "0cc12e5e73a259b1fdab9357ae2b2a7127f9556e23403d281f80c887632dd664"
+    },
+    "experiments/php-wasix-host-probe/src/rpc_contract.rs": {
+      "bytes": 18275,
+      "sha256": "4643f50afe9994e9f1cbdeb252801dae539836cc16d3ffb036e812675e1d6b1e"
+    },
+    "experiments/php-wasix-host-probe/src/rpc_fs.rs": {
+      "bytes": 29330,
+      "sha256": "f46092f470e70d27b54c18808204a709b15f3b791920cfbed4b36d3dc69eed5e"
+    },
+    "experiments/php-wasix-host-probe/src/runtime_fixture_fs.rs": {
+      "bytes": 28840,
+      "sha256": "46ea0746d7663c1cf94a9b8f286161110c6cd55125694c171944e4ffc98c0c64"
+    },
+    "experiments/php-wasix-managed-access-probe/build.py": {
+      "bytes": 2776,
+      "sha256": "8dd2db46ee1897976301876d551d2e098f5b5ea63c9c0fd94f957326f3a6c8bd"
+    },
+    "experiments/php-wasix-managed-access-probe/fixtures/memory_cgi_contract.php": {
+      "bytes": 1555,
+      "sha256": "9b9c066b75628b04569df02288b60c1d4f392f7af773bf09fc0255b191e427b7"
+    },
+    "experiments/php-wasix-managed-access-probe/fixtures/operation_cgi_contract.php": {
+      "bytes": 1256,
+      "sha256": "455204fd5af80680dca3b32de236bb22db2a212ab91f124fc2fb02b8007a1f88"
+    },
+    "experiments/php-wasix-managed-access-probe/fixtures/recastpress_fs_access.h": {
+      "bytes": 7066,
+      "sha256": "3973380aeaf7354496dd18bb2f82ffe3f6467ac7ebe9e2c82a0a634f9514268f"
+    },
+    "experiments/php-wasix-managed-access-probe/fixtures/rpc_cgi_contract.php": {
+      "bytes": 3077,
+      "sha256": "382d54a93357a480926255d7af8d69dadcedaabd34e6dade030ba932abdf5871"
+    },
+    "experiments/php-wasix-managed-access-probe/managed_check.py": {
+      "bytes": 27394,
+      "sha256": "981c449d0de5331fc2d524677593494676830ad77add7f7481a6fa47e74a8b47"
+    },
+    "experiments/php-wasix-managed-access-probe/manifest.json": {
+      "bytes": 8564,
+      "sha256": "6f639e1d80e4d9c2fcd3ea7b05df564ca01ad612dc4dac711005603a4d04f605"
+    },
+    "experiments/php-wasix-managed-access-probe/patch-plan.json": {
+      "bytes": 5102,
+      "sha256": "2855b71e5add527b3113fb250ab3d91d0540bb1222bf78cff68b94612c7f0cb5"
+    },
+    "experiments/php-wasix-managed-access-probe/patch_source.py": {
+      "bytes": 11604,
+      "sha256": "e725a0edacbd859b3f952683c85ac9ef67176f02709fcccc442f79fb259e3a67"
+    },
+    "experiments/php-wasix-managed-access-probe/patches/0001-wasi-managed-access.patch": {
+      "bytes": 9077,
+      "sha256": "343bd0bcd1adb4abcf22653973a5f2d3a75360c1fe06c2748ed83b5646fe3be1"
+    },
+    "experiments/php-wasix-managed-access-probe/source_profile.py": {
+      "bytes": 4196,
+      "sha256": "e38c16665f2e8f23f2e212f4a49bd793bca3136d381e5aaadab22e5f20f436b0"
+    },
+    "experiments/php-wasix-wpdb-probe/Cargo.lock": {
+      "bytes": 109196,
+      "sha256": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793"
+    },
+    "experiments/php-wasix-wpdb-probe/Cargo.toml": {
+      "bytes": 978,
+      "sha256": "8b5d0718cc3691ecf69e7801fa3ad109744b642e5557834d98c31bfaaa5e339f"
+    },
+    "experiments/php-wasix-wpdb-probe/container-images.json": {
+      "bytes": 1185,
+      "sha256": "5e8f79b95147e80e9120c33b8c14c61ab39923f52d489dff9b4e2a2ad656018d"
+    },
+    "experiments/php-wasix-wpdb-probe/evidence/win32-build.json": {
+      "bytes": 27250,
+      "sha256": "225d90599d3ee94035d734393a4fb44050b2ab38375af3ad51812a66c32494f9"
+    },
+    "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": {
+      "bytes": 15447,
+      "sha256": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696"
+    },
+    "experiments/php-wasix-wpdb-probe/fixtures/bridge.php": {
+      "bytes": 164,
+      "sha256": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca"
+    },
+    "experiments/php-wasix-wpdb-probe/fixtures/corpus.php": {
+      "bytes": 6838,
+      "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+    },
+    "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": {
+      "bytes": 11413,
+      "sha256": "0bc91801bb0b6987492930766e0e61e7d709b69691e41f141039b384e9f355f6"
+    },
+    "experiments/php-wasix-wpdb-probe/linux_database.py": {
+      "bytes": 12529,
+      "sha256": "fb669d2af8ddbd13f0f5f5c71bbd694d9f3081bcc365641f592d01ae784a71a1"
+    },
+    "experiments/php-wasix-wpdb-probe/prepare.py": {
+      "bytes": 14655,
+      "sha256": "3dc396550aaaaf10548ac4687a2fc46c469e452bf5cf1f2397326b097707f42c"
+    },
+    "experiments/php-wasix-wpdb-probe/run_check.py": {
+      "bytes": 20402,
+      "sha256": "9bd3d4c906836d647cb75f50c3fd30ed83c1b2b32a5f950ee8878ef475c5ae65"
+    },
+    "experiments/php-wasix-wpdb-probe/src/capture.rs": {
+      "bytes": 4438,
+      "sha256": "78a8e0ee21185313b66d74b32f0bede4674a72485dea695c64015f81c8e05ca9"
+    },
+    "experiments/php-wasix-wpdb-probe/src/db.rs": {
+      "bytes": 16903,
+      "sha256": "95aae8c926dc7a0c34614dd85c782e54ae021a3f8a5ff56f94ab55d0322d99a2"
+    },
+    "experiments/php-wasix-wpdb-probe/src/inputs.rs": {
+      "bytes": 4089,
+      "sha256": "e4674bd750dad4cd003fcc7adb70802fd19459df6497a4b11b6baa12023684f7"
+    },
+    "experiments/php-wasix-wpdb-probe/src/main.rs": {
+      "bytes": 20823,
+      "sha256": "4c924760d5b6389d2351656d4841a7239e389f18c34ecbe74dea42940fd8f68f"
+    },
+    "experiments/php-wasix-wpdb-probe/src/readonly_fs.rs": {
+      "bytes": 8699,
+      "sha256": "11521600d628765d480adc2c30aeb806fcf3f34667b684601e72a6bb6e8a2fde"
+    },
+    "experiments/php-wasix-wpdb-probe/src/rpc_fs.rs": {
+      "bytes": 22381,
+      "sha256": "d9d86f4f72016423990147f9c0cb6bc2b6c9bd486864000995a3d90b762a53fa"
+    },
+    "experiments/wpdb-bridge-probe/fixtures/adapter.php": {
+      "bytes": 15853,
+      "sha256": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d"
+    },
+    "experiments/wpdb-bridge-probe/fixtures/bridge.php": {
+      "bytes": 122,
+      "sha256": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f"
+    },
+    "experiments/wpdb-bridge-probe/fixtures/corpus.php": {
+      "bytes": 6838,
+      "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+    },
+    "experiments/wpdb-bridge-probe/fixtures/helpers.php": {
+      "bytes": 12603,
+      "sha256": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1"
+    },
+    "experiments/wpdb-rpc-probe/driver-plan.json": {
+      "bytes": 8529,
+      "sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220"
+    },
+    "experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch": {
+      "bytes": 7230,
+      "sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd"
+    },
+    "experiments/wpdb-rpc-probe/prepare_driver.py": {
+      "bytes": 11744,
+      "sha256": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c"
+    },
+    "scripts/owned_probe.py": {
+      "bytes": 16128,
+      "sha256": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+    },
+    "scripts/wordpress_reference.py": {
+      "bytes": 9101,
+      "sha256": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+    }
+  },
+  "verifier_input_files": {
+    "experiments/php-wasix-wpdb-probe/import_evidence.py": "81e25a29021efab96fe44f4e140ab4e91b01b0db286599f56f4011c416c2e820"
+  },
+  "verification": {
+    "overall_positive": false,
+    "raw_verdicts_rewritten": false,
+    "source_binding_entries_checked": 200,
+    "source_binding_verification_passed": true,
+    "source_binding_failure_class": null,
+    "present_json_members": [
+      "build.json",
+      "ci-stages.json",
+      "prepared.json",
+      "run.json",
+      "toolchain.json"
+    ],
+    "retained_run_outcome": "fixed_wasm_wpdb_check_failed",
+    "retained_run_passed": false,
+    "failed_observations": {
+      "integration_passed": false,
+      "raw_failures_preserved": true,
+      "recorded_outcome": "fixed_wasm_wpdb_check_failed",
+      "recorded_passed": false,
+      "recorded_failure": "host_wasm_or_rpc_failed",
+      "recorded_failure_stage": "php_wasm_execution",
+      "recorded_container_started": true,
+      "recorded_container_stopped": true,
+      "recorded_container_removed": true,
+      "recorded_container_normal_exit_verified": true,
+      "complete_runtime_source_inventory_verified": true,
+      "preparation_metadata": {
+        "finite_readonly_guest_files": 9,
+        "wordpress_source_files": 5,
+        "source_archive_binary_reverified_offline": false,
+        "all_fixture_derivations_verified": true
+      },
+      "build_metadata": {
+        "complete_managed_source_inputs": 27,
+        "three_patches_and_whole_source_identities_verified": true,
+        "same_job_toolchain_and_module_metadata_bound": true,
+        "source_tool_module_binaries_reverified": false
+      },
+      "recorded_host_phase": "cgi_execution",
+      "recorded_host_passed": false,
+      "recorded_host_outcome": "fixed_wasix_wpdb_cases_failed",
+      "recorded_host_failure_reason": "guest_execution_failed",
+      "recorded_host_physical_connection_created": false,
+      "recorded_host_physical_disconnect_completed": false,
+      "recorded_host_db_actor_joined": true,
+      "recorded_host_db_actor_exited": true,
+      "recorded_host_db_actor_failure": null,
+      "recorded_rpc_operations": 0,
+      "recorded_stdout": {
+        "bytes": 776,
+        "sha256": "2457e6e3805875cced2c212f9d18443358f0db1749f2d35d4a7e4f88140f95aa",
+        "eof": true,
+        "overflow": false
+      },
+      "recorded_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "eof": true,
+        "overflow": false
+      },
+      "recorded_guest_exit_success": false,
+      "recorded_runtime_shutdown_returned": true,
+      "positive_profile_cgi_parse_succeeded": true,
+      "raw_php_passed": false,
+      "raw_php_failure": "entry_mysqli_profile",
+      "raw_php_api_observations": 0,
+      "raw_php_body_sha256": "35d840a0325f9fe7d194b2d371cd9205ab39252745581313d61452ab057f6574",
+      "failed_guest_execution_promoted_to_success": false
+    }
+  },
+  "offline_nonce_recomputed": false,
+  "source_tool_module_archive_binaries_reverified": false,
+  "privacy_exception_scope": "exact public CI repository workspace allowed only within original clang tool-version JSON; no absolute path copied into this proof",
+  "network_used_by_importer": false,
+  "php_wasm_or_database_executed_by_importer": false,
+  "product_runtime_selected": false,
+  "product_abi_selected": false,
+  "standard_wpdb_compatibility_verified": false
+}

@@ -119,6 +119,15 @@ def expected_fixtures(original):
     require(first < last, 'fixed_helper_entry_order')
     helper = helper[:first] + CGI_INPUT + helper[last:]
     helper = replace_once(helper, b"'wasm_executed' => false,", b"'wasm_executed' => true,")
+    helper = replace_once(helper,
+        b"        rp_check(extension_loaded('mysqli') === ($variant === 'native'), 'entry_mysqli_profile');\n",
+        b"        $report['native_driver_extension_present'] = extension_loaded('mysqli');\n"
+        b"        rp_check($variant === 'bridge' && $report['native_driver_extension_present'] === true, 'entry_wasix_mysqli_profile');\n")
+    helper = replace_once(helper,
+        b"        $report['connected'] = true;\n",
+        b"        $report['connected'] = true;\n"
+        b"        $report['native_mysqli_handle_supplied'] = $db->dbh instanceof mysqli;\n"
+        b"        rp_check($db instanceof RpBridgeWpdb && !$report['native_mysqli_handle_supplied'], 'rpc_opaque_driver_handle');\n")
     expected['helpers.php'] = helper
     adapter = original['adapter.php']
     require(adapter.count(BUSINESS_MARKER) == 1, 'fixed_adapter_business_marker')
@@ -162,7 +171,8 @@ def derivation_gate():
         'derived_sources': {name: identity(expected[name]) for name in FIXTURES},
         'corpus_bytes_unchanged': True, 'adapter_business_bytes_unchanged': True,
         'adapter_business_sha256': sha(old_business),
-        'allowed_helper_changes': ['CGI-GET-query-argc-and-env-nonce-entry-only', 'wasm-executed-context-flag'],
+        'allowed_helper_changes': ['CGI-GET-query-argc-and-env-nonce-entry-only', 'wasm-executed-context-flag',
+            'fixed-WASIX-built-in-mysqli-profile-and-opaque-RPC-handle'],
         'allowed_transport_changes': ['file-channel-open', 'request-and-reply-rewinds', 'no-socket-timeouts', 'channel-stat-labels']}
 
 

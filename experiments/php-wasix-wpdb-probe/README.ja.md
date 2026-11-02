@@ -28,6 +28,8 @@ frame 16KiB／reply 64KiB、総要求128KiB／総応答512KiB、64操作、16行
 
 実guestは[Linux CI](../../.github/workflows/php-wasix-wpdb.yml)で同jobの3patch moduleをbuildし、二つのDB profileへ実行する。JSON evidenceだけをuploadし、binary・nonce・password・private設定を配布しない。
 
+初回[CI 41458933505](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41458933505)は、両DBともPHPをCGI実行した後、mysqli拡張の入口条件で失敗した。通常PHPの比較hostと異なり、この固定WASIX候補にはmysqliが組み込まれている。0 RPC・0 API・Rust DB未接続のままで、所有DBの正常停止・削除は確認した。修正では組込み拡張の存在を実記録・固定profileとして検査し、接続後のwpdb handleがmysqliではなくRust RPC用opaque handleであることも実検査する。元の27ケースとadapterの業務ロジックは変更しない。
+
 ```powershell
 python experiments/php-wasix-wpdb-probe/prepare.py
 python experiments/php-wasix-wpdb-probe/run_check.py --build-only --record

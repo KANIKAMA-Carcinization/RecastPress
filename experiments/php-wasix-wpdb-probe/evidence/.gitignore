@@ -1,0 +1,6 @@
+# Retain only the JSON preparation receipt at its original ZIP member path.
+!ci-*/raw/target/
+ci-*/raw/target/*
+!ci-*/raw/target/php-wasix-wpdb-probe/
+ci-*/raw/target/php-wasix-wpdb-probe/*
+!ci-*/raw/target/php-wasix-wpdb-probe/prepared.json

@@ -129,6 +129,8 @@ def validate_php(php, backend, mapping):
         require(php[key] is False, 'guest_unclaimed_' + key)
     exact(php['runtime'], {'version': '8.5.12', 'version_id': 80512, 'int_size': 8, 'sapi': 'cgi-fcgi'}, 'actual_guest_runtime')
     require(php['suppress_errors_previous'] is False and php['tls_profile'] == 'disabled', 'guest_fixed_profile')
+    require(php['native_driver_extension_present'] is True and php['native_mysqli_handle_supplied'] is False,
+        'guest_builtin_extension_and_rust_owned_handle')
     for key in CORE: exact(php[key], old[key], 'native_api_' + key + '_differs')
     exact(php['included_source_names'], sorted(item['guest'].lstrip('/') for item in mapping['files']), 'guest_actual_include_set')
     require(len(php['observations']) == 27 and php['bootstrap_num_queries'] == 0 and php['final_num_queries'] == 25,

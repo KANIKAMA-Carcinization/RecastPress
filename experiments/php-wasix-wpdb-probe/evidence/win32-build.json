@@ -2,7 +2,7 @@
   "schema": "recastpress.php-wasix-wpdb-check.v0.5",
   "outcome": "fixed_host_build_passed",
   "passed": true,
-  "observed_at_utc": "2026-11-02T14:06:21.728664+00:00",
+  "observed_at_utc": "2026-11-02T14:38:26.432229+00:00",
   "platform": "win32",
   "backend": "mysql",
   "build_only": true,
@@ -100,10 +100,10 @@
     "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696",
     "experiments/php-wasix-wpdb-probe/fixtures/bridge.php": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca",
     "experiments/php-wasix-wpdb-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
-    "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "0bc91801bb0b6987492930766e0e61e7d709b69691e41f141039b384e9f355f6",
+    "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
     "experiments/php-wasix-wpdb-probe/linux_database.py": "fb669d2af8ddbd13f0f5f5c71bbd694d9f3081bcc365641f592d01ae784a71a1",
-    "experiments/php-wasix-wpdb-probe/prepare.py": "3dc396550aaaaf10548ac4687a2fc46c469e452bf5cf1f2397326b097707f42c",
-    "experiments/php-wasix-wpdb-probe/run_check.py": "9bd3d4c906836d647cb75f50c3fd30ed83c1b2b32a5f950ee8878ef475c5ae65",
+    "experiments/php-wasix-wpdb-probe/prepare.py": "43f7ed371b37dc602e0953600745bcd6adec61fcccccb4ada962bcd0fd281caf",
+    "experiments/php-wasix-wpdb-probe/run_check.py": "113f42ee5b1d950e7d13916cdd436cb97c89133f2e9b0afbacaba2fc9059c611",
     "experiments/php-wasix-wpdb-probe/src/capture.rs": "78a8e0ee21185313b66d74b32f0bede4674a72485dea695c64015f81c8e05ca9",
     "experiments/php-wasix-wpdb-probe/src/db.rs": "95aae8c926dc7a0c34614dd85c782e54ae021a3f8a5ff56f94ab55d0322d99a2",
     "experiments/php-wasix-wpdb-probe/src/inputs.rs": "e4674bd750dad4cd003fcc7adb70802fd19459df6497a4b11b6baa12023684f7",
@@ -124,14 +124,14 @@
     "schema": "recastpress.php-wasix-wpdb-prepared.v0.5",
     "outcome": "fixed_nine_guest_sources_prepared",
     "input_files": {
-      "experiments/php-wasix-wpdb-probe/prepare.py": "3dc396550aaaaf10548ac4687a2fc46c469e452bf5cf1f2397326b097707f42c",
+      "experiments/php-wasix-wpdb-probe/prepare.py": "43f7ed371b37dc602e0953600745bcd6adec61fcccccb4ada962bcd0fd281caf",
       "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303",
       "experiments/wpdb-bridge-probe/fixtures/bridge.php": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f",
       "experiments/wpdb-bridge-probe/fixtures/helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1",
       "experiments/wpdb-bridge-probe/fixtures/adapter.php": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d",
       "experiments/wpdb-bridge-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
       "experiments/php-wasix-wpdb-probe/fixtures/bridge.php": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca",
-      "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "0bc91801bb0b6987492930766e0e61e7d709b69691e41f141039b384e9f355f6",
+      "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
       "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696",
       "experiments/php-wasix-wpdb-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
     },
@@ -162,8 +162,8 @@
           "sha256": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca"
         },
         "helpers.php": {
-          "bytes": 11413,
-          "sha256": "0bc91801bb0b6987492930766e0e61e7d709b69691e41f141039b384e9f355f6"
+          "bytes": 11721,
+          "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7"
         },
         "adapter.php": {
           "bytes": 15447,
@@ -179,7 +179,8 @@
       "adapter_business_sha256": "778bb2984adfff4ccee9554c34aec2e92202acb686401df23aa1e5748fcd22d8",
       "allowed_helper_changes": [
         "CGI-GET-query-argc-and-env-nonce-entry-only",
-        "wasm-executed-context-flag"
+        "wasm-executed-context-flag",
+        "fixed-WASIX-built-in-mysqli-profile-and-opaque-RPC-handle"
       ],
       "allowed_transport_changes": [
         "file-channel-open",
@@ -207,8 +208,8 @@
       {
         "source": "experiments/php-wasix-wpdb-probe/fixtures/helpers.php",
         "guest": "/experiments/wpdb-bridge-probe/fixtures/helpers.php",
-        "bytes": 11413,
-        "sha256": "0bc91801bb0b6987492930766e0e61e7d709b69691e41f141039b384e9f355f6",
+        "bytes": 11721,
+        "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
         "guest_read_only": true,
         "kind": "derived_fixture"
       },
@@ -362,17 +363,17 @@
       "rpc_fs::tests::namespace_denial_no_reopen_and_identity_before_dispatch"
     ],
     "passed": true,
-    "owned_pid": 13844,
+    "owned_pid": 23900,
     "owned_reaped": true,
-    "executable_sha256": "223963287bc1470dc73a0ae2c07b1ff8a3e12a997e3083eb332d6e08160f8ac1",
-    "stdout_sha256": "a7776254dd5a1d6267c8cdaad84979583ece672c1a4b59663db8576a9ad7038b"
+    "executable_sha256": "b5aff8b823b29484b6a76f2ab57a54e83e9ea70671ebfc9dc4069e5f3ae88667",
+    "stdout_sha256": "bac7df98c97284106c9b4769ffc6314e10c42b752ad0a1f613f569ca745cf512"
   },
-  "owned_build_pid": 24248,
+  "owned_build_pid": 27268,
   "owned_build_reaped": true,
   "executable": "target/php-wasix-wpdb-probe/cargo-target/debug/recastpress-php-wasix-wpdb-probe.exe",
   "executable_identity": {
     "bytes": 53279232,
-    "sha256": "9d1e57a851284f19857112a5b97b165c11701574a89ee18dc471403c571813ca"
+    "sha256": "fcd4482191f781961b0c10d5412d711ddfa093689c085d034826695b4036332a"
   },
   "driver_after": {
     "schema": "recastpress.wpdb-rpc-driver-preparation.v0.5",
