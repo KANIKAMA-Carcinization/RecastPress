@@ -1,0 +1,27 @@
+{
+  "schema": "recastpress.php-wasix-wpdb-images.v0.5",
+  "images": {
+    "mysql": {
+      "repository": "docker.io/library/mysql",
+      "tag": "8.4.13",
+      "index_digest": "sha256:a0225d1ea6631c8bc2385dc4c2faba17bbf1834ecf369e1659a9a382bd8d5dd7",
+      "platform_digest": "sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
+      "platform": "linux/amd64",
+      "image_config_digest": "sha256:d2a0d367629f5b5dcd6cdabc53fe9183a0a3c313f9bd354e368290ba6fbf6d3f",
+      "compressed_layer_bytes": 238252878,
+      "manifest_sha256_verified": true,
+      "publisher_signature_verified": false
+    },
+    "mariadb": {
+      "repository": "docker.io/library/mariadb",
+      "tag": "11.8.9",
+      "index_digest": "sha256:c4124d1afa875e47f2892edf26b482fa54f796e2f342d3717a04ca091a22a9bd",
+      "platform_digest": "sha256:8a4a99eff981d95c3ab12d019b82fe59725fb7761f1f9a5f155bc3f025528f4f",
+      "platform": "linux/amd64",
+      "image_config_digest": "sha256:0f2506b4b989879f5e004ba606b1d6711d467dee12be80c81799dd046fcc753c",
+      "compressed_layer_bytes": 103911440,
+      "manifest_sha256_verified": true,
+      "publisher_signature_verified": false
+    }
+  }
+}
