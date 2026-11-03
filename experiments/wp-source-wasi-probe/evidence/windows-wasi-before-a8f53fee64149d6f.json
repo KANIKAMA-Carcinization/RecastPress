@@ -1,0 +1,2061 @@
+{
+  "schema": "recastpress.wp-source-wasi-check.v0.5",
+  "passed": true,
+  "outcome": "fixed_plain_wasi_small_and_full_source_contract_passed",
+  "observed_at_utc": "2026-11-03T05:19:18.682886+00:00",
+  "steps": [
+    {
+      "stage": "test_build",
+      "owned_pid": 29940,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 7.295,
+      "stdout_sha256": "eef80cf7a4167dd029f2b15b78933b2983710a00be38b0131aa93067f894d362",
+      "stderr_sha256": "230cc0d09ece0882d068f02b07263896a5310906619388cc3b4b0b39c5f25a5a"
+    },
+    {
+      "stage": "test_list",
+      "owned_pid": 23660,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.353,
+      "stdout_sha256": "29105d0bdb78734a680830dee80f095e427dcd6753911621df442ba6cc26d6d2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "test_run",
+      "owned_pid": 31396,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 30,
+      "elapsed_seconds": 0.046,
+      "stdout_sha256": "f473b91924d874a8e481df6329929fb020ed61d63a02e81223362b56fc695ce1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "normal_build",
+      "owned_pid": 9944,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 8.69,
+      "stdout_sha256": "80771214585625ff24bd40fa2f20ebbf5782b420f419a00f4e0f3d768186eb72",
+      "stderr_sha256": "318e74a407e90923284bec59266661b114de3539cfe51e50a43612bdc3e7f92a"
+    },
+    {
+      "stage": "wasi_execution",
+      "owned_pid": 3608,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 120,
+      "elapsed_seconds": 10.666,
+      "stdout_sha256": "da3ee8548a478ed14772cfff55fe2948dc7e66223c6cc1e9e26bffce50026ae0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "locked_offline": true,
+  "owned_cleanup_completed": true,
+  "source_reverified_after": true,
+  "wasi_executed": true,
+  "php_executed": false,
+  "database_connected": false,
+  "http_executed": false,
+  "native_metadata_compatibility_verified": false,
+  "product_runtime_selected": false,
+  "failure_reclassified_as_pure_success": false,
+  "input_files": {
+    "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
+    "experiments/php-wasix-wpdb-probe/src/capture.rs": "78a8e0ee21185313b66d74b32f0bede4674a72485dea695c64015f81c8e05ca9",
+    "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+    "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+    "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+    "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+    "experiments/wp-source-fs-probe/Cargo.lock": "a4ee79b0072361e4ec358873eae2817955f778b24aa4c5f330ca1e30b38edd5e",
+    "experiments/wp-source-fs-probe/Cargo.toml": "27fdcc12b725d87468a135f69023d0c4e4e7f5d4bf148a1734953982363d9ab6",
+    "experiments/wp-source-fs-probe/check.py": "72e032aecf0ace34a5e133a5dbaa1a83218e776a8423ce4f60db12812dd0e56a",
+    "experiments/wp-source-fs-probe/evidence/windows-pure-units.json": "ffccacc49c18ac19c2ae232cb3e929e6f4a5738d8f92a9dbdba9cdd04c830d43",
+    "experiments/wp-source-fs-probe/README.ja.md": "6a7a0f0ff0c222bf4382bca8ee68d004a21a9b9cb2d2679fe9f3f07fde8d0795",
+    "experiments/wp-source-fs-probe/src/bin/catalog.rs": "4f020609956f5a33802c911496592206c4b3a8cb2b1f95cfea929cdd1a0faad9",
+    "experiments/wp-source-fs-probe/src/lib.rs": "055bdf0ddcfb5110268797f823230708e43bcff4f10462b4b38ff8d4f420ad8d",
+    "experiments/wp-source-fs-probe/src/tests.rs": "edd2f0364da45534a9a076c42590cf30d422ccbbabc2f171a55e8aff181e6463",
+    "experiments/wp-source-wasi-probe/Cargo.lock": "27513c09ba840b1a2c05e75eade1939e37aeb0d451a231bf7935a5ce8c5c64f3",
+    "experiments/wp-source-wasi-probe/Cargo.toml": "559dc3f043c18a359fbd2bd3c0e9a43a1cf687382da5627da573ea9b39079992",
+    "experiments/wp-source-wasi-probe/check.py": "e7d2a2f139ff4bbfc43c4b81ee484d2f0d7da96fbf2c2dfaa5358673b01f9ec7",
+    "experiments/wp-source-wasi-probe/derivation_gate.py": "1679ec84ad17a3a1675dd58a5223ff03ece19f2c8f5e4257b9dd3110f944b471",
+    "experiments/wp-source-wasi-probe/fixtures/source.wat": "4e7d25ef1321448db82c018f44782b521622388ae252b786a568d744b946f0ba",
+    "experiments/wp-source-wasi-probe/src/catalog.rs": "2ee4973405395e482ab22b7cdded4c7b06c5c03a0dda9c59b860cb725d46cb5b",
+    "experiments/wp-source-wasi-probe/src/main.rs": "03004c65ca559c201a036725cf5ec9607a574437cf45e4d1031238641b84a334",
+    "experiments/wp-source-wasi-probe/src/trace_fs.rs": "ecbdfdb0ad2fbb6bd5f6cc10ce3f8a025f88132745087d0c993d872bc76b3b89",
+    "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0",
+    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+  },
+  "loader_derivation": {
+    "original_source_sha256": "4f020609956f5a33802c911496592206c4b3a8cb2b1f95cfea929cdd1a0faad9",
+    "derived_source_sha256": "2ee4973405395e482ab22b7cdded4c7b06c5c03a0dda9c59b860cb725d46cb5b",
+    "complete_archive_pin_body_metadata_directory_checks_preserved": true,
+    "original_file_modified": false
+  },
+  "frozen_source_fs_before": {
+    "proof_sha256": "ffccacc49c18ac19c2ae232cb3e929e6f4a5738d8f92a9dbdba9cdd04c830d43",
+    "input_files": {
+      "experiments/wp-source-fs-probe/Cargo.toml": "27fdcc12b725d87468a135f69023d0c4e4e7f5d4bf148a1734953982363d9ab6",
+      "experiments/wp-source-fs-probe/Cargo.lock": "a4ee79b0072361e4ec358873eae2817955f778b24aa4c5f330ca1e30b38edd5e",
+      "experiments/wp-source-fs-probe/src/lib.rs": "055bdf0ddcfb5110268797f823230708e43bcff4f10462b4b38ff8d4f420ad8d",
+      "experiments/wp-source-fs-probe/src/tests.rs": "edd2f0364da45534a9a076c42590cf30d422ccbbabc2f171a55e8aff181e6463",
+      "experiments/wp-source-fs-probe/src/bin/catalog.rs": "4f020609956f5a33802c911496592206c4b3a8cb2b1f95cfea929cdd1a0faad9",
+      "experiments/wp-source-fs-probe/check.py": "72e032aecf0ace34a5e133a5dbaa1a83218e776a8423ce4f60db12812dd0e56a",
+      "experiments/wp-source-fs-probe/README.ja.md": "6a7a0f0ff0c222bf4382bca8ee68d004a21a9b9cb2d2679fe9f3f07fde8d0795",
+      "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
+      "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    }
+  },
+  "units": {
+    "tests": [
+      "tests::binary_observer_rejects_partial_and_oversized_frames",
+      "tests::fixed_wat_parses_without_eh_and_has_small_bounded_memory",
+      "trace_fs::tests::native_separator_adapter_cannot_escape_or_accept_host_prefix",
+      "trace_fs::tests::native_separator_adapter_keeps_finite_catalog_and_mutation_denial"
+    ],
+    "passed": true,
+    "stdout_sha256": "f473b91924d874a8e481df6329929fb020ed61d63a02e81223362b56fc695ce1"
+  },
+  "binary": {
+    "path": "target/wp-source-wasi-probe/cargo-target/debug/recastpress-wp-source-wasi-probe.exe",
+    "bytes": 50626560,
+    "sha256": "9b6060c0d91c16fe4959796b7b3fbe5222b259f6f1ac3d29ae5065052a75d60c"
+  },
+  "preparation_before": {
+    "archive_bytes": 35368461,
+    "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "database_started": false,
+    "input_files": {
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    },
+    "native_bootstrap_executed": false,
+    "outcome": "fixed_full_wordpress_site_prepared",
+    "php_executed": false,
+    "product_runtime_selected": false,
+    "rust_or_wasm_executed": false,
+    "schema": "recastpress.wp-bootstrap-prepared.v0.5",
+    "site": "target/wp-bootstrap-probe/site",
+    "source_manifest": {
+      "bytes": 650759,
+      "path": "target/wp-bootstrap-probe/source-manifest.json",
+      "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+    },
+    "source_tree": {
+      "directories": 467,
+      "directory_inventory_sha256": "7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5",
+      "expanded_bytes": 110077999,
+      "file_inventory_sha256": "afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c",
+      "files": 3782
+    }
+  },
+  "raw_stdout": {
+    "bytes": 58001,
+    "sha256": "da3ee8548a478ed14772cfff55fe2948dc7e66223c6cc1e9e26bffce50026ae0"
+  },
+  "raw_stderr": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "inner_result": {
+    "all_runtime_tasks_independently_enumerated": false,
+    "catalog_source": {
+      "source_manifest_sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+    },
+    "database_connected": false,
+    "full": {
+      "backing_calls": [
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "read_dir",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "EntryNotFound",
+          "ok": false,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "create_dir",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "remove_file",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "EntryNotFound",
+          "ok": false,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "rename",
+          "path": "/wp-includes\\class-wpdb.php"
+        }
+      ],
+      "directory_entries": [
+        {
+          "file_type": 3,
+          "name_hex": "2e",
+          "next_cookie": 1
+        },
+        {
+          "file_type": 3,
+          "name_hex": "2e2e",
+          "next_cookie": 2
+        },
+        {
+          "file_type": 3,
+          "name_hex": "494433",
+          "next_cookie": 3
+        },
+        {
+          "file_type": 3,
+          "name_hex": "495852",
+          "next_cookie": 4
+        },
+        {
+          "file_type": 3,
+          "name_hex": "5048504d61696c6572",
+          "next_cookie": 5
+        },
+        {
+          "file_type": 3,
+          "name_hex": "5265717565737473",
+          "next_cookie": 6
+        },
+        {
+          "file_type": 3,
+          "name_hex": "53696d706c65506965",
+          "next_cookie": 7
+        },
+        {
+          "file_type": 3,
+          "name_hex": "54657874",
+          "next_cookie": 8
+        },
+        {
+          "file_type": 3,
+          "name_hex": "6162696c69746965732d617069",
+          "next_cookie": 9
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6162696c69746965732d6170692e706870",
+          "next_cookie": 10
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6162696c69746965732e706870",
+          "next_cookie": 11
+        },
+        {
+          "file_type": 4,
+          "name_hex": "61646d696e2d6261722e706870",
+          "next_cookie": 12
+        },
+        {
+          "file_type": 3,
+          "name_hex": "61692d636c69656e74",
+          "next_cookie": 13
+        },
+        {
+          "file_type": 4,
+          "name_hex": "61692d636c69656e742e706870",
+          "next_cookie": 14
+        },
+        {
+          "file_type": 3,
+          "name_hex": "617373657473",
+          "next_cookie": 15
+        },
+        {
+          "file_type": 4,
+          "name_hex": "61746f6d6c69622e706870",
+          "next_cookie": 16
+        },
+        {
+          "file_type": 4,
+          "name_hex": "617574686f722d74656d706c6174652e706870",
+          "next_cookie": 17
+        },
+        {
+          "file_type": 3,
+          "name_hex": "626c6f636b2d62696e64696e6773",
+          "next_cookie": 18
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d62696e64696e67732e706870",
+          "next_cookie": 19
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d656469746f722e706870",
+          "next_cookie": 20
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d6931386e2e6a736f6e",
+          "next_cookie": 21
+        },
+        {
+          "file_type": 3,
+          "name_hex": "626c6f636b2d7061747465726e73",
+          "next_cookie": 22
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d7061747465726e732e706870",
+          "next_cookie": 23
+        },
+        {
+          "file_type": 3,
+          "name_hex": "626c6f636b2d737570706f727473",
+          "next_cookie": 24
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d74656d706c6174652d7574696c732e706870",
+          "next_cookie": 25
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b2d74656d706c6174652e706870",
+          "next_cookie": 26
+        },
+        {
+          "file_type": 3,
+          "name_hex": "626c6f636b73",
+          "next_cookie": 27
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626c6f636b732e706870",
+          "next_cookie": 28
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626f6f6b6d61726b2d74656d706c6174652e706870",
+          "next_cookie": 29
+        },
+        {
+          "file_type": 4,
+          "name_hex": "626f6f6b6d61726b2e706870",
+          "next_cookie": 30
+        },
+        {
+          "file_type": 3,
+          "name_hex": "6275696c64",
+          "next_cookie": 31
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63616368652d636f6d7061742e706870",
+          "next_cookie": 32
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63616368652e706870",
+          "next_cookie": 33
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63616e6f6e6963616c2e706870",
+          "next_cookie": 34
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6361706162696c69746965732e706870",
+          "next_cookie": 35
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63617465676f72792d74656d706c6174652e706870",
+          "next_cookie": 36
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63617465676f72792e706870",
+          "next_cookie": 37
+        },
+        {
+          "file_type": 3,
+          "name_hex": "636572746966696361746573",
+          "next_cookie": 38
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d4958522e706870",
+          "next_cookie": 39
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d617669662d696e666f2e706870",
+          "next_cookie": 40
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d666565642e706870",
+          "next_cookie": 41
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d687474702e706870",
+          "next_cookie": 42
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d6a736f6e2e706870",
+          "next_cookie": 43
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d6f656d6265642e706870",
+          "next_cookie": 44
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d7068706173732e706870",
+          "next_cookie": 45
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d7068706d61696c65722e706870",
+          "next_cookie": 46
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d706f70332e706870",
+          "next_cookie": 47
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d72657175657374732e706870",
+          "next_cookie": 48
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d73696d706c657069652e706870",
+          "next_cookie": 49
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d736d74702e706870",
+          "next_cookie": 50
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d736e6f6f70792e706870",
+          "next_cookie": 51
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d63617465676f72792d64726f70646f776e2e706870",
+          "next_cookie": 52
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d63617465676f72792e706870",
+          "next_cookie": 53
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d636f6d6d656e742e706870",
+          "next_cookie": 54
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d6e61762d6d656e752e706870",
+          "next_cookie": 55
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d706167652d64726f70646f776e2e706870",
+          "next_cookie": 56
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77616c6b65722d706167652e706870",
+          "next_cookie": 57
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d61646d696e2d6261722e706870",
+          "next_cookie": 58
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d616a61782d726573706f6e73652e706870",
+          "next_cookie": 59
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6170706c69636174696f6e2d70617373776f7264732e706870",
+          "next_cookie": 60
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d62696e64696e67732d72656769737472792e706870",
+          "next_cookie": 61
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d62696e64696e67732d736f757263652e706870",
+          "next_cookie": 62
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d656469746f722d636f6e746578742e706870",
+          "next_cookie": 63
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d6c6973742e706870",
+          "next_cookie": 64
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d6d657461646174612d72656769737472792e706870",
+          "next_cookie": 65
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7061727365722d626c6f636b2e706870",
+          "next_cookie": 66
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7061727365722d6672616d652e706870",
+          "next_cookie": 67
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7061727365722e706870",
+          "next_cookie": 68
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7061747465726e2d63617465676f726965732d72656769737472792e706870",
+          "next_cookie": 69
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7061747465726e732d72656769737472792e706870",
+          "next_cookie": 70
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d70726f636573736f722e706870",
+          "next_cookie": 71
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d7374796c65732d72656769737472792e706870",
+          "next_cookie": 72
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d737570706f7274732e706870",
+          "next_cookie": 73
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d74656d706c6174652e706870",
+          "next_cookie": 74
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d74656d706c617465732d72656769737472792e706870",
+          "next_cookie": 75
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d747970652d72656769737472792e706870",
+          "next_cookie": 76
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2d747970652e706870",
+          "next_cookie": 77
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d626c6f636b2e706870",
+          "next_cookie": 78
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d636c61737369632d746f2d626c6f636b2d6d656e752d636f6e7665727465722e706870",
+          "next_cookie": 79
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d636f6d6d656e742d71756572792e706870",
+          "next_cookie": 80
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d636f6d6d656e742e706870",
+          "next_cookie": 81
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d636f6e6e6563746f722d72656769737472792e706870",
+          "next_cookie": 82
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d636f6e74726f6c2e706870",
+          "next_cookie": 83
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d6d616e616765722e706870",
+          "next_cookie": 84
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d6e61762d6d656e75732e706870",
+          "next_cookie": 85
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d70616e656c2e706870",
+          "next_cookie": 86
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d73656374696f6e2e706870",
+          "next_cookie": 87
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d73657474696e672e706870",
+          "next_cookie": 88
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d637573746f6d697a652d776964676574732e706870",
+          "next_cookie": 89
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d646174652d71756572792e706870",
+          "next_cookie": 90
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d646570656e64656e636965732e706870",
+          "next_cookie": 91
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d646570656e64656e63792e706870",
+          "next_cookie": 92
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d64756f746f6e652e706870",
+          "next_cookie": 93
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d656469746f722e706870",
+          "next_cookie": 94
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d656d6265642e706870",
+          "next_cookie": 95
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6572726f722e706870",
+          "next_cookie": 96
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d657863657074696f6e2e706870",
+          "next_cookie": 97
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d666174616c2d6572726f722d68616e646c65722e706870",
+          "next_cookie": 98
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d666565642d63616368652d7472616e7369656e742e706870",
+          "next_cookie": 99
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d666565642d63616368652e706870",
+          "next_cookie": 100
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d66696c7465722d73656e74696e656c2e706870",
+          "next_cookie": 101
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d686f6f6b2e706870",
+          "next_cookie": 102
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d636f6f6b69652e706870",
+          "next_cookie": 103
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d6375726c2e706870",
+          "next_cookie": 104
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d656e636f64696e672e706870",
+          "next_cookie": 105
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d6978722d636c69656e742e706870",
+          "next_cookie": 106
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d70726f78792e706870",
+          "next_cookie": 107
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d72657175657374732d686f6f6b732e706870",
+          "next_cookie": 108
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d72657175657374732d726573706f6e73652e706870",
+          "next_cookie": 109
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d726573706f6e73652e706870",
+          "next_cookie": 110
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702d73747265616d732e706870",
+          "next_cookie": 111
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d687474702e706870",
+          "next_cookie": 112
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d69636f6e2d636f6c6c656374696f6e732d72656769737472792e706870",
+          "next_cookie": 113
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d69636f6e732d72656769737472792e706870",
+          "next_cookie": 114
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d696d6167652d656469746f722d67642e706870",
+          "next_cookie": 115
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d696d6167652d656469746f722d696d616769636b2e706870",
+          "next_cookie": 116
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d696d6167652d656469746f722e706870",
+          "next_cookie": 117
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6c6973742d7574696c2e706870",
+          "next_cookie": 118
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6c6f63616c652d73776974636865722e706870",
+          "next_cookie": 119
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6c6f63616c652e706870",
+          "next_cookie": 120
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6d6174636865736d617072656765782e706870",
+          "next_cookie": 121
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6d6574612d71756572792e706870",
+          "next_cookie": 122
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6d657461646174612d6c617a796c6f616465722e706870",
+          "next_cookie": 123
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6e617669676174696f6e2d66616c6c6261636b2e706870",
+          "next_cookie": 124
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6e6574776f726b2d71756572792e706870",
+          "next_cookie": 125
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6e6574776f726b2e706870",
+          "next_cookie": 126
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6f626a6563742d63616368652e706870",
+          "next_cookie": 127
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6f656d6265642d636f6e74726f6c6c65722e706870",
+          "next_cookie": 128
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d6f656d6265642e706870",
+          "next_cookie": 129
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7061757365642d657874656e73696f6e732d73746f726167652e706870",
+          "next_cookie": 130
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7068706d61696c65722e706870",
+          "next_cookie": 131
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d706c7567696e2d646570656e64656e636965732e706870",
+          "next_cookie": 132
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d706f73742d747970652e706870",
+          "next_cookie": 133
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d706f73742e706870",
+          "next_cookie": 134
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d71756572792e706870",
+          "next_cookie": 135
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7265636f766572792d6d6f64652d636f6f6b69652d736572766963652e706870",
+          "next_cookie": 136
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7265636f766572792d6d6f64652d656d61696c2d736572766963652e706870",
+          "next_cookie": 137
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7265636f766572792d6d6f64652d6b65792d736572766963652e706870",
+          "next_cookie": 138
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7265636f766572792d6d6f64652d6c696e6b2d736572766963652e706870",
+          "next_cookie": 139
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7265636f766572792d6d6f64652e706870",
+          "next_cookie": 140
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d726577726974652e706870",
+          "next_cookie": 141
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d726f6c652e706870",
+          "next_cookie": 142
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d726f6c65732e706870",
+          "next_cookie": 143
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7363726970742d6d6f64756c65732e706870",
+          "next_cookie": 144
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d736372697074732e706870",
+          "next_cookie": 145
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d73657373696f6e2d746f6b656e732e706870",
+          "next_cookie": 146
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d73696d706c657069652d66696c652e706870",
+          "next_cookie": 147
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d73696d706c657069652d73616e6974697a652d6b7365732e706870",
+          "next_cookie": 148
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d736974652d71756572792e706870",
+          "next_cookie": 149
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d736974652e706870",
+          "next_cookie": 150
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d73706563756c6174696f6e2d72756c65732e706870",
+          "next_cookie": 151
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7374796c65732e706870",
+          "next_cookie": 152
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7461782d71756572792e706870",
+          "next_cookie": 153
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7461786f6e6f6d792e706870",
+          "next_cookie": 154
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7465726d2d71756572792e706870",
+          "next_cookie": 155
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7465726d2e706870",
+          "next_cookie": 156
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d746578742d646966662d72656e64657265722d696e6c696e652e706870",
+          "next_cookie": 157
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d746578742d646966662d72656e64657265722d7461626c652e706870",
+          "next_cookie": 158
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d74657874646f6d61696e2d72656769737472792e706870",
+          "next_cookie": 159
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7468656d652d6a736f6e2d646174612e706870",
+          "next_cookie": 160
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7468656d652d6a736f6e2d7265736f6c7665722e706870",
+          "next_cookie": 161
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7468656d652d6a736f6e2d736368656d612e706870",
+          "next_cookie": 162
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7468656d652d6a736f6e2e706870",
+          "next_cookie": 163
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7468656d652e706870",
+          "next_cookie": 164
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d746f6b656e2d6d61702e706870",
+          "next_cookie": 165
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d75726c2d7061747465726e2d70726566697865722e706870",
+          "next_cookie": 166
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d757365722d6d6574612d73657373696f6e2d746f6b656e732e706870",
+          "next_cookie": 167
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d757365722d71756572792e706870",
+          "next_cookie": 168
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d757365722d726571756573742e706870",
+          "next_cookie": 169
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d757365722e706870",
+          "next_cookie": 170
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d766965772d636f6e6669672d646174612e706870",
+          "next_cookie": 171
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d77616c6b65722e706870",
+          "next_cookie": 172
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7769646765742d666163746f72792e706870",
+          "next_cookie": 173
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d7769646765742e706870",
+          "next_cookie": 174
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702d786d6c7270632d7365727665722e706870",
+          "next_cookie": 175
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d77702e706870",
+          "next_cookie": 176
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d777064622e706870",
+          "next_cookie": 177
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732e77702d646570656e64656e636965732e706870",
+          "next_cookie": 178
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732e77702d736372697074732e706870",
+          "next_cookie": 179
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732e77702d7374796c65732e706870",
+          "next_cookie": 180
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636f6d6d656e742d74656d706c6174652e706870",
+          "next_cookie": 181
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636f6d6d656e742e706870",
+          "next_cookie": 182
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636f6d7061742d757466382e706870",
+          "next_cookie": 183
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636f6d7061742e706870",
+          "next_cookie": 184
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636f6e6e6563746f72732e706870",
+          "next_cookie": 185
+        },
+        {
+          "file_type": 4,
+          "name_hex": "63726f6e2e706870",
+          "next_cookie": 186
+        },
+        {
+          "file_type": 3,
+          "name_hex": "637373",
+          "next_cookie": 187
+        },
+        {
+          "file_type": 3,
+          "name_hex": "637573746f6d697a65",
+          "next_cookie": 188
+        },
+        {
+          "file_type": 4,
+          "name_hex": "646174652e706870",
+          "next_cookie": 189
+        },
+        {
+          "file_type": 4,
+          "name_hex": "64656661756c742d636f6e7374616e74732e706870",
+          "next_cookie": 190
+        },
+        {
+          "file_type": 4,
+          "name_hex": "64656661756c742d66696c746572732e706870",
+          "next_cookie": 191
+        },
+        {
+          "file_type": 4,
+          "name_hex": "64656661756c742d776964676574732e706870",
+          "next_cookie": 192
+        },
+        {
+          "file_type": 4,
+          "name_hex": "646570726563617465642e706870",
+          "next_cookie": 193
+        },
+        {
+          "file_type": 4,
+          "name_hex": "656d6265642d74656d706c6174652e706870",
+          "next_cookie": 194
+        },
+        {
+          "file_type": 4,
+          "name_hex": "656d6265642e706870",
+          "next_cookie": 195
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6572726f722d70726f74656374696f6e2e706870",
+          "next_cookie": 196
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d61746f6d2d636f6d6d656e74732e706870",
+          "next_cookie": 197
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d61746f6d2e706870",
+          "next_cookie": 198
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d7264662e706870",
+          "next_cookie": 199
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d7273732e706870",
+          "next_cookie": 200
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d727373322d636f6d6d656e74732e706870",
+          "next_cookie": 201
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642d727373322e706870",
+          "next_cookie": 202
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666565642e706870",
+          "next_cookie": 203
+        },
+        {
+          "file_type": 3,
+          "name_hex": "666f6e7473",
+          "next_cookie": 204
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666f6e74732e706870",
+          "next_cookie": 205
+        },
+        {
+          "file_type": 4,
+          "name_hex": "666f726d617474696e672e706870",
+          "next_cookie": 206
+        },
+        {
+          "file_type": 4,
+          "name_hex": "66756e6374696f6e732e706870",
+          "next_cookie": 207
+        },
+        {
+          "file_type": 4,
+          "name_hex": "66756e6374696f6e732e77702d736372697074732e706870",
+          "next_cookie": 208
+        },
+        {
+          "file_type": 4,
+          "name_hex": "66756e6374696f6e732e77702d7374796c65732e706870",
+          "next_cookie": 209
+        },
+        {
+          "file_type": 4,
+          "name_hex": "67656e6572616c2d74656d706c6174652e706870",
+          "next_cookie": 210
+        },
+        {
+          "file_type": 4,
+          "name_hex": "676c6f62616c2d7374796c65732d616e642d73657474696e67732e706870",
+          "next_cookie": 211
+        },
+        {
+          "file_type": 3,
+          "name_hex": "68746d6c2d617069",
+          "next_cookie": 212
+        },
+        {
+          "file_type": 4,
+          "name_hex": "687474702e706870",
+          "next_cookie": 213
+        },
+        {
+          "file_type": 4,
+          "name_hex": "68747470732d646574656374696f6e2e706870",
+          "next_cookie": 214
+        },
+        {
+          "file_type": 4,
+          "name_hex": "68747470732d6d6967726174696f6e2e706870",
+          "next_cookie": 215
+        },
+        {
+          "file_type": 4,
+          "name_hex": "69636f6e732e706870",
+          "next_cookie": 216
+        },
+        {
+          "file_type": 3,
+          "name_hex": "696d61676573",
+          "next_cookie": 217
+        },
+        {
+          "file_type": 3,
+          "name_hex": "696e74657261637469766974792d617069",
+          "next_cookie": 218
+        },
+        {
+          "file_type": 3,
+          "name_hex": "6a73",
+          "next_cookie": 219
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6a736f6e2d736368656d612e706870",
+          "next_cookie": 220
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6b7365732e706870",
+          "next_cookie": 221
+        },
+        {
+          "file_type": 3,
+          "name_hex": "6c31306e",
+          "next_cookie": 222
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6c31306e2e706870",
+          "next_cookie": 223
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6c696e6b2d74656d706c6174652e706870",
+          "next_cookie": 224
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6c6f61642e706870",
+          "next_cookie": 225
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6c6f63616c652e706870",
+          "next_cookie": 226
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d656469612d74656d706c6174652e706870",
+          "next_cookie": 227
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d656469612e706870",
+          "next_cookie": 228
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d6574612e706870",
+          "next_cookie": 229
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d626c6f67732e706870",
+          "next_cookie": 230
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d64656661756c742d636f6e7374616e74732e706870",
+          "next_cookie": 231
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d64656661756c742d66696c746572732e706870",
+          "next_cookie": 232
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d646570726563617465642e706870",
+          "next_cookie": 233
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d66696c65732e706870",
+          "next_cookie": 234
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d66756e6374696f6e732e706870",
+          "next_cookie": 235
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d6c6f61642e706870",
+          "next_cookie": 236
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d6e6574776f726b2e706870",
+          "next_cookie": 237
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d73657474696e67732e706870",
+          "next_cookie": 238
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6d732d736974652e706870",
+          "next_cookie": 239
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6e61762d6d656e752d74656d706c6174652e706870",
+          "next_cookie": 240
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6e61762d6d656e752e706870",
+          "next_cookie": 241
+        },
+        {
+          "file_type": 4,
+          "name_hex": "6f7074696f6e2e706870",
+          "next_cookie": 242
+        },
+        {
+          "file_type": 3,
+          "name_hex": "7068702d61692d636c69656e74",
+          "next_cookie": 243
+        },
+        {
+          "file_type": 3,
+          "name_hex": "7068702d636f6d706174",
+          "next_cookie": 244
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706c75676761626c652d646570726563617465642e706870",
+          "next_cookie": 245
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706c75676761626c652e706870",
+          "next_cookie": 246
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706c7567696e2e706870",
+          "next_cookie": 247
+        },
+        {
+          "file_type": 3,
+          "name_hex": "706f6d6f",
+          "next_cookie": 248
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706f73742d666f726d6174732e706870",
+          "next_cookie": 249
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706f73742d74656d706c6174652e706870",
+          "next_cookie": 250
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706f73742d7468756d626e61696c2d74656d706c6174652e706870",
+          "next_cookie": 251
+        },
+        {
+          "file_type": 4,
+          "name_hex": "706f73742e706870",
+          "next_cookie": 252
+        },
+        {
+          "file_type": 4,
+          "name_hex": "71756572792e706870",
+          "next_cookie": 253
+        },
+        {
+          "file_type": 4,
+          "name_hex": "726567697374726174696f6e2d66756e6374696f6e732e706870",
+          "next_cookie": 254
+        },
+        {
+          "file_type": 4,
+          "name_hex": "726567697374726174696f6e2e706870",
+          "next_cookie": 255
+        },
+        {
+          "file_type": 3,
+          "name_hex": "726573742d617069",
+          "next_cookie": 256
+        },
+        {
+          "file_type": 4,
+          "name_hex": "726573742d6170692e706870",
+          "next_cookie": 257
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7265766973696f6e2e706870",
+          "next_cookie": 258
+        },
+        {
+          "file_type": 4,
+          "name_hex": "726577726974652e706870",
+          "next_cookie": 259
+        },
+        {
+          "file_type": 4,
+          "name_hex": "726f626f74732d74656d706c6174652e706870",
+          "next_cookie": 260
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7273732d66756e6374696f6e732e706870",
+          "next_cookie": 261
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7273732e706870",
+          "next_cookie": 262
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7363726970742d6c6f616465722e706870",
+          "next_cookie": 263
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7363726970742d6d6f64756c65732e706870",
+          "next_cookie": 264
+        },
+        {
+          "file_type": 4,
+          "name_hex": "73657373696f6e2e706870",
+          "next_cookie": 265
+        },
+        {
+          "file_type": 4,
+          "name_hex": "73686f7274636f6465732e706870",
+          "next_cookie": 266
+        },
+        {
+          "file_type": 3,
+          "name_hex": "736974656d617073",
+          "next_cookie": 267
+        },
+        {
+          "file_type": 4,
+          "name_hex": "736974656d6170732e706870",
+          "next_cookie": 268
+        },
+        {
+          "file_type": 3,
+          "name_hex": "736f6469756d5f636f6d706174",
+          "next_cookie": 269
+        },
+        {
+          "file_type": 4,
+          "name_hex": "73706563756c61746976652d6c6f6164696e672e706870",
+          "next_cookie": 270
+        },
+        {
+          "file_type": 4,
+          "name_hex": "73706c2d6175746f6c6f61642d636f6d7061742e706870",
+          "next_cookie": 271
+        },
+        {
+          "file_type": 3,
+          "name_hex": "7374796c652d656e67696e65",
+          "next_cookie": 272
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7374796c652d656e67696e652e706870",
+          "next_cookie": 273
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7461786f6e6f6d792e706870",
+          "next_cookie": 274
+        },
+        {
+          "file_type": 4,
+          "name_hex": "74656d706c6174652d63616e7661732e706870",
+          "next_cookie": 275
+        },
+        {
+          "file_type": 4,
+          "name_hex": "74656d706c6174652d6c6f616465722e706870",
+          "next_cookie": 276
+        },
+        {
+          "file_type": 4,
+          "name_hex": "74656d706c6174652e706870",
+          "next_cookie": 277
+        },
+        {
+          "file_type": 3,
+          "name_hex": "7468656d652d636f6d706174",
+          "next_cookie": 278
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7468656d652d6931386e2e6a736f6e",
+          "next_cookie": 279
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7468656d652d70726576696577732e706870",
+          "next_cookie": 280
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7468656d652d74656d706c617465732e706870",
+          "next_cookie": 281
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7468656d652e6a736f6e",
+          "next_cookie": 282
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7468656d652e706870",
+          "next_cookie": 283
+        },
+        {
+          "file_type": 4,
+          "name_hex": "7570646174652e706870",
+          "next_cookie": 284
+        },
+        {
+          "file_type": 4,
+          "name_hex": "757365722e706870",
+          "next_cookie": 285
+        },
+        {
+          "file_type": 4,
+          "name_hex": "757466382e706870",
+          "next_cookie": 286
+        },
+        {
+          "file_type": 4,
+          "name_hex": "766172732e706870",
+          "next_cookie": 287
+        },
+        {
+          "file_type": 4,
+          "name_hex": "76657273696f6e2e706870",
+          "next_cookie": 288
+        },
+        {
+          "file_type": 4,
+          "name_hex": "766965772d636f6e6669672e706870",
+          "next_cookie": 289
+        },
+        {
+          "file_type": 4,
+          "name_hex": "766965772d7472616e736974696f6e732e706870",
+          "next_cookie": 290
+        },
+        {
+          "file_type": 3,
+          "name_hex": "77696467657473",
+          "next_cookie": 291
+        },
+        {
+          "file_type": 4,
+          "name_hex": "776964676574732e706870",
+          "next_cookie": 292
+        },
+        {
+          "file_type": 4,
+          "name_hex": "77702d64622e706870",
+          "next_cookie": 293
+        },
+        {
+          "file_type": 4,
+          "name_hex": "77702d646966662e706870",
+          "next_cookie": 294
+        }
+      ],
+      "execution_elapsed_ms": 6,
+      "invocation_attempted": true,
+      "passed": true,
+      "prefix_hex": "3c3f7068700a2f2a2a0a202a20576f7264507265737320646174616261736520",
+      "preopen_name_hex": "2f",
+      "runtime_run_returned_success": true,
+      "runtime_shutdown_returned": true,
+      "runtime_shutdown_wait_ms": 2000,
+      "source_catalog_counts_unchanged": true,
+      "stderr_bytes": 0,
+      "stderr_eof": true,
+      "stderr_hex": "",
+      "stderr_overflow": false,
+      "stdout_bytes": 12858,
+      "stdout_eof": true,
+      "stdout_hex": "525046535730310a0000000001000000000000000600000000000000b1310000000000000700000000000000200000005dda010000000000010000000200000000000000080000003f0000003f0000003f0000003f000000000000001f00000000000000ffffffff2f0100000000000000000000000000000001000000030000002e0200000000000000000000000000000002000000030000002e2e0300000000000000000000000000000003000000030000004944330400000000000000000000000000000003000000030000004958520500000000000000000000000000000009000000030000005048504d61696c6572060000000000000000000000000000000800000003000000526571756573747307000000000000000000000000000000090000000300000053696d706c6550696508000000000000000000000000000000040000000300000054657874090000000000000000000000000000000d000000030000006162696c69746965732d6170690a00000000000000000000000000000011000000040000006162696c69746965732d6170692e7068700b0000000000000000000000000000000d000000040000006162696c69746965732e7068700c0000000000000000000000000000000d0000000400000061646d696e2d6261722e7068700d000000000000000000000000000000090000000300000061692d636c69656e740e0000000000000000000000000000000d0000000400000061692d636c69656e742e7068700f0000000000000000000000000000000600000003000000617373657473100000000000000000000000000000000b0000000400000061746f6d6c69622e706870110000000000000000000000000000001300000004000000617574686f722d74656d706c6174652e706870120000000000000000000000000000000e00000003000000626c6f636b2d62696e64696e6773130000000000000000000000000000001200000004000000626c6f636b2d62696e64696e67732e706870140000000000000000000000000000001000000004000000626c6f636b2d656469746f722e706870150000000000000000000000000000000f00000004000000626c6f636b2d6931386e2e6a736f6e160000000000000000000000000000000e00000003000000626c6f636b2d7061747465726e73170000000000000000000000000000001200000004000000626c6f636b2d7061747465726e732e706870180000000000000000000000000000000e00000003000000626c6f636b2d737570706f727473190000000000000000000000000000001800000004000000626c6f636b2d74656d706c6174652d7574696c732e7068701a0000000000000000000000000000001200000004000000626c6f636b2d74656d706c6174652e7068701b0000000000000000000000000000000600000003000000626c6f636b731c0000000000000000000000000000000a00000004000000626c6f636b732e7068701d0000000000000000000000000000001500000004000000626f6f6b6d61726b2d74656d706c6174652e7068701e0000000000000000000000000000000c00000004000000626f6f6b6d61726b2e7068701f00000000000000000000000000000005000000030000006275696c6420000000000000000000000000000000100000000400000063616368652d636f6d7061742e70687021000000000000000000000000000000090000000400000063616368652e706870220000000000000000000000000000000d0000000400000063616e6f6e6963616c2e7068702300000000000000000000000000000010000000040000006361706162696c69746965732e70687024000000000000000000000000000000150000000400000063617465676f72792d74656d706c6174652e706870250000000000000000000000000000000c0000000400000063617465676f72792e706870260000000000000000000000000000000c00000003000000636572746966696361746573270000000000000000000000000000000d00000004000000636c6173732d4958522e706870280000000000000000000000000000001300000004000000636c6173732d617669662d696e666f2e706870290000000000000000000000000000000e00000004000000636c6173732d666565642e7068702a0000000000000000000000000000000e00000004000000636c6173732d687474702e7068702b0000000000000000000000000000000e00000004000000636c6173732d6a736f6e2e7068702c0000000000000000000000000000001000000004000000636c6173732d6f656d6265642e7068702d0000000000000000000000000000001000000004000000636c6173732d7068706173732e7068702e0000000000000000000000000000001300000004000000636c6173732d7068706d61696c65722e7068702f0000000000000000000000000000000e00000004000000636c6173732d706f70332e706870300000000000000000000000000000001200000004000000636c6173732d72657175657374732e706870310000000000000000000000000000001300000004000000636c6173732d73696d706c657069652e706870320000000000000000000000000000000e00000004000000636c6173732d736d74702e706870330000000000000000000000000000001000000004000000636c6173732d736e6f6f70792e706870340000000000000000000000000000002200000004000000636c6173732d77616c6b65722d63617465676f72792d64726f70646f776e2e706870350000000000000000000000000000001900000004000000636c6173732d77616c6b65722d63617465676f72792e706870360000000000000000000000000000001800000004000000636c6173732d77616c6b65722d636f6d6d656e742e706870370000000000000000000000000000001900000004000000636c6173732d77616c6b65722d6e61762d6d656e752e706870380000000000000000000000000000001e00000004000000636c6173732d77616c6b65722d706167652d64726f70646f776e2e706870390000000000000000000000000000001500000004000000636c6173732d77616c6b65722d706167652e7068703a0000000000000000000000000000001600000004000000636c6173732d77702d61646d696e2d6261722e7068703b0000000000000000000000000000001a00000004000000636c6173732d77702d616a61782d726573706f6e73652e7068703c0000000000000000000000000000002200000004000000636c6173732d77702d6170706c69636174696f6e2d70617373776f7264732e7068703d0000000000000000000000000000002400000004000000636c6173732d77702d626c6f636b2d62696e64696e67732d72656769737472792e7068703e0000000000000000000000000000002200000004000000636c6173732d77702d626c6f636b2d62696e64696e67732d736f757263652e7068703f0000000000000000000000000000002100000004000000636c6173732d77702d626c6f636b2d656469746f722d636f6e746578742e706870400000000000000000000000000000001700000004000000636c6173732d77702d626c6f636b2d6c6973742e706870410000000000000000000000000000002400000004000000636c6173732d77702d626c6f636b2d6d657461646174612d72656769737472792e706870420000000000000000000000000000001f00000004000000636c6173732d77702d626c6f636b2d7061727365722d626c6f636b2e706870430000000000000000000000000000001f00000004000000636c6173732d77702d626c6f636b2d7061727365722d6672616d652e706870440000000000000000000000000000001900000004000000636c6173732d77702d626c6f636b2d7061727365722e706870450000000000000000000000000000002e00000004000000636c6173732d77702d626c6f636b2d7061747465726e2d63617465676f726965732d72656769737472792e706870460000000000000000000000000000002400000004000000636c6173732d77702d626c6f636b2d7061747465726e732d72656769737472792e706870470000000000000000000000000000001c00000004000000636c6173732d77702d626c6f636b2d70726f636573736f722e706870480000000000000000000000000000002200000004000000636c6173732d77702d626c6f636b2d7374796c65732d72656769737472792e706870490000000000000000000000000000001b00000004000000636c6173732d77702d626c6f636b2d737570706f7274732e7068704a0000000000000000000000000000001b00000004000000636c6173732d77702d626c6f636b2d74656d706c6174652e7068704b0000000000000000000000000000002500000004000000636c6173732d77702d626c6f636b2d74656d706c617465732d72656769737472792e7068704c0000000000000000000000000000002000000004000000636c6173732d77702d626c6f636b2d747970652d72656769737472792e7068704d0000000000000000000000000000001700000004000000636c6173732d77702d626c6f636b2d747970652e7068704e0000000000000000000000000000001200000004000000636c6173732d77702d626c6f636b2e7068704f0000000000000000000000000000002c00000004000000636c6173732d77702d636c61737369632d746f2d626c6f636b2d6d656e752d636f6e7665727465722e706870500000000000000000000000000000001a00000004000000636c6173732d77702d636f6d6d656e742d71756572792e706870510000000000000000000000000000001400000004000000636c6173732d77702d636f6d6d656e742e706870520000000000000000000000000000001f00000004000000636c6173732d77702d636f6e6e6563746f722d72656769737472792e706870530000000000000000000000000000001e00000004000000636c6173732d77702d637573746f6d697a652d636f6e74726f6c2e706870540000000000000000000000000000001e00000004000000636c6173732d77702d637573746f6d697a652d6d616e616765722e706870550000000000000000000000000000002000000004000000636c6173732d77702d637573746f6d697a652d6e61762d6d656e75732e706870560000000000000000000000000000001c00000004000000636c6173732d77702d637573746f6d697a652d70616e656c2e706870570000000000000000000000000000001e00000004000000636c6173732d77702d637573746f6d697a652d73656374696f6e2e706870580000000000000000000000000000001e00000004000000636c6173732d77702d637573746f6d697a652d73657474696e672e706870590000000000000000000000000000001e00000004000000636c6173732d77702d637573746f6d697a652d776964676574732e7068705a0000000000000000000000000000001700000004000000636c6173732d77702d646174652d71756572792e7068705b0000000000000000000000000000001900000004000000636c6173732d77702d646570656e64656e636965732e7068705c0000000000000000000000000000001700000004000000636c6173732d77702d646570656e64656e63792e7068705d0000000000000000000000000000001400000004000000636c6173732d77702d64756f746f6e652e7068705e0000000000000000000000000000001300000004000000636c6173732d77702d656469746f722e7068705f0000000000000000000000000000001200000004000000636c6173732d77702d656d6265642e706870600000000000000000000000000000001200000004000000636c6173732d77702d6572726f722e706870610000000000000000000000000000001600000004000000636c6173732d77702d657863657074696f6e2e706870620000000000000000000000000000002000000004000000636c6173732d77702d666174616c2d6572726f722d68616e646c65722e706870630000000000000000000000000000002100000004000000636c6173732d77702d666565642d63616368652d7472616e7369656e742e706870640000000000000000000000000000001700000004000000636c6173732d77702d666565642d63616368652e706870650000000000000000000000000000001c00000004000000636c6173732d77702d66696c7465722d73656e74696e656c2e706870660000000000000000000000000000001100000004000000636c6173732d77702d686f6f6b2e706870670000000000000000000000000000001800000004000000636c6173732d77702d687474702d636f6f6b69652e706870680000000000000000000000000000001600000004000000636c6173732d77702d687474702d6375726c2e706870690000000000000000000000000000001a00000004000000636c6173732d77702d687474702d656e636f64696e672e7068706a0000000000000000000000000000001c00000004000000636c6173732d77702d687474702d6978722d636c69656e742e7068706b0000000000000000000000000000001700000004000000636c6173732d77702d687474702d70726f78792e7068706c0000000000000000000000000000002000000004000000636c6173732d77702d687474702d72657175657374732d686f6f6b732e7068706d0000000000000000000000000000002300000004000000636c6173732d77702d687474702d72657175657374732d726573706f6e73652e7068706e0000000000000000000000000000001a00000004000000636c6173732d77702d687474702d726573706f6e73652e7068706f0000000000000000000000000000001900000004000000636c6173732d77702d687474702d73747265616d732e706870700000000000000000000000000000001100000004000000636c6173732d77702d687474702e706870710000000000000000000000000000002600000004000000636c6173732d77702d69636f6e2d636f6c6c656374696f6e732d72656769737472792e706870720000000000000000000000000000001b00000004000000636c6173732d77702d69636f6e732d72656769737472792e706870730000000000000000000000000000001c00000004000000636c6173732d77702d696d6167652d656469746f722d67642e706870740000000000000000000000000000002100000004000000636c6173732d77702d696d6167652d656469746f722d696d616769636b2e706870750000000000000000000000000000001900000004000000636c6173732d77702d696d6167652d656469746f722e706870760000000000000000000000000000001600000004000000636c6173732d77702d6c6973742d7574696c2e706870770000000000000000000000000000001c00000004000000636c6173732d77702d6c6f63616c652d73776974636865722e706870780000000000000000000000000000001300000004000000636c6173732d77702d6c6f63616c652e706870790000000000000000000000000000001c00000004000000636c6173732d77702d6d6174636865736d617072656765782e7068707a0000000000000000000000000000001700000004000000636c6173732d77702d6d6574612d71756572792e7068707b0000000000000000000000000000002000000004000000636c6173732d77702d6d657461646174612d6c617a796c6f616465722e7068707c0000000000000000000000000000002000000004000000636c6173732d77702d6e617669676174696f6e2d66616c6c6261636b2e7068707d0000000000000000000000000000001a00000004000000636c6173732d77702d6e6574776f726b2d71756572792e7068707e0000000000000000000000000000001400000004000000636c6173732d77702d6e6574776f726b2e7068707f0000000000000000000000000000001900000004000000636c6173732d77702d6f626a6563742d63616368652e706870800000000000000000000000000000001e00000004000000636c6173732d77702d6f656d6265642d636f6e74726f6c6c65722e706870810000000000000000000000000000001300000004000000636c6173732d77702d6f656d6265642e706870820000000000000000000000000000002600000004000000636c6173732d77702d7061757365642d657874656e73696f6e732d73746f726167652e706870830000000000000000000000000000001600000004000000636c6173732d77702d7068706d61696c65722e706870840000000000000000000000000000002000000004000000636c6173732d77702d706c7567696e2d646570656e64656e636965732e706870850000000000000000000000000000001600000004000000636c6173732d77702d706f73742d747970652e706870860000000000000000000000000000001100000004000000636c6173732d77702d706f73742e706870870000000000000000000000000000001200000004000000636c6173732d77702d71756572792e706870880000000000000000000000000000002900000004000000636c6173732d77702d7265636f766572792d6d6f64652d636f6f6b69652d736572766963652e706870890000000000000000000000000000002800000004000000636c6173732d77702d7265636f766572792d6d6f64652d656d61696c2d736572766963652e7068708a0000000000000000000000000000002600000004000000636c6173732d77702d7265636f766572792d6d6f64652d6b65792d736572766963652e7068708b0000000000000000000000000000002700000004000000636c6173732d77702d7265636f766572792d6d6f64652d6c696e6b2d736572766963652e7068708c0000000000000000000000000000001a00000004000000636c6173732d77702d7265636f766572792d6d6f64652e7068708d0000000000000000000000000000001400000004000000636c6173732d77702d726577726974652e7068708e0000000000000000000000000000001100000004000000636c6173732d77702d726f6c652e7068708f0000000000000000000000000000001200000004000000636c6173732d77702d726f6c65732e706870900000000000000000000000000000001b00000004000000636c6173732d77702d7363726970742d6d6f64756c65732e706870910000000000000000000000000000001400000004000000636c6173732d77702d736372697074732e706870920000000000000000000000000000001b00000004000000636c6173732d77702d73657373696f6e2d746f6b656e732e706870930000000000000000000000000000001b00000004000000636c6173732d77702d73696d706c657069652d66696c652e706870940000000000000000000000000000002400000004000000636c6173732d77702d73696d706c657069652d73616e6974697a652d6b7365732e706870950000000000000000000000000000001700000004000000636c6173732d77702d736974652d71756572792e706870960000000000000000000000000000001100000004000000636c6173732d77702d736974652e706870970000000000000000000000000000001e00000004000000636c6173732d77702d73706563756c6174696f6e2d72756c65732e706870980000000000000000000000000000001300000004000000636c6173732d77702d7374796c65732e706870990000000000000000000000000000001600000004000000636c6173732d77702d7461782d71756572792e7068709a0000000000000000000000000000001500000004000000636c6173732d77702d7461786f6e6f6d792e7068709b0000000000000000000000000000001700000004000000636c6173732d77702d7465726d2d71756572792e7068709c0000000000000000000000000000001100000004000000636c6173732d77702d7465726d2e7068709d0000000000000000000000000000002600000004000000636c6173732d77702d746578742d646966662d72656e64657265722d696e6c696e652e7068709e0000000000000000000000000000002500000004000000636c6173732d77702d746578742d646966662d72656e64657265722d7461626c652e7068709f0000000000000000000000000000002000000004000000636c6173732d77702d74657874646f6d61696e2d72656769737472792e706870a00000000000000000000000000000001c00000004000000636c6173732d77702d7468656d652d6a736f6e2d646174612e706870a10000000000000000000000000000002000000004000000636c6173732d77702d7468656d652d6a736f6e2d7265736f6c7665722e706870a20000000000000000000000000000001e00000004000000636c6173732d77702d7468656d652d6a736f6e2d736368656d612e706870a30000000000000000000000000000001700000004000000636c6173732d77702d7468656d652d6a736f6e2e706870a40000000000000000000000000000001200000004000000636c6173732d77702d7468656d652e706870a50000000000000000000000000000001600000004000000636c6173732d77702d746f6b656e2d6d61702e706870a60000000000000000000000000000002100000004000000636c6173732d77702d75726c2d7061747465726e2d70726566697865722e706870a70000000000000000000000000000002500000004000000636c6173732d77702d757365722d6d6574612d73657373696f6e2d746f6b656e732e706870a80000000000000000000000000000001700000004000000636c6173732d77702d757365722d71756572792e706870a90000000000000000000000000000001900000004000000636c6173732d77702d757365722d726571756573742e706870aa0000000000000000000000000000001100000004000000636c6173732d77702d757365722e706870ab0000000000000000000000000000001d00000004000000636c6173732d77702d766965772d636f6e6669672d646174612e706870ac0000000000000000000000000000001300000004000000636c6173732d77702d77616c6b65722e706870ad0000000000000000000000000000001b00000004000000636c6173732d77702d7769646765742d666163746f72792e706870ae0000000000000000000000000000001300000004000000636c6173732d77702d7769646765742e706870af0000000000000000000000000000001a00000004000000636c6173732d77702d786d6c7270632d7365727665722e706870b00000000000000000000000000000000c00000004000000636c6173732d77702e706870b10000000000000000000000000000000e00000004000000636c6173732d777064622e706870b20000000000000000000000000000001900000004000000636c6173732e77702d646570656e64656e636965732e706870b30000000000000000000000000000001400000004000000636c6173732e77702d736372697074732e706870b40000000000000000000000000000001300000004000000636c6173732e77702d7374796c65732e706870b50000000000000000000000000000001400000004000000636f6d6d656e742d74656d706c6174652e706870b60000000000000000000000000000000b00000004000000636f6d6d656e742e706870b70000000000000000000000000000000f00000004000000636f6d7061742d757466382e706870b80000000000000000000000000000000a00000004000000636f6d7061742e706870b90000000000000000000000000000000e00000004000000636f6e6e6563746f72732e706870ba000000000000000000000000000000080000000400000063726f6e2e706870bb0000000000000000000000000000000300000003000000637373bc0000000000000000000000000000000900000003000000637573746f6d697a65bd0000000000000000000000000000000800000004000000646174652e706870be000000000000000000000000000000150000000400000064656661756c742d636f6e7374616e74732e706870bf000000000000000000000000000000130000000400000064656661756c742d66696c746572732e706870c0000000000000000000000000000000130000000400000064656661756c742d776964676574732e706870c10000000000000000000000000000000e00000004000000646570726563617465642e706870c20000000000000000000000000000001200000004000000656d6265642d74656d706c6174652e706870c30000000000000000000000000000000900000004000000656d6265642e706870c400000000000000000000000000000014000000040000006572726f722d70726f74656374696f6e2e706870c50000000000000000000000000000001600000004000000666565642d61746f6d2d636f6d6d656e74732e706870c60000000000000000000000000000000d00000004000000666565642d61746f6d2e706870c70000000000000000000000000000000c00000004000000666565642d7264662e706870c80000000000000000000000000000000c00000004000000666565642d7273732e706870c90000000000000000000000000000001600000004000000666565642d727373322d636f6d6d656e74732e706870ca0000000000000000000000000000000d00000004000000666565642d727373322e706870cb0000000000000000000000000000000800000004000000666565642e706870cc0000000000000000000000000000000500000003000000666f6e7473cd0000000000000000000000000000000900000004000000666f6e74732e706870ce0000000000000000000000000000000e00000004000000666f726d617474696e672e706870cf0000000000000000000000000000000d0000000400000066756e6374696f6e732e706870d0000000000000000000000000000000180000000400000066756e6374696f6e732e77702d736372697074732e706870d1000000000000000000000000000000170000000400000066756e6374696f6e732e77702d7374796c65732e706870d2000000000000000000000000000000140000000400000067656e6572616c2d74656d706c6174652e706870d30000000000000000000000000000001e00000004000000676c6f62616c2d7374796c65732d616e642d73657474696e67732e706870d4000000000000000000000000000000080000000300000068746d6c2d617069d50000000000000000000000000000000800000004000000687474702e706870d6000000000000000000000000000000130000000400000068747470732d646574656374696f6e2e706870d7000000000000000000000000000000130000000400000068747470732d6d6967726174696f6e2e706870d8000000000000000000000000000000090000000400000069636f6e732e706870d90000000000000000000000000000000600000003000000696d61676573da0000000000000000000000000000001100000003000000696e74657261637469766974792d617069db00000000000000000000000000000002000000030000006a73dc0000000000000000000000000000000f000000040000006a736f6e2d736368656d612e706870dd00000000000000000000000000000008000000040000006b7365732e706870de00000000000000000000000000000004000000030000006c31306edf00000000000000000000000000000008000000040000006c31306e2e706870e000000000000000000000000000000011000000040000006c696e6b2d74656d706c6174652e706870e100000000000000000000000000000008000000040000006c6f61642e706870e20000000000000000000000000000000a000000040000006c6f63616c652e706870e300000000000000000000000000000012000000040000006d656469612d74656d706c6174652e706870e400000000000000000000000000000009000000040000006d656469612e706870e500000000000000000000000000000008000000040000006d6574612e706870e60000000000000000000000000000000c000000040000006d732d626c6f67732e706870e700000000000000000000000000000018000000040000006d732d64656661756c742d636f6e7374616e74732e706870e800000000000000000000000000000016000000040000006d732d64656661756c742d66696c746572732e706870e900000000000000000000000000000011000000040000006d732d646570726563617465642e706870ea0000000000000000000000000000000c000000040000006d732d66696c65732e706870eb00000000000000000000000000000010000000040000006d732d66756e6374696f6e732e706870ec0000000000000000000000000000000b000000040000006d732d6c6f61642e706870ed0000000000000000000000000000000e000000040000006d732d6e6574776f726b2e706870ee0000000000000000000000000000000f000000040000006d732d73657474696e67732e706870ef0000000000000000000000000000000b000000040000006d732d736974652e706870f000000000000000000000000000000015000000040000006e61762d6d656e752d74656d706c6174652e706870f10000000000000000000000000000000c000000040000006e61762d6d656e752e706870f20000000000000000000000000000000a000000040000006f7074696f6e2e706870f30000000000000000000000000000000d000000030000007068702d61692d636c69656e74f40000000000000000000000000000000a000000030000007068702d636f6d706174f50000000000000000000000000000001800000004000000706c75676761626c652d646570726563617465642e706870f60000000000000000000000000000000d00000004000000706c75676761626c652e706870f70000000000000000000000000000000a00000004000000706c7567696e2e706870f80000000000000000000000000000000400000003000000706f6d6ff90000000000000000000000000000001000000004000000706f73742d666f726d6174732e706870fa0000000000000000000000000000001100000004000000706f73742d74656d706c6174652e706870fb0000000000000000000000000000001b00000004000000706f73742d7468756d626e61696c2d74656d706c6174652e706870fc0000000000000000000000000000000800000004000000706f73742e706870fd000000000000000000000000000000090000000400000071756572792e706870fe0000000000000000000000000000001a00000004000000726567697374726174696f6e2d66756e6374696f6e732e706870ff0000000000000000000000000000001000000004000000726567697374726174696f6e2e706870000100000000000000000000000000000800000003000000726573742d617069010100000000000000000000000000000c00000004000000726573742d6170692e706870020100000000000000000000000000000c000000040000007265766973696f6e2e706870030100000000000000000000000000000b00000004000000726577726974652e706870040100000000000000000000000000001300000004000000726f626f74732d74656d706c6174652e7068700501000000000000000000000000000011000000040000007273732d66756e6374696f6e732e7068700601000000000000000000000000000007000000040000007273732e7068700701000000000000000000000000000011000000040000007363726970742d6c6f616465722e7068700801000000000000000000000000000012000000040000007363726970742d6d6f64756c65732e706870090100000000000000000000000000000b0000000400000073657373696f6e2e7068700a0100000000000000000000000000000e0000000400000073686f7274636f6465732e7068700b0100000000000000000000000000000800000003000000736974656d6170730c0100000000000000000000000000000c00000004000000736974656d6170732e7068700d0100000000000000000000000000000d00000003000000736f6469756d5f636f6d7061740e010000000000000000000000000000170000000400000073706563756c61746976652d6c6f6164696e672e7068700f010000000000000000000000000000170000000400000073706c2d6175746f6c6f61642d636f6d7061742e706870100100000000000000000000000000000c000000030000007374796c652d656e67696e651101000000000000000000000000000010000000040000007374796c652d656e67696e652e706870120100000000000000000000000000000c000000040000007461786f6e6f6d792e70687013010000000000000000000000000000130000000400000074656d706c6174652d63616e7661732e70687014010000000000000000000000000000130000000400000074656d706c6174652d6c6f616465722e706870150100000000000000000000000000000c0000000400000074656d706c6174652e706870160100000000000000000000000000000c000000030000007468656d652d636f6d706174170100000000000000000000000000000f000000040000007468656d652d6931386e2e6a736f6e1801000000000000000000000000000012000000040000007468656d652d70726576696577732e7068701901000000000000000000000000000013000000040000007468656d652d74656d706c617465732e7068701a0100000000000000000000000000000a000000040000007468656d652e6a736f6e1b01000000000000000000000000000009000000040000007468656d652e7068701c0100000000000000000000000000000a000000040000007570646174652e7068701d0100000000000000000000000000000800000004000000757365722e7068701e0100000000000000000000000000000800000004000000757466382e7068701f0100000000000000000000000000000800000004000000766172732e706870200100000000000000000000000000000b0000000400000076657273696f6e2e706870210100000000000000000000000000000f00000004000000766965772d636f6e6669672e706870220100000000000000000000000000001400000004000000766965772d7472616e736974696f6e732e70687023010000000000000000000000000000070000000300000077696467657473240100000000000000000000000000000b00000004000000776964676574732e70687025010000000000000000000000000000090000000400000077702d64622e706870260100000000000000000000000000000b0000000400000077702d646966662e7068703c3f7068700a2f2a2a0a202a20576f7264507265737320646174616261736520",
+      "stdout_overflow": false,
+      "stdout_sha256": "d14fd4e6be57412b0866db6a7acc303f8df8b262b275d0e8bc832e1f3ee17846",
+      "syscalls": {
+        "closed_fd_read_errno": 8,
+        "directory_close_errno": 0,
+        "directory_fd": 6,
+        "directory_open_errno": 0,
+        "drain_errno": 0,
+        "drain_iterations": 31,
+        "eof_observed": 1,
+        "file_close_errno": 0,
+        "file_fd": 7,
+        "file_open_errno": 0,
+        "mkdir_errno": 63,
+        "prefix_bytes": 32,
+        "prefix_read_errno": 0,
+        "preopen_name_bytes": 1,
+        "prestat_errno": 0,
+        "prestat_name_errno": 0,
+        "readdir_bytes": 12721,
+        "readdir_errno": 0,
+        "readonly_fd_write_errno": 2,
+        "rename_errno": 63,
+        "total_read_bytes": 121437,
+        "unexpected_write_fd_close_errno": 4294967295,
+        "unlink_errno": 63,
+        "write_open_errno": 63
+      },
+      "wasi_syscall_observation_emitted": true
+    },
+    "host_environment_forwarded": false,
+    "host_home_mapped": false,
+    "module": {
+      "bytes": 1620,
+      "exception_handling_used": false,
+      "max_memory_pages": 2,
+      "sha256": "716b276966c9f06c4e60ae0270421eb83c807f176b43f3bbdcfb3299e209f100",
+      "source_wat_sha256": "4e7d25ef1321448db82c018f44782b521622388ae252b786a568d744b946f0ba"
+    },
+    "module_compilations": 1,
+    "native_metadata_compatibility_verified": false,
+    "networking_enabled": false,
+    "outcome": "fixed_source_wasi_small_and_complete_catalog_passed",
+    "passed": true,
+    "php_executed": false,
+    "product_runtime_selected": false,
+    "schema": "recastpress.wp-source-wasi-observation.v0.5",
+    "small": {
+      "backing_calls": [
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "read_dir",
+          "path": "/wp-includes"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "open",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "EntryNotFound",
+          "ok": false,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "create_dir",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "remove_file",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": null,
+          "ok": true,
+          "op": "metadata",
+          "path": "/wp-includes\\class-wpdb.php"
+        },
+        {
+          "error": "EntryNotFound",
+          "ok": false,
+          "op": "symlink_metadata",
+          "path": "/wp-includes\\rp-should-not-exist"
+        },
+        {
+          "error": "PermissionDenied",
+          "ok": false,
+          "op": "rename",
+          "path": "/wp-includes\\class-wpdb.php"
+        }
+      ],
+      "directory_entries": [
+        {
+          "file_type": 3,
+          "name_hex": "2e",
+          "next_cookie": 1
+        },
+        {
+          "file_type": 3,
+          "name_hex": "2e2e",
+          "next_cookie": 2
+        },
+        {
+          "file_type": 4,
+          "name_hex": "636c6173732d777064622e706870",
+          "next_cookie": 3
+        },
+        {
+          "file_type": 3,
+          "name_hex": "656d707479",
+          "next_cookie": 4
+        },
+        {
+          "file_type": 3,
+          "name_hex": "6e6573746564",
+          "next_cookie": 5
+        }
+      ],
+      "execution_elapsed_ms": 7,
+      "invocation_attempted": true,
+      "passed": true,
+      "prefix_hex": "3c3f7068700a2f2f20736d616c6c20696d6d757461626c6520576f7264507265",
+      "preopen_name_hex": "2f",
+      "runtime_run_returned_success": true,
+      "runtime_shutdown_returned": true,
+      "runtime_shutdown_wait_ms": 2000,
+      "source_catalog_counts_unchanged": true,
+      "stderr_bytes": 0,
+      "stderr_eof": true,
+      "stderr_hex": "",
+      "stderr_overflow": false,
+      "stdout_bytes": 285,
+      "stdout_eof": true,
+      "stdout_hex": "525046535730310a000000000100000000000000060000000000000094000000000000000700000000000000200000002f00000000000000010000000200000000000000080000003f0000003f0000003f0000003f000000000000000200000000000000ffffffff2f0100000000000000000000000000000001000000030000002e0200000000000000000000000000000002000000030000002e2e030000000000000000000000000000000e00000004000000636c6173732d777064622e706870040000000000000000000000000000000500000003000000656d7074790500000000000000000000000000000006000000030000006e65737465643c3f7068700a2f2f20736d616c6c20696d6d757461626c6520576f7264507265",
+      "stdout_overflow": false,
+      "stdout_sha256": "77828cb55b57036cadd78f3a7c36993e42622e30ab4efe2c35bdf02b8d769302",
+      "syscalls": {
+        "closed_fd_read_errno": 8,
+        "directory_close_errno": 0,
+        "directory_fd": 6,
+        "directory_open_errno": 0,
+        "drain_errno": 0,
+        "drain_iterations": 2,
+        "eof_observed": 1,
+        "file_close_errno": 0,
+        "file_fd": 7,
+        "file_open_errno": 0,
+        "mkdir_errno": 63,
+        "prefix_bytes": 32,
+        "prefix_read_errno": 0,
+        "preopen_name_bytes": 1,
+        "prestat_errno": 0,
+        "prestat_name_errno": 0,
+        "readdir_bytes": 148,
+        "readdir_errno": 0,
+        "readonly_fd_write_errno": 2,
+        "rename_errno": 63,
+        "total_read_bytes": 47,
+        "unexpected_write_fd_close_errno": 4294967295,
+        "unlink_errno": 63,
+        "write_open_errno": 63
+      },
+      "wasi_syscall_observation_emitted": true
+    },
+    "wasi_executed": true
+  },
+  "frozen_source_fs_after": {
+    "proof_sha256": "ffccacc49c18ac19c2ae232cb3e929e6f4a5738d8f92a9dbdba9cdd04c830d43",
+    "input_files": {
+      "experiments/wp-source-fs-probe/Cargo.toml": "27fdcc12b725d87468a135f69023d0c4e4e7f5d4bf148a1734953982363d9ab6",
+      "experiments/wp-source-fs-probe/Cargo.lock": "a4ee79b0072361e4ec358873eae2817955f778b24aa4c5f330ca1e30b38edd5e",
+      "experiments/wp-source-fs-probe/src/lib.rs": "055bdf0ddcfb5110268797f823230708e43bcff4f10462b4b38ff8d4f420ad8d",
+      "experiments/wp-source-fs-probe/src/tests.rs": "edd2f0364da45534a9a076c42590cf30d422ccbbabc2f171a55e8aff181e6463",
+      "experiments/wp-source-fs-probe/src/bin/catalog.rs": "4f020609956f5a33802c911496592206c4b3a8cb2b1f95cfea929cdd1a0faad9",
+      "experiments/wp-source-fs-probe/check.py": "72e032aecf0ace34a5e133a5dbaa1a83218e776a8423ce4f60db12812dd0e56a",
+      "experiments/wp-source-fs-probe/README.ja.md": "6a7a0f0ff0c222bf4382bca8ee68d004a21a9b9cb2d2679fe9f3f07fde8d0795",
+      "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
+      "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    }
+  },
+  "preparation_after": {
+    "archive_bytes": 35368461,
+    "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "database_started": false,
+    "input_files": {
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    },
+    "native_bootstrap_executed": false,
+    "outcome": "fixed_full_wordpress_site_prepared",
+    "php_executed": false,
+    "product_runtime_selected": false,
+    "rust_or_wasm_executed": false,
+    "schema": "recastpress.wp-bootstrap-prepared.v0.5",
+    "site": "target/wp-bootstrap-probe/site",
+    "source_manifest": {
+      "bytes": 650759,
+      "path": "target/wp-bootstrap-probe/source-manifest.json",
+      "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+    },
+    "source_tree": {
+      "directories": 467,
+      "directory_inventory_sha256": "7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5",
+      "expanded_bytes": 110077999,
+      "file_inventory_sha256": "afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c",
+      "files": 3782
+    }
+  }
+}
