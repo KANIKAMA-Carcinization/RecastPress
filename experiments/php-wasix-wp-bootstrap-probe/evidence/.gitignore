@@ -1,0 +1,6 @@
+# Preserve the public preparation JSON at its original artifact member path.
+!ci-*/raw/target/
+ci-*/raw/target/*
+!ci-*/raw/target/php-wasix-wp-bootstrap-probe/
+ci-*/raw/target/php-wasix-wp-bootstrap-probe/*
+!ci-*/raw/target/php-wasix-wp-bootstrap-probe/prepared.json

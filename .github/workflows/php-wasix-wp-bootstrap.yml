@@ -1,0 +1,159 @@
+name: PHP WASIX full WordPress bootstrap
+
+"on":
+  push:
+    branches: ["dev/v0.5"]
+    paths:
+      - "experiments/php-wasix-wp-bootstrap-probe/**"
+      - "!experiments/php-wasix-wp-bootstrap-probe/evidence/**"
+      - "!experiments/php-wasix-wp-bootstrap-probe/README.ja.md"
+      - "!experiments/php-wasix-wp-bootstrap-probe/import_evidence.py"
+      - ".github/workflows/php-wasix-wp-bootstrap.yml"
+      - "experiments/wp-source-fs-probe/src/**"
+      - "experiments/wp-bootstrap-probe/fixtures/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: php-wasix-wp-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  wasm-wpdb:
+    name: Cranelift full WP / ${{ matrix.backend }}
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [mysql, mariadb]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.94.0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out fixed experiment inputs
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Check out the fixed PHP source
+        id: php
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: wasix-org/php
+          ref: f4bfae79d5c19028349082f707930cf0951d23b9
+          path: target/php-wasix-managed-access-probe/source/php
+          persist-credentials: false
+
+      - name: Check out fixed WASIX dependencies
+        id: deps
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: wasix-org/php-wasix-deps
+          ref: b77ecbede97aba2df32c86eaeb54ff9f5e44f543
+          path: target/php-wasix-managed-access-probe/source/php-wasix-deps
+          persist-credentials: false
+
+      - name: Preseed the fixed parser
+        id: parser
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nikic/PHP-Parser
+          ref: f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2
+          path: target/php-wasix-managed-access-probe/source/php/build/PHP-Parser-5.6.1
+          persist-credentials: false
+
+      - name: Install native build tools only
+        id: packages
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential autoconf automake bison re2c pkg-config wabt \
+            curl xz-utils tar php-cli php-xml cmake ninja-build \
+            libzstd-dev zlib1g-dev libxml2-dev libncurses-dev libffi-dev
+
+      - name: Verify and place fixed WASIX tools
+        id: tools
+        run: python3 experiments/php-wasix-cgi-build/prepare.py --record
+
+      - name: Build the same three-patch PHP CGI candidate
+        id: module
+        run: python3 experiments/php-wasix-managed-access-probe/build.py --record
+
+      - name: Prepare full pinned WordPress and owned DB dropin
+        id: guest
+        run: |
+          set -euo pipefail
+          mkdir -p .reference
+          curl --fail --silent --show-error --location \
+            --proto '=https' --proto-redir '=https' --connect-timeout 30 --max-time 300 \
+            --retry 2 --retry-max-time 600 --max-filesize 35368461 \
+            --output .reference/wordpress-7.1.3.tar.gz https://wordpress.org/wordpress-7.1.3.tar.gz
+          python3 experiments/wp-bootstrap-probe/prepare.py
+          python3 experiments/php-wasix-wp-bootstrap-probe/prepare.py
+
+      - name: Fetch fixed driver sources and host dependencies
+        id: rust
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.0 --profile minimal --no-self-update
+          cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
+          python3 experiments/wpdb-rpc-probe/prepare_driver.py
+          cargo fetch --locked --manifest-path experiments/php-wasix-wp-bootstrap-probe/Cargo.toml
+
+      - name: Build and verify full bootstrap host units
+        id: host
+        run: python3 experiments/php-wasix-wp-bootstrap-probe/build_check.py
+
+      - name: Install and read unchanged WordPress using php-wasm and Rust DB
+        id: contract
+        run: python3 experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend ${{ matrix.backend }} --record
+
+      - name: Record CI stage outcomes
+        if: ${{ always() }}
+        env:
+          STAGE_PHP: ${{ steps.php.outcome }}
+          STAGE_DEPS: ${{ steps.deps.outcome }}
+          STAGE_PARSER: ${{ steps.parser.outcome }}
+          STAGE_PACKAGES: ${{ steps.packages.outcome }}
+          STAGE_TOOLS: ${{ steps.tools.outcome }}
+          STAGE_MODULE: ${{ steps.module.outcome }}
+          STAGE_GUEST: ${{ steps.guest.outcome }}
+          STAGE_RUST: ${{ steps.rust.outcome }}
+          STAGE_CONTRACT: ${{ steps.contract.outcome }}
+          STAGE_HOST: ${{ steps.host.outcome }}
+          FIXED_BACKEND: ${{ matrix.backend }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          p=pathlib.Path('experiments/php-wasix-wp-bootstrap-probe/evidence/ci-stages.json')
+          p.parent.mkdir(exist_ok=True)
+          value={'schema':'recastpress.php-wasix-wp-bootstrap-ci-stages.v0.5',
+              'source_commit':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],
+              'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],'backend':os.environ['FIXED_BACKEND'],
+              'stages':{k[6:].lower():v for k,v in os.environ.items() if k.startswith('STAGE_')}}
+          p.write_text(json.dumps(value,indent=2)+'\n')
+          PY
+
+      - name: Upload JSON evidence only
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: php-wasix-wp-bootstrap-${{ matrix.backend }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            experiments/php-wasix-wp-bootstrap-probe/evidence/linux-${{ matrix.backend }}.json
+            experiments/php-wasix-wp-bootstrap-probe/evidence/linux-build.json
+            experiments/php-wasix-wp-bootstrap-probe/evidence/ci-stages.json
+            experiments/php-wasix-managed-access-probe/evidence/build.json
+            experiments/php-wasix-cgi-build/evidence/toolchain.json
+            target/php-wasix-wp-bootstrap-probe/prepared.json
