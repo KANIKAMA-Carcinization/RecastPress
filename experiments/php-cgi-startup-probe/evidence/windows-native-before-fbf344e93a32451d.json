@@ -1,0 +1,838 @@
+{
+  "schema": "recastpress.php-cgi-startup-check.v0.5",
+  "passed": true,
+  "outcome": "sealed_ini_all_query_shapes_passed",
+  "observed_at_utc": "2026-11-03T09:13:29.817949+00:00",
+  "platform": "win32",
+  "observations": [
+    {
+      "method": "owned_ini",
+      "query_shape": "unset",
+      "query": null,
+      "process": {
+        "owned_pid": 10492,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 102,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": false,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHPRC",
+        "PHP_INI_SCAN_DIR",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "RP_EXPECTED_INI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 581,
+        "sha256": "959da1882af631f5164cb139fb553c33b2a9e67c415e01140e518ef02e9a288d"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 521,
+          "sha256": "16325c0438acf32ffa82a3261d7c523509a06f90f4927cde1aae5a3d6b2115ef"
+        },
+        "wire": {
+          "bytes": 581,
+          "sha256": "959da1882af631f5164cb139fb553c33b2a9e67c415e01140e518ef02e9a288d"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": true,
+          "mail_function_present": false,
+          "allow_url_fopen": "0",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": true,
+        "ini_loaded_expected": true,
+        "additional_ini_scanned": false,
+        "query_environment_present": false,
+        "query_string": null,
+        "get_values": [],
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": true,
+      "native_only": true
+    },
+    {
+      "method": "owned_ini",
+      "query_shape": "empty",
+      "query": "",
+      "process": {
+        "owned_pid": 15208,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 103,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": false,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHPRC",
+        "PHP_INI_SCAN_DIR",
+        "QUERY_STRING",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "RP_EXPECTED_INI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 578,
+        "sha256": "b576d1f989cab618a15eb4a0e96b0f011b7b9b6e7bd484a35c1ce589b556534e"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 518,
+          "sha256": "2b6abe104b2f8dc0fd45ceb89390b9efd3787b3ca145a066bde73754e6b27b51"
+        },
+        "wire": {
+          "bytes": 578,
+          "sha256": "b576d1f989cab618a15eb4a0e96b0f011b7b9b6e7bd484a35c1ce589b556534e"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": true,
+          "mail_function_present": false,
+          "allow_url_fopen": "0",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": true,
+        "ini_loaded_expected": true,
+        "additional_ini_scanned": false,
+        "query_environment_present": true,
+        "query_string": "",
+        "get_values": [],
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": true,
+      "native_only": true
+    },
+    {
+      "method": "owned_ini",
+      "query_shape": "flag",
+      "query": "flag",
+      "process": {
+        "owned_pid": 30872,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 101,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": false,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHPRC",
+        "PHP_INI_SCAN_DIR",
+        "QUERY_STRING",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "RP_EXPECTED_INI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 591,
+        "sha256": "fe484bd09487ee43a15a6e36d24c0458145ff4bf5c61c85b0fe922e56011c5f7"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 531,
+          "sha256": "c744f6cfcf779eaa6af58b7dcd4a56799854690f198d9cb0b424796a67a61eeb"
+        },
+        "wire": {
+          "bytes": 591,
+          "sha256": "fe484bd09487ee43a15a6e36d24c0458145ff4bf5c61c85b0fe922e56011c5f7"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": true,
+          "mail_function_present": false,
+          "allow_url_fopen": "0",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": true,
+        "ini_loaded_expected": true,
+        "additional_ini_scanned": false,
+        "query_environment_present": true,
+        "query_string": "flag",
+        "get_values": {
+          "flag": ""
+        },
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": true,
+      "native_only": true
+    },
+    {
+      "method": "owned_ini",
+      "query_shape": "equals",
+      "query": "rp=1",
+      "process": {
+        "owned_pid": 26872,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 100,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": false,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHPRC",
+        "PHP_INI_SCAN_DIR",
+        "QUERY_STRING",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "RP_EXPECTED_INI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 590,
+        "sha256": "b52eb3a3b629e0846796e6caa629bc11d2b740429af422801f46c5f0dfa28926"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 530,
+          "sha256": "8ee3c0be63963d7961b67ff5e7d9ae5f4590f027b6ab4524a36069b69357cbc5"
+        },
+        "wire": {
+          "bytes": 590,
+          "sha256": "b52eb3a3b629e0846796e6caa629bc11d2b740429af422801f46c5f0dfa28926"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": true,
+          "mail_function_present": false,
+          "allow_url_fopen": "0",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": true,
+        "ini_loaded_expected": true,
+        "additional_ini_scanned": false,
+        "query_environment_present": true,
+        "query_string": "rp=1",
+        "get_values": {
+          "rp": "1"
+        },
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": true,
+      "native_only": true
+    },
+    {
+      "method": "cli_flags_control",
+      "query_shape": "unset",
+      "query": null,
+      "process": {
+        "owned_pid": 16340,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 101,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": true,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHP_INI_SCAN_DIR",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 583,
+        "sha256": "e3d893979485cfe120ffad852781bc7d334b21a66e462f5946688511b24aa7b7"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 523,
+          "sha256": "de01fd6b934e71c183db0591e47bbe860da96363b870f33b69a46da1f7366c2f"
+        },
+        "wire": {
+          "bytes": 583,
+          "sha256": "e3d893979485cfe120ffad852781bc7d334b21a66e462f5946688511b24aa7b7"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": true,
+          "mail_function_present": false,
+          "allow_url_fopen": "0",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": false,
+        "ini_loaded_expected": false,
+        "additional_ini_scanned": false,
+        "query_environment_present": false,
+        "query_string": null,
+        "get_values": [],
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": true,
+      "native_only": true
+    },
+    {
+      "method": "cli_flags_control",
+      "query_shape": "empty",
+      "query": "",
+      "process": {
+        "owned_pid": 30008,
+        "exit_code": 0,
+        "owned_reaped": true,
+        "stdout_eof": true,
+        "stderr_eof": true,
+        "elapsed_ms": 97,
+        "live_capture_limit_each": 65536,
+        "deadline_seconds": 10
+      },
+      "command_has_cli_options": true,
+      "environment_keys": [
+        "CONTENT_LENGTH",
+        "CONTENT_TYPE",
+        "DOCUMENT_ROOT",
+        "GATEWAY_INTERFACE",
+        "HTTPS",
+        "HTTP_HOST",
+        "PHP_INI_SCAN_DIR",
+        "QUERY_STRING",
+        "REDIRECT_STATUS",
+        "REMOTE_ADDR",
+        "REQUEST_METHOD",
+        "REQUEST_SCHEME",
+        "REQUEST_URI",
+        "SCRIPT_FILENAME",
+        "SCRIPT_NAME",
+        "SERVER_NAME",
+        "SERVER_PORT",
+        "SERVER_PROTOCOL",
+        "SERVER_SOFTWARE",
+        "SystemRoot",
+        "TEMP",
+        "TMP",
+        "WINDIR"
+      ],
+      "environment_absolute_values_recorded": false,
+      "stdout": {
+        "bytes": 580,
+        "sha256": "1d104ca1e82675abd149f480fe37c6c72a79b1f20a46326d0caffd0dc3f6581e"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          {
+            "name": "x-powered-by",
+            "value_hex": "5048502f382e352e3132"
+          },
+          {
+            "name": "content-type",
+            "value_hex": "6170706c69636174696f6e2f6a736f6e"
+          }
+        ],
+        "body": {
+          "bytes": 520,
+          "sha256": "816b2b90830dbd67fe73f242192e439e83f7f3640f7700bb5b926a6e68187134"
+        },
+        "wire": {
+          "bytes": 580,
+          "sha256": "1d104ca1e82675abd149f480fe37c6c72a79b1f20a46326d0caffd0dc3f6581e"
+        }
+      },
+      "observation": {
+        "schema": "recastpress.php-cgi-startup-observation.v0.5",
+        "runtime": {
+          "version": "8.5.12",
+          "version_id": 80512,
+          "int_size": 8,
+          "sapi": "cgi-fcgi"
+        },
+        "profile": {
+          "mysqli_loaded": false,
+          "mail_function_present": true,
+          "allow_url_fopen": "1",
+          "register_argc_argv": "0",
+          "expose_php": "1"
+        },
+        "ini_loaded": false,
+        "ini_loaded_expected": false,
+        "additional_ini_scanned": false,
+        "query_environment_present": true,
+        "query_string": "",
+        "get_values": [],
+        "argc": null,
+        "stdin": {
+          "bytes": 18,
+          "sha256": "528f9ae0868d159118e01b6c7bb5ad88eae4b0b1b8c66375fc201521e2e48c2f"
+        }
+      },
+      "requested_profile_matched": false,
+      "native_only": true
+    }
+  ],
+  "owned_cleanup_completed": true,
+  "owned_scratch_reclaimed": true,
+  "wordpress_executed": false,
+  "database_connected": false,
+  "network_calls_made": false,
+  "wasm_executed": false,
+  "product_configuration_changed": false,
+  "header_behavior_changed": false,
+  "wasm_ini_loading_verified": false,
+  "product_request_abi_verified": false,
+  "native_process_memory_limit_verified": false,
+  "input_files": {
+    "experiments/php-cgi-startup-probe/check.py": "c5dab72841ff6567c7af7f187bc0e9d9a1b700a5285a52c626d67c66936eceee",
+    "experiments/php-cgi-startup-probe/fixtures/startup.php": "feca7361acb9dcf913169ad824f63770f10f22b3e1ba5170bbb8b5b98f321ed9"
+  },
+  "package_before": {
+    "version": "8.5.12",
+    "archive": {
+      "bytes": 36306925,
+      "sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477"
+    },
+    "manifest_sha256": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "verified_files": {
+      "brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
+      "brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
+      "deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
+      "dev/php8.lib": "5eb1aec626025d84850f4ada1a9e4513fd33cb207a82e6ff40079e7b1e1fb0cc",
+      "ext/php_bz2.dll": "a798baf67801a6119ac95ad68bda39592d86d4c286b18632693522f6c4e8319d",
+      "ext/php_com_dotnet.dll": "4461b3a3450b05c02032d77982f03b83242c01761c9d5f083b30d37cee4f2bc1",
+      "ext/php_curl.dll": "4b8278e6ce4a935b6f9ef927fdf24210f8f52c6fe4ea1f067eb7f5e943caf481",
+      "ext/php_dba.dll": "9c1368cc487e611b43be46afb84da34e779e9f3e06c829a203d3ef79c48818b1",
+      "ext/php_dl_test.dll": "c7695720c8281947752621dc17469a51e9ae5394b5d98ba1e6d572bd0bb65141",
+      "ext/php_enchant.dll": "365ee99829f66e3d473e721be22b86f69ed23cf1d7824776647419cefd44d3ba",
+      "ext/php_exif.dll": "9b63971feb9a680dd373e4a2a998062815e6f51613984357e8dacbc07979cd45",
+      "ext/php_ffi.dll": "90dfeb7d653b8ed6ecd0b1b104f84669eb7a52076af17ad3b6cc54ec891c3557",
+      "ext/php_fileinfo.dll": "d41911eef97afef2b01d0dc3609fd7189d8f40235ca84efc4259917effca3604",
+      "ext/php_ftp.dll": "d2301ec6191daf7e34c16b239a1f82c16fe98292ecc78a781f5299e6d4f81ce7",
+      "ext/php_gd.dll": "7bef1d2b57f03b482429a48696c44990c791a78aee3bc5825ce832c7c9bd64a5",
+      "ext/php_gettext.dll": "c94480f3bc3c5369079b7b68bf7b62071bc3b730582539b0f9a9c15f074f9638",
+      "ext/php_gmp.dll": "da1e8abd2fbac98911fdf57551d7ac315fd32285854c6ae7bb9cd8ff48ac88b7",
+      "ext/php_intl.dll": "80622855920ddb7a1cf442200be614355e379aaf647529f90d164201a20807b4",
+      "ext/php_ldap.dll": "39ca453f83911c724cc6c05968ed20043bd9eb95f4e74f3752831a983e14a935",
+      "ext/php_mbstring.dll": "b2b8382bc757ad97848896e5e0fbec03b5545ed368bd841bd0ad60bfc7ed0811",
+      "ext/php_mysqli.dll": "e5a6a8eafccbed628988c1ab4fdefcc834a90452539e0c9e8b0ebbfc57de602a",
+      "ext/php_odbc.dll": "4d4c71df31bfbaa4c85a093e26c7bc3a311dccaa35cad1ac88e4b11c0d5a95be",
+      "ext/php_openssl.dll": "289057e0322925aac26a7d0079d18518e6ea5b4b59e7ce10185df49f4ab51ce4",
+      "ext/php_pdo_firebird.dll": "b164ff5b8503ecb23950485654e4669b71896c4837b780ba62277afd23e40ad4",
+      "ext/php_pdo_mysql.dll": "155e3facfe906805dcfa74234a4bfca123861969f21eb5874dfe5e0e45576790",
+      "ext/php_pdo_odbc.dll": "f683b8572f4ea8ae0062c765bde239fa4d9c0ab6520dff81a81dcd9bf652039b",
+      "ext/php_pdo_pgsql.dll": "bdbbf46ee71d59bdffaf6f9121581c70c710eeecd252cc3d37987aa6fd8365c1",
+      "ext/php_pdo_sqlite.dll": "40a1c01bc319be8e9c8ace2107ac37306885bd847d045ddadcc62bd851b37edf",
+      "ext/php_pgsql.dll": "9e6bdc720bca2cd6537fbb0665d18b3ca9a8f7e80ec281c063ac0e7f21e8ffb1",
+      "ext/php_shmop.dll": "c7973f5df9c37ebbcbab3fe16ddaed0419443ff88ba81eaa9bee487265094098",
+      "ext/php_snmp.dll": "0c28647b9183f610abde1e829073b08c5d670eae99ff0a905c9e8b61e3c80c34",
+      "ext/php_soap.dll": "21fb43f13dc2d53f9ebcaa9d21bfc4ca9340b942f09bd0d612757058a5cac9ee",
+      "ext/php_sockets.dll": "d7763c61626ce96448ed3460e909d7d50545f2bffd19085650e306ce21a3c87c",
+      "ext/php_sodium.dll": "862ae3fad7c0ac67670aabd68444e9784804e72ec924465d5a3ed0d70899bc57",
+      "ext/php_sqlite3.dll": "f5f26bc9a2677e99afb9903abdf7da0e8d325d0a765af74c60a52f225f7f607b",
+      "ext/php_sysvshm.dll": "8370f7eedd5b3cad34c5567ba5d2318fa8b9f52e061a106b8522b354b5a250b8",
+      "ext/php_tidy.dll": "0a8470d897461e2f95584ac84980059d043a49394ea26b0e9e9918f307b64017",
+      "ext/php_xsl.dll": "0b77747cd6299e9e54f2b974c352289f7aa7c9b40ef3890dd7fe38863f57af38",
+      "ext/php_zend_test.dll": "cfaf18f106965b4d6150923ab0ad205224edb1bf91b583c8352a95640b65ed7a",
+      "ext/php_zip.dll": "397f63319c7984353037faae925dccf90d43ebbcb4c39d8fdca58a028d2e4dc5",
+      "extras/ssl/legacy.dll": "eae05aafd0c77398162a89c15701e17ebce50d8dd12574b108786cd270fb0757",
+      "extras/ssl/openssl.cnf": "a65a2cb9f4ee8ffdc7ef4f0ac600c0bdafb95b7b1ab457188ac610a62f5ad6b3",
+      "glib-2.dll": "8fff1ad28097fcc30581a46ed7f287c60281e8656f39b2217d4bb3bf7f059eb6",
+      "gmodule-2.dll": "224bac40c38201c53f34863e467a3f2a6a230f4727cd45cdeaf4c9c97b87c12a",
+      "gobject-2.dll": "7ca92bb46fc3c0944dec1d651c25fd3bf483ff78ed6771b9f1543d1545b23c65",
+      "icudt77.dll": "d649c8878be9e8a25c2e074235892ece77371950f8395729cc9158815894a5e7",
+      "icuin77.dll": "b5e225648c1c7067577a74c41b5371c047af26448eb783b640e7ada7d52fe283",
+      "icuio77.dll": "a3046cdda552b55b5a169d4daee8e06595be01aa2fc6395f84b412a6d639135f",
+      "icuuc77.dll": "7954ea7a3fe9bb9bbf565212ec388bf3d0831131a16e7518aeb21deddf00948e",
+      "lib/enchant/libenchant2_hunspell.dll": "3b005a1dc6201d5299d092f10d696ce3627036a81c1cb2d4861193bde1c8f465",
+      "libcrypto-3-x64.dll": "43e20b8c6e3d0d38f184329eacea180be6bdbbdc89871626f1e05c11cbb70fe4",
+      "libenchant2.dll": "96c606dc4e2af422650b53527d0e6a277c99e587341dc274009e0c1ace13ea72",
+      "libpq.dll": "1cf919d33177d1840bbe50a8f0a0b1b25c84767526fc9890008afcd27f0f9958",
+      "libsasl.dll": "f8f3546b80250e24454e52044e1750ef7aff81fa7edec8240880546fa2c183b9",
+      "libsodium.dll": "de64aa6e9078fb32dcb7f9dd275d0ce121999e961498018b8c0f47d3825a8f65",
+      "libsqlite3.dll": "ffa33720407b29c0eb1526344ee006372c47b68589b0389804ccc27528c4e254",
+      "libssh2.dll": "0197a9e0352215235e6a6627298506db65c58ffe3c46ae7a4f6e4144666ff195",
+      "libssl-3-x64.dll": "7574fc9816458b44dbc61d3a28b2b2200084472765bb995775f671aac19d1972",
+      "license.txt": "098bdc5b9808fc16bef4b7154e876ac08ca249549727cde3b3f3f3b431e27cca",
+      "news.txt": "eddb4156f6782b64c63ff9b8665f9109193b414cc31475fdcfa007d20d5f354a",
+      "nghttp2.dll": "4bee6c3aa3270c49395ff528db1ebd1e3d78c211503a7b9ea6c23aa9ad2dec85",
+      "phar.phar.bat": "ef0f0bd1e919ee96c7d20547f7a823218cd73452f36c47d1a22f2726d5d64308",
+      "pharcommand.phar": "1855bdc09ffd9e6f2e890817141ba6c691db57add0cfddf0bb5ca871506a0d48",
+      "php-cgi.exe": "f6007e19a06eddaa6c275539f8c8a4b34991bd8b3db061eb965b40e372dfb4a3",
+      "php-win.exe": "96e5b113d0198340b11fd8ed963d647994fb01e6fff128d3375c8b896d1fe78d",
+      "php.exe": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+      "php.ini-development": "b809158db575a44e10f4e8101ea977e25ed505ce02b3f91523c3614d9d8cb3c7",
+      "php.ini-production": "02004cf8c7beda520b2333e2033f5820b7f22b81c3bd2a68de9385dcce88b27d",
+      "php8.dll": "7af6c47fee46995865a3ac3aaa04915b19547e3ffd7072b6242b0f7a027d5754",
+      "php8embed.lib": "4893a5f493f5bfb970184e5361dd6e5f0bbdd60874742f0f0fbeb714789bc8a8",
+      "php8phpdbg.dll": "ed8b94ca273c04ac093e39a3456646ac63ec5be4db767bf484a4f2281dd49ec6",
+      "phpdbg.exe": "4eea926ee567b5f5102e56959039f8241085faf8adc19f716c38c5e24671e0d0",
+      "README.md": "82549e7bf7ec308e9093ad3efaaaa64362397d79c6dc9253be992bfe09856521",
+      "snapshot.txt": "fb6732d8f6f59b5566fb108e712a4cfcc7e3dd94b0b05292b00dd94081e50c95",
+      "readme-redist-bins.txt": "30c4973c42f2a47666da40fcadf55789a9e305557b3ab520cf806dad2724330f",
+      "extras/sbom/php.cdx.json": "3055220a9ad121bfe8295ecd5c60f364b37bb241415b54a0cd0c54eddc8e4c3e",
+      "extras/sbom/php.spdx.json": "e19b079d30f05156f4d3bf58d62520e85d7025d7fb8a7f008a165c8c4369aab0",
+      "extras/sbom/php.openvex.json": "7a05b90f57d6275762a15283a2f6c3e5d44dbd6d8f60fe76e09dc45cc21ba3d5"
+    },
+    "complete_file_map_sha256": "1711770af256947abd7aded6d89b7f32426e0a3a0f80632dcf5dbc8973892d3b",
+    "all_78_files_and_archive_members_verified": true
+  },
+  "owned_config_before": {
+    "bytes": 148,
+    "sha256": "3f046b09fabe222452753b38eb11bd15088405fc39c2f4f6f706de20b4f5a9f1"
+  },
+  "config_semantics": {
+    "selection": "PHPRC absolute owned php.ini file",
+    "additional_scan_directory": "empty",
+    "extension_dir": "fixed verified PHP distribution ext directory",
+    "extension": "mysqli",
+    "disable_functions": "mail",
+    "allow_url_fopen": "0",
+    "register_argc_argv": "0",
+    "expose_php_override": false,
+    "absolute_configuration_values_recorded": false
+  },
+  "cli_empty_profile_gap_reproduced": true,
+  "all_four_sealed_ini_profiles_passed": true,
+  "owned_config_after": {
+    "bytes": 148,
+    "sha256": "3f046b09fabe222452753b38eb11bd15088405fc39c2f4f6f706de20b4f5a9f1"
+  },
+  "package_after": {
+    "version": "8.5.12",
+    "archive": {
+      "bytes": 36306925,
+      "sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477"
+    },
+    "manifest_sha256": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "verified_files": {
+      "brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
+      "brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
+      "deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
+      "dev/php8.lib": "5eb1aec626025d84850f4ada1a9e4513fd33cb207a82e6ff40079e7b1e1fb0cc",
+      "ext/php_bz2.dll": "a798baf67801a6119ac95ad68bda39592d86d4c286b18632693522f6c4e8319d",
+      "ext/php_com_dotnet.dll": "4461b3a3450b05c02032d77982f03b83242c01761c9d5f083b30d37cee4f2bc1",
+      "ext/php_curl.dll": "4b8278e6ce4a935b6f9ef927fdf24210f8f52c6fe4ea1f067eb7f5e943caf481",
+      "ext/php_dba.dll": "9c1368cc487e611b43be46afb84da34e779e9f3e06c829a203d3ef79c48818b1",
+      "ext/php_dl_test.dll": "c7695720c8281947752621dc17469a51e9ae5394b5d98ba1e6d572bd0bb65141",
+      "ext/php_enchant.dll": "365ee99829f66e3d473e721be22b86f69ed23cf1d7824776647419cefd44d3ba",
+      "ext/php_exif.dll": "9b63971feb9a680dd373e4a2a998062815e6f51613984357e8dacbc07979cd45",
+      "ext/php_ffi.dll": "90dfeb7d653b8ed6ecd0b1b104f84669eb7a52076af17ad3b6cc54ec891c3557",
+      "ext/php_fileinfo.dll": "d41911eef97afef2b01d0dc3609fd7189d8f40235ca84efc4259917effca3604",
+      "ext/php_ftp.dll": "d2301ec6191daf7e34c16b239a1f82c16fe98292ecc78a781f5299e6d4f81ce7",
+      "ext/php_gd.dll": "7bef1d2b57f03b482429a48696c44990c791a78aee3bc5825ce832c7c9bd64a5",
+      "ext/php_gettext.dll": "c94480f3bc3c5369079b7b68bf7b62071bc3b730582539b0f9a9c15f074f9638",
+      "ext/php_gmp.dll": "da1e8abd2fbac98911fdf57551d7ac315fd32285854c6ae7bb9cd8ff48ac88b7",
+      "ext/php_intl.dll": "80622855920ddb7a1cf442200be614355e379aaf647529f90d164201a20807b4",
+      "ext/php_ldap.dll": "39ca453f83911c724cc6c05968ed20043bd9eb95f4e74f3752831a983e14a935",
+      "ext/php_mbstring.dll": "b2b8382bc757ad97848896e5e0fbec03b5545ed368bd841bd0ad60bfc7ed0811",
+      "ext/php_mysqli.dll": "e5a6a8eafccbed628988c1ab4fdefcc834a90452539e0c9e8b0ebbfc57de602a",
+      "ext/php_odbc.dll": "4d4c71df31bfbaa4c85a093e26c7bc3a311dccaa35cad1ac88e4b11c0d5a95be",
+      "ext/php_openssl.dll": "289057e0322925aac26a7d0079d18518e6ea5b4b59e7ce10185df49f4ab51ce4",
+      "ext/php_pdo_firebird.dll": "b164ff5b8503ecb23950485654e4669b71896c4837b780ba62277afd23e40ad4",
+      "ext/php_pdo_mysql.dll": "155e3facfe906805dcfa74234a4bfca123861969f21eb5874dfe5e0e45576790",
+      "ext/php_pdo_odbc.dll": "f683b8572f4ea8ae0062c765bde239fa4d9c0ab6520dff81a81dcd9bf652039b",
+      "ext/php_pdo_pgsql.dll": "bdbbf46ee71d59bdffaf6f9121581c70c710eeecd252cc3d37987aa6fd8365c1",
+      "ext/php_pdo_sqlite.dll": "40a1c01bc319be8e9c8ace2107ac37306885bd847d045ddadcc62bd851b37edf",
+      "ext/php_pgsql.dll": "9e6bdc720bca2cd6537fbb0665d18b3ca9a8f7e80ec281c063ac0e7f21e8ffb1",
+      "ext/php_shmop.dll": "c7973f5df9c37ebbcbab3fe16ddaed0419443ff88ba81eaa9bee487265094098",
+      "ext/php_snmp.dll": "0c28647b9183f610abde1e829073b08c5d670eae99ff0a905c9e8b61e3c80c34",
+      "ext/php_soap.dll": "21fb43f13dc2d53f9ebcaa9d21bfc4ca9340b942f09bd0d612757058a5cac9ee",
+      "ext/php_sockets.dll": "d7763c61626ce96448ed3460e909d7d50545f2bffd19085650e306ce21a3c87c",
+      "ext/php_sodium.dll": "862ae3fad7c0ac67670aabd68444e9784804e72ec924465d5a3ed0d70899bc57",
+      "ext/php_sqlite3.dll": "f5f26bc9a2677e99afb9903abdf7da0e8d325d0a765af74c60a52f225f7f607b",
+      "ext/php_sysvshm.dll": "8370f7eedd5b3cad34c5567ba5d2318fa8b9f52e061a106b8522b354b5a250b8",
+      "ext/php_tidy.dll": "0a8470d897461e2f95584ac84980059d043a49394ea26b0e9e9918f307b64017",
+      "ext/php_xsl.dll": "0b77747cd6299e9e54f2b974c352289f7aa7c9b40ef3890dd7fe38863f57af38",
+      "ext/php_zend_test.dll": "cfaf18f106965b4d6150923ab0ad205224edb1bf91b583c8352a95640b65ed7a",
+      "ext/php_zip.dll": "397f63319c7984353037faae925dccf90d43ebbcb4c39d8fdca58a028d2e4dc5",
+      "extras/ssl/legacy.dll": "eae05aafd0c77398162a89c15701e17ebce50d8dd12574b108786cd270fb0757",
+      "extras/ssl/openssl.cnf": "a65a2cb9f4ee8ffdc7ef4f0ac600c0bdafb95b7b1ab457188ac610a62f5ad6b3",
+      "glib-2.dll": "8fff1ad28097fcc30581a46ed7f287c60281e8656f39b2217d4bb3bf7f059eb6",
+      "gmodule-2.dll": "224bac40c38201c53f34863e467a3f2a6a230f4727cd45cdeaf4c9c97b87c12a",
+      "gobject-2.dll": "7ca92bb46fc3c0944dec1d651c25fd3bf483ff78ed6771b9f1543d1545b23c65",
+      "icudt77.dll": "d649c8878be9e8a25c2e074235892ece77371950f8395729cc9158815894a5e7",
+      "icuin77.dll": "b5e225648c1c7067577a74c41b5371c047af26448eb783b640e7ada7d52fe283",
+      "icuio77.dll": "a3046cdda552b55b5a169d4daee8e06595be01aa2fc6395f84b412a6d639135f",
+      "icuuc77.dll": "7954ea7a3fe9bb9bbf565212ec388bf3d0831131a16e7518aeb21deddf00948e",
+      "lib/enchant/libenchant2_hunspell.dll": "3b005a1dc6201d5299d092f10d696ce3627036a81c1cb2d4861193bde1c8f465",
+      "libcrypto-3-x64.dll": "43e20b8c6e3d0d38f184329eacea180be6bdbbdc89871626f1e05c11cbb70fe4",
+      "libenchant2.dll": "96c606dc4e2af422650b53527d0e6a277c99e587341dc274009e0c1ace13ea72",
+      "libpq.dll": "1cf919d33177d1840bbe50a8f0a0b1b25c84767526fc9890008afcd27f0f9958",
+      "libsasl.dll": "f8f3546b80250e24454e52044e1750ef7aff81fa7edec8240880546fa2c183b9",
+      "libsodium.dll": "de64aa6e9078fb32dcb7f9dd275d0ce121999e961498018b8c0f47d3825a8f65",
+      "libsqlite3.dll": "ffa33720407b29c0eb1526344ee006372c47b68589b0389804ccc27528c4e254",
+      "libssh2.dll": "0197a9e0352215235e6a6627298506db65c58ffe3c46ae7a4f6e4144666ff195",
+      "libssl-3-x64.dll": "7574fc9816458b44dbc61d3a28b2b2200084472765bb995775f671aac19d1972",
+      "license.txt": "098bdc5b9808fc16bef4b7154e876ac08ca249549727cde3b3f3f3b431e27cca",
+      "news.txt": "eddb4156f6782b64c63ff9b8665f9109193b414cc31475fdcfa007d20d5f354a",
+      "nghttp2.dll": "4bee6c3aa3270c49395ff528db1ebd1e3d78c211503a7b9ea6c23aa9ad2dec85",
+      "phar.phar.bat": "ef0f0bd1e919ee96c7d20547f7a823218cd73452f36c47d1a22f2726d5d64308",
+      "pharcommand.phar": "1855bdc09ffd9e6f2e890817141ba6c691db57add0cfddf0bb5ca871506a0d48",
+      "php-cgi.exe": "f6007e19a06eddaa6c275539f8c8a4b34991bd8b3db061eb965b40e372dfb4a3",
+      "php-win.exe": "96e5b113d0198340b11fd8ed963d647994fb01e6fff128d3375c8b896d1fe78d",
+      "php.exe": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+      "php.ini-development": "b809158db575a44e10f4e8101ea977e25ed505ce02b3f91523c3614d9d8cb3c7",
+      "php.ini-production": "02004cf8c7beda520b2333e2033f5820b7f22b81c3bd2a68de9385dcce88b27d",
+      "php8.dll": "7af6c47fee46995865a3ac3aaa04915b19547e3ffd7072b6242b0f7a027d5754",
+      "php8embed.lib": "4893a5f493f5bfb970184e5361dd6e5f0bbdd60874742f0f0fbeb714789bc8a8",
+      "php8phpdbg.dll": "ed8b94ca273c04ac093e39a3456646ac63ec5be4db767bf484a4f2281dd49ec6",
+      "phpdbg.exe": "4eea926ee567b5f5102e56959039f8241085faf8adc19f716c38c5e24671e0d0",
+      "README.md": "82549e7bf7ec308e9093ad3efaaaa64362397d79c6dc9253be992bfe09856521",
+      "snapshot.txt": "fb6732d8f6f59b5566fb108e712a4cfcc7e3dd94b0b05292b00dd94081e50c95",
+      "readme-redist-bins.txt": "30c4973c42f2a47666da40fcadf55789a9e305557b3ab520cf806dad2724330f",
+      "extras/sbom/php.cdx.json": "3055220a9ad121bfe8295ecd5c60f364b37bb241415b54a0cd0c54eddc8e4c3e",
+      "extras/sbom/php.spdx.json": "e19b079d30f05156f4d3bf58d62520e85d7025d7fb8a7f008a165c8c4369aab0",
+      "extras/sbom/php.openvex.json": "7a05b90f57d6275762a15283a2f6c3e5d44dbd6d8f60fe76e09dc45cc21ba3d5"
+    },
+    "complete_file_map_sha256": "1711770af256947abd7aded6d89b7f32426e0a3a0f80632dcf5dbc8973892d3b",
+    "all_78_files_and_archive_members_verified": true
+  },
+  "source_reverified_after": true,
+  "owned_child_count": 6,
+  "owned_reaped_count": 6
+}

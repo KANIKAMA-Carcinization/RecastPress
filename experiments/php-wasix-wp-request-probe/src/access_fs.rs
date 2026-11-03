@@ -38,12 +38,24 @@ enum Status {
 }
 
 #[derive(Clone, Debug)]
-struct Policy { wp:SourceFs,php:SourceFs,context:SourceFs }
+struct Policy { wp:SourceFs,php:SourceFs,context:SourceFs, invalid_reasons:Arc<Mutex<InvalidReasons>> }
+const INVALID_REASON_NAMES:[&str;9]=["double_leading_slash","colon","backslash","control","metadata_invalid","invalid_utf8","not_absolute","path_length","mode"];
+#[derive(Debug,Default)]
+struct InvalidReasons {counts:[usize;9]}
 impl Policy {
+    fn invalid(&self,reason:usize)->Status {
+        let Ok(mut reasons)=self.invalid_reasons.lock() else{return Status::Io};
+        reasons.counts[reason]=reasons.counts[reason].saturating_add(1);Status::Invalid
+    }
     fn query(&self,bytes:&[u8],mode:u8)->Status {
-        if mode>7 || bytes.is_empty() || bytes.len()>MAX_PATH_BYTES {return Status::Invalid;}
-        let Ok(path)=std::str::from_utf8(bytes) else{return Status::Invalid};
-        if !path.starts_with('/') || path.starts_with("//") || path.contains(['\0','\\',':']) || path.chars().any(char::is_control){return Status::Invalid;}
+        if mode>7{return self.invalid(8);}
+        if bytes.is_empty() || bytes.len()>MAX_PATH_BYTES {return self.invalid(7);}
+        let Ok(path)=std::str::from_utf8(bytes) else{return self.invalid(5)};
+        if !path.starts_with('/'){return self.invalid(6);}
+        if path.starts_with("//"){return self.invalid(0);}
+        if path.contains(':'){return self.invalid(1);}
+        if path.contains('\\'){return self.invalid(2);}
+        if path.contains('\0') || path.chars().any(char::is_control){return self.invalid(3);}
         let mount=|root:&str| path.strip_prefix(root).filter(|rest|rest.is_empty()||rest.starts_with('/'));
         let selected=if let Some(p)=mount("/wordpress"){Some((&self.wp,p))}
             else if let Some(p)=mount("/experiments/php-wasix-wp-request-probe/fixtures"){Some((&self.php,p))}
@@ -55,7 +67,7 @@ impl Policy {
             Ok(meta)=>if mode&2!=0 || (mode&1!=0 && !meta.is_dir()){Status::Denied}else{Status::Allow},
             Err(FsError::PermissionDenied)=>Status::Denied,
             Err(FsError::EntryNotFound|FsError::BaseNotDirectory|FsError::NotAFile)=>Status::Missing,
-            Err(FsError::InvalidInput)=>Status::Invalid,
+            Err(FsError::InvalidInput)=>self.invalid(4),
             Err(_)=>Status::Io,
         }
     }
@@ -232,7 +244,7 @@ impl AccessSnapshot {
 impl ManagedAccessFs {
     pub(crate) fn new(wp:SourceFs,php:SourceFs,context:SourceFs)->Result<Self> {
         Ok(Self(Arc::new(Mutex::new(State {
-            policy: Policy {wp,php,context},
+            policy: Policy {wp,php,context,invalid_reasons:Arc::new(Mutex::new(InvalidReasons::default()))},
             pending: Vec::new(),
             response: None,
             response_read: 0,
@@ -261,6 +273,13 @@ impl ManagedAccessFs {
         self.0
             .lock()
             .map_err(|_| io::Error::other("access state poisoned"))
+    }
+
+    /// Counts only; paths and path hashes never enter a public observation.
+    pub(crate) fn invalid_reason_counts(&self)->Result<serde_json::Value> {
+        let state=self.lock()?;
+        let reasons=state.policy.invalid_reasons.lock().map_err(|_|io::Error::other("access reason state poisoned"))?;
+        Ok(serde_json::Value::Object(INVALID_REASON_NAMES.iter().zip(reasons.counts).map(|(name,n)|((*name).to_owned(),serde_json::json!(n))).collect()))
     }
 
     pub(crate) fn snapshot(&self) -> Result<AccessSnapshot> {
@@ -636,6 +655,19 @@ mod tests {
     fn source()->SourceFs {SourceFs::new(BTreeMap::from([("file.php".to_owned(),Arc::<[u8]>::from(&b"<?php"[..])),("dir/child.php".to_owned(),Arc::<[u8]>::from(&b"<?php"[..]))]),BTreeSet::from(["dir".to_owned()])).unwrap()}
     fn fixture_fs()->ManagedAccessFs {ManagedAccessFs::new(source(),source(),source()).unwrap()}
     fn frame(path:&str,mode:u8)->Vec<u8>{let mut b=b"RPA1".to_vec();b.push(mode);b.extend_from_slice(&(path.len() as u16).to_le_bytes());b.extend_from_slice(path.as_bytes());b}
+    #[test]
+    fn invalid_reason_counts_retain_rejections_without_paths() {
+        let fs=fixture_fs();
+        {let s=fs.lock().unwrap();let p=&s.policy;
+            for path in ["//wordpress/file.php","/wordpress/colon:file","/wordpress\\file.php","/wordpress/\0file","/wordpress//file.php"] {
+                assert_eq!(p.query(path.as_bytes(),4),Status::Invalid);
+            }
+        }
+        let report=fs.invalid_reason_counts().unwrap();
+        for name in ["double_leading_slash","colon","backslash","control","metadata_invalid"] {assert_eq!(report[name],1);}
+        assert_eq!(report.as_object().unwrap().values().map(|v|v.as_u64().unwrap()).sum::<u64>(),5);
+        assert!(!report.to_string().contains("file.php"));
+    }
     #[test]
     fn same_readonly_catalog_exists_readable_and_write_denial() {
         let fs=fixture_fs();let state=fs.lock().unwrap();let p=&state.policy;

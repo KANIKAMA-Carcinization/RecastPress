@@ -21,3 +21,11 @@ python -B experiments/php-wasix-wp-request-probe/prepare.py
 ```
 
 preparerは元native／full-bootstrapのsourceと受入済みnative基準SHAを読み取りで固定するだけで、native binariesを必要とせず、PHP／Wasm／DB／networkは実行しない。native CGIを使うlint・context shape・不正CGI入口拒否の確認と、実guest／DB／全HTML比較は区別する。
+
+## 初回Linuxの停止と診断
+
+source `5f23493237b845ada57c5b3a8488536031c184e8` の[CI 41606262529](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41606262529)では、両DBで旧31 unit・新36 unit、旧install／readと日時seedを通過した。homeのPHP終了codeは0で、145 RPC（hello1/query50/escape93/close1）、物理切断・actor終了/join・EOF・所有container正常清掃も完了したが、stdout 133,597 Bを外側CGIとして解析した結果はheader0・body133,595 Bとなり、`cgi_complete_json_line`で失敗した。managed accessには192照会中4件のinvalid判定もあった。
+
+この段階ではPHP内報告を解析できていないため、HTML・全headerのnative一致を成功と扱わない。原失敗は[MySQL](evidence/ci-41606262529-mysql/provenance.json)／[MariaDB](evidence/ci-41606262529-mariadb/provenance.json)へ各1,009 binding・173 Git blobの照合付きで保存した。private raw CGIやSQLは公開していない。
+
+次の41 unit版では、先頭からの期待schema JSON objectと、既知のCGI frame／末尾を診断する。任意offsetのobject探索や未知文字列の公開は行わず、元のnewline・body JSON・完全native一致の合格条件は変えない。権限照会も固定分類counterだけを追加し、パス・hashを公開せず、拒否条件は維持する。ヘッダー削除等のPHP処理を原因の根拠なく変更せず、この追加観測で切り分ける。

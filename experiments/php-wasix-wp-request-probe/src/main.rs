@@ -239,6 +239,21 @@ fn private_capture(root: &Path, mode: db::Mode, label: &str, bytes: &[u8]) -> Re
     options.open(path)?.write_all(bytes)?;
     Ok(())
 }
+fn known_json_cgi_headers(frame: &cgi_response::Response) -> bool {
+    frame.status == 200
+        && frame.headers.iter().any(|(name, value)| {
+            name == "content-type"
+                && matches!(
+                    value.as_slice(),
+                    b"application/json"
+                        | b"application/json; charset=UTF-8"
+                        | b"application/json; charset=utf-8"
+                )
+        })
+        && frame.headers.iter().all(|(name, value)| {
+            name == "content-type" || (name == "x-powered-by" && value.as_slice() == b"PHP/8.5.12")
+        })
+}
 fn observe_cgi(
     raw: &[u8],
     record: &mut Value,
@@ -246,11 +261,94 @@ fn observe_cgi(
 ) -> Result<Value> {
     let response = cgi_response::parse(raw)?;
     record["response"] = json!({"status":response.status,"header_count":response.headers.len(),"body_bytes":response.body.len(),"body_sha256":db::sha(&response.body),"representation_length":response.representation_length});
+    let leading = response
+        .body
+        .iter()
+        .take_while(|&&b| matches!(b, b' ' | b'\t' | b'\r' | b'\n'))
+        .count();
+    let trailing = response
+        .body
+        .iter()
+        .rev()
+        .take_while(|&&b| matches!(b, b' ' | b'\t' | b'\r' | b'\n'))
+        .count();
+    let tail = &response.body[leading..];
+    let known_json_header = tail.starts_with(b"Content-Type: application/json")
+        || tail.starts_with(b"Content-type: application/json")
+        || tail.starts_with(b"X-Powered-By: PHP/8.5.12");
+    let class = if tail.starts_with(b"{") {
+        if leading == 0 {
+            "json_object"
+        } else {
+            "json_object_after_whitespace"
+        }
+    } else if known_json_header {
+        "known_json_cgi_header"
+    } else if tail.is_empty() {
+        "empty"
+    } else {
+        "other"
+    };
+    let mut diagnostic = json!({"prefix_class":class,"leading_json_whitespace_bytes":leading,"trailing_json_whitespace_bytes":trailing,
+        "lf_bytes":response.body.iter().filter(|&&b|b==b'\n').count(),"cr_bytes":response.body.iter().filter(|&&b|b==b'\r').count(),
+        "json_decoded":false,"decode_strategy":"none","acceptance_changed":false,
+        "trailing_bytes_after_json":0,"trailing_class":"none"});
+    let mut decoded = serde_json::from_slice::<Value>(&response.body).ok();
+    if decoded.is_some() {
+        diagnostic["decode_strategy"] = json!("whole_body_json");
+    } else {
+        // Start at byte zero only (serde may consume leading JSON whitespace).
+        // A decoded initial object is diagnostic-only if ANY trailing data
+        // remains, including a closed CGI header suffix or an unknown trailer.
+        let mut stream = serde_json::Deserializer::from_slice(&response.body).into_iter::<Value>();
+        if let Some(Ok(value)) = stream.next() {
+            if value.is_object()
+                && value["schema"] == "recastpress.php-wasix-wp-request-php-observation.v0.5"
+            {
+                let offset = stream.byte_offset();
+                let suffix = &response.body[offset..];
+                let whitespace = suffix
+                    .iter()
+                    .take_while(|&&b| matches!(b, b' ' | b'\t' | b'\r' | b'\n'))
+                    .count();
+                let known = cgi_response::parse(&suffix[whitespace..])
+                    .ok()
+                    .is_some_and(|f| f.body.is_empty() && known_json_cgi_headers(&f));
+                diagnostic["decode_strategy"] = json!("initial_expected_json_object_with_trailer");
+                diagnostic["trailing_bytes_after_json"] = json!(suffix.len());
+                diagnostic["trailing_class"] = json!(if known {
+                    "known_json_cgi_headers"
+                } else {
+                    "unknown_trailer"
+                });
+                decoded = Some(value);
+            }
+        }
+    }
+    if decoded.is_none() && known_json_header {
+        // Diagnostic-only second frame: never search for an arbitrary '{'.
+        if let Ok(inner) = cgi_response::parse(tail) {
+            let known = known_json_cgi_headers(&inner);
+            if known {
+                decoded = serde_json::from_slice::<Value>(&inner.body).ok();
+                if decoded.is_some() {
+                    diagnostic["decode_strategy"] = json!("closed_known_json_cgi_frame");
+                }
+            }
+        }
+    }
+    if let Some(value) = &decoded {
+        record["safe_php_observation"] = public_php(value, native);
+        diagnostic["json_decoded"] = json!(true);
+    }
+    record["framing_diagnostic"] = diagnostic;
     ensure!(
         response.body.ends_with(b"\n")
             && response.body.iter().filter(|&&b| b == b'\n').count() == 1,
         "cgi_complete_json_line"
     );
+    // Strict acceptance always parses the ORIGINAL body and retains the
+    // original newline condition. Diagnostic extraction above grants no pass.
     let value: Value =
         serde_json::from_slice(&response.body).map_err(|_| anyhow::anyhow!("php_json_shape"))?;
     record["safe_php_observation"] = public_php(&value, native);
@@ -550,6 +648,9 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     if let Ok(snapshot) = access.snapshot() {
         report["managed_access"] = snapshot.report_value();
     }
+    if let Ok(reasons) = access.invalid_reason_counts() {
+        report["managed_access_invalid_reasons"] = reasons;
+    }
     report["db_actor_joined"] = json!(actor.finish());
     {
         let s = actor
@@ -656,6 +757,92 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn newline_failure_stays_rejected_but_whole_json_diagnostics_are_safe() {
+        let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"wp_dispatch","passed":false,"failure":"php_warning","private_message":"never-publish-private-SQL"});
+        let raw = format!("Content-Type: application/json\r\n\r\n\r\n{php}\n");
+        let mut record = json!({});
+        let error = observe_cgi(raw.as_bytes(), &mut record, None).unwrap_err();
+        assert_eq!(error.to_string(), "cgi_complete_json_line");
+        assert_eq!(record["safe_php_observation"]["phase"], "wp_dispatch");
+        assert_eq!(
+            record["framing_diagnostic"]["prefix_class"],
+            "json_object_after_whitespace"
+        );
+        assert_eq!(
+            record["framing_diagnostic"]["decode_strategy"],
+            "whole_body_json"
+        );
+        assert_eq!(record["framing_diagnostic"]["acceptance_changed"], false);
+        assert!(!record.to_string().contains("never-publish-private-SQL"));
+    }
+    #[test]
+    fn nested_known_json_cgi_frame_is_diagnostic_only() {
+        let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"template_loader","passed":false});
+        let raw = format!("\r\nContent-Type: application/json\r\n\r\n{php}\n");
+        let mut record = json!({});
+        assert_eq!(
+            observe_cgi(raw.as_bytes(), &mut record, None)
+                .unwrap_err()
+                .to_string(),
+            "cgi_complete_json_line"
+        );
+        assert_eq!(
+            record["framing_diagnostic"]["decode_strategy"],
+            "closed_known_json_cgi_frame"
+        );
+        assert_eq!(record["safe_php_observation"]["phase"], "template_loader");
+    }
+    #[test]
+    fn unknown_prefix_is_never_scanned_or_published() {
+        let raw = b"\r\nprivate-SQL-or-secret-prefix{\"phase\":\"wp_dispatch\"}\n";
+        let mut record = json!({});
+        assert_eq!(
+            observe_cgi(raw, &mut record, None).unwrap_err().to_string(),
+            "php_json_shape"
+        );
+        assert!(record.get("safe_php_observation").is_none());
+        assert_eq!(record["framing_diagnostic"]["prefix_class"], "other");
+        assert_eq!(record["framing_diagnostic"]["json_decoded"], false);
+        assert!(!record.to_string().contains("private-SQL-or-secret-prefix"));
+    }
+    #[test]
+    fn initial_json_with_known_or_private_trailer_is_diagnostic_only() {
+        let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"wp_dispatch","passed":false});
+        for (suffix, class, error) in [
+            (
+                "\nContent-Type: application/json\r\n\r\n",
+                "known_json_cgi_headers",
+                "cgi_complete_json_line",
+            ),
+            (
+                "private-SQL-or-secret-trailer\n",
+                "unknown_trailer",
+                "php_json_shape",
+            ),
+        ] {
+            let raw = format!("\r\n{php}{suffix}");
+            let mut record = json!({});
+            assert_eq!(
+                observe_cgi(raw.as_bytes(), &mut record, None)
+                    .unwrap_err()
+                    .to_string(),
+                error
+            );
+            assert_eq!(
+                record["framing_diagnostic"]["decode_strategy"],
+                "initial_expected_json_object_with_trailer"
+            );
+            assert_eq!(record["framing_diagnostic"]["trailing_class"], class);
+            assert_eq!(
+                record["framing_diagnostic"]["trailing_bytes_after_json"],
+                suffix.len()
+            );
+            assert_eq!(record["safe_php_observation"]["phase"], "wp_dispatch");
+            assert!(!record.to_string().contains("private-SQL-or-secret-trailer"));
+            assert_eq!(record["framing_diagnostic"]["acceptance_changed"], false);
+        }
+    }
     #[test]
     fn complete_cgi_failure_keeps_only_source_bound_public_diagnostics() {
         let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","passed":false,"phase":"wp_settings","failure":"php_warning","failure_class":"RpBootstrapFailure","message":"private-secret-SQL"});
