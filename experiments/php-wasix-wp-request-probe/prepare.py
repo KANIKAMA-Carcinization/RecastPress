@@ -106,6 +106,8 @@ def expected_fixtures(original):
     b=once(b,b"&& $total === 110077999 && !file_exists($site . '/wp-config.php')",b"&& $overlay_seen && $total === 110077999 && !file_exists($site . '/wp-config.php')")
     b=b.replace(b'recastpress.wp-request-native-observation.v0.5',b'recastpress.php-wasix-wp-request-php-observation.v0.5')
     b=b.replace(b'fixed_native_home_passed',b'fixed_wasix_home_passed').replace(b'fixed_native_home_failed',b'fixed_wasix_home_failed')
+    b=once(b,b"    header_remove(); http_response_code(200); header('Content-Type: application/json');",
+        b"    header_remove(); header('Content-Type: application/json', true, 200);")
     b=once(b,b"'rust_executed' => false, 'wasm_executed' => false",b"'rust_executed' => true, 'wasm_executed' => true")
     b=once(b,b"$rp_secrets = array_merge([$rp_input['password']], array_values($rp_input['salts']));",b"$rp_secrets = array_merge([$rp_input['nonce']], array_values($rp_input['salts']));")
     b=once(b,section(b,b"    $rp_root = realpath(",b"    $rp_report['phase'] = 'source_inventory';"),
@@ -145,7 +147,8 @@ def derivation_gate():
         'adapter4096_bytes_unchanged':True,'native_render_block_sha256':sha(render),'native_render_block_bytes_unchanged':True,
         'allowed_changes':['hidden-CGI-entry-then-native-home-request-reset','private-nonce-salts-context-no-DB-credentials',
             'owned-db-prefix-only-overlay-and-core-inventory-exception','dummy-DB-constants-and-Rust-handle',
-            'Wasm-schema-context-flags-and-public-diagnostic-allowlists','private-count-only-RPC-statistics'],
+            'Wasm-schema-context-flags-and-public-diagnostic-allowlists','private-count-only-RPC-statistics',
+            'owned-JSON-wrapper-status-via-header-third-argument-after-WP-HTTP-status-line'],
         'html_normalization_applied':False,'core_theme_dispatcher_bytes_modified':False,'owned_db_overlay_files':1}
 
 

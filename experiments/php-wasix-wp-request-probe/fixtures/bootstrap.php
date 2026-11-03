@@ -132,7 +132,7 @@ function rp_boot_emit(): void {
         $wire = '{"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","passed":false,"failure":"public_response_quota"}';
         $rp_report['passed'] = false;
     }
-    header_remove(); http_response_code(200); header('Content-Type: application/json');
+    header_remove(); header('Content-Type: application/json', true, 200);
     $rp_emitted = true; echo $wire, "\n";
 }
 register_shutdown_function(static function (): void {

@@ -4,16 +4,16 @@
   "commands": [
     {
       "stage": "unit-build",
-      "owned_pid": 26496,
+      "owned_pid": 11268,
       "owned_reaped": true,
       "timeout_seconds": 1200,
       "exit_code": 0,
-      "stdout_sha256": "70e29ac771b8a275f4d9723b65505a270607d73d608c6ffe9e2f337d5b8dcf0b",
-      "stderr_sha256": "bb5d20cf1f28610db6b2f1b7017b7ed24567211c69522a7abd838e3fd6e10d4a"
+      "stdout_sha256": "eaad3542635b26af54d27e16e00f007699e64e93041521f6045754731626cf87",
+      "stderr_sha256": "0586bc1196b4187d4fc1712ed2f047833c2ceb73863dbb2c7a821cbc9e7aac1c"
     },
     {
       "stage": "unit-list",
-      "owned_pid": 3460,
+      "owned_pid": 13216,
       "owned_reaped": true,
       "timeout_seconds": 10,
       "exit_code": 0,
@@ -22,24 +22,24 @@
     },
     {
       "stage": "unit-run",
-      "owned_pid": 7724,
+      "owned_pid": 19492,
       "owned_reaped": true,
       "timeout_seconds": 60,
       "exit_code": 0,
-      "stdout_sha256": "63df2e2830cd81ab92258e407cd69a8b667c07d137b2a61aa0f3f3b80fd49664",
+      "stdout_sha256": "123e0d075c051000ff7ab7358b2e06f6aa2b3f21c787f3d24af77043ec016671",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "normal-build",
-      "owned_pid": 31540,
+      "owned_pid": 29896,
       "owned_reaped": true,
       "timeout_seconds": 1200,
       "exit_code": 0,
-      "stdout_sha256": "483a7678995bb5e60587722624357c2d9f3cd64352cc742520dbf40f1ed8b307",
-      "stderr_sha256": "9ab6276f1ae076e8dd67bb3375f7f920977973618b9e1d4aa215bb48e47780dc"
+      "stdout_sha256": "1320af7a38f0316748df242ff4c09657b761afcc7687ed3f4943f60e4e474812",
+      "stderr_sha256": "1756e1142a1ca5378d36ccaad6769c47a40c61d9cc8fbbf319c9e553de82e28e"
     }
   ],
-  "observed_at_utc": "2026-11-03T10:43:17.802205+00:00",
+  "observed_at_utc": "2026-11-03T11:17:41.984677+00:00",
   "locked_offline": true,
   "actual_php_wasm_executed": false,
   "native_php_executed": false,
@@ -236,12 +236,12 @@
     "experiments/php-wasix-wp-request-probe/build_check.py": "9486992a241169ae2e3ddb39a46bd614c866eb0856f21766454bf0891761e267",
     "experiments/php-wasix-wp-request-probe/derivation_gate.py": "06736acf5500fd8f015d26b2c3ccd90ba7e868b5e6c19a497f66f7f6d4a0c131",
     "experiments/php-wasix-wp-request-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
-    "experiments/php-wasix-wp-request-probe/fixtures/bootstrap.php": "8563358972687a46eefcfcd4a38d3508d392e8b5930842af129a90efdafa82d4",
+    "experiments/php-wasix-wp-request-probe/fixtures/bootstrap.php": "e892efdbbd255f35783331cb82535db358124a0d72dcf8fc256c4b23457ed49b",
     "experiments/php-wasix-wp-request-probe/fixtures/db.php": "5e48035bdc93b159237e9742eb90b296748e5a20f96b83c2ef2e1148f225df15",
     "experiments/php-wasix-wp-request-probe/fixtures/helpers.php": "e854d9b6c4b8ac3d27381086f8a8c9b984de949782ca6f24350c6e0294ef421d",
     "experiments/php-wasix-wp-request-probe/fixtures/home.php": "6627b1d91bb34724347fc7eae1df10d1b52f7096639eb2273d53641f90093d4b",
     "experiments/php-wasix-wp-request-probe/linux_database.py": "c2701e151e53637654618a346f8d903b5c1af65d28d9d80cf9321e356be1a577",
-    "experiments/php-wasix-wp-request-probe/prepare.py": "09a2d3dedede2b206f090afe30d2d42834cc90f6875e05f78c588bfb13610970",
+    "experiments/php-wasix-wp-request-probe/prepare.py": "95f28e3893068ee3f875175001e65263605b16a5dc1f349f48cc6e5837d60f1d",
     "experiments/php-wasix-wp-request-probe/run_check.py": "c929e15f5e3ecdd9e5c45e33ad36e66a972928a7a3fbffbcdc3dcfe6460cd3c3",
     "experiments/php-wasix-wp-request-probe/src/access_fs.rs": "5b2ee985385b7834727ccf36e5284e2dfc33593d1608565994b4e8824f7f4405",
     "experiments/php-wasix-wp-request-probe/src/capture.rs": "64ec21214650c2b386ed34670c89ed7cc38e35776ae92f6cf7740e6f3316208a",
@@ -338,7 +338,7 @@
       "bytes": 51582464,
       "sha256": "07e793f866108794202a12be81c45785fc6238fd5f35ab433b4396bc4e77229b"
     },
-    "stdout_sha256": "63df2e2830cd81ab92258e407cd69a8b667c07d137b2a61aa0f3f3b80fd49664"
+    "stdout_sha256": "123e0d075c051000ff7ab7358b2e06f6aa2b3f21c787f3d24af77043ec016671"
   },
   "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-wasix-cgi-framing-probe.exe",
   "executable_identity": {
