@@ -43,3 +43,13 @@ PHP報告のwarning_count 0は最終emit前の値である。finallyではerror 
 source `4002816`の[CI 41621939824](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41621939824)は両DBで同じemit 135行を示した。固定分類では`http_response_code()`の出現2、既送信後のheader変更警告1、出力開始135行／警告135行を観測した。原失敗は各1,012 binding・174 Git blobの照合付きで保存した。[通常PHPのstatus line比較](../php-cgi-status-line-probe/README.ja.md)でも、既存HTTP status line後の旧setterが警告を出し、新setterは200→200／404→200の全CGI bytesに一致した。
 
 所有JSON wrapperだけを`header_remove(); header('Content-Type: application/json', true, 200);`へ変更し、preparerの完全一致変換と許容差分へ明記した。buffer破棄・JSON化・元native描画ブロック・元WP・adapter・合格条件は変更しない。53 unitとsource-only準備／PHP lintを通過し、実Wasmでの全要求受入は次のCIで確認する。[RP開発者向けの原因と修正範囲](../../docs/v0.5-cgi-status-line-findings.ja.md)も参照。
+
+## 元テーマ要求の実Wasm受入
+
+source `7f191b0`の[CI 41626989599](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41626989599)はMySQL／MariaDBともinstall・fresh read・homeで成功した。status 200・全3header・HTML 69,399 Bが固定nativeと完全一致し、外側CGIもJSON Content-Type 1件・本文141,445 Bの完全な1行になった。JSON接頭辞offset 0、警告分類0、managed access invalid 0で、元のframing条件とnative比較を通過した。
+
+homeは145 RPC（hello1／query50／escape93／close1）、実結果の最大115行／23列／reply frame 64,780 Bだった。PHPの明示close、物理切断、actor終了・join、両stream EOF、source/module前後照合、所有containerの正常停止・削除を確認した。Linuxの旧31 unit・新53 unitも成功した。
+
+[MySQL原観測と由来](evidence/ci-41626989599-mysql/provenance.json)／[MariaDB原観測と由来](evidence/ci-41626989599-mariadb/provenance.json)は、各1,039 source binding・178 Git blobを照合して取り込んだ。private CGI／SQL／nonceの原bytesをoffline再計算したとは扱わず、原JSONを変更していない。初回からの失敗証拠も保持する。
+
+受入はこの固定core／default theme／匿名ホーム／非cache profileまで。実HTTP listener、任意theme/plugin、管理画面・REST・cron、nativeとWasmの全request context一致、全資源上限・即時回収、製品runtime採用は別のgateとして維持する。
