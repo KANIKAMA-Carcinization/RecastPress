@@ -1,0 +1,9 @@
+# Keep only source-bound public preparation JSON beneath artifact target paths.
+!ci-*/raw/target/
+ci-*/raw/target/*
+!ci-*/raw/target/php-wasix-cgi-framing-probe/
+ci-*/raw/target/php-wasix-cgi-framing-probe/*
+!ci-*/raw/target/php-wasix-cgi-framing-probe/prepared.json
+!ci-*/raw/target/php-cgi-framing-probe/
+ci-*/raw/target/php-cgi-framing-probe/*
+!ci-*/raw/target/php-cgi-framing-probe/prepared.json
