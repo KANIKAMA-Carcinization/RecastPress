@@ -3,7 +3,7 @@
   "passed": true,
   "outcome": "clean_native_home_and_repeat_404_passed",
   "backend": "mysql",
-  "observed_at_utc": "2026-11-03T14:16:29.331870+00:00",
+  "observed_at_utc": "2026-11-03T14:23:43.799028+00:00",
   "native_only": true,
   "wasm_executed": false,
   "rust_db_executed": false,
@@ -184,7 +184,7 @@
       },
       "private_context_before": {
         "bytes": 878,
-        "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+        "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
       },
       "ini_profile": {
         "owned_file_loaded": true,
@@ -213,6 +213,8 @@
         "post": [],
         "cookie": [],
         "request": [],
+        "environment_query_present": false,
+        "environment_query": null,
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -243,6 +245,8 @@
         "post": [],
         "cookie": [],
         "request": [],
+        "environment_query_present": false,
+        "environment_query": null,
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -271,6 +275,8 @@
         "post": [],
         "cookie": [],
         "request": [],
+        "environment_query_present": false,
+        "environment_query": null,
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -321,7 +327,7 @@
       },
       "private_context_after": {
         "bytes": 878,
-        "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+        "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
       }
     },
     "missing": {
@@ -371,7 +377,7 @@
       },
       "private_context_before": {
         "bytes": 881,
-        "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+        "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
       },
       "ini_profile": {
         "owned_file_loaded": true,
@@ -404,6 +410,8 @@
         "request": {
           "p": "2147483647"
         },
+        "environment_query_present": true,
+        "environment_query": "p=2147483647",
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -438,6 +446,8 @@
         "request": {
           "p": "2147483647"
         },
+        "environment_query_present": true,
+        "environment_query": "p=2147483647",
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -470,6 +480,8 @@
         "request": {
           "p": "2147483647"
         },
+        "environment_query_present": true,
+        "environment_query": "p=2147483647",
         "content_type_present": false,
         "content_type": null,
         "content_length_present": false,
@@ -520,7 +532,7 @@
       },
       "private_context_after": {
         "bytes": 881,
-        "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+        "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
       }
     }
   },
@@ -544,9 +556,9 @@
       "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
       "experiments/wp-bootstrap-probe/owned_database.py": "c398cef60c9233acb1012c96691d6dc9c718a1eac71d9855a47ce0c7a1c7da42",
       "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
-      "experiments/wp-request-context-probe/database_check.py": "e2577c5db7a5462580c092b5e946844c1fd091ced837c24010ddbe9a8a2e2e06",
+      "experiments/wp-request-context-probe/database_check.py": "7dd86f2a2f78323187293c2d6499054b0e98f69539812f14ebd1fa81866e0977",
       "experiments/wp-request-context-probe/fixtures/bootstrap.php": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d",
-      "experiments/wp-request-context-probe/fixtures/context.php": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20",
+      "experiments/wp-request-context-probe/fixtures/context.php": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4",
       "experiments/wp-request-context-probe/fixtures/home.php": "7df64fb630fc9b3710f549cba26ebee97b2ace4501bb99d07a23539d24c9ea6b",
       "experiments/wp-request-context-probe/fixtures/missing.php": "6375acb23e91e200f22c0ee5422e0f6b4f502f9e851f857e7cb62b31e5e4f379",
       "experiments/wp-request-context-probe/prepare.py": "af20186e5d2f3de198b63d08a3299d9b4c04c02187ea8beac9fa034733cc6fd5",
@@ -574,8 +586,8 @@
         "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
       },
       "context.php": {
-        "bytes": 7166,
-        "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+        "bytes": 7578,
+        "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
       },
       "home.php": {
         "bytes": 139,
@@ -641,9 +653,9 @@
       "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
       "experiments/wp-bootstrap-probe/owned_database.py": "c398cef60c9233acb1012c96691d6dc9c718a1eac71d9855a47ce0c7a1c7da42",
       "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
-      "experiments/wp-request-context-probe/database_check.py": "e2577c5db7a5462580c092b5e946844c1fd091ced837c24010ddbe9a8a2e2e06",
+      "experiments/wp-request-context-probe/database_check.py": "7dd86f2a2f78323187293c2d6499054b0e98f69539812f14ebd1fa81866e0977",
       "experiments/wp-request-context-probe/fixtures/bootstrap.php": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d",
-      "experiments/wp-request-context-probe/fixtures/context.php": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20",
+      "experiments/wp-request-context-probe/fixtures/context.php": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4",
       "experiments/wp-request-context-probe/fixtures/home.php": "7df64fb630fc9b3710f549cba26ebee97b2ace4501bb99d07a23539d24c9ea6b",
       "experiments/wp-request-context-probe/fixtures/missing.php": "6375acb23e91e200f22c0ee5422e0f6b4f502f9e851f857e7cb62b31e5e4f379",
       "experiments/wp-request-context-probe/prepare.py": "af20186e5d2f3de198b63d08a3299d9b4c04c02187ea8beac9fa034733cc6fd5",
@@ -1013,14 +1025,14 @@
       "stage": "mysql_release_key",
       "timeout_seconds": 30,
       "owned_reaped": true,
-      "pid": 27912,
+      "pid": 10412,
       "exit_code": 0,
       "stdout_bytes": 380,
       "stdout_sha256": "103837b6c5ef3500702b76c18a6832a95727be3d531caa8be9dda92811b85751",
       "stderr_bytes": 294,
-      "stderr_sha256": "081e61eabf5686075086f4601f18ba1b08632d645070c284863278a6efd67ef0",
+      "stderr_sha256": "5b5c2c374098620bfa7869de7715f9cfca076f0a5667e639421028ea71f0a42a",
       "cleanup": {
-        "pid": 27912,
+        "pid": 10412,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1034,14 +1046,14 @@
       "stage": "mysql_public_keyring",
       "timeout_seconds": 30,
       "owned_reaped": true,
-      "pid": 31676,
+      "pid": 25300,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 31676,
+        "pid": 25300,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1055,14 +1067,14 @@
       "stage": "mysql_archive_signature",
       "timeout_seconds": 60,
       "owned_reaped": true,
-      "pid": 22268,
+      "pid": 6484,
       "exit_code": 0,
       "stdout_bytes": 373,
       "stdout_sha256": "361cf7b4bd71663d05c9f3ec4729dd68d6c56a09d6c8341a47464228f7450b97",
       "stderr_bytes": 251,
       "stderr_sha256": "ec928fa9574112aa2b69a06dc57b8dc370539fdf6dcb9684bf921e9ae984a62b",
       "cleanup": {
-        "pid": 22268,
+        "pid": 6484,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1076,14 +1088,14 @@
       "stage": "tls_fixture_0",
       "timeout_seconds": 20,
       "owned_reaped": true,
-      "pid": 28892,
+      "pid": 16224,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stderr_bytes": 654,
-      "stderr_sha256": "98189910bb2144b13ce6792a9e5c4743750eab5d9227d36ad0969c64f79e5726",
+      "stderr_bytes": 1947,
+      "stderr_sha256": "54293b348273267d5e88e1b469434546803214e620d7abf1a97fa6a8cfd785fd",
       "cleanup": {
-        "pid": 28892,
+        "pid": 16224,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1097,14 +1109,14 @@
       "stage": "tls_fixture_1",
       "timeout_seconds": 20,
       "owned_reaped": true,
-      "pid": 27552,
+      "pid": 27192,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stderr_bytes": 1538,
-      "stderr_sha256": "d0810c0dcb6247c2a21b433f50c693b5aa62f111b730b89446ad1ca7a7ad0865",
+      "stderr_bytes": 1298,
+      "stderr_sha256": "41e6918d36d14c68abcef9e117437099752f171ceee8186f3c1d6dfec7a595f8",
       "cleanup": {
-        "pid": 27552,
+        "pid": 27192,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1118,14 +1130,14 @@
       "stage": "tls_fixture_2",
       "timeout_seconds": 20,
       "owned_reaped": true,
-      "pid": 18624,
+      "pid": 29492,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 59,
       "stderr_sha256": "92d31139d88abe48934583908f7cd3d6c59eb7e49992afe3552b7542414b21cf",
       "cleanup": {
-        "pid": 18624,
+        "pid": 29492,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1139,14 +1151,14 @@
       "stage": "tls_fixture_3",
       "timeout_seconds": 20,
       "owned_reaped": true,
-      "pid": 17492,
+      "pid": 30708,
       "exit_code": 0,
       "stdout_bytes": 128,
-      "stdout_sha256": "a72b2789417070b2707a092fb921ba63a06112421dad68db1845c2d1e3e8fc06",
+      "stdout_sha256": "acdd5c918075758127efba3503b4dad22d98a08f50fd610c0e292bd3596867b4",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 17492,
+        "pid": 30708,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1160,14 +1172,14 @@
       "stage": "initialize_bridge_database",
       "timeout_seconds": 90,
       "owned_reaped": true,
-      "pid": 23944,
+      "pid": 9940,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stderr_bytes": 856,
-      "stderr_sha256": "f85d0a3bcfe83015380f6625bfde4835d9edd4ea3e7b59c4952bb2e2d70ea70a",
+      "stderr_bytes": 855,
+      "stderr_sha256": "209e5e83101d17786eb3e7f2ca0661e6a22cfc275def7a306c3a293fbc61f923",
       "cleanup": {
-        "pid": 23944,
+        "pid": 9940,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1181,14 +1193,14 @@
       "stage": "db_identity",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 2180,
+      "pid": 15832,
       "exit_code": 0,
       "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 2180,
+        "pid": 15832,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1202,14 +1214,14 @@
       "stage": "create_bridge_fixture",
       "timeout_seconds": 30,
       "owned_reaped": true,
-      "pid": 3392,
+      "pid": 1460,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 3392,
+        "pid": 1460,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1223,14 +1235,14 @@
       "stage": "limited_empty_fixture",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 8408,
+      "pid": 25208,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 8408,
+        "pid": 25208,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1244,14 +1256,14 @@
       "stage": "create_scoped_wordpress_installer",
       "timeout_seconds": 10,
       "owned_reaped": true,
-      "pid": 31236,
+      "pid": 8344,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 31236,
+        "pid": 8344,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1265,14 +1277,14 @@
       "stage": "original_native_install",
       "timeout_seconds": 180,
       "owned_reaped": true,
-      "pid": 5836,
+      "pid": 31324,
       "exit_code": 0,
       "stdout_bytes": 1580,
       "stdout_sha256": "fd94f610a7afa8ebf81c96ce4d2ed48ce3f1dd88aa3157522b56dd386d7272c8",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 5836,
+        "pid": 31324,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1286,14 +1298,14 @@
       "stage": "original_native_read",
       "timeout_seconds": 180,
       "owned_reaped": true,
-      "pid": 23636,
+      "pid": 30744,
       "exit_code": 0,
       "stdout_bytes": 1580,
       "stdout_sha256": "2177c0f97a855dd7954dfeb748257df8347c000a07cace3b7b34d4f3e0a00092",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23636,
+        "pid": 30744,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1307,14 +1319,14 @@
       "stage": "private_installed_admin_hash_guard",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 25184,
+      "pid": 30184,
       "exit_code": 0,
       "stdout_bytes": 65,
-      "stdout_sha256": "afcb740c0c00519c75623f34dbf843a1bff3b449d2283c9021a92909f8a9bc82",
+      "stdout_sha256": "79d78285aff0408a7364d1df832fd887e463cef5a178adb1010ca0392958e691",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 25184,
+        "pid": 30184,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1328,14 +1340,14 @@
       "stage": "db_identity",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 16780,
+      "pid": 13844,
       "exit_code": 0,
       "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 16780,
+        "pid": 13844,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1349,14 +1361,14 @@
       "stage": "seed_fixed_public_dates",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 21632,
+      "pid": 23556,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 21632,
+        "pid": 23556,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1370,14 +1382,14 @@
       "stage": "independent_public_post_dates_before_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 29472,
+      "pid": 23336,
       "exit_code": 0,
       "stdout_bytes": 166,
       "stdout_sha256": "c1afa201e87530ca55c37debebdd9784e59101eb65f43c5419e6679e5f8c3dba",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 29472,
+        "pid": 23336,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1391,14 +1403,14 @@
       "stage": "independent_public_comment_dates_before_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 16172,
+      "pid": 27916,
       "exit_code": 0,
       "stdout_bytes": 45,
       "stdout_sha256": "b9e2bbc707277502d2599f29e51ceb3e0092b492910b5174550838eb0ffd0d6e",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 16172,
+        "pid": 27916,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1412,14 +1424,14 @@
       "stage": "independent_missing_post_before_requests",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 14700,
+      "pid": 3376,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 14700,
+        "pid": 3376,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1433,14 +1445,14 @@
       "stage": "db_identity",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 25960,
+      "pid": 18096,
       "exit_code": 0,
       "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 25960,
+        "pid": 18096,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1454,14 +1466,14 @@
       "stage": "independent_wordpress_tables",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23148,
+      "pid": 21764,
       "exit_code": 0,
       "stdout_bytes": 178,
       "stdout_sha256": "6a2e7065c0b36562673ef7347f2efc35d1e4489eabc839d67facaaae72ac95a3",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23148,
+        "pid": 21764,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1475,14 +1487,14 @@
       "stage": "independent_wordpress_identity_options",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23692,
+      "pid": 28528,
       "exit_code": 0,
       "stdout_bytes": 168,
       "stdout_sha256": "3d3dc425e29fd39192dba3d256b4bed8fa5d64507a8864058c74940b000705ad",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23692,
+        "pid": 28528,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1496,14 +1508,14 @@
       "stage": "independent_wordpress_admin_count",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 22464,
+      "pid": 26496,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 22464,
+        "pid": 26496,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1517,14 +1529,14 @@
       "stage": "independent_public_post_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23800,
+      "pid": 29800,
       "exit_code": 0,
       "stdout_bytes": 166,
       "stdout_sha256": "c1afa201e87530ca55c37debebdd9784e59101eb65f43c5419e6679e5f8c3dba",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23800,
+        "pid": 29800,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1538,14 +1550,14 @@
       "stage": "independent_public_comment_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 27332,
+      "pid": 12636,
       "exit_code": 0,
       "stdout_bytes": 45,
       "stdout_sha256": "b9e2bbc707277502d2599f29e51ceb3e0092b492910b5174550838eb0ffd0d6e",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 27332,
+        "pid": 12636,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1559,10 +1571,73 @@
       "stage": "independent_autoload_summary_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23240,
+      "pid": 7680,
       "exit_code": 0,
       "stdout_bytes": 11,
       "stdout_sha256": "f550a4cfab50603e25096216bd934f5b85f886c5ccc2852cb9ac3445019c11b0",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "cleanup": {
+        "pid": 7680,
+        "reaped": true,
+        "exit_code": 0,
+        "forced_tree_cleanup": false,
+        "tree_cleanup_command_exit_code": null,
+        "tree_cleanup_failure_class": null,
+        "direct_captured_kill_used": false,
+        "independent_descendant_inventory_verified": false
+      }
+    },
+    {
+      "stage": "independent_largest_autoload_name_after_home",
+      "timeout_seconds": 5,
+      "owned_reaped": true,
+      "pid": 23772,
+      "exit_code": 0,
+      "stdout_bytes": 42,
+      "stdout_sha256": "f058a9b92fcf06361372501a3ce75bd4ad90022e63132a54dff0330129f14957",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "cleanup": {
+        "pid": 23772,
+        "reaped": true,
+        "exit_code": 0,
+        "forced_tree_cleanup": false,
+        "tree_cleanup_command_exit_code": null,
+        "tree_cleanup_failure_class": null,
+        "direct_captured_kill_used": false,
+        "independent_descendant_inventory_verified": false
+      }
+    },
+    {
+      "stage": "independent_missing_post_home",
+      "timeout_seconds": 5,
+      "owned_reaped": true,
+      "pid": 19268,
+      "exit_code": 0,
+      "stdout_bytes": 3,
+      "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "cleanup": {
+        "pid": 19268,
+        "reaped": true,
+        "exit_code": 0,
+        "forced_tree_cleanup": false,
+        "tree_cleanup_command_exit_code": null,
+        "tree_cleanup_failure_class": null,
+        "direct_captured_kill_used": false,
+        "independent_descendant_inventory_verified": false
+      }
+    },
+    {
+      "stage": "db_identity",
+      "timeout_seconds": 5,
+      "owned_reaped": true,
+      "pid": 23240,
+      "exit_code": 0,
+      "stdout_bytes": 129,
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
@@ -1577,80 +1652,17 @@
       }
     },
     {
-      "stage": "independent_largest_autoload_name_after_home",
-      "timeout_seconds": 5,
-      "owned_reaped": true,
-      "pid": 21080,
-      "exit_code": 0,
-      "stdout_bytes": 42,
-      "stdout_sha256": "f058a9b92fcf06361372501a3ce75bd4ad90022e63132a54dff0330129f14957",
-      "stderr_bytes": 0,
-      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "cleanup": {
-        "pid": 21080,
-        "reaped": true,
-        "exit_code": 0,
-        "forced_tree_cleanup": false,
-        "tree_cleanup_command_exit_code": null,
-        "tree_cleanup_failure_class": null,
-        "direct_captured_kill_used": false,
-        "independent_descendant_inventory_verified": false
-      }
-    },
-    {
-      "stage": "independent_missing_post_home",
-      "timeout_seconds": 5,
-      "owned_reaped": true,
-      "pid": 27480,
-      "exit_code": 0,
-      "stdout_bytes": 3,
-      "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
-      "stderr_bytes": 0,
-      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "cleanup": {
-        "pid": 27480,
-        "reaped": true,
-        "exit_code": 0,
-        "forced_tree_cleanup": false,
-        "tree_cleanup_command_exit_code": null,
-        "tree_cleanup_failure_class": null,
-        "direct_captured_kill_used": false,
-        "independent_descendant_inventory_verified": false
-      }
-    },
-    {
-      "stage": "db_identity",
-      "timeout_seconds": 5,
-      "owned_reaped": true,
-      "pid": 7248,
-      "exit_code": 0,
-      "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
-      "stderr_bytes": 0,
-      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "cleanup": {
-        "pid": 7248,
-        "reaped": true,
-        "exit_code": 0,
-        "forced_tree_cleanup": false,
-        "tree_cleanup_command_exit_code": null,
-        "tree_cleanup_failure_class": null,
-        "direct_captured_kill_used": false,
-        "independent_descendant_inventory_verified": false
-      }
-    },
-    {
       "stage": "independent_wordpress_tables",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 4900,
+      "pid": 29424,
       "exit_code": 0,
       "stdout_bytes": 178,
       "stdout_sha256": "6a2e7065c0b36562673ef7347f2efc35d1e4489eabc839d67facaaae72ac95a3",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 4900,
+        "pid": 29424,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1664,14 +1676,14 @@
       "stage": "independent_wordpress_identity_options",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 2912,
+      "pid": 21776,
       "exit_code": 0,
       "stdout_bytes": 168,
       "stdout_sha256": "3d3dc425e29fd39192dba3d256b4bed8fa5d64507a8864058c74940b000705ad",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 2912,
+        "pid": 21776,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1685,14 +1697,14 @@
       "stage": "independent_wordpress_admin_count",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 26832,
+      "pid": 8712,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 26832,
+        "pid": 8712,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1706,14 +1718,14 @@
       "stage": "independent_public_post_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23872,
+      "pid": 19876,
       "exit_code": 0,
       "stdout_bytes": 166,
       "stdout_sha256": "c1afa201e87530ca55c37debebdd9784e59101eb65f43c5419e6679e5f8c3dba",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23872,
+        "pid": 19876,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1727,14 +1739,14 @@
       "stage": "independent_public_comment_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 31620,
+      "pid": 11032,
       "exit_code": 0,
       "stdout_bytes": 45,
       "stdout_sha256": "b9e2bbc707277502d2599f29e51ceb3e0092b492910b5174550838eb0ffd0d6e",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 31620,
+        "pid": 11032,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1748,14 +1760,14 @@
       "stage": "independent_autoload_summary_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 17192,
+      "pid": 14176,
       "exit_code": 0,
       "stdout_bytes": 11,
       "stdout_sha256": "4511c0b75e62be1a64049fc4bec6702660cd0d2c49bba364db96b71c6f07c428",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 17192,
+        "pid": 14176,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1769,14 +1781,14 @@
       "stage": "independent_largest_autoload_name_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 29296,
+      "pid": 4100,
       "exit_code": 0,
       "stdout_bytes": 42,
       "stdout_sha256": "f058a9b92fcf06361372501a3ce75bd4ad90022e63132a54dff0330129f14957",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 29296,
+        "pid": 4100,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1790,14 +1802,14 @@
       "stage": "independent_missing_post_missing",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 12268,
+      "pid": 24944,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 12268,
+        "pid": 24944,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1811,14 +1823,14 @@
       "stage": "db_identity",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 31628,
+      "pid": 30300,
       "exit_code": 0,
       "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 31628,
+        "pid": 30300,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1832,14 +1844,14 @@
       "stage": "independent_wordpress_tables",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 22236,
+      "pid": 22936,
       "exit_code": 0,
       "stdout_bytes": 178,
       "stdout_sha256": "6a2e7065c0b36562673ef7347f2efc35d1e4489eabc839d67facaaae72ac95a3",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 22236,
+        "pid": 22936,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1853,14 +1865,14 @@
       "stage": "independent_wordpress_identity_options",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 11936,
+      "pid": 30208,
       "exit_code": 0,
       "stdout_bytes": 168,
       "stdout_sha256": "3d3dc425e29fd39192dba3d256b4bed8fa5d64507a8864058c74940b000705ad",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 11936,
+        "pid": 30208,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1874,14 +1886,14 @@
       "stage": "independent_wordpress_admin_count",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 7180,
+      "pid": 23944,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 7180,
+        "pid": 23944,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1895,14 +1907,14 @@
       "stage": "independent_public_post_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 28844,
+      "pid": 30284,
       "exit_code": 0,
       "stdout_bytes": 166,
       "stdout_sha256": "c1afa201e87530ca55c37debebdd9784e59101eb65f43c5419e6679e5f8c3dba",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 28844,
+        "pid": 30284,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1916,14 +1928,14 @@
       "stage": "independent_public_comment_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 17744,
+      "pid": 30360,
       "exit_code": 0,
       "stdout_bytes": 45,
       "stdout_sha256": "b9e2bbc707277502d2599f29e51ceb3e0092b492910b5174550838eb0ffd0d6e",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 17744,
+        "pid": 30360,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1937,14 +1949,14 @@
       "stage": "independent_autoload_summary_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 25312,
+      "pid": 21956,
       "exit_code": 0,
       "stdout_bytes": 11,
       "stdout_sha256": "4511c0b75e62be1a64049fc4bec6702660cd0d2c49bba364db96b71c6f07c428",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 25312,
+        "pid": 21956,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1958,14 +1970,14 @@
       "stage": "independent_largest_autoload_name_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23244,
+      "pid": 17336,
       "exit_code": 0,
       "stdout_bytes": 42,
       "stdout_sha256": "f058a9b92fcf06361372501a3ce75bd4ad90022e63132a54dff0330129f14957",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23244,
+        "pid": 17336,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -1979,14 +1991,14 @@
       "stage": "independent_missing_post_missing_repeat",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 21176,
+      "pid": 29080,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 21176,
+        "pid": 29080,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2000,14 +2012,14 @@
       "stage": "db_identity",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 4028,
+      "pid": 22896,
       "exit_code": 0,
       "stdout_bytes": 129,
-      "stdout_sha256": "bc92a60d1976c89c3f3ebaedaa23ad0a8f35454f3762c5064e2348e6a5b8c4ca",
+      "stdout_sha256": "8567c171aaa3969f40423a376555c9c21941275ff67b28079b1de19324f9ba76",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 4028,
+        "pid": 22896,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2021,14 +2033,14 @@
       "stage": "independent_wordpress_tables",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 7520,
+      "pid": 21860,
       "exit_code": 0,
       "stdout_bytes": 178,
       "stdout_sha256": "6a2e7065c0b36562673ef7347f2efc35d1e4489eabc839d67facaaae72ac95a3",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 7520,
+        "pid": 21860,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2042,14 +2054,14 @@
       "stage": "independent_wordpress_identity_options",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 23644,
+      "pid": 21784,
       "exit_code": 0,
       "stdout_bytes": 168,
       "stdout_sha256": "3d3dc425e29fd39192dba3d256b4bed8fa5d64507a8864058c74940b000705ad",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 23644,
+        "pid": 21784,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2063,14 +2075,14 @@
       "stage": "independent_wordpress_admin_count",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 28856,
+      "pid": 10868,
       "exit_code": 0,
       "stdout_bytes": 3,
       "stdout_sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 28856,
+        "pid": 10868,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2084,14 +2096,14 @@
       "stage": "independent_public_post_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 15376,
+      "pid": 14060,
       "exit_code": 0,
       "stdout_bytes": 166,
       "stdout_sha256": "c1afa201e87530ca55c37debebdd9784e59101eb65f43c5419e6679e5f8c3dba",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 15376,
+        "pid": 14060,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2105,14 +2117,14 @@
       "stage": "independent_public_comment_dates_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 1180,
+      "pid": 14972,
       "exit_code": 0,
       "stdout_bytes": 45,
       "stdout_sha256": "b9e2bbc707277502d2599f29e51ceb3e0092b492910b5174550838eb0ffd0d6e",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 1180,
+        "pid": 14972,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2126,14 +2138,14 @@
       "stage": "independent_autoload_summary_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 8636,
+      "pid": 27428,
       "exit_code": 0,
       "stdout_bytes": 11,
       "stdout_sha256": "4511c0b75e62be1a64049fc4bec6702660cd0d2c49bba364db96b71c6f07c428",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 8636,
+        "pid": 27428,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2147,14 +2159,14 @@
       "stage": "independent_largest_autoload_name_after_home",
       "timeout_seconds": 5,
       "owned_reaped": true,
-      "pid": 22460,
+      "pid": 30248,
       "exit_code": 0,
       "stdout_bytes": 42,
       "stdout_sha256": "f058a9b92fcf06361372501a3ce75bd4ad90022e63132a54dff0330129f14957",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 22460,
+        "pid": 30248,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2168,14 +2180,14 @@
       "stage": "admin_bridge_shutdown",
       "timeout_seconds": 10,
       "owned_reaped": true,
-      "pid": 16880,
+      "pid": 14088,
       "exit_code": 0,
       "stdout_bytes": 0,
       "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "cleanup": {
-        "pid": 16880,
+        "pid": 14088,
         "reaped": true,
         "exit_code": 0,
         "forced_tree_cleanup": false,
@@ -2194,7 +2206,7 @@
   "admin_transport": "verified_tls",
   "separate_admin_and_limited_credentials": true,
   "production_database_used": false,
-  "run": "target/wpdb-rpc-probe/database-runs/bridge-mysql-4a19ef73ebdb4a6d9d2fdbd4ba0979a2",
+  "run": "target/wpdb-rpc-probe/database-runs/bridge-mysql-a32898266d514ff688e252505bf82cbb",
   "run_retained": true,
   "database_tool": {
     "version": "8.4.13",
@@ -2215,12 +2227,12 @@
     }
   },
   "tls_fixture": {
-    "ca_sha256": "1feeb883c88c9bccbc6590ebc2cbf2d90a4ffdea7823103b7d7b9d747a5926f9",
-    "server_cert_sha256": "2b75df0be35f73b0a713205bf691d80e22ec832ace9cbc3ee0efd626a16be7cf",
+    "ca_sha256": "310b2155769e9ae096f20436cb8a58817ca4a33d27b36f9bbc3602f7052679b8",
+    "server_cert_sha256": "abe3c8e7364e4ce0682537da33c72bed3b37e382802c3155005f497b4c6f196a",
     "admin_chain_and_ip_verification_enabled": true,
     "bridge_db_transport": "disabled"
   },
-  "database_pid": 3040,
+  "database_pid": 18376,
   "sql_server_version": "8.4.13",
   "fixture_empty_before_probe": true,
   "installer_scoped_schema_ddl_and_crud": true,
@@ -2347,12 +2359,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 878,
-          "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+          "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
         },
         "php.ini": {
           "bytes": 178,
@@ -2386,18 +2398,18 @@
       ],
       "absolute_environment_values_recorded": false,
       "process": {
-        "owned_pid": 4664,
+        "owned_pid": 19448,
         "exit_code": 0,
         "owned_reaped": true,
         "stdout_eof": true,
         "stderr_eof": true,
-        "elapsed_ms": 4621,
+        "elapsed_ms": 4229,
         "live_capture_limit_each": 3145728,
         "deadline_seconds": 180
       },
       "stdout": {
-        "bytes": 143400,
-        "sha256": "ad74daa2598c1b2162e6811ee4d4f20909280e614a683452cd47a0ef1c10b92e"
+        "bytes": 143577,
+        "sha256": "8e186b00513808ec6c758f08cebb718eab78435beb86adf7ff8b72cca4ab0964"
       },
       "stderr": {
         "bytes": 0,
@@ -2458,7 +2470,7 @@
         },
         "private_context_before": {
           "bytes": 878,
-          "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+          "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
         },
         "ini_profile": {
           "owned_file_loaded": true,
@@ -2487,6 +2499,8 @@
           "post": [],
           "cookie": [],
           "request": [],
+          "environment_query_present": false,
+          "environment_query": null,
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2517,6 +2531,8 @@
           "post": [],
           "cookie": [],
           "request": [],
+          "environment_query_present": false,
+          "environment_query": null,
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2545,6 +2561,8 @@
           "post": [],
           "cookie": [],
           "request": [],
+          "environment_query_present": false,
+          "environment_query": null,
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2595,7 +2613,7 @@
         },
         "private_context_after": {
           "bytes": 878,
-          "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+          "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
         }
       },
       "outer_response": {
@@ -2609,10 +2627,10 @@
         ],
         "header_bytes": 34,
         "raw_header_sha256": "0240d5d1e09f51403d0913991e0bb154eb5262ba89418fc8c054d3136d858189",
-        "body_bytes": 143366,
-        "body_sha256": "80b659358ccb72addbb5fcdd7e1d4d16af27dacb788ffc13bbcbbebfc77073e6",
-        "complete_stdout_bytes": 143400,
-        "complete_stdout_sha256": "ad74daa2598c1b2162e6811ee4d4f20909280e614a683452cd47a0ef1c10b92e",
+        "body_bytes": 143543,
+        "body_sha256": "efe2479da5e38cfbbe8f7f81202a9a0611f76ae80aa55d79c202036c07770bb3",
+        "complete_stdout_bytes": 143577,
+        "complete_stdout_sha256": "8e186b00513808ec6c758f08cebb718eab78435beb86adf7ff8b72cca4ab0964",
         "header_or_body_normalized": false
       },
       "owned_files_after": {
@@ -2625,12 +2643,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 878,
-          "sha256": "10e6ad25853f3eb55a00fbecb569e2ee1ae9809c40c078038ff36decf96d8bfd"
+          "sha256": "cc9e726d8a772f63cb9e9a008b95beeaf85eac87324d31eca75e85465372ea54"
         },
         "php.ini": {
           "bytes": 178,
@@ -2655,12 +2673,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "php.ini": {
           "bytes": 178,
@@ -2694,18 +2712,18 @@
       ],
       "absolute_environment_values_recorded": false,
       "process": {
-        "owned_pid": 16152,
+        "owned_pid": 25360,
         "exit_code": 0,
         "owned_reaped": true,
         "stdout_eof": true,
         "stderr_eof": true,
-        "elapsed_ms": 6601,
+        "elapsed_ms": 4254,
         "live_capture_limit_each": 3145728,
         "deadline_seconds": 180
       },
       "stdout": {
-        "bytes": 121352,
-        "sha256": "0f8909d7e848113a8da248181bb79f18097a92a2f7af495daaa69c1b0fc9aac5"
+        "bytes": 121556,
+        "sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665"
       },
       "stderr": {
         "bytes": 0,
@@ -2768,7 +2786,7 @@
         },
         "private_context_before": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "ini_profile": {
           "owned_file_loaded": true,
@@ -2801,6 +2819,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2835,6 +2855,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2867,6 +2889,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -2917,7 +2941,7 @@
         },
         "private_context_after": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         }
       },
       "outer_response": {
@@ -2931,10 +2955,10 @@
         ],
         "header_bytes": 34,
         "raw_header_sha256": "0240d5d1e09f51403d0913991e0bb154eb5262ba89418fc8c054d3136d858189",
-        "body_bytes": 121318,
-        "body_sha256": "9e42dc6f1062d582957a9b963d731456c774841c472b38965e108f2d38263c3b",
-        "complete_stdout_bytes": 121352,
-        "complete_stdout_sha256": "0f8909d7e848113a8da248181bb79f18097a92a2f7af495daaa69c1b0fc9aac5",
+        "body_bytes": 121522,
+        "body_sha256": "5e28ee0e7d3fb1cc746fa2b1cd3c020ae9ae62ae679cba5f10f186e6cb865d28",
+        "complete_stdout_bytes": 121556,
+        "complete_stdout_sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665",
         "header_or_body_normalized": false
       },
       "owned_files_after": {
@@ -2947,12 +2971,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "php.ini": {
           "bytes": 178,
@@ -2977,12 +3001,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "php.ini": {
           "bytes": 178,
@@ -3016,18 +3040,18 @@
       ],
       "absolute_environment_values_recorded": false,
       "process": {
-        "owned_pid": 17148,
+        "owned_pid": 21308,
         "exit_code": 0,
         "owned_reaped": true,
         "stdout_eof": true,
         "stderr_eof": true,
-        "elapsed_ms": 3971,
+        "elapsed_ms": 4201,
         "live_capture_limit_each": 3145728,
         "deadline_seconds": 180
       },
       "stdout": {
-        "bytes": 121352,
-        "sha256": "0f8909d7e848113a8da248181bb79f18097a92a2f7af495daaa69c1b0fc9aac5"
+        "bytes": 121556,
+        "sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665"
       },
       "stderr": {
         "bytes": 0,
@@ -3090,7 +3114,7 @@
         },
         "private_context_before": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "ini_profile": {
           "owned_file_loaded": true,
@@ -3123,6 +3147,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -3157,6 +3183,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -3189,6 +3217,8 @@
           "request": {
             "p": "2147483647"
           },
+          "environment_query_present": true,
+          "environment_query": "p=2147483647",
           "content_type_present": false,
           "content_type": null,
           "content_length_present": false,
@@ -3239,7 +3269,7 @@
         },
         "private_context_after": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         }
       },
       "outer_response": {
@@ -3253,10 +3283,10 @@
         ],
         "header_bytes": 34,
         "raw_header_sha256": "0240d5d1e09f51403d0913991e0bb154eb5262ba89418fc8c054d3136d858189",
-        "body_bytes": 121318,
-        "body_sha256": "9e42dc6f1062d582957a9b963d731456c774841c472b38965e108f2d38263c3b",
-        "complete_stdout_bytes": 121352,
-        "complete_stdout_sha256": "0f8909d7e848113a8da248181bb79f18097a92a2f7af495daaa69c1b0fc9aac5",
+        "body_bytes": 121522,
+        "body_sha256": "5e28ee0e7d3fb1cc746fa2b1cd3c020ae9ae62ae679cba5f10f186e6cb865d28",
+        "complete_stdout_bytes": 121556,
+        "complete_stdout_sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665",
         "header_or_body_normalized": false
       },
       "owned_files_after": {
@@ -3269,12 +3299,12 @@
           "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
         },
         "context.php": {
-          "bytes": 7166,
-          "sha256": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20"
+          "bytes": 7578,
+          "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
         },
         "context.json": {
           "bytes": 881,
-          "sha256": "a41544fef15c21490853d99c286b3887c65c352a2befd4c2a4e5d33a5ba57d59"
+          "sha256": "3ca417c725a5d0fa4bd85a03fb6cee329b3feb11731ff85a6d30c0ba04cf4cdd"
         },
         "php.ini": {
           "bytes": 178,
@@ -3285,7 +3315,7 @@
   },
   "fresh_repeat_404_response_exact": true,
   "database_cleanup": {
-    "pid": 3040,
+    "pid": 18376,
     "reaped": true,
     "exit_code": 0,
     "forced_tree_cleanup": false,
@@ -3318,9 +3348,9 @@
       "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
       "experiments/wp-bootstrap-probe/owned_database.py": "c398cef60c9233acb1012c96691d6dc9c718a1eac71d9855a47ce0c7a1c7da42",
       "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
-      "experiments/wp-request-context-probe/database_check.py": "e2577c5db7a5462580c092b5e946844c1fd091ced837c24010ddbe9a8a2e2e06",
+      "experiments/wp-request-context-probe/database_check.py": "7dd86f2a2f78323187293c2d6499054b0e98f69539812f14ebd1fa81866e0977",
       "experiments/wp-request-context-probe/fixtures/bootstrap.php": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d",
-      "experiments/wp-request-context-probe/fixtures/context.php": "d800b85dec7151dc19d0f7df749bc6ad0bba7673f196e8f07fb55fb1b9388e20",
+      "experiments/wp-request-context-probe/fixtures/context.php": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4",
       "experiments/wp-request-context-probe/fixtures/home.php": "7df64fb630fc9b3710f549cba26ebee97b2ace4501bb99d07a23539d24c9ea6b",
       "experiments/wp-request-context-probe/fixtures/missing.php": "6375acb23e91e200f22c0ee5422e0f6b4f502f9e851f857e7cb62b31e5e4f379",
       "experiments/wp-request-context-probe/prepare.py": "af20186e5d2f3de198b63d08a3299d9b4c04c02187ea8beac9fa034733cc6fd5",

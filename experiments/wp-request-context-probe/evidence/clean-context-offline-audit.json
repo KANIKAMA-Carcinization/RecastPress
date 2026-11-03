@@ -1,0 +1,321 @@
+{
+  "schema": "recastpress.wp-request-context-native-offline-audit.v0.5",
+  "passed": true,
+  "runtime_source_commit": "afe8781256bfa490cd70c810b6c43c8c6ef23795",
+  "initial_evidence_commit": "0bee0e570885477de2f813de5ac3d5cecf1bf0fd",
+  "backends": {
+    "mysql": {
+      "evidence": {
+        "bytes": 795353,
+        "sha256": "7c2a0b01fdd5e90a120b8e278368245c18618936a268baefb09ff1adba01e00b"
+      },
+      "initial_backup": {
+        "bytes": 794039,
+        "sha256": "5540cb224b0fc5e8c17c50ab0f88d2e9ec63f4ccda7dfd9c053d2a2ae27a6ae0"
+      },
+      "initial_recorded_passed": true,
+      "initial_query_environment_gate_complete": false,
+      "initial_clean_context_accepted_by_this_audit": false,
+      "historical_raw_verdict_rewritten": false,
+      "sources": {
+        "source_files": 40,
+        "git_source_blobs": 35,
+        "reference_metadata_pins_from_immutable_initial_proof": 5
+      },
+      "requests": {
+        "home": {
+          "status": 200,
+          "body": {
+            "bytes": 69399,
+            "sha256": "ef43f26984536cae43c4e703edef98dbaaf2bca79cc972a4373bf27f01cabdd1"
+          },
+          "headers_sha256": "81626bbc4776e9793327a37b5b144a621a5215d9e8f703a9ebf570223309e264",
+          "complete_cgi_wire": {
+            "bytes": 143577,
+            "sha256": "8e186b00513808ec6c758f08cebb718eab78435beb86adf7ff8b72cca4ab0964"
+          }
+        },
+        "missing": {
+          "status": 404,
+          "body": {
+            "bytes": 58177,
+            "sha256": "d2bda2fdf6bf12e075689fd3af5e87eba2ede1ea953d9f0d7085a63fc11f60bc"
+          },
+          "headers_sha256": "1fa5b51e03160ee826388e8edb7b5322cfef0f384f39aa26d94dbd487cc047a5",
+          "complete_cgi_wire": {
+            "bytes": 121556,
+            "sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665"
+          }
+        },
+        "missing_repeat": {
+          "status": 404,
+          "body": {
+            "bytes": 58177,
+            "sha256": "d2bda2fdf6bf12e075689fd3af5e87eba2ede1ea953d9f0d7085a63fc11f60bc"
+          },
+          "headers_sha256": "1fa5b51e03160ee826388e8edb7b5322cfef0f384f39aa26d94dbd487cc047a5",
+          "complete_cgi_wire": {
+            "bytes": 121556,
+            "sha256": "1094eb84aca768928e0cc15e6cdb927f9d30e760b3d68b666c37fcb9d4e81665"
+          }
+        }
+      },
+      "old_home_complete_response_equal": true,
+      "fresh_repeat_404_complete_response_equal": true
+    },
+    "mariadb": {
+      "evidence": {
+        "bytes": 792967,
+        "sha256": "a2d54133bc368f9945b5f178aafcc5c1edf60778c90247491f1ad60aeb0fe1df"
+      },
+      "initial_backup": {
+        "bytes": 791669,
+        "sha256": "e0a6a8d7d5fab22793d6e294b7bc4718762739e7d59f5e511709847e66596988"
+      },
+      "initial_recorded_passed": true,
+      "initial_query_environment_gate_complete": false,
+      "initial_clean_context_accepted_by_this_audit": false,
+      "historical_raw_verdict_rewritten": false,
+      "sources": {
+        "source_files": 40,
+        "git_source_blobs": 35,
+        "reference_metadata_pins_from_immutable_initial_proof": 5
+      },
+      "requests": {
+        "home": {
+          "status": 200,
+          "body": {
+            "bytes": 69399,
+            "sha256": "ef43f26984536cae43c4e703edef98dbaaf2bca79cc972a4373bf27f01cabdd1"
+          },
+          "headers_sha256": "81626bbc4776e9793327a37b5b144a621a5215d9e8f703a9ebf570223309e264",
+          "complete_cgi_wire": {
+            "bytes": 143577,
+            "sha256": "aceb96b0f7f180c792db781309ba16c91496103eaf7dcef8bc81d0c603a5f356"
+          }
+        },
+        "missing": {
+          "status": 404,
+          "body": {
+            "bytes": 58177,
+            "sha256": "d2bda2fdf6bf12e075689fd3af5e87eba2ede1ea953d9f0d7085a63fc11f60bc"
+          },
+          "headers_sha256": "1fa5b51e03160ee826388e8edb7b5322cfef0f384f39aa26d94dbd487cc047a5",
+          "complete_cgi_wire": {
+            "bytes": 121556,
+            "sha256": "f1c9e3da758a18d5f7c5e2816f813ffdb5a869a5fbaf58a0a9922e157ff86c1b"
+          }
+        },
+        "missing_repeat": {
+          "status": 404,
+          "body": {
+            "bytes": 58177,
+            "sha256": "d2bda2fdf6bf12e075689fd3af5e87eba2ede1ea953d9f0d7085a63fc11f60bc"
+          },
+          "headers_sha256": "1fa5b51e03160ee826388e8edb7b5322cfef0f384f39aa26d94dbd487cc047a5",
+          "complete_cgi_wire": {
+            "bytes": 121556,
+            "sha256": "f1c9e3da758a18d5f7c5e2816f813ffdb5a869a5fbaf58a0a9922e157ff86c1b"
+          }
+        }
+      },
+      "old_home_complete_response_equal": true,
+      "fresh_repeat_404_complete_response_equal": true
+    }
+  },
+  "both_backends_whole_home_and_404_equal": true,
+  "input_files": {
+    "scripts/verify_request_context_native.py": {
+      "bytes": 18526,
+      "sha256": "bc642e38ee429056c55e53610dd2e42b2420110b050d84e942bdb579eaa0c4ba"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mysql-native-before-5540cb224b0fc5e8.json": {
+      "bytes": 794039,
+      "sha256": "5540cb224b0fc5e8c17c50ab0f88d2e9ec63f4ccda7dfd9c053d2a2ae27a6ae0"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mysql-native.json": {
+      "bytes": 795353,
+      "sha256": "7c2a0b01fdd5e90a120b8e278368245c18618936a268baefb09ff1adba01e00b"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mariadb-native-before-e0a6a8d7d5fab227.json": {
+      "bytes": 791669,
+      "sha256": "e0a6a8d7d5fab22793d6e294b7bc4718762739e7d59f5e511709847e66596988"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 792967,
+      "sha256": "a2d54133bc368f9945b5f178aafcc5c1edf60778c90247491f1ad60aeb0fe1df"
+    }
+  },
+  "git_source_blob_identities": {
+    "0bee0e570885477de2f813de5ac3d5cecf1bf0fd:experiments/wp-request-context-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 791669,
+      "sha256": "e0a6a8d7d5fab22793d6e294b7bc4718762739e7d59f5e511709847e66596988"
+    },
+    "0bee0e570885477de2f813de5ac3d5cecf1bf0fd:experiments/wp-request-context-probe/evidence/windows-mysql-native.json": {
+      "bytes": 794039,
+      "sha256": "5540cb224b0fc5e8c17c50ab0f88d2e9ec63f4ccda7dfd9c053d2a2ae27a6ae0"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/binlog-probe/Cargo.lock": {
+      "bytes": 44593,
+      "sha256": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/binlog-probe/Cargo.toml": {
+      "bytes": 706,
+      "sha256": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/php-cgi-startup-probe/check.py": {
+      "bytes": 17841,
+      "sha256": "f22b503c38feab1e11ceee2c6833350f529f3fe1c59c3f59fb6a0b84da9f96f4"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/check.py": {
+      "bytes": 6974,
+      "sha256": "299779d53f92f7b5baeddacc9866058df7bcec75cbc67a29d762cddd98526b96"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/database_check.py": {
+      "bytes": 7735,
+      "sha256": "dabc6ddd31ec35cb675f75c0aea27e4d742c4d51e4db09f461e2cfbfb5920a2a"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 31590,
+      "sha256": "af07c9ff931f87b2f8d235423fcf5db0101ffc1402904b899c6294d9c6f35f2f"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/evidence/windows-mysql-native.json": {
+      "bytes": 33970,
+      "sha256": "61c331e5e9f316dd6e2f241a54f1de337bbff397d405c6a5f4ae55cc49dc2c91"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/fixtures/bootstrap.php": {
+      "bytes": 15581,
+      "sha256": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/fixtures/install.php": {
+      "bytes": 107,
+      "sha256": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/fixtures/read.php": {
+      "bytes": 104,
+      "sha256": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/owned_database.py": {
+      "bytes": 4205,
+      "sha256": "c398cef60c9233acb1012c96691d6dc9c718a1eac71d9855a47ce0c7a1c7da42"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-bootstrap-probe/prepare.py": {
+      "bytes": 10184,
+      "sha256": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/database_check.py": {
+      "bytes": 16850,
+      "sha256": "7dd86f2a2f78323187293c2d6499054b0e98f69539812f14ebd1fa81866e0977"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 791669,
+      "sha256": "e0a6a8d7d5fab22793d6e294b7bc4718762739e7d59f5e511709847e66596988"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/evidence/windows-mysql-native.json": {
+      "bytes": 794039,
+      "sha256": "5540cb224b0fc5e8c17c50ab0f88d2e9ec63f4ccda7dfd9c053d2a2ae27a6ae0"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/fixtures/bootstrap.php": {
+      "bytes": 18355,
+      "sha256": "3aaa6a9399d48e2f6e4ab362b9f83fadf407dd26614771f731c785b92aa1a10d"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/fixtures/context.php": {
+      "bytes": 7578,
+      "sha256": "90298bb19119200ab6db8458aef4e6ffabf8fdbc85708ecb5aff54627081c2c4"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/fixtures/home.php": {
+      "bytes": 139,
+      "sha256": "7df64fb630fc9b3710f549cba26ebee97b2ace4501bb99d07a23539d24c9ea6b"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/fixtures/missing.php": {
+      "bytes": 142,
+      "sha256": "6375acb23e91e200f22c0ee5422e0f6b4f502f9e851f857e7cb62b31e5e4f379"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-context-probe/prepare.py": {
+      "bytes": 9413,
+      "sha256": "af20186e5d2f3de198b63d08a3299d9b4c04c02187ea8beac9fa034733cc6fd5"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/database_check.py": {
+      "bytes": 18477,
+      "sha256": "458634885106e8dda07e18cff40d23f93a2bd18e39971eb1994971688e550e02"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 200332,
+      "sha256": "d79130b07427eab57d54275341b4bbd271bd53c63499b1d47139ab3b4c88831b"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/evidence/windows-mysql-native.json": {
+      "bytes": 202708,
+      "sha256": "7cf6c805a7863be81b81fd64177347e2fdea6170bd37594ad446845a90d6bf9a"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/fixtures/bootstrap.php": {
+      "bytes": 18419,
+      "sha256": "5fcc60a8f63c3ca33d0143c71c1911d314c415a281f170b3644f3cf2abb37732"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/fixtures/home.php": {
+      "bytes": 104,
+      "sha256": "6627b1d91bb34724347fc7eae1df10d1b52f7096639eb2273d53641f90093d4b"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/owned_database.py": {
+      "bytes": 6232,
+      "sha256": "edb193c26af598dbf62564107123e3ce6e0aa7083c22141da847c9b79aa5321d"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wp-request-probe/prepare.py": {
+      "bytes": 11447,
+      "sha256": "e9fa925c132b64205e05b046bec552eb0a7b267dfd58ec6d0f3d5eca1f25cd43"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-bridge-probe/owned_database.py": {
+      "bytes": 8299,
+      "sha256": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/database_check.py": {
+      "bytes": 43414,
+      "sha256": "86e9e6ddc38aa579013f7281ff5295e5a26f3a4907b1eebb70440b0fc9e83900"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/driver-plan.json": {
+      "bytes": 8529,
+      "sha256": "0fa784b6d444a9e981e2ce36ea2e7dca0294134b75d9700d0992dce83f095220"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/native_check.py": {
+      "bytes": 11134,
+      "sha256": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch": {
+      "bytes": 7230,
+      "sha256": "7b8330555a2589bbb13a68a2c3e90b31f7a569d85285058248d325bf1f0d8dcd"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/prepare_driver.py": {
+      "bytes": 11744,
+      "sha256": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:experiments/wpdb-rpc-probe/wire_check.py": {
+      "bytes": 8737,
+      "sha256": "5293179ba3ee1b42bbe9b79186c08b0aeca2fb4048e04766ff83d32df31f532d"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:scripts/owned_probe.py": {
+      "bytes": 16128,
+      "sha256": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:scripts/pinned_zip_tool.py": {
+      "bytes": 4513,
+      "sha256": "5986aad74d5ad1b6e33ea594ec55cb64024bfb4e90085d9274e5007f1610651f"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:scripts/setup_mariadb.py": {
+      "bytes": 757,
+      "sha256": "8beed162f951e8fb0306aaffce60a478d69a9e05af6ee1e3669ac4a8d7a55caa"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:scripts/setup_mysql.py": {
+      "bytes": 4128,
+      "sha256": "4b139d532a1c6f3cb9e1c6f0ad1a5677e589f21f8c326b2473b4ab58a0408e6a"
+    },
+    "afe8781256bfa490cd70c810b6c43c8c6ef23795:scripts/wordpress_reference.py": {
+      "bytes": 9101,
+      "sha256": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+    }
+  },
+  "raw_verdicts_rewritten": false,
+  "request_or_response_normalized": false,
+  "php_wasm_db_or_network_executed": false,
+  "binary_archive_or_private_context_reverified_offline": false,
+  "native_package_before_after_claims_bound_to_recorded_evidence_only": true,
+  "product_runtime_selected": false
+}

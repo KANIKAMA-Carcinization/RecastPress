@@ -23,3 +23,17 @@ prepareはsourceと導出条件を確認するだけでPHP・DB・networkを実�
 初回の両DB記録は元判定`passed: true`のまま保存する。homeはstatus200・3 headers・69,399 B、missingはstatus404・5 headers・58,177 Bで、反復404の全responseと両DB間の全responseも一致した。全CGI回収・正常DB停止・元source不変も確認できた。
 
 ただし、追加レビューでhomeの`getenv('QUERY_STRING')`に入口用`rp_request=1`が残る除去漏れを確認した。初回snapshotは`$_SERVER`のqueryだけを検証しており、C環境のqueryを検証していない。初回の成功を要求context全体の受入と扱わず、元記録・元sourceを保持したうえで、環境queryの除去と明示照合を追加して再実行する。
+
+## query分離後の両DB基準
+
+source `afe8781`の[MySQL](evidence/windows-mysql-native.json)と[MariaDB](evidence/windows-mariadb-native.json)は両方成功した。homeの環境queryは未設定、missingは`p=2147483647`だけとなり、起動前・起動後・描画後の3 snapshotで完全一致した。WP起動後の元`wp_is_json_request()`はfalse、`display_errors`は1、実CGI本文と`php://input`は0 bytesを維持した。
+
+homeはstatus200・全3 headers・HTML69,399 B（SHA `ef43f26984536cae43c4e703edef98dbaaf2bca79cc972a4373bf27f01cabdd1`）、missingはstatus404・全5 headers・HTML58,177 B（SHA `d2bda2fdf6bf12e075689fd3af5e87eba2ede1ea953d9f0d7085a63fc11f60bc`）。両DB間、404のfresh再実行、修正前後で全responseが一致し、homeは既存の元テーマ基準とも全response一致した。各DBで3 CGIのEOFとreap、各5 scratch filesの個別清掃、DB正常停止・全child回収、元WP全sourceとPHP全78 filesの前後一致を確認した。
+
+初回の元記録は[MySQL](evidence/windows-mysql-native-before-5540cb224b0fc5e8.json)・[MariaDB](evidence/windows-mariadb-native-before-e0a6a8d7d5fab227.json)へ全bytesのまま保存している。今回成立したのはこの有限native要求基準であり、同じcontext／404のWasm実行や実HTTP listenerの受入は次段階である。
+
+[独立offline監査](evidence/clean-context-offline-audit.json)では、40入力を35 Git blobs（固定source `afe8781`）と5 reference metadata pins（固定初回証跡）に分けて照合した。初回backupの全bytes、全6要求の公開JSON／CGI wireの再構成、厳密snapshot、元homeとの全応答一致と正常清掃の記録も照合した。13件のmemory内改変を拒否し、再監査の出力もbyte一致した。private context・INI本文や、native binary／archiveをofflineで再検証したという主張は含まない。
+
+```powershell
+python -B scripts/verify_request_context_native.py --record
+```
