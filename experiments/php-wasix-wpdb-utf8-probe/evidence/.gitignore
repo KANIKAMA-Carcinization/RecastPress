@@ -1,0 +1,9 @@
+# Preserve only the two public preparation records at artifact target paths.
+!ci-*/raw/target/
+ci-*/raw/target/*
+!ci-*/raw/target/php-wasix-wpdb-utf8-probe/
+ci-*/raw/target/php-wasix-wpdb-utf8-probe/*
+!ci-*/raw/target/php-wasix-wpdb-utf8-probe/prepared.json
+!ci-*/raw/target/wpdb-utf8-probe/
+ci-*/raw/target/wpdb-utf8-probe/*
+!ci-*/raw/target/wpdb-utf8-probe/prepared.json
