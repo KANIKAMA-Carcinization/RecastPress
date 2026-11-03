@@ -300,6 +300,31 @@ def frozen_validator(source):
     return source.functions(PREFIX + 'run_check.py', ['canonical', 'validate'], source.constants(PREFIX + 'run_check.py'))
 
 
+def flat_module_gate(value, data, raw, source):
+    """Bind build.verify_build's flat snapshot, not the runtime provenance ABI."""
+    build = data['build.json']
+    patches = {row['kind']: row for row in build['source_patches']}
+    exact(set(patches), {'fiber', 'cgi_prefork', 'managed_access'}, 'three_flat_module_patches')
+    fn = next(node for node in source.tree(old.MANAGED + 'build.py').body
+        if isinstance(node, ast.FunctionDef) and node.name == 'verify_build')
+    updates = [node.value for node in fn.body if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Attribute) and node.value.func.attr == 'update']
+    require(len(updates) == 1, 'one_managed_module_snapshot_update')
+    scope = next(keyword.value for keyword in updates[0].keywords if keyword.arg == 'scope')
+    expected = {'build_receipt_sha256': sha(raw['build.json']),
+        'manifest_sha256': sha(source.read(old.MANAGED + 'manifest.json')),
+        'patch_sha256': patches['fiber']['sha256'], 'cgi_patch_sha256': patches['cgi_prefork']['sha256'],
+        'assembly_sha256': sha(source.read(old.FIBER + 'fixtures/zend_wasix_fiber.S')),
+        'toolchain_receipt_sha256': sha(raw['toolchain.json']), 'input_files': build['input_files'],
+        'module_bytes': build['php_wasm']['bytes'], 'module_sha256': build['php_wasm']['sha256'],
+        'raw_module_sha256': build['raw_wasm']['sha256'], 'variant': build['variant'], 'scope': ast.literal_eval(scope),
+        'managed_access_patch_sha256': patches['managed_access']['sha256'],
+        'managed_access_header_sha256': sha(source.read(old.MANAGED + 'fixtures/recastpress_fs_access.h')),
+        'source_profile_sha256': sha(source.read(old.MANAGED + 'source_profile.py'))}
+    require(len(expected) == 15, 'flat_module_snapshot_fifteen_fields')
+    exact(value, expected, 'same_job_flat_module_snapshot')
+
+
 def positive_gate(data, raw, source, backend, native, prepared, anchor):
     exact(set(data), set(member_map(backend)), 'eight_positive_public_records')
     build_gate(data, raw, source); exact(data['prepared.json'], prepared, 'complete_thirteen_file_preparation')
@@ -313,7 +338,9 @@ def positive_gate(data, raw, source, backend, native, prepared, anchor):
     exact(run['preparation_before'], prepared, 'same_job_prepared_sources')
     exact(run['build_before'], host, 'same_job_host_before'); exact(run['build_after'], host, 'same_job_host_after')
     exact(run['module_before'], run['module_after'], 'same_module_before_after')
-    managed = old.managed_gate(data, raw, source, run['module_before'])
+    managed = old.managed_gate(data, raw, source)
+    flat_module_gate(run['module_before'], data, raw, source)
+    flat_module_gate(run['module_after'], data, raw, source)
     value = run['observation']; original = native['proofs'][backend]['observation']; expected = original
     platform = prepared.get('server_metadata')
     if platform is not None:
