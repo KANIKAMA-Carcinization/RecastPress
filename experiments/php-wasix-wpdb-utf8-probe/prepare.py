@@ -10,6 +10,7 @@ ROOT = HERE.parents[1]
 WORK = ROOT / 'target/php-wasix-wpdb-utf8-probe'
 DESTINATION = WORK / 'wp-core'
 PREPARED = WORK / 'prepared.json'
+SERVER_METADATA = HERE / 'server-metadata.json'
 FIXTURES = ['bridge.php', 'entry.php', 'corpus.php', 'adapter.php', 'helpers.php']
 BASE = 'experiments/php-wasix-wpdb-utf8-probe/fixtures/'
 PINS = {
@@ -150,13 +151,52 @@ def derivation_gate():
 def input_hashes():
     native, _ = modules(); result = native.prepare(record=False)['input_files']
     for name in list(PINS) + [pin['path'] for pin in ORACLES.values()]: result[name] = sha(read(ROOT / name))
-    for path in [Path(__file__).resolve(), *[HERE / 'fixtures' / name for name in FIXTURES]]:
+    platform, _ = server_metadata()
+    for name in [platform['image_manifest']['path'], *[row['linux_reference']['path'] for row in platform['backends'].values()]]:
+        result[name] = sha(read(ROOT / name))
+    for path in [Path(__file__).resolve(), SERVER_METADATA, *[HERE / 'fixtures' / name for name in FIXTURES]]:
         result[path.relative_to(ROOT).as_posix()] = sha(read(path))
     return dict(sorted(result.items()))
 
 
 def owned(path):
     require(WORK.resolve() == WORK and path.resolve() == path and path.is_relative_to(WORK), 'owned_utf8_metadata_path'); return path
+
+
+def server_metadata():
+    wire = read(SERVER_METADATA); value = json.loads(wire)
+    require(set(value) == {'schema', 'reference_derivation', 'image_manifest', 'backends'}
+        and value['schema'] == 'recastpress.php-wasix-wpdb-utf8-server-metadata.v0.5', 'utf8_server_metadata_schema')
+    require(value['reference_derivation'] == {'source': 'pinned_windows_native_observation',
+        'changed_fields': ['server_info_hex'], 'actual_result_modified': False}, 'utf8_server_reference_derivation')
+    manifest_pin = value['image_manifest']
+    require(manifest_pin['path'] == 'experiments/php-wasix-wpdb-probe/container-images.json', 'utf8_original_image_manifest')
+    manifest_wire = read(ROOT / manifest_pin['path'])
+    require(identity(manifest_wire) == {key: manifest_pin[key] for key in ['bytes', 'sha256']}, 'utf8_image_manifest_identity')
+    images = json.loads(manifest_wire)['images']
+    versions = {'mysql': ('8.4.13', '8.4.13'), 'mariadb': ('11.8.9-MariaDB', '11.8.9-MariaDB-ubu2404')}
+    require(set(value['backends']) == set(versions), 'utf8_exact_server_backends')
+    for backend, (windows, linux) in versions.items():
+        contract = value['backends'][backend]
+        require(set(contract) == {'native_version', 'linux_version', 'native_version_hex', 'linux_version_hex',
+            'image', 'linux_reference'}, 'utf8_closed_server_contract')
+        require(contract['native_version'] == windows and contract['linux_version'] == linux
+            and contract['native_version_hex'] == windows.encode('ascii').hex()
+            and contract['linux_version_hex'] == linux.encode('ascii').hex(), 'utf8_exact_server_version_bytes')
+        require(contract['image'] == {key: images[backend][key] for key in ['platform_digest', 'image_config_digest']}, 'utf8_linux_image_binding')
+        prior = contract['linux_reference']
+        require(prior['path'] == 'experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-' + backend
+            + '/raw/experiments/php-wasix-wpdb-probe/evidence/linux-' + backend + '-crud.json', 'utf8_original_linux_reference')
+        old_wire = read(ROOT / prior['path'])
+        require(identity(old_wire) == {key: prior[key] for key in ['bytes', 'sha256']}, 'utf8_original_linux_reference_identity')
+        old = json.loads(old_wire); native = json.loads(read(ROOT / ORACLES[backend]['path']))
+        require(old['passed'] is True and old['container_normal_exit_verified'] is True
+            and old['container_removed'] is True and old['image_config_digest'] == contract['image']['image_config_digest']
+            and old['image'].endswith('@' + contract['image']['platform_digest'])
+            and old['sql_server_version'] == linux
+            and old['observation']['php_result']['server_info_hex'] == contract['linux_version_hex']
+            and native['observation']['server_info_hex'] == contract['native_version_hex'], 'utf8_actual_original_platform_metadata')
+    return value, {'path': SERVER_METADATA.relative_to(ROOT).as_posix(), **identity(wire)}
 
 
 def metadata():
@@ -185,6 +225,7 @@ def metadata():
         native_values[backend] = value['observation']
     for key in ['observations', 'query_trace_hex', 'loaded_source_sha256', 'utf8_input_hex', 'bootstrap_num_queries', 'final_num_queries', 'final_row_count']:
         require(canonical(native_values['mysql'][key]) == canonical(native_values['mariadb'][key]), 'utf8_native_backend_public_core_differs')
+    platform, platform_identity = server_metadata()
     result = {'schema': 'recastpress.php-wasix-wpdb-utf8-prepared.v0.5', 'outcome': 'fixed_thirteen_utf8_guest_sources_prepared',
         'input_files': before, 'derivation': derivation, 'source_archive': archive, 'files': files,
         'wordpress_files': wp, 'wordpress_version': '7.1.3',
@@ -192,6 +233,7 @@ def metadata():
         'expected_include_names': sorted([BASE + name for name in FIXTURES]
             + ['.reference/wordpress-7.1.3/wp-includes/' + name for name in wp]),
         'native_oracles': ORACLES, 'native_api_cases': 31, 'native_public_queries': 22,
+        'server_metadata': platform, 'server_metadata_identity': platform_identity,
         'private_context_guest_path': '/rp-utf8/context.json',
         'private_context_keys': ['schema', 'nonce'], 'guest_context_contains_db_credentials_or_salts': False,
         'full_wordpress_bootstrap': False, 'wordpress_executed': False, 'wasm_executed_by_preparer': False,

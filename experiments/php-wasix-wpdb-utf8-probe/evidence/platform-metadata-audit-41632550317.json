@@ -1,0 +1,169 @@
+{
+  "schema": "recastpress.wpdb-utf8-platform-metadata-audit.v0.5",
+  "run_id": "41632550317",
+  "source_commit": "5da4ef5c30eac90996f4ec7720a1541fa061679b",
+  "passed": true,
+  "backends": {
+    "mysql": {
+      "backend": "mysql",
+      "initial_recorded_passed": true,
+      "initial_host_recorded_passed": true,
+      "raw_verdicts_rewritten": false,
+      "whole_public_php_body_exact": true,
+      "known_php_body_identity": {
+        "bytes": 31492,
+        "sha256": "46576eeb560aa418c25a89e1ce3e029c8769a259d80d8bd90e74807a3ee3f706"
+      },
+      "whole_public_cgi_wire_exact": true,
+      "known_cgi_wire_identity": {
+        "bytes": 31552,
+        "sha256": "c2a943d224f070e7cb300e27ef04e45575731b74011f0d7a7d07283600f3f13e"
+      },
+      "all_completion_and_stats_fields_verified_by_whole_body_identity": true,
+      "all_31_case_states_and_22_sql_bytes_verified_by_whole_body_identity": true,
+      "session_setup_reply_identity_equal_to_accepted_linux_reference": true,
+      "isolated_hello_reply_identity": {
+        "bytes": 200,
+        "sha256": "0da7dabb479d181e8862045070d3d01a97a33a77eedc661af95d2a4237992651"
+      },
+      "hello_candidate_count": 2048,
+      "hello_matching_candidate_count": 2,
+      "hello_version_profiles": [
+        "native_windows",
+        "pinned_linux"
+      ],
+      "connection_identifier_disclosed": false,
+      "metadata_derivation": {
+        "source": "pinned_windows_native_observation",
+        "changed_fields": [
+          "server_info_hex"
+        ],
+        "actual_result_modified": false
+      },
+      "actual_guest_result_modified": false,
+      "private_request_frames_or_nonce_digests_recomputed": false
+    },
+    "mariadb": {
+      "backend": "mariadb",
+      "initial_recorded_passed": false,
+      "initial_host_recorded_passed": false,
+      "raw_verdicts_rewritten": false,
+      "whole_public_php_body_exact": true,
+      "known_php_body_identity": {
+        "bytes": 31532,
+        "sha256": "fc37c48b212a49bc9376465e19ae58954472ceb79dbdd8115eeb6d952ac7b064"
+      },
+      "whole_public_cgi_wire_exact": true,
+      "known_cgi_wire_identity": {
+        "bytes": 31592,
+        "sha256": "ba39e47b81170145b1c52f0088d83701dee8b7ea74ed1a2a72a7eb37de98bac1"
+      },
+      "all_completion_and_stats_fields_verified_by_whole_body_identity": true,
+      "all_31_case_states_and_22_sql_bytes_verified_by_whole_body_identity": true,
+      "session_setup_reply_identity_equal_to_accepted_linux_reference": true,
+      "isolated_hello_reply_identity": {
+        "bytes": 231,
+        "sha256": "26075277f561b6f070c1f5f1b301a0dcb11ec026af898a6efce19e4d68038618"
+      },
+      "hello_candidate_count": 2048,
+      "hello_matching_candidate_count": 1,
+      "hello_version_profiles": [
+        "pinned_linux"
+      ],
+      "connection_identifier_disclosed": false,
+      "metadata_derivation": {
+        "source": "pinned_windows_native_observation",
+        "changed_fields": [
+          "server_info_hex"
+        ],
+        "actual_result_modified": false
+      },
+      "actual_guest_result_modified": false,
+      "private_request_frames_or_nonce_digests_recomputed": false
+    }
+  },
+  "input_files": {
+    "scripts/verify_utf8_platform_metadata.py": {
+      "bytes": 11141,
+      "sha256": "bc1239b156761dd86bf7f2066922bf59ee3e3c141ab0f28175770597cf0376cb"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/prepare.py": {
+      "bytes": 17404,
+      "sha256": "b83aeb128054eececbb5f03dbba1e4e7682292314d6f4ec1a26a0706f32ef8ce"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/server-metadata.json": {
+      "bytes": 1937,
+      "sha256": "bbed9c4bddc5aedb79974309d056ff777b32bf446558f0fff46d605d30c0980a"
+    },
+    "experiments/php-wasix-wpdb-probe/container-images.json": {
+      "bytes": 1185,
+      "sha256": "5e8f79b95147e80e9120c33b8c14c61ab39923f52d489dff9b4e2a2ad656018d"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mysql/provenance.json": {
+      "bytes": 37709,
+      "sha256": "42c717b751d655905afe287405f7b4e7639a72d072e6b3c82ea4c5024dc1dc6a"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mysql/raw/experiments/php-wasix-wpdb-utf8-probe/evidence/linux-mysql.json": {
+      "bytes": 251360,
+      "sha256": "c9861b7d5582b2661b7c65eb14281b37105d3e59bd9768911e5d887dd87cd607"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mysql/raw/target/php-wasix-wpdb-utf8-probe/prepared.json": {
+      "bytes": 15500,
+      "sha256": "35ebac7830860eb9a399034eca6135ab72cfa451bc49871a836e2a9eec62175d"
+    },
+    "experiments/wpdb-utf8-probe/evidence/windows-mysql-native.json": {
+      "bytes": 140766,
+      "sha256": "c1d7a9e4d55c68b030830e1d8e883d52f42bae031df4bd3062f3bcf4d5370ada"
+    },
+    "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mysql/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mysql-crud.json": {
+      "bytes": 239339,
+      "sha256": "3ef256597e35de2c7036af987d8a3f8637a39d963ff119628f84efb6d77820e8"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/bridge.php": {
+      "bytes": 139,
+      "sha256": "f116ecde591e7912418128a9bd30f1455b92de911fbbc6dcf6f1fc5ba31eaf10"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/entry.php": {
+      "bytes": 9262,
+      "sha256": "dd8be48c44edc30a9122c5822a3057a415f035d33b73c9ddb2be3f662f55d080"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/corpus.php": {
+      "bytes": 4014,
+      "sha256": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/adapter.php": {
+      "bytes": 16212,
+      "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/helpers.php": {
+      "bytes": 12258,
+      "sha256": "f3a2278be589835cc869809216cab142f050d636da199697996fd2e90e12ee1b"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mariadb/provenance.json": {
+      "bytes": 37724,
+      "sha256": "1ff2051fc27cbd360f2b6d00dd653990782ec2a1380ba9aa60d0db35bd0bab0d"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mariadb/raw/experiments/php-wasix-wpdb-utf8-probe/evidence/linux-mariadb.json": {
+      "bytes": 142227,
+      "sha256": "29eafa35bc1f9a2269daba47fd3fde47bf315131088896f272bb59e9079654df"
+    },
+    "experiments/php-wasix-wpdb-utf8-probe/evidence/ci-41632550317-mariadb/raw/target/php-wasix-wpdb-utf8-probe/prepared.json": {
+      "bytes": 15500,
+      "sha256": "35ebac7830860eb9a399034eca6135ab72cfa451bc49871a836e2a9eec62175d"
+    },
+    "experiments/wpdb-utf8-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 138410,
+      "sha256": "18c01e8105f7e41e407ebdd36f4e057233b3d808028d06b37168877e2ec2ba90"
+    },
+    "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mariadb/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mariadb-crud.json": {
+      "bytes": 237465,
+      "sha256": "afa9311363197a5dc6f6532e04f598ed9dd0452fab6ee78a11cac1c21ed21a56"
+    }
+  },
+  "runtime_acceptance_changed_by_audit": false,
+  "raw_guest_body_or_wire_published": false,
+  "network_used": false,
+  "php_wasm_or_database_executed": false,
+  "source_archive_module_tool_binaries_reverified": false,
+  "product_runtime_selected": false
+}

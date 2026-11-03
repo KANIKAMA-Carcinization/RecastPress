@@ -100,6 +100,22 @@ def native_contract(source):
     return {'prepared': prepared, 'proofs': references, 'rows': rows, 'trace': traces[0]}
 
 
+def has_server_metadata(source):
+    return PREFIX + 'server-metadata.json' in source.names(PREFIX)
+
+
+def server_metadata_contract(source):
+    require(has_server_metadata(source), 'server_metadata_source_required')
+    def reader(path, maximum=2*1024*1024):
+        wire = source.read(Path(path).relative_to(ROOT).as_posix()); require(len(wire) <= maximum, 'server_metadata_read_quota'); return wire
+    constants = source.constants(PREFIX + 'prepare.py')
+    pure = source.functions(PREFIX + 'prepare.py', ['server_metadata'], {
+        **constants, 'SERVER_METADATA': ROOT / (PREFIX + 'server-metadata.json'), 'read': reader, 'identity': identity})
+    metadata, pin = pure['server_metadata']()
+    exact(pin, {'path': PREFIX + 'server-metadata.json', **identity(source.read(PREFIX + 'server-metadata.json'))}, 'server_metadata_identity')
+    return metadata, pin
+
+
 def prepared_contract(source, native):
     name = PREFIX + 'prepare.py'; constants = source.constants(name); original = frozen_parents(source, constants['PINS'])
     pure = source.functions(name, ['once', 'section', 'expected_fixtures'], constants)
@@ -111,7 +127,12 @@ def prepared_contract(source, native):
     names = set(native['prepared']['input_files']) | set(constants['PINS'])
     names |= {p['path'] for p in constants['ORACLES'].values()}
     names |= {name, *[PREFIX + 'fixtures/' + f for f in constants['FIXTURES']]}
-    require(len(names) == 29, 'twenty_nine_preparation_inputs')
+    platform = None
+    if has_server_metadata(source):
+        platform, platform_identity = server_metadata_contract(source)
+        names |= {PREFIX + 'server-metadata.json', platform['image_manifest']['path']}
+        names |= {row['linux_reference']['path'] for row in platform['backends'].values()}
+    require(len(names) == (33 if platform is not None else 29), 'complete_preparation_input_count')
     derivation_fields = source_fields(source, name, 'derivation_gate')
     derived = {'parents': {p: identity(w) for p, w in original.items()},
         'fixtures': {p: identity(w) for p, w in fixtures.items()}, 'native_corpus_bytes_unchanged': True,
@@ -142,6 +163,8 @@ def prepared_contract(source, native):
             'wasm_executed_by_preparer', 'native_php_executed_by_preparer', 'native_reference_binaries_reverified',
             'network_used_by_preparer', 'guest_network_enabled', 'product_runtime_selected', 'guest_readonly_enforcement_executed'], False),
         'inputs_unchanged': True}
+    if platform is not None:
+        expected.update(server_metadata=platform, server_metadata_identity=platform_identity)
     exact(set(expected), set(source_fields(source, name, 'metadata', 'result')), 'complete_preparation_fields')
     for backend, row in constants['ORACLES'].items():
         exact(row, {'path': NATIVE + 'evidence/windows-' + backend + '-native.json',
@@ -222,7 +245,7 @@ def stages_gate(value, api, backend, source):
 def source_inventory(source):
     anchor = parse_json(source.read(PREFIX + 'evidence/windows-build.json'))
     require(anchor['passed'] is True and anchor['source_reverified_after'] is True, 'utf8_windows_source_anchor')
-    mapping = anchor['input_files']; require(len(mapping) == 175, 'complete_175_sources'); source.bindings(mapping)
+    mapping = anchor['input_files']; require(len(mapping) == (178 if has_server_metadata(source) else 175), 'complete_host_source_count'); source.bindings(mapping)
     local = {name for name in source.names(PREFIX) if '/evidence/' not in name and '__pycache__' not in name
         and Path(name).name != 'import_evidence.py'
         and (Path(name).suffix in ('.rs', '.py', '.php', '.toml') or Path(name).name == 'Cargo.lock')}
@@ -251,7 +274,9 @@ def runtime_derivation(source):
 
 def build_gate(data, raw, source):
     host, boot = data['host-build.json'], data['bootstrap-build.json']
-    build_helpers.host_gate(host, source, PREFIX, 32, 175); boot_anchor = build_helpers.host_gate(boot, source, BOOT, 31, 145)
+    metadata = has_server_metadata(source)
+    build_helpers.host_gate(host, source, PREFIX, 35 if metadata else 32, 178 if metadata else 175)
+    boot_anchor = build_helpers.host_gate(boot, source, BOOT, 31, 145)
     for key in ['driver', 'source_fs_registry', 'derivation']:
         exact(boot[key + '_before'], boot[key + '_after'], 'bootstrap_unchanged_' + key)
         if key != 'driver': exact(boot[key + '_before'], boot_anchor[key + '_before'], 'bootstrap_fixed_' + key)
@@ -289,7 +314,20 @@ def positive_gate(data, raw, source, backend, native, prepared, anchor):
     exact(run['build_before'], host, 'same_job_host_before'); exact(run['build_after'], host, 'same_job_host_after')
     exact(run['module_before'], run['module_after'], 'same_module_before_after')
     managed = old.managed_gate(data, raw, source, run['module_before'])
-    value = run['observation']; expected = native['proofs'][backend]['observation']
+    value = run['observation']; original = native['proofs'][backend]['observation']; expected = original
+    platform = prepared.get('server_metadata')
+    if platform is not None:
+        row = platform['backends'][backend]
+        exact(original['server_info_hex'], row['native_version_hex'], 'original_native_version_preserved')
+        expected = {**original, 'server_info_hex': row['linux_version_hex']}
+        for key in original:
+            if key != 'server_info_hex': exact(expected[key], original[key], 'all_other_native_fields_unchanged')
+        exact(run['sql_server_version'], row['linux_version'], 'independent_exact_linux_server_version')
+        exact(value['reference_derivation'], {
+            'schema': 'recastpress.php-wasix-wpdb-utf8-reference-derivation.v0.5',
+            'server_metadata': prepared['server_metadata_identity'], 'image_manifest': platform['image_manifest'],
+            'backends': platform['backends'], 'changed_expected_fields': ['server_info_hex'],
+            'actual_php_value_normalized': False, 'semantic_case_query_and_state_fields_changed': False}, 'explicit_platform_reference_provenance')
     validation = frozen_validator(source)['validate'](value, expected, prepared)
     exact(run['validation'], validation, 'source_frozen_full_controller_validation')
     require(value['native_backend_match'] == backend and value['guest_execution_started'] is True, 'correct_native_backend_and_actual_guest')
@@ -333,9 +371,10 @@ def positive_gate(data, raw, source, backend, native, prepared, anchor):
     serde = [p for p in lock['package'] if p['name'] == 'serde_json']; require(len(serde) == 1
         and not any(p.startswith('indexmap') for p in serde[0].get('dependencies', [])), 'sorted_serde_map')
     exact({'bytes': execution['stdout_bytes'], 'sha256': execution['stdout_sha256']}, identity(canonical(value) + b'\n'), 'public_host_json_reserialization')
-    return {'api_cases': 31, 'public_queries': 22, 'runtime_source_inputs': 175, 'host_units': 32,
-        'previous_host_units': 31, 'previous_host_inputs': 145, 'prepared_inputs': 29, 'native_prepared_inputs': 19,
+    return {'api_cases': 31, 'public_queries': 22, 'runtime_source_inputs': len(anchor['input_files']), 'host_units': len(anchor['units']['tests']),
+        'previous_host_units': 31, 'previous_host_inputs': 145, 'prepared_inputs': len(prepared['input_files']), 'native_prepared_inputs': 19,
         'guest_files': 13, 'original_wp_sources': 8, 'whole_native_observations_state_and_sql_equal': True,
+        'platform_version_metadata_reference': platform is not None,
         'read_only_original_actor_rpc_collector_imports_verified': True, 'normalization_applied': False,
         'public_host_json_reserialization_verified': True, 'managed': managed,
         'private_nonce_query_reply_cgi_digests_recomputed_offline': False}
@@ -373,6 +412,11 @@ def main():
     if positive: summary.update(positive_gate(data, raw, source, args.backend, native, prepared, anchor)); summary['overall_positive'] = True
     else:
         run = data.get('run.json', {}); value = run.get('observation', {})
+        require(run.get('failure_stage') in (None, 'source_preparation', 'php_wasm_utf8',
+            'independent_database_verification', 'after_verification'), 'closed_failure_stage')
+        require(value.get('phase') in (None, 'input', 'module_compile', 'cgi_execution', 'full_utf8_verified'), 'closed_host_phase')
+        require(run.get('outcome') in (None, 'fixed_wasix_utf8_corpus_passed', 'fixed_wasix_utf8_corpus_failed'), 'closed_failure_outcome')
+        for scope in [run, value]: require(scope.get('passed') is None or type(scope['passed']) is bool, 'recorded_verdict_type')
         summary.update(recorded_passed=run.get('passed'), recorded_outcome=run.get('outcome'),
             recorded_failure_stage=run.get('failure_stage'), recorded_host_passed=value.get('passed'),
             recorded_host_phase=value.get('phase'))

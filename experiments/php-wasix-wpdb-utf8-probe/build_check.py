@@ -36,7 +36,10 @@ TESTS = sorted([name for name in old.TESTS if name.startswith(('cgi_response::te
     'outer_json_cgi_allows_only_one_known_content_type_and_optional_powered_by',
     'missing_wrong_status_or_unknown_outer_header_cannot_pass_as_json',
     'duplicate_json_or_powered_by_headers_remain_rejected',
-    'raw_and_hex_host_secrets_are_both_refused_before_output']])
+    'raw_and_hex_host_secrets_are_both_refused_before_output',
+    'platform_reference_changes_only_exact_expected_version_and_preserves_nine_fields',
+    'unknown_version_suffix_prefix_and_changed_semantic_field_do_not_match',
+    'wrong_image_or_original_native_version_rejects_reference_derivation']])
 STAGES = [('unit-build', 1200), ('unit-list', 10), ('unit-run', 60), ('normal-build', 1200)]
 
 

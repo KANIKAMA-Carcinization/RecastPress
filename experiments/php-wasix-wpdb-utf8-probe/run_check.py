@@ -33,7 +33,7 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False).encode()
 
 
-def reference(backend):
+def reference(backend, mapping):
     pin = prepared.ORACLES[backend]
     wire = prepared.read(ROOT / pin['path'])
     require(sha(wire) == pin['sha256'] and len(wire) == pin['bytes'], 'fixed_native_utf8_reference')
@@ -41,7 +41,14 @@ def reference(backend):
     require(value['passed'] is True and value['source_reverified_after'] is True
         and value['normal_admin_shutdown_verified'] is True and value['all_command_children_reaped'] is True,
         'native_utf8_completion')
-    return value['observation']
+    original = value['observation']
+    profile = mapping['server_metadata']['backends'][backend]
+    require(original['server_info_hex'] == profile['native_version_hex'], 'native_server_metadata_pin')
+    expected = json.loads(canonical(original))
+    expected['server_info_hex'] = profile['linux_version_hex']
+    require(all(canonical(expected[key]) == canonical(original[key]) for key in original if key != 'server_info_hex'),
+        'only_expected_platform_server_metadata_changes')
+    return expected
 
 
 def validate(value, native, mapping):
@@ -130,9 +137,19 @@ def run(backend, record=False):
         mapping = report['preparation_before'] = prepared.verify_prepared()
         host = report['build_before'] = build.verify_build()
         report['module_before'] = managed.verify_build()
-        native = reference(backend)
+        native = reference(backend, mapping)
+        profile = mapping['server_metadata']['backends'][backend]
+        report['reference_derivation'] = {'source': 'pinned_windows_native_observation',
+            'changed_fields': ['server_info_hex'], 'actual_result_modified': False,
+            'native_server_info_hex': profile['native_version_hex'], 'linux_server_info_hex': profile['linux_version_hex'],
+            'server_metadata_identity': mapping['server_metadata_identity']}
         database = linux.Database(backend, report)
+        require(database.pin['platform_digest'] == profile['image']['platform_digest']
+            and database.pin['image_config_digest'] == profile['image']['image_config_digest'],
+            'exact_linux_metadata_image_pin')
         with database:
+            require(report['sql_server_version'].encode('utf-8').hex() == profile['linux_version_hex'],
+                'independent_linux_server_metadata_pin')
             stage = 'php_wasm_utf8'
             pid, result = owned_probe.run_captured_probe([str(ROOT / host['executable'])],
                 build.environment(), timeout=300, input_bytes=canonical(database.input()))
@@ -144,6 +161,8 @@ def run(backend, record=False):
             value = report['observation'] = json.loads(result.stdout)
             require(result.returncode == 0 and value['passed'] is True, 'utf8_host_request_failed')
             report['validation'] = validate(value, native, mapping)
+            require(value['php_result']['server_info_hex'] == report['sql_server_version'].encode('utf-8').hex(),
+                'actual_handshake_api_and_independent_sql_version_equal')
             stage = 'independent_database_verification'; database.final_rows()
         require(report['container_stopped'] is True and report['container_removed'] is True
             and report['container_normal_exit_verified'] is True, 'utf8_normal_container_cleanup')

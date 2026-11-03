@@ -17,7 +17,7 @@ python -B experiments/php-wasix-wpdb-utf8-probe/prepare.py --verify-only
 
 固定WordPress archiveが`.reference/wordpress-7.1.3.tar.gz`に必要。preparerは旧Wasm wpdbのarchive readerだけを読み取りで使い、新target内へ元8ファイルをreadonlyで置く。native PHP distributionやnative DBは不要で、Linuxでも同じsource preparationを行える。全13guest file identity・元source map・固定native基準とinclude setは`target/php-wasix-wpdb-utf8-probe/prepared.json`へ保存する。PHP、Wasm、DB、networkは実行しない。
 
-Windowsの[build記録](evidence/windows-build.json)では32 pure unit・175 source inputs・locked/offline build・4所有childの正常回収が通過した。旧bootstrapの31 unit／145 inputsとreceipt・binary・unit binaryも前後一致した。実PHP WasmはWindowsで実行しない。
+Windowsの[build記録](evidence/windows-build.json)では35 pure unit・178 source inputs・locked/offline build・4所有childの正常回収が通過した。初回の32 unit／175 inputsの記録も保存している。旧bootstrapの31 unit／145 inputsとreceipt・binary・unit binaryも前後一致した。実PHP WasmはWindowsで実行しない。
 
 ```powershell
 python -B experiments/php-wasix-wpdb-utf8-probe/build_check.py
@@ -30,3 +30,17 @@ python3 experiments/php-wasix-wpdb-utf8-probe/run_check.py --backend mysql --rec
 ```
 
 実Wasm／DBの結果は別途必要であり、native基準やpure unitだけでRust DBとの一致を宣言しない。製品runtime、HTTP listener、TLS変更、資源上限の製品受入、raw非UTF-8 ERR、任意plugin対応は対象外のままである。
+
+## platformごとのserver metadata
+
+[固定metadata契約](server-metadata.json)はWindows nativeとLinux imageの実versionをそれぞれ全bytesで保存する。MySQLは両方`8.4.13`、MariaDBはWindowsが`11.8.9-MariaDB`、Linuxが`11.8.9-MariaDB-ubu2404`。suffixを削ったり、実結果を書き換えたりしない。固定Linux platform digest・image config digestと、受入済み旧Linux CRUD記録のpath／全SHAへ結び付ける。
+
+Linux用の期待referenceは固定Windows native observationの新しいcloneを作り、`server_info_hex`だけを固定Linux値へ設定して導出する。比較する10項目は維持し、実行結果のversionも独立した`SELECT VERSION()`と完全一致を要求する。元native証拠・元Linux証拠と実結果のbytesは変更しない。31ケースの全値・SQL・公開stateとsession charset／collation／SQL modeは、そのまま比較する。
+
+[初回CIのoffline監査](evidence/platform-metadata-audit-41632550317.json)は、固定native証拠・変更していないPHP source・公開RPC統計と正確なLinux versionから既知のPHP JSON／CGI wireを再構成し、公開captureのlength／SHAと照合した。MySQLの31,492 BとMariaDBの31,532 Bで一致し、sourceで決まるcompletion・統計・31ケース・22 SQLの差ではないことを確認した。HELLO replyも公開済みの固定metadataと有限候補でversion分類を確認し、connection identifier自体は記録しない。
+
+```powershell
+python -B scripts/verify_utf8_platform_metadata.py --record
+```
+
+監査はPHP／Wasm／DB／networkを実行しない。実guestのraw本文・wireを取得／公開せず、private request frame・nonceも再構成しない。初回の原判定（MySQL成功、MariaDB失敗）は維持し、監査で過去の失敗を成功へ変更しない。metadata契約を適用した新CIの受入は別途必要である。

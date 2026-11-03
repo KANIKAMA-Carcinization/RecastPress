@@ -29,6 +29,10 @@ const PREPARED:&str="target/php-wasix-wpdb-utf8-probe/prepared.json";
 const BASE:&str="experiments/php-wasix-wpdb-utf8-probe/";
 const PHP_MOUNT:&str="/experiments/php-wasix-wpdb-utf8-probe/fixtures";
 const WP_MOUNT:&str="/.reference/wordpress-7.1.3/wp-includes";
+const SERVER_METADATA:&str="experiments/php-wasix-wpdb-utf8-probe/server-metadata.json";
+const SERVER_METADATA_BYTES:&[u8]=include_bytes!("../server-metadata.json");
+const IMAGE_MANIFEST:&str="experiments/php-wasix-wpdb-probe/container-images.json";
+const IMAGE_MANIFEST_BYTES:&[u8]=include_bytes!("../../php-wasix-wpdb-probe/container-images.json");
 const FIXTURES:&[(&str,&[u8])]=&[
     ("bridge.php",include_bytes!("../fixtures/bridge.php")),("entry.php",include_bytes!("../fixtures/entry.php")),
     ("corpus.php",include_bytes!("../fixtures/corpus.php")),("adapter.php",include_bytes!("../fixtures/adapter.php")),
@@ -146,7 +150,54 @@ fn environment()->Vec<(String,String)> {
         ("SERVER_PORT","80".into())].into_iter().map(|(k,v)|(k.to_owned(),v)).collect()
 }
 struct Native {backend:&'static str,value:Value}
-fn references(root:&Path,report:&mut Value)->Result<Vec<Native>> {
+fn metadata_contract(metadata:&Value,manifest:&Value)->Result<()> {
+    ensure!(metadata["schema"]=="recastpress.php-wasix-wpdb-utf8-server-metadata.v0.5","server_metadata_schema");
+    ensure!(metadata["reference_derivation"]==json!({"source":"pinned_windows_native_observation",
+        "changed_fields":["server_info_hex"],"actual_result_modified":false}),"server_metadata_derivation_contract");
+    ensure!(metadata["image_manifest"]==json!({"path":IMAGE_MANIFEST,"bytes":IMAGE_MANIFEST_BYTES.len(),
+        "sha256":db::sha(IMAGE_MANIFEST_BYTES)}),"server_metadata_image_manifest_identity");
+    for &(backend,_) in ORACLES {
+        let entry=&metadata["backends"][backend];let pin=&manifest["images"][backend];
+        ensure!(entry["image"]==json!({"platform_digest":pin["platform_digest"],"image_config_digest":pin["image_config_digest"]}),"server_metadata_image_pin");
+        for name in ["native_version","linux_version"] {
+            let version=entry[name].as_str().context("server_version_literal")?;
+            ensure!(!version.is_empty() && version.len()<=256 && version.is_ascii()
+                && entry[format!("{name}_hex")]==db::hex(version.as_bytes()),"exact_server_version_literal_and_hex");
+        }
+    }
+    Ok(())
+}
+fn derived_reference(original:&Value,backend:&str,metadata:&Value,manifest:&Value)->Result<Value> {
+    metadata_contract(metadata,manifest)?;
+    ensure!(ORACLES.iter().any(|(name,_)|*name==backend),"closed_reference_backend");
+    let entry=&metadata["backends"][backend];
+    ensure!(original["server_info_hex"]==entry["native_version_hex"],"original_native_server_version_identity");
+    // All semantic results, state, queries and remaining metadata stay exact.
+    // Only this separately pinned platform value changes in the expectation.
+    let mut expected=original.clone();expected["server_info_hex"]=entry["linux_version_hex"].clone();Ok(expected)
+}
+fn references(root:&Path,prepared:&Value,report:&mut Value)->Result<Vec<Native>> {
+    let metadata_wire=fixed(root,SERVER_METADATA,64*1024)?;
+    ensure!(metadata_wire==SERVER_METADATA_BYTES,"compiled_server_metadata_identity");
+    let metadata:Value=serde_json::from_slice(&metadata_wire)?;
+    ensure!(prepared["server_metadata"]==metadata,"prepared_server_metadata_identity");
+    ensure!(prepared["server_metadata_identity"]==json!({"path":SERVER_METADATA,"bytes":metadata_wire.len(),
+        "sha256":db::sha(&metadata_wire)}),"prepared_server_metadata_wire_identity");
+    let image_wire=fixed(root,IMAGE_MANIFEST,64*1024)?;
+    ensure!(image_wire==IMAGE_MANIFEST_BYTES,"compiled_image_manifest_identity");
+    let manifest:Value=serde_json::from_slice(&image_wire)?;metadata_contract(&metadata,&manifest)?;
+    for &(backend,_) in ORACLES {
+        let entry=&metadata["backends"][backend];let reference=&entry["linux_reference"];
+        let path=reference["path"].as_str().context("linux_reference_path")?;
+        let wire=fixed(root,path,4*1024*1024)?;
+        ensure!(reference==&json!({"path":path,"bytes":wire.len(),"sha256":db::sha(&wire)}),"pinned_linux_reference_identity");
+        let value:Value=serde_json::from_slice(&wire)?;let image=&manifest["images"][backend];
+        ensure!(value["passed"]==true && value["container_normal_exit_verified"]==true && value["container_removed"]==true
+            && value["sql_server_version"]==entry["linux_version"]
+            && value["observation"]["php_result"]["server_info_hex"]==entry["linux_version_hex"]
+            && value["image"]==format!("{}@{}",image["repository"].as_str().context("image_repository")?,image["platform_digest"].as_str().context("image_platform_digest")?)
+            && value["image_config_digest"]==image["image_config_digest"],"accepted_linux_platform_metadata");
+    }
     let mut result=vec![];let mut identities=serde_json::Map::new();
     for &(backend,pin) in ORACLES {
         let path=format!("experiments/wpdb-utf8-probe/evidence/windows-{backend}-native.json");
@@ -157,8 +208,14 @@ fn references(root:&Path,report:&mut Value)->Result<Vec<Native>> {
         let value=proof["observation"].clone();
         ensure!(value["passed"]==true && value["mbstring_loaded"]==true && value["observations"].as_array().is_some_and(|v|v.len()==31)
             && value["query_trace_hex"].as_array().is_some_and(|v|v.len()==22),"native_31_case_22_query_contract");
-        result.push(Native{backend,value});identities.insert(backend.to_owned(),json!({"path":path,"bytes":wire.len(),"sha256":pin}));
+        let expected=derived_reference(&value,backend,&metadata,&manifest)?;
+        result.push(Native{backend,value:expected});identities.insert(backend.to_owned(),json!({"path":path,"bytes":wire.len(),"sha256":pin}));
     }
+    report["reference_derivation"]=json!({"schema":"recastpress.php-wasix-wpdb-utf8-reference-derivation.v0.5",
+        "server_metadata":{"path":SERVER_METADATA,"bytes":metadata_wire.len(),"sha256":db::sha(&metadata_wire)},
+        "image_manifest":metadata["image_manifest"],"backends":metadata["backends"],
+        "changed_expected_fields":["server_info_hex"],"actual_php_value_normalized":false,
+        "semantic_case_query_and_state_fields_changed":false});
     report["native_oracles"]=Value::Object(identities);Ok(result)
 }
 fn matches_native(actual:&Value,expected:&Value)->bool {COMPARE.iter().all(|&key|actual.get(key)==expected.get(key))}
@@ -255,8 +312,9 @@ fn execute(engine:&Engine,module:Module,data:&HashedModuleData,php:SourceFs,wp:S
 fn probe(input:db::Input,report:&mut Value)->Result<()> {
     ensure!(input.mode==db::Mode::Read,"utf8_read_input_only");let root=std::env::current_dir()?.canonicalize()?;
     let bytes=load_module(&root,report)?;let module_before=report["module"].clone();let receipt_before=report["build_receipt"].clone();
-    let (php,wp,prepared)=load_sources(&root,report)?;let prepared_before=report["prepared"].clone();let native=references(&root,report)?;
+    let (php,wp,prepared)=load_sources(&root,report)?;let prepared_before=report["prepared"].clone();let native=references(&root,&prepared,report)?;
     let native_before=report["native_oracles"].clone();
+    let reference_before=report["reference_derivation"].clone();
     let context_wire=serde_json::to_vec(&context(&input))?;
     let context=tree(BTreeMap::from([("context.json".to_owned(),Arc::<[u8]>::from(context_wire))]))?;
     report["phase"]=json!("module_compile");let engine:Engine=wasmer_compiler_cranelift::Cranelift::default().into();
@@ -272,9 +330,10 @@ fn probe(input:db::Input,report:&mut Value)->Result<()> {
         report["db_actor_failure"]=json!(state.failure);report["db_actor_exited"]=json!(state.exited);}
     if let Ok(value)=&result {report["php_diagnostic"]=diagnostic(value,&native);}
     let after=(||->Result<()> {
-        let _=load_module(&root,report)?;let _=load_sources(&root,report)?;let _=references(&root,report)?;
+        let _=load_module(&root,report)?;let _=load_sources(&root,report)?;let _=references(&root,&prepared,report)?;
         ensure!(report["module"]==module_before && report["build_receipt"]==receipt_before
-            && report["prepared"]==prepared_before && report["native_oracles"]==native_before,"source_or_module_changed");Ok(())
+            && report["prepared"]==prepared_before && report["native_oracles"]==native_before
+            && report["reference_derivation"]==reference_before,"source_or_module_changed");Ok(())
     })();report["source_rechecked_after_execution"]=json!(after.is_ok());after?;
     let actual=result?;
     ensure!(report["rpc"]["finished"]==true && report["rpc"]["failure"].is_null() && report["rpc"]["channel_open"]==false
@@ -380,5 +439,39 @@ mod tests {
         assert!(secret_present(b"prefix_PRIVATE_VALUE_suffix",&secrets));
         assert!(secret_present(db::hex(b"PRIVATE_VALUE").as_bytes(),&secrets));
         assert!(!secret_present(b"known-public-observation",&secrets));
+    }
+    fn metadata_fixture()->(Value,Value,Value) {
+        let metadata:Value=serde_json::from_slice(SERVER_METADATA_BYTES).unwrap();
+        let manifest:Value=serde_json::from_slice(IMAGE_MANIFEST_BYTES).unwrap();
+        let mut original=json!({});for &key in COMPARE {original[key]=json!(format!("fixed_{key}"));}
+        original["server_info_hex"]=metadata["backends"]["mariadb"]["native_version_hex"].clone();
+        (metadata,manifest,original)
+    }
+    #[test]
+    fn platform_reference_changes_only_exact_expected_version_and_preserves_nine_fields() {
+        let (metadata,manifest,original)=metadata_fixture();
+        let derived=derived_reference(&original,"mariadb",&metadata,&manifest).unwrap();
+        assert_eq!(COMPARE.len(),10);assert_eq!(derived.as_object().unwrap().len(),original.as_object().unwrap().len());
+        for &key in COMPARE {if key!="server_info_hex" {assert_eq!(derived[key],original[key]);}}
+        assert_eq!(derived["server_info_hex"],metadata["backends"]["mariadb"]["linux_version_hex"]);
+        assert_eq!(original["server_info_hex"],metadata["backends"]["mariadb"]["native_version_hex"]);
+    }
+    #[test]
+    fn unknown_version_suffix_prefix_and_changed_semantic_field_do_not_match() {
+        let (metadata,manifest,original)=metadata_fixture();
+        let expected=derived_reference(&original,"mariadb",&metadata,&manifest).unwrap();
+        for version in ["11.8.9-MariaDB-ubu2404-other","5.5.5-11.8.9-MariaDB-ubu2404","11.8.9-MariaDB"] {
+            let mut actual=expected.clone();actual["server_info_hex"]=json!(db::hex(version.as_bytes()));
+            assert!(!matches_native(&actual,&expected));
+        }
+        let mut actual=expected.clone();actual["query_trace_hex"]=json!([]);assert!(!matches_native(&actual,&expected));
+    }
+    #[test]
+    fn wrong_image_or_original_native_version_rejects_reference_derivation() {
+        let (mut metadata,manifest,original)=metadata_fixture();
+        metadata["backends"]["mariadb"]["image"]["platform_digest"]=json!("sha256:wrong");
+        assert!(derived_reference(&original,"mariadb",&metadata,&manifest).is_err());
+        let (metadata,manifest,mut original)=metadata_fixture();original["server_info_hex"]=json!(db::hex(b"11.8.9-MariaDB-other"));
+        assert!(derived_reference(&original,"mariadb",&metadata,&manifest).is_err());
     }
 }

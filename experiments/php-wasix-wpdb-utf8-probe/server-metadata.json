@@ -1,0 +1,45 @@
+{
+  "schema": "recastpress.php-wasix-wpdb-utf8-server-metadata.v0.5",
+  "reference_derivation": {
+    "source": "pinned_windows_native_observation",
+    "changed_fields": ["server_info_hex"],
+    "actual_result_modified": false
+  },
+  "image_manifest": {
+    "path": "experiments/php-wasix-wpdb-probe/container-images.json",
+    "bytes": 1185,
+    "sha256": "5e8f79b95147e80e9120c33b8c14c61ab39923f52d489dff9b4e2a2ad656018d"
+  },
+  "backends": {
+    "mysql": {
+      "native_version": "8.4.13",
+      "linux_version": "8.4.13",
+      "native_version_hex": "382e342e3133",
+      "linux_version_hex": "382e342e3133",
+      "image": {
+        "platform_digest": "sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
+        "image_config_digest": "sha256:d2a0d367629f5b5dcd6cdabc53fe9183a0a3c313f9bd354e368290ba6fbf6d3f"
+      },
+      "linux_reference": {
+        "path": "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mysql/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mysql-crud.json",
+        "bytes": 239339,
+        "sha256": "3ef256597e35de2c7036af987d8a3f8637a39d963ff119628f84efb6d77820e8"
+      }
+    },
+    "mariadb": {
+      "native_version": "11.8.9-MariaDB",
+      "linux_version": "11.8.9-MariaDB-ubu2404",
+      "native_version_hex": "31312e382e392d4d617269614442",
+      "linux_version_hex": "31312e382e392d4d6172696144422d75627532343034",
+      "image": {
+        "platform_digest": "sha256:8a4a99eff981d95c3ab12d019b82fe59725fb7761f1f9a5f155bc3f025528f4f",
+        "image_config_digest": "sha256:0f2506b4b989879f5e004ba606b1d6711d467dee12be80c81799dd046fcc753c"
+      },
+      "linux_reference": {
+        "path": "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mariadb/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mariadb-crud.json",
+        "bytes": 237465,
+        "sha256": "afa9311363197a5dc6f6532e04f598ed9dd0452fab6ee78a11cac1c21ed21a56"
+      }
+    }
+  }
+}
