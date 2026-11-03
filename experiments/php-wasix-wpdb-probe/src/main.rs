@@ -2,6 +2,7 @@
 mod capture;
 #[path = "../../php-wasi-host-probe/src/cgi_response.rs"]
 mod cgi_response;
+mod crud_contract;
 mod db;
 #[path = "../../php-wasix-host-probe/src/fiber_adapter.rs"]
 mod fiber_adapter;
@@ -32,12 +33,16 @@ const RECEIPT: &str = "experiments/php-wasix-managed-access-probe/evidence/build
 const PREPARED: &str = "target/php-wasix-wpdb-probe/prepared.json";
 const VARIANT: &str = "nts-fresh-wasi-zend-fibers-managed-access-v1";
 const FIXTURES: [&str; 4] = ["bridge.php", "helpers.php", "adapter.php", "corpus.php"];
-const WP: [&str; 5] = [
+const CRUD_FIXTURES: [&str; 3] = ["bridge.php", "entry.php", "corpus.php"];
+const WP: [&str; 8] = [
     "load.php",
     "plugin.php",
     "class-wp-hook.php",
     "class-wp-filter-sentinel.php",
     "class-wpdb.php",
+    "functions.php",
+    "option.php",
+    "class-wp-error.php",
 ];
 const WP_PINS: &[(&str, usize, &str)] = &[
     (
@@ -64,6 +69,21 @@ const WP_PINS: &[(&str, usize, &str)] = &[
         "class-wpdb.php",
         121437,
         "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd",
+    ),
+    (
+        "functions.php",
+        295481,
+        "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c",
+    ),
+    (
+        "option.php",
+        105246,
+        "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0",
+    ),
+    (
+        "class-wp-error.php",
+        7514,
+        "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94",
     ),
 ];
 fn fixed(root: &Path, name: &str, limit: u64) -> Result<Vec<u8>> {
@@ -137,14 +157,26 @@ fn load_module(root: &Path, report: &mut Value) -> Result<Vec<u8>> {
 fn load_sources(
     root: &Path,
     report: &mut Value,
-) -> Result<(readonly_fs::ReadOnlyFs, readonly_fs::ReadOnlyFs)> {
+) -> Result<(
+    readonly_fs::ReadOnlyFs,
+    readonly_fs::ReadOnlyFs,
+    readonly_fs::ReadOnlyFs,
+)> {
     let wire = fixed(root, PREPARED, 1024 * 1024)?;
     let prepared: Value = serde_json::from_slice(&wire)?;
     ensure!(
         prepared["schema"] == "recastpress.php-wasix-wpdb-prepared.v0.5"
-            && prepared["outcome"] == "fixed_nine_guest_sources_prepared",
+            && prepared["outcome"] == "fixed_fifteen_guest_sources_prepared",
         "prepared_profile"
     );
+    let (comparison_path, comparison_expected) = inputs::CRUD_COMPARISON_SOURCE;
+    let comparison = fixed(root, comparison_path, 128 * 1024)?;
+    ensure!(
+        comparison == comparison_expected,
+        "compiled_crud_comparison_changed"
+    );
+    report["crud_comparison_source"] = json!({"path":comparison_path,"bytes":comparison.len(),
+        "sha256":db::sha(&comparison),"verified":true});
     let mut bound = vec![];
     for &(path, expected) in inputs::PREPARED_SOURCES {
         let actual = fixed(root, path, 512 * 1024)?;
@@ -164,16 +196,17 @@ fn load_sources(
     );
     let files = prepared["files"].as_array().context("prepared_files")?;
     ensure!(
-        files.len() == 9
+        files.len() == 15
             && prepared["wordpress_files"]
                 .as_object()
                 .context("wordpress_files")?
                 .len()
-                == 5,
-        "nine_prepared_files"
+                == 8,
+        "fifteen_prepared_files"
     );
     let mut seen = BTreeSet::new();
     let mut php = BTreeMap::new();
+    let mut crud = BTreeMap::new();
     let mut wp = BTreeMap::new();
     for item in files {
         let guest = item["guest"].as_str().context("guest_path")?;
@@ -201,6 +234,20 @@ fn load_sources(
                 .1;
             ensure!(data == expected, "compiled_fixture_bytes");
             php.insert(name.to_owned(), Arc::<[u8]>::from(data));
+        } else if let Some(name) = guest.strip_prefix("/experiments/wpdb-crud-probe/fixtures/") {
+            ensure!(
+                CRUD_FIXTURES.contains(&name)
+                    && source == format!("experiments/php-wasix-wpdb-probe/crud-fixtures/{name}")
+                    && item["kind"] == "derived_crud_fixture",
+                "prepared_crud_fixture_profile"
+            );
+            let expected = inputs::PREPARED_SOURCES
+                .iter()
+                .find(|(p, _)| *p == source)
+                .context("compiled_crud_fixture")?
+                .1;
+            ensure!(data == expected, "compiled_crud_fixture_bytes");
+            crud.insert(name.to_owned(), Arc::<[u8]>::from(data));
         } else if let Some(name) = guest.strip_prefix("/.reference/wordpress-7.1.3/wp-includes/") {
             ensure!(
                 WP.contains(&name)
@@ -228,19 +275,26 @@ fn load_sources(
             anyhow::bail!("prepared_unexpected_guest");
         }
     }
-    ensure!(php.len() == 4 && wp.len() == 5, "prepared_mount_counts");
+    ensure!(
+        php.len() == 4 && crud.len() == 3 && wp.len() == 8,
+        "prepared_mount_counts"
+    );
     report["prepared"] = json!({"path":PREPARED,"sha256":db::sha(&wire),"files":files,"input_files":bound,"verified":true,"full_archive_verified_by_host":false});
     Ok((
         readonly_fs::ReadOnlyFs::new(php),
+        readonly_fs::ReadOnlyFs::new(crud),
         readonly_fs::ReadOnlyFs::new(wp),
     ))
 }
-fn environment(nonce: &str) -> Vec<(String, String)> {
+fn corpus_filename(corpus: db::Corpus) -> &'static str {
+    match corpus {
+        db::Corpus::Standard => "/experiments/wpdb-bridge-probe/fixtures/bridge.php",
+        db::Corpus::Crud => "/experiments/wpdb-crud-probe/fixtures/bridge.php",
+    }
+}
+fn environment(nonce: &str, corpus: db::Corpus) -> Vec<(String, String)> {
     [
-        (
-            "SCRIPT_FILENAME",
-            "/experiments/wpdb-bridge-probe/fixtures/bridge.php",
-        ),
+        ("SCRIPT_FILENAME", corpus_filename(corpus)),
         ("SCRIPT_NAME", "/__rp_wpdb.php"),
         ("DOCUMENT_ROOT", "/"),
         ("REQUEST_METHOD", "GET"),
@@ -263,9 +317,11 @@ fn execute(
     module: Module,
     data: &HashedModuleData,
     php: readonly_fs::ReadOnlyFs,
+    crud: readonly_fs::ReadOnlyFs,
     wp: readonly_fs::ReadOnlyFs,
     rpc: &rpc_fs::RpcFs,
     nonce: &str,
+    corpus: db::Corpus,
     record: &mut Value,
 ) -> Result<Value> {
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -294,7 +350,7 @@ fn execute(
                 "-d",
                 "register_argc_argv=0",
             ])
-            .with_envs(environment(nonce))
+            .with_envs(environment(nonce, corpus))
             .with_forward_host_env(false)
             .with_home_mapped(false)
             .with_asynchronous_threading(true)
@@ -302,6 +358,10 @@ fn execute(
             .with_mount(
                 "/experiments/wpdb-bridge-probe/fixtures".into(),
                 Arc::new(php),
+            )
+            .with_mount(
+                "/experiments/wpdb-crud-probe/fixtures".into(),
+                Arc::new(crud),
             )
             .with_mount(
                 "/.reference/wordpress-7.1.3/wp-includes".into(),
@@ -374,7 +434,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
         .join("../..")
         .canonicalize()?;
     let bytes = load_module(&root, report)?;
-    let (php, wp) = load_sources(&root, report)?;
+    let (php, crud, wp) = load_sources(&root, report)?;
     report["phase"] = json!("module_compile");
     eprintln!("WPDB_WASIX_PHASE=module_compile");
     let engine: Engine = wasmer_compiler_cranelift::Cranelift::default().into();
@@ -387,6 +447,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     let _ = load_module(&root, report)?;
     let _ = load_sources(&root, report)?;
     let nonce = input.nonce.clone();
+    let corpus = input.corpus;
     let mut actor = db::Actor::start(input).map_err(|reason| anyhow::anyhow!(reason))?;
     let rpc = rpc_fs::RpcFs::new(nonce.clone(), actor.dispatch.clone());
     report["phase"] = json!("cgi_execution");
@@ -397,9 +458,11 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
         module,
         &data,
         php,
+        crud,
         wp,
         &rpc,
         &nonce,
+        corpus,
         &mut report["cgi_capture"],
     );
     report["rpc"] = rpc.finish();
@@ -428,20 +491,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     recheck?;
     let value = outcome?;
     ensure!(
-        value["schema"] == "recastpress.wpdb-bridge-php-observation.v0.5"
-            && value["outcome"] == "fixed_shared_wpdb_cases_passed"
-            && value["passed"] == true
-            && value["connected"] == true
-            && value["close_completed"] == true
-            && value["included_source_gate_passed"] == true
-            && value["constructor_connection_deferred"] == true
-            && value["bootstrap_num_queries"] == 0
-            && value["final_num_queries"] == 25
-            && value["observations"]
-                .as_array()
-                .is_some_and(|a| a.len() == 27)
-            && value["runtime"]["sapi"] == "cgi-fcgi"
-            && value["wasm_executed"] == true,
+        validate_php_result(corpus, &value, &report["operations"]),
         "fixed_php_result"
     );
     ensure!(
@@ -461,7 +511,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     Ok(())
 }
 fn main() {
-    let mut report = json!({"schema":"recastpress.php-wasix-wpdb-observation.v0.5","outcome":"fixed_wasix_wpdb_cases_failed","passed":false,"phase":"input","operations":[],"cgi_capture":{},"php_result":null,"physical_connection_created":false,"physical_disconnect_completed":false,"db_actor_joined":false,"fresh_runtime":true,"module_compilations":0,"guest_networking":false,"host_environment_forwarded":false,"db_credentials_supplied_to_guest":false,"native_php_fallback":false,"product_runtime":false,"full_wordpress_bootstrap":false,"standard_wpdb_compatibility_proven":false,"managed_permission_query_exercised":false,"scope":"fixed-twenty-seven-upstream-wpdb-cases-through-private-WASIX-file-channel","limits":{"db_operation_ms":10000,"db_actor_execution_ms":60000,"disconnect_cleanup_ms":2000,"actor_join_cleanup_ms":3000,"runtime_shutdown_ms":2000,"capture_cleanup_ms":2000,"synchronous_guest_cpu_cancellation":false,"outer_owned_process_deadline_required":true},"error":null});
+    let mut report = json!({"schema":"recastpress.php-wasix-wpdb-observation.v0.5","outcome":"fixed_wasix_wpdb_cases_failed","passed":false,"phase":"input","corpus":null,"operations":[],"cgi_capture":{},"php_result":null,"physical_connection_created":false,"physical_disconnect_completed":false,"db_actor_joined":false,"fresh_runtime":true,"module_compilations":0,"guest_networking":false,"host_environment_forwarded":false,"db_credentials_supplied_to_guest":false,"native_php_fallback":false,"product_runtime":false,"full_wordpress_bootstrap":false,"standard_wpdb_compatibility_proven":false,"managed_permission_query_exercised":false,"scope":"fixed-twenty-seven-upstream-wpdb-cases-through-private-WASIX-file-channel","limits":{"db_operation_ms":10000,"db_actor_execution_ms":60000,"disconnect_cleanup_ms":2000,"actor_join_cleanup_ms":3000,"runtime_shutdown_ms":2000,"capture_cleanup_ms":2000,"synchronous_guest_cpu_cancellation":false,"outer_owned_process_deadline_required":true},"error":null});
     let mut wire = Vec::new();
     let mut secrets = Vec::new();
     let result = (|| -> Result<()> {
@@ -470,6 +520,13 @@ fn main() {
             .take(20 * 1024 + 1)
             .read_to_end(&mut wire)?;
         let input = db::parse_input(&wire).map_err(|reason| anyhow::anyhow!(reason))?;
+        report["corpus"] = json!(input.corpus.as_str());
+        report["scope"] = json!(match input.corpus {
+            db::Corpus::Standard =>
+                "fixed-twenty-seven-upstream-wpdb-cases-through-private-WASIX-file-channel",
+            db::Corpus::Crud =>
+                "fixed-fifteen-standard-CRUD-cases-through-private-WASIX-file-channel",
+        });
         secrets.push(input.password.clone());
         secrets.push(input.nonce.clone());
         probe(input, &mut report)
@@ -505,5 +562,92 @@ fn main() {
     println!("{encoded}");
     if result.is_err() {
         std::process::exit(1);
+    }
+}
+
+fn standard_php_result(value: &Value) -> bool {
+    value["schema"] == "recastpress.wpdb-bridge-php-observation.v0.5"
+        && value["outcome"] == "fixed_shared_wpdb_cases_passed"
+        && value["passed"] == true
+        && value["connected"] == true
+        && value["close_completed"] == true
+        && value["included_source_gate_passed"] == true
+        && value["constructor_connection_deferred"] == true
+        && value["bootstrap_num_queries"] == 0
+        && value["final_num_queries"] == 25
+        && value["observations"]
+            .as_array()
+            .is_some_and(|a| a.len() == 27)
+        && value["runtime"]["sapi"] == "cgi-fcgi"
+        && value["wasm_executed"] == true
+}
+
+fn validate_php_result(corpus: db::Corpus, value: &Value, operations: &Value) -> bool {
+    match corpus {
+        db::Corpus::Standard => {
+            standard_php_result(value) && crud_contract::operation_profile(operations, 34, 29, 3)
+        }
+        db::Corpus::Crud => crud_contract::verify(value, operations),
+    }
+}
+
+#[cfg(test)]
+mod profile_tests {
+    use super::*;
+    #[test]
+    fn profile_routes_only_the_script_and_keeps_fixed_cgi_nonce_query_contract() {
+        let nonce = "a".repeat(48);
+        let mut standard: BTreeMap<_, _> = environment(&nonce, db::Corpus::Standard)
+            .into_iter()
+            .collect();
+        let mut crud: BTreeMap<_, _> = environment(&nonce, db::Corpus::Crud).into_iter().collect();
+        assert_eq!(
+            standard.remove("SCRIPT_FILENAME").unwrap(),
+            "/experiments/wpdb-bridge-probe/fixtures/bridge.php"
+        );
+        assert_eq!(
+            crud.remove("SCRIPT_FILENAME").unwrap(),
+            "/experiments/wpdb-crud-probe/fixtures/bridge.php"
+        );
+        assert_eq!(standard, crud);
+        assert_eq!(crud["QUERY_STRING"], "rp_wpdb=1");
+        assert_eq!(crud["RP_WPDB_NONCE"], nonce);
+    }
+    #[test]
+    fn standard_completion_cannot_cross_profiles_or_accept_missing_actual_operations() {
+        // Synthetic validator input; this test does not execute PHP or a DB.
+        let mut php = json!({"schema":"recastpress.wpdb-bridge-php-observation.v0.5","outcome":"fixed_shared_wpdb_cases_passed","passed":true,"connected":true,"close_completed":true,"included_source_gate_passed":true,"constructor_connection_deferred":true,"bootstrap_num_queries":0,"final_num_queries":25,"observations":vec![Value::Null;27],"runtime":{"sapi":"cgi-fcgi"},"wasm_executed":true});
+        let mut ops = vec![json!({"seq":1,"op":"hello","ok":true})];
+        for _ in 0..29 {
+            ops.push(json!({"seq":ops.len()+1,"op":"query","ok":true}));
+        }
+        for _ in 0..3 {
+            ops.push(json!({"seq":ops.len()+1,"op":"escape","ok":true}));
+        }
+        ops.push(json!({"seq":34,"op":"close","ok":true}));
+        let mut operations = json!(ops);
+        assert!(validate_php_result(db::Corpus::Standard, &php, &operations));
+        assert!(!validate_php_result(db::Corpus::Crud, &php, &operations));
+        operations[1]["seq"] = json!(99);
+        assert!(!validate_php_result(
+            db::Corpus::Standard,
+            &php,
+            &operations
+        ));
+        operations[1]["seq"] = json!(2);
+        operations.as_array_mut().unwrap().pop();
+        assert!(!validate_php_result(
+            db::Corpus::Standard,
+            &php,
+            &operations
+        ));
+        php["schema"] = json!("recastpress.wpdb-crud-php-observation.v0.5");
+        php["outcome"] = json!("fixed_crud_cases_passed");
+        assert!(!validate_php_result(
+            db::Corpus::Standard,
+            &php,
+            &operations
+        ));
+        assert!(!validate_php_result(db::Corpus::Crud, &php, &operations));
     }
 }

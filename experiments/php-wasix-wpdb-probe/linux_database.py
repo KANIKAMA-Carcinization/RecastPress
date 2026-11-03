@@ -3,6 +3,8 @@
 Only this new labelled container ID may be inspected, stopped or removed. The
 guest never receives its credentials or network. No local DB is discovered.
 """
+import ast
+import hashlib
 import importlib.util
 import json
 import os
@@ -29,9 +31,11 @@ def owned(path):
 
 
 class Database:
-    def __init__(self, backend, report):
+    def __init__(self, backend, report, corpus='standard'):
         require(sys.platform == 'linux' and backend in ('mysql', 'mariadb'), 'linux_owned_container_only')
+        require(corpus in ('standard', 'crud'), 'closed_database_corpus')
         self.backend, self.report = backend, report
+        self.corpus = corpus
         self.secret, self.admin_secret, self.nonce = [secrets.token_hex(24) for _ in range(3)]
         self.owner = uuid.uuid4().hex
         self.cid = None
@@ -170,17 +174,39 @@ class Database:
             "CREATE USER 'rp_wpdb_probe'@'%' IDENTIFIED BY '" + self.secret + "';\n"
             "GRANT SELECT,INSERT,UPDATE,DELETE ON rp_wpdb_probe.* TO 'rp_wpdb_probe'@'%';\n").encode()
         self.run('create_owned_schema_and_limited_user', self.client(), timeout=15, input_bytes=sql)
+        if self.corpus == 'crud':
+            path = ROOT / 'experiments/wpdb-crud-probe/owned_database.py'
+            require(path.resolve(strict=True) == path and path.is_file() and path.stat().st_size <= 65536,
+                'fixed_native_crud_schema_source')
+            wire = path.read_bytes()
+            require(hashlib.sha256(wire).hexdigest() == 'bf275a13036b764f080485bd61e2ab2873ce90c14fe047a119bba32bd11b6c86',
+                'fixed_native_crud_schema_source_identity')
+            assignments = [node for node in ast.parse(wire).body if isinstance(node, ast.Assign)
+                and any(isinstance(target, ast.Name) and target.id == 'DDL' for target in node.targets)]
+            require(len(assignments) == 1, 'one_native_crud_schema_literal')
+            ddl = ast.literal_eval(assignments[0].value)
+            require(type(ddl) is bytes and len(ddl) <= 4096
+                and hashlib.sha256(ddl).hexdigest() == '9b02183660546f505535e6079c4ca8ff8c76bbb0fa3073b0c35ea7e8e028768c',
+                'same_native_crud_schema_bytes')
+            self.run('create_same_native_crud_schema', self.client(), timeout=15, input_bytes=ddl)
+            self.report['crud_schema_ddl_sha256'] = hashlib.sha256(ddl).hexdigest()
 
     def input(self):
         return {'schema': 'recastpress.php-wasix-wpdb-input.v0.5', 'host': '127.0.0.1', 'port': self.port,
             'database': 'rp_wpdb_probe', 'user': 'rp_wpdb_probe', 'password': self.secret,
-            'tls': 'disabled', 'tls_ca_pem': None, 'nonce': self.nonce}
+            'tls': 'disabled', 'tls_ca_pem': None, 'nonce': self.nonce, 'corpus': self.corpus}
 
     def final_rows(self):
         self.inspect()
-        r = self.run('independent_final_database_rows', self.client() + ['--execute=SELECT HEX(payload),COUNT(*) '
-            'FROM rp_wpdb_probe.rp_wire_fixture GROUP BY payload'])
-        require(r.stdout.strip() == b'00FF42\t1', 'final_database_rows_differ')
+        if self.corpus == 'crud':
+            r = self.run('independent_final_database_rows', self.client() +
+                ['--execute=SELECT COUNT(*) FROM rp_wpdb_probe.rp_crud_fixture'])
+            require(r.stdout.strip() == b'0', 'final_crud_database_rows_differ')
+            self.report['final_crud_row_count'] = 0
+        else:
+            r = self.run('independent_final_database_rows', self.client() + ['--execute=SELECT HEX(payload),COUNT(*) '
+                'FROM rp_wpdb_probe.rp_wire_fixture GROUP BY payload'])
+            require(r.stdout.strip() == b'00FF42\t1', 'final_database_rows_differ')
         self.report['independent_final_database_rows_verified'] = True
 
     def close(self):

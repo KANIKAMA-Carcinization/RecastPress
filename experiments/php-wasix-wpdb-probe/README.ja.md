@@ -4,7 +4,7 @@
 
 ## 維持する比較基準
 
-元の27 API corpusと、PHP adapterのquery/prepare/get_*に関する業務ロジックはbyte一致で維持する。変更はCGI入口、file channel transport、実行scopeの表示に限定し、[prepare.py](prepare.py)で固定変換を検査する。WP 7.1.3の固定archive全体を照合し、元5ファイルだけをreadonly配置する。新PHP4ファイルと合わせて9 guest mappingを検証する。
+元の27 API corpusと、PHP adapterのquery/prepare/get_*に関する業務ロジックはbyte一致で維持する。変更はCGI入口、file channel transport、実行scopeの表示に限定し、[prepare.py](prepare.py)で固定変換を検査する。標準27ケースは元のPHP4＋WP5の9ファイルを読み込む。追加CRUDのためWP 7.1.3の元8ファイルとPHP計7ファイルをreadonly配置し、合計15 guest mappingを検証する。
 
 期待値は前回Windows native PHP 8.5.12の固定JSONであり、27観測のAPI・SQL・型・bytes/NULL・公開状態・counter・prepare・prefix・能力・SQL errorを再比較する。Linux DBイメージのraw server infoはOS/package suffixが異なり得るため、観測値を保存して実handshakeとPHP getterの一致を別に検査する。値を丸めて前回JSONへ置き換えない。同jobのnative PHPを比較用に実行する構成ではない。
 
@@ -24,7 +24,7 @@ frame 16KiB／reply 64KiB、総要求128KiB／総応答512KiB、64操作、16行
 
 ## 検証の現在地
 
-[Windowsのbuild-only記録](evidence/win32-build.json)で、locked/offline compile、16 unitの実列挙と全件通過、通常binary生成、child reap、source再照合を確認した。CGI lint・導出gate・不正queryの接続前拒否も確認した。この記録はDB／php-wasm実行の成功を意味しない。
+[Windowsのbuild-only記録](evidence/win32-build.json)で、locked/offline compile、20 unitの実列挙と全件通過、通常binary生成、child reap、117入力の再照合を確認した。旧16テストを維持し、profile選択・経路・不正profile等の4テストを追加した。CGI lint・導出gate・不正入力の接続前拒否も確認した。この記録はDB／php-wasm実行の成功を意味しない。
 
 実guestは[Linux CI](../../.github/workflows/php-wasix-wpdb.yml)で同jobの3patch moduleをbuildし、二つのDB profileへ実行する。JSON evidenceだけをuploadし、binary・nonce・password・private設定を配布しない。
 
@@ -36,9 +36,22 @@ frame 16KiB／reply 64KiB、総要求128KiB／総応答512KiB、64操作、16行
 
 今回のmodule compileはMySQL jobで10,482ms・MariaDB jobで10,651ms、CGI実行は109ms・102msだった。個別CIのhost側経過時間であり、製品性能・純粋なSQL／PHP時間・同時負荷性能を示すものではない。通常WP起動までの不足は[次の実装順](../../docs/v0.5-wp-bootstrap-plan.ja.md)で管理する。
 
+## 追加CRUD profile
+
+通常PHPとRust接続で両DB各15ケースが一致した[標準更新ヘルパーcorpus](../wpdb-crud-probe/README.ja.md)を、同じ実行候補へ接続した。`--corpus crud`で、CGI入口と組込みmysqliのprofile判定だけを固定変換したPHPを選ぶ。元corpus本文・元adapter class・元WP sourceは変更しない。追加profileの実Wasm結果はLinux CIで確認する段階であり、前回の27ケースの成功と区別する。
+
+Linux jobは同じ生成moduleを使って標準27とCRUD15を順に実行し、DB container・nonce・Rust所有session・PHP/WASI環境は試験ごとに新設する。CRUDのschema DDLは通常PHP基準の元literalと同じbytesを使う。期待値は固定Windows native JSONとし、API引数・floatのbytes・戻り値・公開状態・query差分・親schema照会を含む全16 SQL・sessionを比較する。40 RPCと正常清掃を確認するまで合格にしない。
+
 ```powershell
 python experiments/php-wasix-wpdb-probe/prepare.py
 python experiments/php-wasix-wpdb-probe/run_check.py --build-only --record
+```
+
+Linuxでの追加実行:
+
+```sh
+python3 experiments/php-wasix-wpdb-probe/run_check.py --backend mysql --corpus crud --record
+python3 experiments/php-wasix-wpdb-probe/run_check.py --backend mariadb --corpus crud --record
 ```
 
 通常WP bootstrap、実テーマ・plugin、非ASCII query/escape、列名以外のmysqli metadata、非UTF-8 ERR、TLS、永続cache、製品ABI／runtime採用はこの固定試験の範囲外である。

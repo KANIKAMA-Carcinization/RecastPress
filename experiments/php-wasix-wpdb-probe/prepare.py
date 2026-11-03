@@ -1,4 +1,4 @@
-"""Pin four derived CGI fixtures and stage only five readonly WordPress sources.
+"""Pin seven derived CGI fixtures and stage only eight readonly WordPress sources.
 
 No download, native PHP, Wasm, database, or network execution is performed.
 Guest mirror labels deliberately retain the previous experiment's names;
@@ -17,6 +17,7 @@ import unicodedata
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1].resolve()
 PREVIOUS = ROOT / 'experiments/wpdb-bridge-probe/fixtures'
+PREVIOUS_CRUD = ROOT / 'experiments/wpdb-crud-probe/fixtures'
 WORK = ROOT / 'target/php-wasix-wpdb-probe'
 DESTINATION = WORK / 'wp-core'
 PREPARED = WORK / 'prepared.json'
@@ -24,7 +25,14 @@ ARCHIVE = ROOT / '.reference/wordpress-7.1.3.tar.gz'
 ARCHIVE_SHA = 'd2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5'
 ARCHIVE_BYTES = 35368461
 OLD_COMMIT = '4fda5212eeafa01a57116d7024001150c8a39dde'
+OLD_CRUD_COMMIT = '255fac3ceefd2548c8a57d82e2b15957fb9610c9'
 FIXTURES = ['bridge.php', 'helpers.php', 'adapter.php', 'corpus.php']
+CRUD_FIXTURES = ['bridge.php', 'entry.php', 'corpus.php']
+OLD_CRUD_PINS = {
+    'bridge.php': (86, 'a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa'),
+    'entry.php': (9507, '6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa'),
+    'corpus.php': (5186, 'b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950'),
+}
 OLD_PINS = {
     'bridge.php': (122, 'e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f'),
     'helpers.php': (12603, '1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1'),
@@ -37,6 +45,9 @@ WP_PINS = {
     'class-wp-hook.php': (17584, 'b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e'),
     'class-wp-filter-sentinel.php': (760, '68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c'),
     'class-wpdb.php': (121437, 'e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd'),
+    'functions.php': (295481, 'cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c'),
+    'option.php': (105246, 'fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0'),
+    'class-wp-error.php': (7514, 'a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94'),
 }
 BUSINESS_MARKER = b'/** Minimal fixed-corpus drop-in: upstream prepare/get_* remain inherited. */\n'
 CGI_INPUT = b'''function rp_entry_input(string $variant): array {
@@ -153,6 +164,37 @@ def expected_fixtures(original):
     return expected
 
 
+def expected_crud_fixtures(original):
+    expected = {'corpus.php': original['corpus.php']}
+    expected['bridge.php'] = replace_once(original['bridge.php'], b'declare(strict_types=1);\n',
+        b"declare(strict_types=1);\nheader('Content-Type: application/json');\n")
+    entry = replace_once(original['entry.php'], b"'wasm_executed' => false,", b"'wasm_executed' => true,")
+    expected['entry.php'] = replace_once(entry,
+        b"        rp_check($report['native_driver_extension_present'] === ($variant === 'native'), 'crud_native_extension_profile');\n",
+        b"        rp_check($variant === 'bridge' && $report['native_driver_extension_present'] === true, 'crud_wasix_mysqli_profile');\n")
+    return expected
+
+
+def crud_derivation_gate():
+    original = {}
+    for name in CRUD_FIXTURES:
+        wire = read(PREVIOUS_CRUD / name, 128 * 1024)
+        require((len(wire), sha(wire)) == OLD_CRUD_PINS[name], 'previous_crud_source_pin_changed')
+        original[name] = wire
+    expected = expected_crud_fixtures(original)
+    for name in CRUD_FIXTURES:
+        wire = read(HERE / 'crud-fixtures' / name, 128 * 1024)
+        require(b'\r' not in wire and wire == expected[name], 'derived_crud_fixture_not_exact')
+    require({p.name for p in (HERE / 'crud-fixtures').iterdir()} == set(CRUD_FIXTURES),
+        'derived_crud_fixture_set_changed')
+    return {'fixed_old_source_commit': OLD_CRUD_COMMIT, 'old_git_objects_verified_by_preparer': False,
+        'old_sources': {name: identity(wire) for name, wire in original.items()},
+        'derived_sources': {name: identity(expected[name]) for name in CRUD_FIXTURES},
+        'corpus_bytes_unchanged': True, 'crud_api_business_bytes_unchanged': True,
+        'allowed_changes': ['CGI-content-type-header', 'wasm-executed-context-flag',
+            'fixed-WASIX-built-in-mysqli-profile']}
+
+
 def derivation_gate():
     original = {}
     for name in FIXTURES:
@@ -173,13 +215,16 @@ def derivation_gate():
         'adapter_business_sha256': sha(old_business),
         'allowed_helper_changes': ['CGI-GET-query-argc-and-env-nonce-entry-only', 'wasm-executed-context-flag',
             'fixed-WASIX-built-in-mysqli-profile-and-opaque-RPC-handle'],
-        'allowed_transport_changes': ['file-channel-open', 'request-and-reply-rewinds', 'no-socket-timeouts', 'channel-stat-labels']}
+        'allowed_transport_changes': ['file-channel-open', 'request-and-reply-rewinds', 'no-socket-timeouts', 'channel-stat-labels'],
+        'crud': crud_derivation_gate()}
 
 
 def input_hashes():
     paths = [Path(__file__).resolve(), ROOT / 'scripts/wordpress_reference.py']
     paths += [PREVIOUS / name for name in FIXTURES]
     paths += [HERE / 'fixtures' / name for name in FIXTURES]
+    paths += [PREVIOUS_CRUD / name for name in CRUD_FIXTURES]
+    paths += [HERE / 'crud-fixtures' / name for name in CRUD_FIXTURES]
     return {p.relative_to(ROOT).as_posix(): sha(read(p, 512 * 1024)) for p in paths}
 
 
@@ -209,7 +254,7 @@ def archive_sources():
                 wire = stream.read(WP_PINS[name][0] + 1)
             require((len(wire), sha(wire)) == WP_PINS[name], 'wordpress_fixed_source_identity')
             selected[name] = wire
-    require(set(selected) == set(WP_PINS), 'wordpress_five_source_set')
+    require(set(selected) == set(WP_PINS), 'wordpress_eight_source_set')
     require(sha(read(ARCHIVE, ARCHIVE_BYTES)) == ARCHIVE_SHA, 'wordpress_archive_changed')
     return selected, {'path': ARCHIVE.relative_to(ROOT).as_posix(), 'bytes': ARCHIVE_BYTES,
         'sha256': ARCHIVE_SHA, 'members_checked': count, 'declared_expanded_bytes_checked': expanded}
@@ -222,7 +267,7 @@ def staged_wordpress(selected):
     rows = {}
     for name in WP_PINS:
         path = owned(DESTINATION / name)
-        require(read(path, 256 * 1024) == selected[name], 'prepared_wordpress_source_changed')
+        require(read(path, 512 * 1024) == selected[name], 'prepared_wordpress_source_changed')
         require(stat.S_IMODE(path.stat().st_mode) & 0o222 == 0, 'prepared_wordpress_not_readonly')
         rows[name] = {'path': path.relative_to(ROOT).as_posix(), **identity(selected[name])}
     return rows
@@ -236,11 +281,16 @@ def metadata(selected, archive, before):
         files.append({'source': source.relative_to(ROOT).as_posix(),
             'guest': '/experiments/wpdb-bridge-probe/fixtures/' + name,
             **identity(read(source, 128 * 1024)), 'guest_read_only': True, 'kind': 'derived_fixture'})
+    for name in CRUD_FIXTURES:
+        source = HERE / 'crud-fixtures' / name
+        files.append({'source': source.relative_to(ROOT).as_posix(),
+            'guest': '/experiments/wpdb-crud-probe/fixtures/' + name,
+            **identity(read(source, 128 * 1024)), 'guest_read_only': True, 'kind': 'derived_crud_fixture'})
     for name, row in wp.items():
         files.append({'source': row['path'], 'guest': '/.reference/wordpress-7.1.3/wp-includes/' + name,
             'bytes': row['bytes'], 'sha256': row['sha256'], 'guest_read_only': True, 'kind': 'wordpress_source'})
-    require(len(files) == len({r['guest'] for r in files}) == 9, 'nine_unique_guest_files_required')
-    return {'schema': 'recastpress.php-wasix-wpdb-prepared.v0.5', 'outcome': 'fixed_nine_guest_sources_prepared',
+    require(len(files) == len({r['guest'] for r in files}) == 15, 'fifteen_unique_guest_files_required')
+    return {'schema': 'recastpress.php-wasix-wpdb-prepared.v0.5', 'outcome': 'fixed_fifteen_guest_sources_prepared',
         'input_files': before, 'derivation': derivation_gate(), 'source_archive': archive,
         'files': files, 'wordpress_files': wp, 'wordpress_version': '7.1.3',
         'guest_path_labels': 'previous experiment mirror paths; new compiled-source hashes are separate',
@@ -298,7 +348,7 @@ def main():
         print('Wasm wpdb fixture derivation validated; no sources staged or PHP executed')
     else:
         result = verify_prepared() if args.verify_only else prepare()
-        print('Wasm wpdb prepare: ' + result['outcome'] + '; nine finite guest sources; no PHP/DB execution')
+        print('Wasm wpdb prepare: ' + result['outcome'] + '; fifteen finite guest sources; no PHP/DB execution')
     return 0
 
 

@@ -17,6 +17,22 @@ pub const REPLY_TOTAL: usize = 512 * 1024;
 pub const CELL: usize = 4096;
 pub const OPS: u64 = 64;
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum Corpus {
+    #[default]
+    Standard,
+    Crud,
+}
+impl Corpus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Standard => "standard",
+            Self::Crud => "crud",
+        }
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Input {
@@ -29,6 +45,8 @@ pub struct Input {
     pub tls: String,
     pub tls_ca_pem: Value,
     pub nonce: String,
+    #[serde(default)]
+    pub corpus: Corpus,
 }
 
 #[derive(Deserialize)]
@@ -94,6 +112,12 @@ pub fn parse_input(wire: &[u8]) -> Result<Input> {
         .map(String::as_str)
         .collect();
     keys.sort_unstable();
+    let has_corpus = keys.contains(&"corpus");
+    check(
+        keys.len() == 9 + usize::from(has_corpus),
+        "input_exact_key_count",
+    )?;
+    keys.retain(|key| *key != "corpus");
     check(
         keys == [
             "database",
@@ -444,5 +468,65 @@ mod tests {
                 .unwrap()
                 .replacen("{", "{\"seq\":1,", 1);
         assert!(parse_request(duplicate.as_bytes(), &n, 1).is_err());
+    }
+}
+
+#[cfg(test)]
+mod corpus_tests {
+    use super::*;
+    fn value() -> Value {
+        json!({"schema":"recastpress.php-wasix-wpdb-input.v0.5","host":"127.0.0.1","port":3306,"database":"rp_wpdb_probe","user":"rp_wpdb_probe","password":"a".repeat(48),"tls":"disabled","tls_ca_pem":null,"nonce":"b".repeat(48)})
+    }
+    #[test]
+    fn corpus_absence_defaults_standard_and_only_closed_strings_are_accepted() {
+        let mut v = value();
+        assert_eq!(
+            parse_input(&serde_json::to_vec(&v).unwrap())
+                .unwrap()
+                .corpus,
+            Corpus::Standard
+        );
+        v["corpus"] = json!("standard");
+        assert_eq!(
+            parse_input(&serde_json::to_vec(&v).unwrap())
+                .unwrap()
+                .corpus,
+            Corpus::Standard
+        );
+        v["corpus"] = json!("crud");
+        assert_eq!(
+            parse_input(&serde_json::to_vec(&v).unwrap())
+                .unwrap()
+                .corpus,
+            Corpus::Crud
+        );
+        for invalid in [
+            Value::Null,
+            json!(true),
+            json!(3),
+            json!("STANDARD"),
+            json!("unknown"),
+            json!(["crud"]),
+        ] {
+            v["corpus"] = invalid;
+            assert!(parse_input(&serde_json::to_vec(&v).unwrap()).is_err());
+        }
+    }
+    #[test]
+    fn optional_corpus_does_not_allow_missing_unknown_or_duplicate_input_keys() {
+        let mut v = value();
+        v["corpus"] = json!("crud");
+        v.as_object_mut().unwrap().remove("tls_ca_pem");
+        assert!(parse_input(&serde_json::to_vec(&v).unwrap()).is_err());
+        v = value();
+        v["corpus"] = json!("crud");
+        v["extra"] = json!(0);
+        assert!(parse_input(&serde_json::to_vec(&v).unwrap()).is_err());
+        v = value();
+        v["corpus"] = json!("crud");
+        let mut wire = serde_json::to_vec(&v).unwrap();
+        wire.pop();
+        wire.extend_from_slice(b",\"corpus\":\"standard\"}");
+        assert!(parse_input(&wire).is_err());
     }
 }

@@ -196,14 +196,21 @@ class GitSource:
         return namespace
 
 
-def member_map(backend):
-    return {
+def has_crud(source):
+    return 'CRUD_BASELINES' in source.constants(PREFIX + 'run_check.py')
+
+
+def member_map(backend, crud=False):
+    result = {
         'run.json': PREFIX + 'evidence/linux-' + backend + '.json',
         'ci-stages.json': PREFIX + 'evidence/ci-stages.json',
         'build.json': MANAGED + 'evidence/build.json',
         'toolchain.json': CGI + 'evidence/toolchain.json',
         'prepared.json': 'target/php-wasix-wpdb-probe/prepared.json',
     }
+    if crud:
+        result['crud.json'] = PREFIX + 'evidence/linux-' + backend + '-crud.json'
+    return result
 
 
 def metadata_gate(api, run, backend):
@@ -231,16 +238,16 @@ def metadata_gate(api, run, backend):
         'api_artifact_identity')
 
 
-def archive_gate(path, api, backend):
+def archive_gate(path, api, backend, crud=False):
     wire = read(path, 8 * 1024 * 1024)
     exact(identity(wire), {'bytes': api['artifact']['size_in_bytes'],
         'sha256': api['artifact']['digest'][7:]}, 'api_zip_bytes_and_digest')
-    mapping = member_map(backend)
+    mapping = member_map(backend, crud)
     reverse = {path: name for name, path in mapping.items()}
     raw, members, expanded = {}, {}, 0
     with zipfile.ZipFile(io.BytesIO(wire)) as archive:
         rows = archive.infolist()
-        require(1 <= len(rows) <= 5 and len({row.filename for row in rows}) == len(rows), 'zip_member_set_bound')
+        require(1 <= len(rows) <= len(mapping) and len({row.filename for row in rows}) == len(rows), 'zip_member_set_bound')
         for row in rows:
             relative(row.filename)
             require(row.filename in reverse and not row.is_dir() and row.flag_bits & 1 == 0
@@ -268,7 +275,10 @@ def stages_gate(stages, api, backend, source):
         match = re.search(r'^        id: ([a-z_]+)$', block, re.M)
         if match:
             expected[match[1]] = name
-    exact(set(expected), {'php', 'deps', 'parser', 'packages', 'tools', 'module', 'guest', 'rust', 'contract'},
+    inventory = {'php', 'deps', 'parser', 'packages', 'tools', 'module', 'guest', 'rust', 'contract'}
+    if has_crud(source):
+        inventory.add('crud')
+    exact(set(expected), inventory,
         'frozen_workflow_stage_inventory')
     exact(set(stages['stages']), set(expected), 'actual_ci_stage_inventory')
     for key, name in expected.items():
@@ -323,10 +333,16 @@ def source_bindings_in_records(source, value):
 def frozen_checker(source):
     name = PREFIX + 'run_check.py'
     constants = source.constants(name)
-    reader = lambda path, maximum: source.read(Path(path).relative_to(ROOT).as_posix())
-    namespace = source.functions(name, ['canonical', 'exact', 'reference', 'validate_php', 'parse_complete_cgi'],
-        {'CORE': constants['CORE'], 'BASELINES': constants['BASELINES'],
-         'driver': SimpleNamespace(read_fixed=reader)})
+    def reader(path, maximum):
+        wire = source.read(Path(path).relative_to(ROOT).as_posix())
+        require(len(wire) <= maximum, 'frozen_reference_read_quota')
+        return wire
+    names = ['canonical', 'exact', 'reference', 'validate_php', 'parse_complete_cgi']
+    values = {'CORE': constants['CORE'], 'BASELINES': constants['BASELINES']}
+    if has_crud(source):
+        names += ['crud_reference', 'expected_includes']
+        values.update({key: constants[key] for key in ['CRUD_CORE', 'CRUD_BASELINES', 'STANDARD_WP']})
+    namespace = source.functions(name, names, {**values, 'driver': SimpleNamespace(read_fixed=reader)})
     return namespace
 
 
@@ -353,20 +369,42 @@ def prepared_gate(mapping, source):
     derived = namespace['expected_fixtures'](original)
     for n in names:
         exact(source.read(PREFIX + 'fixtures/' + n), derived[n], 'frozen_cgi_derivation')
-    inputs = source.hashes([name, 'scripts/wordpress_reference.py']
-        + [old_prefix + n for n in names] + [PREFIX + 'fixtures/' + n for n in names])
-    exact(mapping['input_files'], inputs, 'complete_prepared_ten_source_inventory')
+    input_names = [name, 'scripts/wordpress_reference.py'] + [old_prefix + n for n in names] + [PREFIX + 'fixtures/' + n for n in names]
+    crud_names, crud_original, crud_derived = [], {}, {}
+    crud = has_crud(source)
+    if crud:
+        require(constants['OLD_CRUD_COMMIT'] == '255fac3ceefd2548c8a57d82e2b15957fb9610c9',
+            'fixed_original_crud_source_commit')
+        crud_names = constants['CRUD_FIXTURES']
+        exact(crud_names, ['bridge.php', 'entry.php', 'corpus.php'], 'fixed_crud_fixture_names')
+        for n in crud_names:
+            wire = source.read('experiments/wpdb-crud-probe/fixtures/' + n)
+            exact((len(wire), sha(wire)), constants['OLD_CRUD_PINS'][n], 'frozen_parent_crud_fixture_pin')
+            crud_original[n] = wire
+        pure = source.functions(name, ['replace_once', 'expected_crud_fixtures'], constants)
+        crud_derived = pure['expected_crud_fixtures'](crud_original)
+        for n in crud_names:
+            exact(source.read(PREFIX + 'crud-fixtures/' + n), crud_derived[n], 'frozen_crud_cgi_derivation')
+        input_names += ['experiments/wpdb-crud-probe/fixtures/' + n for n in crud_names]
+        input_names += [PREFIX + 'crud-fixtures/' + n for n in crud_names]
+    inputs = source.hashes(input_names)
+    require(len(inputs) == (16 if crud else 10), 'fixed_preparation_input_count')
+    exact(mapping['input_files'], inputs, 'complete_prepared_source_inventory')
     wp = {n: {'path': 'target/php-wasix-wpdb-probe/wp-core/' + n, 'bytes': pin[0], 'sha256': pin[1]}
         for n, pin in constants['WP_PINS'].items()}
     files = [{'source': PREFIX + 'fixtures/' + n, 'guest': '/experiments/wpdb-bridge-probe/fixtures/' + n,
         **identity(derived[n]), 'guest_read_only': True, 'kind': 'derived_fixture'} for n in names]
+    files += [{'source': PREFIX + 'crud-fixtures/' + n, 'guest': '/experiments/wpdb-crud-probe/fixtures/' + n,
+        **identity(crud_derived[n]), 'guest_read_only': True, 'kind': 'derived_crud_fixture'} for n in crud_names]
     files += [{'source': row['path'], 'guest': '/.reference/wordpress-7.1.3/wp-includes/' + n,
         'bytes': row['bytes'], 'sha256': row['sha256'], 'guest_read_only': True, 'kind': 'wordpress_source'}
         for n, row in wp.items()]
-    exact(mapping['files'], files, 'all_nine_guest_file_mappings')
-    exact(mapping['wordpress_files'], wp, 'five_wordpress_mappings_agree')
+    require(len(files) == (15 if crud else 9) and len(wp) == (8 if crud else 5), 'fixed_guest_and_wp_file_counts')
+    exact(mapping['files'], files, 'all_guest_file_mappings')
+    exact(mapping['wordpress_files'], wp, 'wordpress_mappings_agree')
     require(mapping['schema'] == 'recastpress.php-wasix-wpdb-prepared.v0.5'
-        and mapping['outcome'] == 'fixed_nine_guest_sources_prepared' and mapping['inputs_unchanged'] is True,
+        and mapping['outcome'] == ('fixed_fifteen_guest_sources_prepared' if crud else 'fixed_nine_guest_sources_prepared')
+        and mapping['inputs_unchanged'] is True,
         'prepared_scope_identity')
     archive = mapping['source_archive']
     exact({key: archive[key] for key in ['path', 'bytes', 'sha256']},
@@ -397,6 +435,17 @@ def prepared_gate(mapping, source):
         'allowed_helper_changes': ast.literal_eval(derivation_fields['allowed_helper_changes']),
         'allowed_transport_changes': ast.literal_eval(derivation_fields['allowed_transport_changes']),
     }
+    if crud:
+        last = functions['crud_derivation_gate'].body[-1]
+        require(isinstance(last, ast.Return) and isinstance(last.value, ast.Dict), 'frozen_crud_derivation_shape')
+        fields = {ast.literal_eval(k): v for k, v in zip(last.value.keys, last.value.values)}
+        expected_derivation['crud'] = {
+            'fixed_old_source_commit': constants['OLD_CRUD_COMMIT'], 'old_git_objects_verified_by_preparer': False,
+            'old_sources': {n: identity(w) for n, w in crud_original.items()},
+            'derived_sources': {n: identity(crud_derived[n]) for n in crud_names},
+            'corpus_bytes_unchanged': True, 'crud_api_business_bytes_unchanged': True,
+            'allowed_changes': ast.literal_eval(fields['allowed_changes']),
+        }
     exact(mapping['derivation'], expected_derivation, 'entire_frozen_preparation_derivation')
     exact(set(archive), {'path', 'bytes', 'sha256', 'members_checked', 'declared_expanded_bytes_checked'},
         'complete_source_archive_metadata_fields')
@@ -404,17 +453,24 @@ def prepared_gate(mapping, source):
         'fixed_wordpress_version_metadata')
     exact(mapping['guest_path_labels'], ast.literal_eval(metadata_fields['guest_path_labels']),
         'fixed_guest_mirror_label_scope')
-    return {'finite_readonly_guest_files': 9, 'wordpress_source_files': 5,
+    return {'finite_readonly_guest_files': len(files), 'wordpress_source_files': len(wp),
         'source_archive_binary_reverified_offline': False, 'all_fixture_derivations_verified': True}
 
 
-def offline_host_gate(value, checker, run):
+def offline_host_gate(value, checker, run, corpus='standard'):
     # No guessed nonce or rewritten host result is passed to validate_host.
     # CI's nonce-sensitive verdict is source-bound; every nonce-independent
     # frame/body/state/accounting condition is independently checked below.
     require(value['schema'] == 'recastpress.php-wasix-wpdb-observation.v0.5'
         and value['outcome'] == 'fixed_wasix_wpdb_cases_passed'
         and value['phase'] == 'wpdb_cgi_contract_verified' and value['error'] is None, 'host_success_identity')
+    require(corpus in ('standard', 'crud'), 'closed_offline_corpus')
+    if 'crud_reference' in checker:
+        exact(value['corpus'], corpus, 'actual_host_corpus')
+        exact(run['corpus'], corpus, 'actual_controller_corpus')
+    else:
+        require(corpus == 'standard', 'legacy_standard_corpus_only')
+    operation_count = 34 if corpus == 'standard' else 40
     for key in ['passed', 'physical_connection_created', 'physical_disconnect_completed', 'db_actor_joined',
             'db_actor_exited', 'fresh_runtime', 'source_rechecked_after_execution']:
         require(value[key] is True, 'host_completion_gate')
@@ -440,7 +496,8 @@ def offline_host_gate(value, checker, run):
     require(rpc['failure'] is None and rpc['channel_open'] is False and rpc['response_pending'] is False
         and rpc['pending_bytes'] == rpc['unread_response_bytes'] == 0, 'rpc_channel_sealed')
     ops = value['operations']
-    require(type(ops) is list and len(ops) == 34 and rpc['operations'] == 34, 'complete_rpc_operations')
+    require(type(ops) is list and len(ops) == operation_count and type(rpc['operations']) is int
+        and rpc['operations'] == operation_count, 'complete_rpc_operations')
     counts = dict.fromkeys(['hello', 'query', 'escape', 'close'], 0)
     for seq, op in enumerate(ops, 1):
         require(type(op['seq']) is int and op['seq'] == seq and op['op'] in counts
@@ -460,9 +517,11 @@ def offline_host_gate(value, checker, run):
             'actual_reply_wire_identity')
     php = value['php_result']
     transport = php['rpc_stats']['transport']
-    exact(counts, {'hello': 1, 'query': 29, 'escape': 3, 'close': 1}, 'fixed_rpc_counts')
+    expected_counts = {'hello': 1, 'query': 29, 'escape': 3, 'close': 1} if corpus == 'standard' else {'hello': 1, 'query': 20, 'escape': 18, 'close': 1}
+    exact(counts, expected_counts, 'fixed_rpc_counts')
     exact(transport['counts'], counts, 'php_actual_rpc_counts')
-    require(transport['transport_closed'] is True and transport['requests'] == 34
+    require(transport['transport_closed'] is True and type(transport['requests']) is int
+        and transport['requests'] == operation_count
         and transport['kind'] == 'file-channel' and transport['channel_guest_path'] == '/rp-wpdb/channel',
         'closed_private_file_transport')
     requested, replied = sum(op['request_frame_bytes'] for op in ops), sum(op['reply_frame_bytes'] for op in ops)
@@ -472,8 +531,17 @@ def offline_host_gate(value, checker, run):
     setup = php['rpc_stats']['internal_session_setup']
     require(len(setup) == 4, 'four_direct_session_queries')
     queries = [op for op in ops if op['op'] == 'query']
-    exact([op['data_hex'] for op in queries], [row['sql_hex'] for row in setup]
-        + [row['query_hex'] for row in php['observations'] if row['state']['delta'] == 1], 'all_actual_query_trace')
+    public = ([row['query_hex'] for row in php['observations'] if row['state']['delta'] == 1]
+        if corpus == 'standard' else php['query_trace_hex'])
+    require(len(public) == (25 if corpus == 'standard' else 16), 'complete_public_query_trace')
+    exact([op['data_hex'] for op in queries], [row['sql_hex'] for row in setup] + public, 'all_actual_query_trace')
+    if corpus == 'crud':
+        require(all(op['ok'] is True for op in ops), 'all_crud_operations_succeeded')
+        exact([query for row in php['observations'] for query in row['queries_hex']], public,
+            'crud_public_trace_including_schema')
+        require(sum(bytes.fromhex(query).startswith(b'SHOW FULL COLUMNS FROM ') for query in public) == 1
+            and type(php['observations'][1]['state']['delta']) is int
+            and php['observations'][1]['state']['delta'] == 2, 'actual_single_crud_schema_lookup')
     for op, row in zip(queries, setup):
         require(op['ok'] is True, 'successful_direct_setup')
         exact(op['data'], row['data'], 'actual_direct_setup_reply')
@@ -484,7 +552,7 @@ def offline_host_gate(value, checker, run):
     require(ops[0]['data']['caps'] & (2 | 128 | 2048 | 65536) == 0, 'forbidden_capabilities_off')
     return {'offline_nonce_recomputed': False, 'request_digest_recomputed_offline': False,
         'nonce_independent_request_lengths_verified': True, 'reply_frames_recomputed': True,
-        'actual_cgi_wire_and_all_api_queries_verified': True, 'operations': 34}
+        'actual_cgi_wire_and_all_api_queries_verified': True, 'operations': operation_count}
 
 
 def tool_inputs(source):
@@ -631,8 +699,8 @@ def managed_gate(data, raw, source, provenance=None):
         'same_job_toolchain_and_module_metadata_bound': True, 'source_tool_module_binaries_reverified': False}
 
 
-def positive_gate(data, raw, source, backend):
-    run, mapping = data['run.json'], data['prepared.json']
+def positive_record_gate(data, raw, source, backend, record='run.json', corpus='standard'):
+    run, mapping = data[record], data['prepared.json']
     require(run['schema'] == 'recastpress.php-wasix-wpdb-check.v0.5' and run['passed'] is True
         and run['outcome'] == 'fixed_wasm_wpdb_database_passed' and run['backend'] == backend
         and run['platform'] == 'linux' and run['build_only'] is False and run['owned_cleanup_completed'] is True,
@@ -684,17 +752,38 @@ def positive_gate(data, raw, source, backend):
     require(type(names) is list and len(names) >= 10 and len(names) == len(set(names)), 'actual_unit_inventory')
     value = run['observation']
     checker = frozen_checker(source)
-    api_summary = checker['validate_php'](value['php_result'], backend, mapping)
-    expected_loaded = {'wp-includes/' + name: row['sha256'] for name, row in mapping['wordpress_files'].items()}
-    exact(value['php_result']['loaded_source_sha256'], expected_loaded, 'actual_loaded_five_wordpress_sources')
+    api_summary = (checker['validate_php'](value['php_result'], backend, mapping, corpus)
+        if has_crud(source) else checker['validate_php'](value['php_result'], backend, mapping))
+    selected_wp = source.constants(PREFIX + 'run_check.py').get('STANDARD_WP', list(mapping['wordpress_files']))
+    expected_loaded = {'wp-includes/' + name: row['sha256'] for name, row in mapping['wordpress_files'].items()
+        if corpus == 'crud' or name in selected_wp}
+    exact(value['php_result']['loaded_source_sha256'], expected_loaded, 'actual_loaded_wordpress_sources')
     raw_version = bytes.fromhex(value['php_result']['server_info_hex']).decode('ascii', errors='strict')
     require(raw_version == version or backend == 'mariadb' and raw_version == '5.5.5-' + version,
         'unmodified_raw_handshake_vs_server_version')
-    rpc_summary = offline_host_gate(value, checker, run)
+    rpc_summary = offline_host_gate(value, checker, run, corpus)
     function = next(node for node in source.tree(PREFIX + 'run_check.py').body
         if isinstance(node, ast.FunctionDef) and node.name == 'validate_host')
     require(isinstance(function.body[-1], ast.Return), 'frozen_host_validation_summary')
-    expected_verdict = ast.literal_eval(function.body[-1].value)
+    result = function.body[-1].value
+    if has_crud(source):
+        # Evaluate only the source-bound summary expression; never run the
+        # nonce-sensitive validator with a guessed/replaced nonce or report.
+        for node in ast.walk(result):
+            require(isinstance(node, (ast.Dict, ast.Constant, ast.Name, ast.Load, ast.Call)),
+                'frozen_host_summary_expression')
+            if isinstance(node, ast.Name):
+                require(node.id in {'corpus', 'operation_count', 'public_queries', 'len'}, 'frozen_host_summary_name')
+            if isinstance(node, ast.Call):
+                require(isinstance(node.func, ast.Name) and node.func.id == 'len' and len(node.args) == 1
+                    and isinstance(node.args[0], ast.Name) and node.args[0].id == 'public_queries'
+                    and not node.keywords, 'frozen_host_summary_call')
+        expected_verdict = eval(compile(ast.Expression(result), '<frozen-host-summary>', 'eval'),
+            {'__builtins__': {}, 'len': len}, {'corpus': corpus,
+                'operation_count': 34 if corpus == 'standard' else 40,
+                'public_queries': [None] * (25 if corpus == 'standard' else 16)})
+    else:
+        expected_verdict = ast.literal_eval(result)
     exact(run['rpc_validation'], expected_verdict, 'ci_nonce_sensitive_verdict_source_binding')
     exact(run['api_validation'], api_summary, 'ci_api_verdict_matches_offline_validation')
     managed_summary = managed_gate(data, raw, source, run['module_provenance'])
@@ -707,23 +796,49 @@ def positive_gate(data, raw, source, backend):
     managed_names = source.constants(MANAGED + 'managed_check.py')['SOURCES']
     exact(value['managed_sources'], [{'path': name, 'bytes': len(source.read(name)), 'sha256': sha(source.read(name))}
         for name in managed_names], 'all_fourteen_compiled_managed_sources')
-    exact(value['prepared']['files'], mapping['files'], 'host_nine_readonly_file_map')
+    exact(value['prepared']['files'], mapping['files'], 'host_readonly_file_map')
     require(value['prepared']['sha256'] == sha(raw['prepared.json']) and value['prepared']['verified'] is True
         and value['prepared']['full_archive_verified_by_host'] is False, 'host_prepared_receipt_binding')
     bound = {row['path']: {'bytes': row['bytes'], 'sha256': row['sha256']} for row in value['prepared']['input_files']}
-    require(len(bound) == len(value['prepared']['input_files']) == 10, 'ten_compiled_preparation_inputs')
+    require(len(bound) == len(value['prepared']['input_files']) == (16 if has_crud(source) else 10),
+        'all_compiled_preparation_inputs')
     exact(bound, {name: identity(source.read(name)) for name in mapping['input_files']}, 'compiled_fixture_and_helper_inputs')
+    if corpus == 'crud':
+        exact(run['final_crud_row_count'], 0, 'independent_final_crud_rows_empty')
+        ddl_source = source.read('experiments/wpdb-crud-probe/owned_database.py')
+        assignments = [node for node in ast.parse(ddl_source).body if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == 'DDL' for target in node.targets)]
+        require(len(assignments) == 1, 'one_native_crud_ddl_literal')
+        ddl = ast.literal_eval(assignments[0].value)
+        require(type(ddl) is bytes and len(ddl) <= 4096, 'fixed_native_crud_ddl_bytes')
+        exact(run['crud_schema_ddl_sha256'], sha(ddl), 'same_native_crud_schema')
     return {'api': api_summary, 'rpc': rpc_summary, 'prepared': prepared_summary, 'managed': managed_summary,
         'ci_nonce_sensitive_validation_bound_to_frozen_source': True}
+
+
+def positive_gate(data, raw, source, backend):
+    standard = positive_record_gate(data, raw, source, backend)
+    if not has_crud(source):
+        return standard
+    crud = positive_record_gate(data, raw, source, backend, 'crud.json', 'crud')
+    # Both are actual executions against separately owned fresh DB instances.
+    # Do not accept replaying the standard run/container as the CRUD run.
+    first, second = data['run.json'], data['crud.json']
+    require(first['container_id'] != second['container_id'] and first['run'] != second['run'],
+        'separate_fresh_standard_and_crud_databases')
+    exact(first['input_files'], second['input_files'], 'same_frozen_sources_for_both_corpora')
+    exact(first['executable_identity'], second['executable_identity'], 'same_host_binary_for_both_corpora')
+    return {'standard': standard, 'crud': crud, 'both_corpora_verified': True,
+        'separate_fresh_database_instances_verified': True}
 
 
 def verifier_identity():
     return {Path(__file__).resolve().relative_to(ROOT).as_posix(): sha(read(Path(__file__).resolve(), 512 * 1024))}
 
 
-def failed_observations(data, raw, source):
+def failed_observations(data, raw, source, record='run.json'):
     summary = {'integration_passed': False, 'raw_failures_preserved': True}
-    run = data.get('run.json')
+    run = data.get(record)
     if run is None:
         return summary
     for key in ['outcome', 'passed', 'failure', 'failure_stage', 'container_started', 'container_stopped',
@@ -816,13 +931,16 @@ def main():
     metadata_gate(api, args.run, args.backend)
     privacy_gate(api)
     source = GitSource(api['head_sha'])
-    raw, data, members = archive_gate(work / ('run-' + args.run + '-' + args.backend + '.zip'), api, args.backend)
+    crud = has_crud(source)
+    raw, data, members = archive_gate(work / ('run-' + args.run + '-' + args.backend + '.zip'), api, args.backend, crud)
     for value in data.values():
         privacy_gate(value)
     stages_success = stages_gate(data['ci-stages.json'], api, args.backend, source)
-    all_success = api['run_conclusion'] == api['job']['conclusion'] == 'success' and stages_success
-    if all_success:
-        exact(set(raw), set(member_map(args.backend)), 'five_positive_json_members_required')
+    ci_success = api['run_conclusion'] == api['job']['conclusion'] == 'success' and stages_success
+    if ci_success:
+        exact(set(raw), set(member_map(args.backend, crud)), 'complete_positive_json_members_required')
+    records = ['run.json', 'crud.json'] if crud else ['run.json']
+    all_success = ci_success and all(name in data and data[name].get('passed') is True for name in records)
     binding_error = None
     try:
         bindings = sum(source_bindings_in_records(source, value) for value in data.values())
@@ -844,6 +962,9 @@ def main():
             summary['retained_run_outcome'] = data['run.json'].get('outcome')
             summary['retained_run_passed'] = data['run.json'].get('passed')
         summary['failed_observations'] = failed_observations(data, raw, source)
+        if crud:
+            summary['failed_crud_observations'] = failed_observations(data, raw, source, 'crud.json')
+            summary['both_corpora_verified'] = False
     proof = {'schema': 'recastpress.php-wasix-wpdb-ci-import.v0.5', 'repository': REPOSITORY,
         'repository_id': REPOSITORY_ID, 'run_id': api['run_id'], 'run_attempt': api['run_attempt'],
         'source_commit': source.commit, 'backend': args.backend, 'run_conclusion': api['run_conclusion'],

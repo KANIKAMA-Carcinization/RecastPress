@@ -102,4 +102,33 @@ pub const PREPARED_SOURCES: &[(&str, &[u8])] = &[
         "experiments/php-wasix-wpdb-probe/fixtures/corpus.php",
         include_bytes!("../../php-wasix-wpdb-probe/fixtures/corpus.php"),
     ),
+    (
+        "experiments/wpdb-crud-probe/fixtures/bridge.php",
+        include_bytes!("../../wpdb-crud-probe/fixtures/bridge.php"),
+    ),
+    (
+        "experiments/wpdb-crud-probe/fixtures/entry.php",
+        include_bytes!("../../wpdb-crud-probe/fixtures/entry.php"),
+    ),
+    (
+        "experiments/wpdb-crud-probe/fixtures/corpus.php",
+        include_bytes!("../../wpdb-crud-probe/fixtures/corpus.php"),
+    ),
+    (
+        "experiments/php-wasix-wpdb-probe/crud-fixtures/bridge.php",
+        include_bytes!("../../php-wasix-wpdb-probe/crud-fixtures/bridge.php"),
+    ),
+    (
+        "experiments/php-wasix-wpdb-probe/crud-fixtures/entry.php",
+        include_bytes!("../../php-wasix-wpdb-probe/crud-fixtures/entry.php"),
+    ),
+    (
+        "experiments/php-wasix-wpdb-probe/crud-fixtures/corpus.php",
+        include_bytes!("../../php-wasix-wpdb-probe/crud-fixtures/corpus.php"),
+    ),
 ];
+
+pub const CRUD_COMPARISON_SOURCE: (&str, &[u8]) = (
+    "experiments/wpdb-crud-probe/src/completion.rs",
+    include_bytes!("../../wpdb-crud-probe/src/completion.rs"),
+);

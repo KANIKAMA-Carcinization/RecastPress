@@ -96,6 +96,13 @@ name: PHP WASIX wpdb and owned database
       - "experiments/wpdb-rpc-probe/driver-plan.json"
       - "experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch"
       - "experiments/wpdb-rpc-probe/prepare_driver.py"
+      - "experiments/wpdb-crud-probe/fixtures/bridge.php"
+      - "experiments/wpdb-crud-probe/fixtures/entry.php"
+      - "experiments/wpdb-crud-probe/fixtures/corpus.php"
+      - "experiments/wpdb-crud-probe/src/completion.rs"
+      - "experiments/wpdb-crud-probe/owned_database.py"
+      - "experiments/wpdb-crud-probe/evidence/windows-mysql-native.json"
+      - "experiments/wpdb-crud-probe/evidence/windows-mariadb-native.json"
       - "scripts/owned_probe.py"
       - "scripts/wordpress_reference.py"
   workflow_dispatch: {}
@@ -175,7 +182,7 @@ jobs:
         id: module
         run: python3 experiments/php-wasix-managed-access-probe/build.py --record
 
-      - name: Prepare only nine readonly guest files
+      - name: Prepare fifteen readonly guest files for both corpora
         id: guest
         run: |
           set -euo pipefail
@@ -199,6 +206,10 @@ jobs:
         id: contract
         run: python3 experiments/php-wasix-wpdb-probe/run_check.py --backend ${{ matrix.backend }} --record
 
+      - name: Compare standard CRUD helpers through php-wasm against a fresh owned database
+        id: crud
+        run: python3 experiments/php-wasix-wpdb-probe/run_check.py --backend ${{ matrix.backend }} --corpus crud --record
+
       - name: Record CI stage outcomes
         if: ${{ always() }}
         env:
@@ -211,6 +222,7 @@ jobs:
           STAGE_GUEST: ${{ steps.guest.outcome }}
           STAGE_RUST: ${{ steps.rust.outcome }}
           STAGE_CONTRACT: ${{ steps.contract.outcome }}
+          STAGE_CRUD: ${{ steps.crud.outcome }}
           FIXED_BACKEND: ${{ matrix.backend }}
         run: |
           python3 - <<'PY'
@@ -233,6 +245,7 @@ jobs:
           retention-days: 30
           path: |
             experiments/php-wasix-wpdb-probe/evidence/linux-${{ matrix.backend }}.json
+            experiments/php-wasix-wpdb-probe/evidence/linux-${{ matrix.backend }}-crud.json
             experiments/php-wasix-wpdb-probe/evidence/ci-stages.json
             experiments/php-wasix-managed-access-probe/evidence/build.json
             experiments/php-wasix-cgi-build/evidence/toolchain.json

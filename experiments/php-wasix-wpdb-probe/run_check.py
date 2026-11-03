@@ -30,8 +30,13 @@ linux = load('rp_wasm_wpdb_owned_linux_container', HERE / 'linux_database.py')
 require, sha = driver.require, driver.sha
 BASELINES = {'mysql': '9caf9e945e074e158eb085524f3a845f7aa114d29ead954cae0677c196f3cb04',
     'mariadb': 'b0b554bedd299fa063accccb0c58a914fc18fb2d3a07bd598fae7701efa3bcc8'}
+CRUD_BASELINES = {'mysql': 'eeae9d70025bc23874efbab9fd55368fa21b898996ffe63c6349ac73cd3c1b00',
+    'mariadb': '345b1ae77f1cd0dbc622cdb8a292cbca0a699c411fa697bcfae20c289c244e51'}
 CORE = ['observations', 'bootstrap_num_queries', 'final_num_queries', 'capabilities', 'prefix',
     'prepare', 'syntax_error_code', 'syntax_error_state']
+CRUD_CORE = ['observations', 'query_trace_hex', 'bootstrap_num_queries', 'final_num_queries',
+    'session_snapshot', 'final_row_count']
+STANDARD_WP = ['load.php', 'plugin.php', 'class-wp-hook.php', 'class-wp-filter-sentinel.php', 'class-wpdb.php']
 
 
 def canonical(value):
@@ -52,6 +57,10 @@ def sources():
         ROOT / 'experiments/wpdb-rpc-probe/prepare_driver.py', ROOT / 'experiments/wpdb-rpc-probe/driver-plan.json',
         ROOT / 'experiments/wpdb-rpc-probe/patches/0001-mysql-async-wpdb-handshake.patch',
         ROOT / 'experiments/binlog-probe/Cargo.lock', ROOT / 'experiments/binlog-probe/Cargo.toml',
+        ROOT / 'experiments/wpdb-crud-probe/src/completion.rs',
+        ROOT / 'experiments/wpdb-crud-probe/owned_database.py',
+        ROOT / 'experiments/wpdb-crud-probe/evidence/windows-mysql-native.json',
+        ROOT / 'experiments/wpdb-crud-probe/evidence/windows-mariadb-native.json',
         ROOT / 'scripts/owned_probe.py', ROOT / 'scripts/wordpress_reference.py']
     paths += [ROOT / name for name in prepared.input_hashes()]
     paths += [ROOT / name for name in managed.source_hashes()]
@@ -116,10 +125,38 @@ def reference(backend):
     return value['native_result']
 
 
-def validate_php(php, backend, mapping):
-    old = reference(backend)
-    require(php['schema'] == 'recastpress.wpdb-bridge-php-observation.v0.5'
-        and php['outcome'] == 'fixed_shared_wpdb_cases_passed' and php['variant'] == 'bridge', 'guest_schema_outcome')
+def crud_reference(backend):
+    p = ROOT / ('experiments/wpdb-crud-probe/evidence/windows-' + backend + '-native.json')
+    wire = driver.read_fixed(p, 512 * 1024)
+    require(sha(wire) == CRUD_BASELINES[backend], 'fixed_native_crud_reference_changed')
+    value = json.loads(wire)
+    require(value['passed'] is True and value['variant'] == 'native' and value['backend'] == backend
+        and value['database_closed_and_reaped'] is True and value['normal_admin_shutdown_verified'] is True
+        and value['all_command_children_reaped'] is True, 'fixed_native_crud_reference_failed')
+    for name in ['bridge.php', 'entry.php', 'corpus.php']:
+        key = 'experiments/wpdb-crud-probe/fixtures/' + name
+        require(sha(driver.read_fixed(ROOT / key, 128 * 1024)) == value['input_files'][key],
+            'native_crud_original_fixture_changed')
+    return value['observation']
+
+
+def expected_includes(mapping, corpus):
+    require(corpus in ('standard', 'crud'), 'closed_corpus_include_profile')
+    files = [item['guest'].lstrip('/') for item in mapping['files']]
+    if corpus == 'standard':
+        return sorted(name for name in files if name.startswith('experiments/wpdb-bridge-probe/fixtures/')
+            or name.startswith('.reference/') and name.rsplit('/', 1)[-1] in STANDARD_WP)
+    excluded = ['experiments/wpdb-bridge-probe/fixtures/bridge.php',
+        'experiments/wpdb-bridge-probe/fixtures/corpus.php']
+    return sorted(name for name in files if name not in excluded)
+
+
+def validate_php(php, backend, mapping, corpus='standard'):
+    require(corpus in ('standard', 'crud'), 'closed_corpus_php_profile')
+    old = reference(backend) if corpus == 'standard' else crud_reference(backend)
+    schema = 'recastpress.wpdb-bridge-php-observation.v0.5' if corpus == 'standard' else 'recastpress.wpdb-crud-php-observation.v0.5'
+    outcome = 'fixed_shared_wpdb_cases_passed' if corpus == 'standard' else 'fixed_crud_cases_passed'
+    require(php['schema'] == schema and php['outcome'] == outcome and php['variant'] == 'bridge', 'guest_schema_outcome')
     for key in ['passed', 'connected', 'close_completed', 'constructor_connection_deferred', 'included_source_gate_passed',
             'rust_driver_executed', 'wasm_executed']:
         require(php[key] is True, 'guest_completion_' + key)
@@ -131,16 +168,29 @@ def validate_php(php, backend, mapping):
     require(php['suppress_errors_previous'] is False and php['tls_profile'] == 'disabled', 'guest_fixed_profile')
     require(php['native_driver_extension_present'] is True and php['native_mysqli_handle_supplied'] is False,
         'guest_builtin_extension_and_rust_owned_handle')
-    for key in CORE: exact(php[key], old[key], 'native_api_' + key + '_differs')
-    exact(php['included_source_names'], sorted(item['guest'].lstrip('/') for item in mapping['files']), 'guest_actual_include_set')
-    require(len(php['observations']) == 27 and php['bootstrap_num_queries'] == 0 and php['final_num_queries'] == 25,
+    for key in (CORE if corpus == 'standard' else CRUD_CORE):
+        exact(php[key], old[key], 'native_api_' + key + '_differs')
+    exact(php['included_source_names'], expected_includes(mapping, corpus), 'guest_actual_include_set')
+    wp = {('wp-includes/' + name): row['sha256'] for name, row in mapping['wordpress_files'].items()
+        if corpus == 'crud' or name in STANDARD_WP}
+    exact(php['loaded_source_sha256'], wp, 'guest_actual_wordpress_source_bytes')
+    cases, queries = (27, 25) if corpus == 'standard' else (15, 16)
+    require(len(php['observations']) == cases and php['bootstrap_num_queries'] == 0 and php['final_num_queries'] == queries,
         'guest_api_and_query_counts')
+    if corpus == 'crud':
+        require(php['invalid_utf8_or_overlong_inputs_exercised'] is False and php['final_row_count'] == '0',
+            'guest_crud_valid_ascii_scope')
+        trace = [query for row in php['observations'] for query in row['queries_hex']]
+        exact(trace, php['query_trace_hex'], 'crud_all_operation_queries')
+        require(len(trace) == 16 and php['observations'][1]['state']['delta'] == 2
+            and sum(bytes.fromhex(query).startswith(b'SHOW FULL COLUMNS FROM ') for query in trace) == 1,
+            'crud_actual_upstream_schema_query')
     snapshot = php['session_snapshot']
     require(snapshot['character_set_connection_hex'] == b'utf8mb4'.hex()
         and snapshot['collation_connection_hex'] == b'utf8mb4_unicode_520_ci'.hex(), 'guest_actual_charset')
     require(type(snapshot['sql_mode_hex']) is str and re.fullmatch('(?:[0-9a-f]{2})*', snapshot['sql_mode_hex']) is not None,
         'guest_actual_sql_mode')
-    return {'api_cases': 27, 'all_observations_match_fixed_native': True,
+    return {'corpus': corpus, 'api_cases': cases, 'all_observations_match_fixed_native': True,
         'same_job_native_php_executed': False, 'native_reference_platform': 'Windows x86_64',
         'raw_server_info_compared_across_os_images': False, 'raw_server_info_hex': php['server_info_hex']}
 
@@ -174,7 +224,9 @@ def parse_complete_cgi(wire):
         'body_bytes':len(body),'body_hex':body.hex(),'body_sha256':sha(body),'representation_length':None}
 
 
-def validate_host(value, nonce):
+def validate_host(value, nonce, corpus='standard'):
+    require(corpus in ('standard', 'crud') and value['corpus'] == corpus, 'actual_host_corpus')
+    operation_count = 34 if corpus == 'standard' else 40
     require(value['schema'] == 'recastpress.php-wasix-wpdb-observation.v0.5'
         and value['outcome'] == 'fixed_wasix_wpdb_cases_passed'
         and value['phase'] == 'wpdb_cgi_contract_verified' and value['error'] is None, 'wasm_host_outcome')
@@ -206,7 +258,8 @@ def validate_host(value, nonce):
     require(rpc['failure'] is None and rpc['channel_open'] is False and rpc['response_pending'] is False
         and rpc['pending_bytes'] == rpc['unread_response_bytes'] == 0, 'private_rpc_sealed')
     operations = value['operations']
-    require(type(operations) is list and len(operations) == 34 and rpc['operations'] == 34, 'rpc_complete_operation_count')
+    require(type(operations) is list and len(operations) == operation_count
+        and rpc['operations'] == operation_count, 'rpc_complete_operation_count')
     counts = dict.fromkeys(['hello', 'query', 'escape', 'close'], 0)
     for seq, op in enumerate(operations, 1):
         require(type(op['seq']) is int and op['seq'] == seq and op['op'] in counts, 'rpc_actual_sequence')
@@ -218,8 +271,9 @@ def validate_host(value, nonce):
             and op['reply_frame_bytes'] == len(reply) <= 65536 and op['reply_frame_sha256'] == sha(reply), 'rpc_actual_frame_identity')
     transport = value['php_result']['rpc_stats']['transport']
     exact(counts, transport['counts'], 'rpc_host_guest_counts')
-    exact(counts, {'hello':1,'query':29,'escape':3,'close':1}, 'rpc_expected_operation_counts')
-    require(transport['transport_closed'] is True and transport['requests'] == 34, 'guest_channel_closed')
+    expected_counts = {'hello':1,'query':29,'escape':3,'close':1} if corpus == 'standard' else {'hello':1,'query':20,'escape':18,'close':1}
+    exact(counts, expected_counts, 'rpc_expected_operation_counts')
+    require(transport['transport_closed'] is True and transport['requests'] == operation_count, 'guest_channel_closed')
     requested = sum(op['request_frame_bytes'] for op in operations)
     replied = sum(op['reply_frame_bytes'] for op in operations)
     require(requested == rpc['request_bytes'] == transport['request_bytes'] <= 128*1024
@@ -227,7 +281,8 @@ def validate_host(value, nonce):
         'rpc_actual_byte_balance')
     php = value['php_result']
     setup = php['rpc_stats']['internal_session_setup']
-    query_hex = [item['sql_hex'] for item in setup] + [item['query_hex'] for item in php['observations'] if item['state']['delta'] == 1]
+    public_queries = [item['query_hex'] for item in php['observations'] if item['state']['delta'] == 1] if corpus == 'standard' else php['query_trace_hex']
+    query_hex = [item['sql_hex'] for item in setup] + public_queries
     queries = [op for op in operations if op['op'] == 'query']
     exact([op['data_hex'] for op in queries], query_hex, 'rpc_all_queries_equal_php_calls')
     require(len(setup) == 4 and operations[0]['op'] == 'hello' and operations[-1]['op'] == 'close'
@@ -236,18 +291,20 @@ def validate_host(value, nonce):
     exact(operations[0]['data']['server_version_hex'], php['server_info_hex'], 'actual_raw_server_info')
     require(operations[0]['data']['caps'] & (2|128|2048|65536) == 0, 'actual_forbidden_capabilities_off')
     return {'private_file_channel_verified': True, 'stdout_used_for_dispatch': False,
-        'actual_frames_and_all_public_queries_verified': True, 'operations':34,'bootstrap_queries':4,'public_queries':25}
+        'actual_frames_and_all_public_queries_verified': True, 'corpus':corpus,
+        'operations':operation_count,'bootstrap_queries':4,'public_queries':len(public_queries)}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=['mysql', 'mariadb'], default='mysql')
+    parser.add_argument('--corpus', choices=['standard', 'crud'], default='standard')
     parser.add_argument('--build-only', action='store_true')
     parser.add_argument('--record', action='store_true')
     args = parser.parse_args()
     r = {'schema': 'recastpress.php-wasix-wpdb-check.v0.5', 'outcome': 'not_run', 'passed': False,
         'observed_at_utc': datetime.now(timezone.utc).isoformat(), 'platform': sys.platform,
-        'backend': args.backend, 'build_only': args.build_only, 'owned_cleanup_completed': False,
+        'backend': args.backend, 'corpus': args.corpus, 'build_only': args.build_only, 'owned_cleanup_completed': False,
         'product_runtime_selected': False, 'product_abi_selected': False, 'standard_wpdb_compatibility_verified': False,
         'memory_cpu_limits_verified_for_this_integration': False, 'all_resources_immediately_reclaimed': False}
     passed, stage, database = False, 'source_preparation', None
@@ -260,7 +317,7 @@ def main():
         if not args.build_only:
             stage = 'same_job_module_gate'
             r['module_provenance'] = managed.verify_build()
-            database = linux.Database(args.backend, r)
+            database = linux.Database(args.backend, r, args.corpus)
             with database:
                 stage = 'php_wasm_execution'
                 pid, result = owned_probe.run_captured_probe([str(executable)], environment, timeout=180,
@@ -272,8 +329,8 @@ def main():
                 value = r['observation'] = json.loads(result.stdout)
                 require(result.stderr == b'WPDB_WASIX_PHASE=module_compile\nWPDB_WASIX_PHASE=cgi_execution\n', 'host_fixed_phase_markers')
                 require(result.returncode == 0 and value['passed'] is True, 'host_wasm_or_rpc_failed')
-                r['rpc_validation'] = validate_host(value, database.nonce)
-                r['api_validation'] = validate_php(value['php_result'], args.backend, mapping)
+                r['rpc_validation'] = validate_host(value, database.nonce, args.corpus)
+                r['api_validation'] = validate_php(value['php_result'], args.backend, mapping, args.corpus)
                 database.final_rows()
             require(r['container_stopped'] and r['container_removed'] and r['container_normal_exit_verified'], 'owned_container_cleanup_required')
         stage = 'after_verification'
@@ -301,7 +358,7 @@ def main():
             require(secret.encode() not in wire and secret.encode().hex().encode() not in wire, 'public_secret_guard')
     require(len(wire) <= 2 * 1024 * 1024, 'public_metadata_quota')
     if args.record:
-        label = sys.platform + ('-build' if args.build_only else '-' + args.backend)
+        label = sys.platform + ('-build' if args.build_only else '-' + args.backend + ('' if args.corpus == 'standard' else '-crud'))
         p = HERE / ('evidence/' + label + '.json')
         p.parent.mkdir(exist_ok=True)
         require(p.resolve() == p, 'evidence_path_linked')
