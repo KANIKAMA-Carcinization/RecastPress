@@ -1,0 +1,32 @@
+[package]
+name = "recastpress-wp-source-fs-probe"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.94"
+license = "GPL-2.0-or-later"
+publish = false
+
+[workspace]
+
+[features]
+default = []
+catalog = ["dep:serde_json", "dep:sha2", "tokio/rt"]
+
+[[bin]]
+name = "catalog"
+path = "src/bin/catalog.rs"
+required-features = ["catalog"]
+
+[dependencies]
+virtual-fs = { version = "=0.702.0", default-features = false }
+tokio = { version = "1", default-features = false, features = ["io-util"] }
+shared-buffer = "=0.1.4"
+serde_json = { version = "=1.0.154", optional = true }
+sha2 = { version = "=0.10.9", optional = true }
+
+[dev-dependencies]
+sha2 = "=0.10.9"
+tokio = { version = "1", default-features = false, features = ["rt", "io-util"] }
+
+[lints.rust]
+unsafe_code = "forbid"

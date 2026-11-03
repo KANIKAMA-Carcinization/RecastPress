@@ -1,0 +1,229 @@
+{
+  "schema": "recastpress.wp-source-fs-pure-units.v0.5",
+  "passed": true,
+  "outcome": "fixed_readonly_tree_eleven_units_and_complete_catalog_passed",
+  "observed_at_utc": "2026-11-03T00:46:32.663761+00:00",
+  "steps": [
+    {
+      "stage": "metadata",
+      "owned_pid": 30176,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 120,
+      "elapsed_seconds": 1.231,
+      "stdout_sha256": "464baf93ee0230b5d225509c2fae86aa9a2e13648a66045c7ab9da7919097c06",
+      "stderr_sha256": "10e63320d683322715a9a473668c970eae2b3e0f026174c9bb72f47794421d71"
+    },
+    {
+      "stage": "test-build",
+      "owned_pid": 27088,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 5.75,
+      "stdout_sha256": "7184e7e4d839d35bff7eafa3b4212f3a16a5a9124277445b87a05ed0000b425b",
+      "stderr_sha256": "3686589e84addf9ef9b99a373d3180773e85e170cc014039b1bd20f2df8735c3"
+    },
+    {
+      "stage": "test-list",
+      "owned_pid": 8632,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 10,
+      "elapsed_seconds": 0.305,
+      "stdout_sha256": "6845d5d65195f61aeb54abb21d1bf56854cbb515fd8ff29845f25211a5685903",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "test-run",
+      "owned_pid": 24412,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 30,
+      "elapsed_seconds": 0.107,
+      "stdout_sha256": "70ba885ec85448467702a28d9c46a4be806ebd4a09f7d9d8ce13eada4b559957",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "library-build",
+      "owned_pid": 25048,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 11.283,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5209f635c6ed3d9f1d9ed901e0a2a987eefdf5898ba5efc81762ebe098b405f9"
+    },
+    {
+      "stage": "catalog-build",
+      "owned_pid": 31356,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 1200,
+      "elapsed_seconds": 5.59,
+      "stdout_sha256": "0186420e8271bffd89312c3b182eb209aa164fffca0f06cd24109d33d6e9cee7",
+      "stderr_sha256": "6ee4d93ced2d32e7b1edb52ad24a421bc55e4b79a268b3d02a03ff22c7237131"
+    },
+    {
+      "stage": "catalog-run",
+      "owned_pid": 26324,
+      "owned_reaped": true,
+      "exit_code": 0,
+      "timeout_seconds": 120,
+      "elapsed_seconds": 15.634,
+      "stdout_sha256": "6c2d1079c46a8bbc2a97866a1b1f875c9856cf080821ab672a638bc9a81dc85a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "locked_offline": true,
+  "database_started": false,
+  "http_executed": false,
+  "php_executed": false,
+  "wasi_executed": false,
+  "wasm_executed": false,
+  "directory_fd_runtime_verified": false,
+  "native_filemtime_equivalent": false,
+  "native_metadata_compatibility_verified": false,
+  "unix_permission_mode_represented": false,
+  "timestamps_are_fixed_zero": true,
+  "directory_length_is_fixed_zero": true,
+  "product_runtime_selected": false,
+  "owned_cleanup_completed": true,
+  "source_reverified_after": true,
+  "input_files": {
+    "experiments/wp-source-fs-probe/Cargo.toml": "27fdcc12b725d87468a135f69023d0c4e4e7f5d4bf148a1734953982363d9ab6",
+    "experiments/wp-source-fs-probe/Cargo.lock": "a4ee79b0072361e4ec358873eae2817955f778b24aa4c5f330ca1e30b38edd5e",
+    "experiments/wp-source-fs-probe/src/lib.rs": "055bdf0ddcfb5110268797f823230708e43bcff4f10462b4b38ff8d4f420ad8d",
+    "experiments/wp-source-fs-probe/src/tests.rs": "edd2f0364da45534a9a076c42590cf30d422ccbbabc2f171a55e8aff181e6463",
+    "experiments/wp-source-fs-probe/src/bin/catalog.rs": "4f020609956f5a33802c911496592206c4b3a8cb2b1f95cfea929cdd1a0faad9",
+    "experiments/wp-source-fs-probe/check.py": "72e032aecf0ace34a5e133a5dbaa1a83218e776a8423ce4f60db12812dd0e56a",
+    "experiments/wp-source-fs-probe/README.ja.md": "6a7a0f0ff0c222bf4382bca8ee68d004a21a9b9cb2d2679fe9f3f07fde8d0795",
+    "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
+    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+    "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+    "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+    "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+    "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+  },
+  "registry_before": {
+    "archive_sha256": "a1a93b14f49c6ab20c3d4bbdbf58043629474d9b8dedf98a131bb80655938950",
+    "archive_bytes": 105065,
+    "verified_source_files": 37,
+    "source_inventory_sha256": "d614dd336e1ee1526eb9c72df4a68d3430bb7d8ab9ff0101dfca166b43a3898a",
+    "archive_or_registry_modified": false
+  },
+  "virtual_fs_enabled_features": [],
+  "tests": [
+    "tests::cloned_catalog_open_handles_and_directory_iterators_have_independent_cursors",
+    "tests::close_rejects_read_seek_write_flush_and_readiness_then_reopen_is_fresh",
+    "tests::constructor_rejects_noncanonical_paths_missing_parents_and_node_collisions",
+    "tests::namespace_mutations_and_symlink_operations_never_delegate_to_a_host",
+    "tests::normalized_parent_paths_cannot_escape_or_use_windows_or_non_utf8_inputs",
+    "tests::partial_read_seek_overflow_and_beyond_eof_are_bounded",
+    "tests::quotas_enforce_boundaries_and_count_shared_bytes_by_logical_file_size",
+    "tests::root_deep_metadata_and_empty_file_are_finite_and_not_symlinks",
+    "tests::sorted_direct_children_empty_directories_missing_and_not_directory",
+    "tests::whole_read_preserves_binary_hash_and_repeated_eof",
+    "tests::write_open_flags_and_all_file_mutation_apis_fail_without_changes"
+  ],
+  "test_output": "\nrunning 11 tests\ntest tests::cloned_catalog_open_handles_and_directory_iterators_have_independent_cursors ... ok\ntest tests::close_rejects_read_seek_write_flush_and_readiness_then_reopen_is_fresh ... ok\ntest tests::constructor_rejects_noncanonical_paths_missing_parents_and_node_collisions ... ok\ntest tests::namespace_mutations_and_symlink_operations_never_delegate_to_a_host ... ok\ntest tests::normalized_parent_paths_cannot_escape_or_use_windows_or_non_utf8_inputs ... ok\ntest tests::partial_read_seek_overflow_and_beyond_eof_are_bounded ... ok\ntest tests::quotas_enforce_boundaries_and_count_shared_bytes_by_logical_file_size ... ok\ntest tests::root_deep_metadata_and_empty_file_are_finite_and_not_symlinks ... ok\ntest tests::sorted_direct_children_empty_directories_missing_and_not_directory ... ok\ntest tests::whole_read_preserves_binary_hash_and_repeated_eof ... ok\ntest tests::write_open_flags_and_all_file_mutation_apis_fail_without_changes ... ok\n\nsuccesses:\n\nsuccesses:\n    tests::cloned_catalog_open_handles_and_directory_iterators_have_independent_cursors\n    tests::close_rejects_read_seek_write_flush_and_readiness_then_reopen_is_fresh\n    tests::constructor_rejects_noncanonical_paths_missing_parents_and_node_collisions\n    tests::namespace_mutations_and_symlink_operations_never_delegate_to_a_host\n    tests::normalized_parent_paths_cannot_escape_or_use_windows_or_non_utf8_inputs\n    tests::partial_read_seek_overflow_and_beyond_eof_are_bounded\n    tests::quotas_enforce_boundaries_and_count_shared_bytes_by_logical_file_size\n    tests::root_deep_metadata_and_empty_file_are_finite_and_not_symlinks\n    tests::sorted_direct_children_empty_directories_missing_and_not_directory\n    tests::whole_read_preserves_binary_hash_and_repeated_eof\n    tests::write_open_flags_and_all_file_mutation_apis_fail_without_changes\n\ntest result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s\n\n",
+  "test_executable": {
+    "path": "target/wp-source-fs-probe/cargo-target/debug/deps/recastpress_wp_source_fs_probe-2fc948091a07c634.exe",
+    "bytes": 1711616,
+    "sha256": "a11611d8c4555cc954820977dfed77abbae917186dc62600667fca0402fa21f6"
+  },
+  "bootstrap_prepared_before": {
+    "archive_bytes": 35368461,
+    "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "database_started": false,
+    "input_files": {
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    },
+    "native_bootstrap_executed": false,
+    "outcome": "fixed_full_wordpress_site_prepared",
+    "php_executed": false,
+    "product_runtime_selected": false,
+    "rust_or_wasm_executed": false,
+    "schema": "recastpress.wp-bootstrap-prepared.v0.5",
+    "site": "target/wp-bootstrap-probe/site",
+    "source_manifest": {
+      "bytes": 650759,
+      "path": "target/wp-bootstrap-probe/source-manifest.json",
+      "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+    },
+    "source_tree": {
+      "directories": 467,
+      "directory_inventory_sha256": "7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5",
+      "expanded_bytes": 110077999,
+      "file_inventory_sha256": "afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c",
+      "files": 3782
+    }
+  },
+  "catalog_executable": {
+    "path": "target/wp-source-fs-probe/cargo-target/debug/catalog.exe",
+    "bytes": 1228288,
+    "sha256": "be4e118ccdfab7076fd8a43d5104c8d4d9eb65dae4b1aad967e0da7265d536e1"
+  },
+  "catalog_observation": {
+    "all_direct_child_lists_verified": true,
+    "all_metadata_verified": true,
+    "bytes": 110077999,
+    "database_connected": false,
+    "deep_php_read_hash_eof_close_verified": true,
+    "directories": 467,
+    "files": 3782,
+    "host_filesystem_fallback_in_source_fs": false,
+    "native_metadata_compatibility_verified": false,
+    "outcome": "fixed_complete_wordpress_catalog_passed",
+    "passed": true,
+    "php_executed": false,
+    "schema": "recastpress.wp-source-fs-catalog.v0.5",
+    "source_manifest_sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3",
+    "wasi_executed": false,
+    "wasm_executed": false
+  },
+  "native_trait_catalog_executed": true,
+  "bootstrap_prepared_after": {
+    "archive_bytes": 35368461,
+    "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "database_started": false,
+    "input_files": {
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+      "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+      "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+      "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+      "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0"
+    },
+    "native_bootstrap_executed": false,
+    "outcome": "fixed_full_wordpress_site_prepared",
+    "php_executed": false,
+    "product_runtime_selected": false,
+    "rust_or_wasm_executed": false,
+    "schema": "recastpress.wp-bootstrap-prepared.v0.5",
+    "site": "target/wp-bootstrap-probe/site",
+    "source_manifest": {
+      "bytes": 650759,
+      "path": "target/wp-bootstrap-probe/source-manifest.json",
+      "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+    },
+    "source_tree": {
+      "directories": 467,
+      "directory_inventory_sha256": "7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5",
+      "expanded_bytes": 110077999,
+      "file_inventory_sha256": "afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c",
+      "files": 3782
+    }
+  },
+  "registry_after": {
+    "archive_sha256": "a1a93b14f49c6ab20c3d4bbdbf58043629474d9b8dedf98a131bb80655938950",
+    "archive_bytes": 105065,
+    "verified_source_files": 37,
+    "source_inventory_sha256": "d614dd336e1ee1526eb9c72df4a68d3430bb7d8ab9ff0101dfca166b43a3898a",
+    "archive_or_registry_modified": false
+  }
+}

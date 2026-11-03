@@ -25,7 +25,7 @@
 - install観測の最大3,133 bytesはcell上限内だが、read観測の23,778 bytesは4,096 bytesを超える。ASCIIだけの小さな固定corpusでは発見できなかった不足である。
 - 値をhexで運ぶ場合、23,778 bytesの値だけで47,556文字になり、さらに他の行・column metadata・JSON枠が必要になる。現記録は結果全体のbyte数や実reply長を測定していないため、64 KiBで足りるとも、必ず超えるとも断定しない。全結果のmaterializationと符号化後replyを別々に予算化する必要がある。
 
-現在の[静的source FS](../php-wasix-wpdb-probe/src/readonly_fs.rs)は、mount内で単一path要素の固定ファイルを扱い、`read_dir`を拒否する。有限のWP5／8ファイルを直接読む実験には使えたが、coreの階層やtheme探索をそのまま扱える構成ではない。独立した有限tree FSは次工程で試作中であり、このnative記録でWASIの階層探索まで検証したことにはしない。
+現在の[静的source FS](../php-wasix-wpdb-probe/src/readonly_fs.rs)は、mount内で単一path要素の固定ファイルを扱い、`read_dir`を拒否する。有限のWP5／8ファイルを直接読む実験には使えたが、coreの階層やtheme探索をそのまま扱える構成ではない。追加した[有限tree FS](../wp-source-fs-probe/README.ja.md)は11 unitと元WP全catalogのnative trait検証を通過したが、実WASIのdirectory FD・階層探索・PHP実行は未実証である。metadataのtimestampは0固定であり、nativeのfilemtime等の一致も次の確認となる。
 
 次の縦断は、元PHPの処理を維持しながら次の順で狭く進める。
 
