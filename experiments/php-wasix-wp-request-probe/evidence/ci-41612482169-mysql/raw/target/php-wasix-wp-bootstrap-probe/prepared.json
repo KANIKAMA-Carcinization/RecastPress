@@ -1,0 +1,312 @@
+{
+  "schema": "recastpress.php-wasix-wp-bootstrap-prepared.v0.5",
+  "outcome": "full_core_and_owned_db_overlay_prepared",
+  "input_files": {
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php": "8dafd2175cc766567d8f75cb054319394e4c53efbb462809a415a5552e5fd08d",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/db.php": "2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/helpers.php": "0581034ca4f4ce54e1a4a515c8e803503b8b79ae906ffd2d879b9f8e2b319850",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/install.php": "8e7489b5c0e821314386ed3dc7951b6433ceeee656acbd22697fb2bd124352f4",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/read.php": "855db45d512920ccadffa9104686691cdae6468fd3fc934f9ad8416920a4095a",
+    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "032da0f787ba76071bf649bc0f230206b3f4282cbadba8d7df5dd77a455cb570",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/bridge.php": "bd57b08ac283def2bf219129ddf48f5bdbc10ea2cca5cc07d8495fc2d4ab63f3",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/corpus.php": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/entry.php": "954ef332a1ea2e13c321e5a999fe783bb0cb29a8658eb542243f6002e69ebd11",
+    "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696",
+    "experiments/php-wasix-wpdb-probe/fixtures/bridge.php": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca",
+    "experiments/php-wasix-wpdb-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+    "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
+    "experiments/php-wasix-wpdb-probe/prepare.py": "2d9b0e6ab95a13e2700bb69801a5ca19b6276dd6247eb4525cfb7a042a357eb3",
+    "experiments/wp-bootstrap-probe/evidence/windows-mariadb-native.json": "af07c9ff931f87b2f8d235423fcf5db0101ffc1402904b899c6294d9c6f35f2f",
+    "experiments/wp-bootstrap-probe/evidence/windows-mysql-native.json": "61c331e5e9f316dd6e2f241a54f1de337bbff397d405c6a5f4ae55cc49dc2c91",
+    "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1",
+    "experiments/wp-bootstrap-probe/fixtures/install.php": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925",
+    "experiments/wp-bootstrap-probe/fixtures/read.php": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc",
+    "experiments/wp-bootstrap-probe/prepare.py": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc",
+    "experiments/wpdb-bridge-probe/fixtures/adapter.php": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d",
+    "experiments/wpdb-bridge-probe/fixtures/bridge.php": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f",
+    "experiments/wpdb-bridge-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+    "experiments/wpdb-bridge-probe/fixtures/helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1",
+    "experiments/wpdb-crud-probe/fixtures/bridge.php": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa",
+    "experiments/wpdb-crud-probe/fixtures/corpus.php": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950",
+    "experiments/wpdb-crud-probe/fixtures/entry.php": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa",
+    "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+  },
+  "core_site": "target/wp-bootstrap-probe/site",
+  "core_manifest": {
+    "bytes": 650759,
+    "path": "target/wp-bootstrap-probe/source-manifest.json",
+    "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+  },
+  "core_inventory": {
+    "directories": 467,
+    "directory_inventory_sha256": "7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5",
+    "expanded_bytes": 110077999,
+    "file_inventory_sha256": "afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c",
+    "files": 3782
+  },
+  "core_archive": {
+    "bytes": 35368461,
+    "sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5"
+  },
+  "files": [
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/install.php",
+      "guest": "/experiments/php-wasix-wp-bootstrap-probe/fixtures/install.php",
+      "bytes": 149,
+      "sha256": "8e7489b5c0e821314386ed3dc7951b6433ceeee656acbd22697fb2bd124352f4",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/read.php",
+      "guest": "/experiments/php-wasix-wp-bootstrap-probe/fixtures/read.php",
+      "bytes": 146,
+      "sha256": "855db45d512920ccadffa9104686691cdae6468fd3fc934f9ad8416920a4095a",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php",
+      "guest": "/experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php",
+      "bytes": 17964,
+      "sha256": "8dafd2175cc766567d8f75cb054319394e4c53efbb462809a415a5552e5fd08d",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/helpers.php",
+      "guest": "/experiments/php-wasix-wp-bootstrap-probe/fixtures/helpers.php",
+      "bytes": 3381,
+      "sha256": "0581034ca4f4ce54e1a4a515c8e803503b8b79ae906ffd2d879b9f8e2b319850",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php",
+      "guest": "/experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php",
+      "bytes": 16212,
+      "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wp-bootstrap-probe/fixtures/db.php",
+      "guest": "/wordpress/wp-content/db.php",
+      "bytes": 606,
+      "sha256": "2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8",
+      "guest_read_only": true,
+      "kind": "owned_wpdb_dropin"
+    }
+  ],
+  "native_oracles": {
+    "mysql": {
+      "path": "experiments/wp-bootstrap-probe/evidence/windows-mysql-native.json",
+      "bytes": 33970,
+      "sha256": "61c331e5e9f316dd6e2f241a54f1de337bbff397d405c6a5f4ae55cc49dc2c91"
+    },
+    "mariadb": {
+      "path": "experiments/wp-bootstrap-probe/evidence/windows-mariadb-native.json",
+      "bytes": 31590,
+      "sha256": "af07c9ff931f87b2f8d235423fcf5db0101ffc1402904b899c6294d9c6f35f2f"
+    }
+  },
+  "derivation": {
+    "base_commit": "a1bb591c19dc897f1d41a42d17f8c33088f4362b",
+    "original_git_objects_verified_by_preparer": false,
+    "parents": {
+      "experiments/wp-bootstrap-probe/fixtures/bootstrap.php": {
+        "bytes": 15581,
+        "sha256": "36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1"
+      },
+      "experiments/wp-bootstrap-probe/fixtures/install.php": {
+        "bytes": 107,
+        "sha256": "df0befc6ce03224e12aeea68eae19e98ddab40df9dc7400976ee1b9212382925"
+      },
+      "experiments/wp-bootstrap-probe/fixtures/read.php": {
+        "bytes": 104,
+        "sha256": "00ff38f879289d63e7e6089755765a859ff6cad3ffe3b300b71e220c3ae23ccc"
+      },
+      "experiments/wp-bootstrap-probe/prepare.py": {
+        "bytes": 10184,
+        "sha256": "df009b467c1c2452c746ff8f4e6f5fa3a71c04795d32efe77e186b2ee8d776bc"
+      },
+      "experiments/wp-bootstrap-probe/evidence/windows-mysql-native.json": {
+        "bytes": 33970,
+        "sha256": "61c331e5e9f316dd6e2f241a54f1de337bbff397d405c6a5f4ae55cc49dc2c91"
+      },
+      "experiments/wp-bootstrap-probe/evidence/windows-mariadb-native.json": {
+        "bytes": 31590,
+        "sha256": "af07c9ff931f87b2f8d235423fcf5db0101ffc1402904b899c6294d9c6f35f2f"
+      },
+      "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": {
+        "bytes": 11721,
+        "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7"
+      },
+      "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": {
+        "bytes": 15447,
+        "sha256": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696"
+      },
+      "experiments/php-wasix-wpdb-probe/prepare.py": {
+        "bytes": 18605,
+        "sha256": "2d9b0e6ab95a13e2700bb69801a5ca19b6276dd6247eb4525cfb7a042a357eb3"
+      }
+    },
+    "derived": {
+      "install.php": {
+        "bytes": 149,
+        "sha256": "8e7489b5c0e821314386ed3dc7951b6433ceeee656acbd22697fb2bd124352f4"
+      },
+      "read.php": {
+        "bytes": 146,
+        "sha256": "855db45d512920ccadffa9104686691cdae6468fd3fc934f9ad8416920a4095a"
+      },
+      "bootstrap.php": {
+        "bytes": 17964,
+        "sha256": "8dafd2175cc766567d8f75cb054319394e4c53efbb462809a415a5552e5fd08d"
+      },
+      "helpers.php": {
+        "bytes": 3381,
+        "sha256": "0581034ca4f4ce54e1a4a515c8e803503b8b79ae906ffd2d879b9f8e2b319850"
+      },
+      "adapter.php": {
+        "bytes": 16212,
+        "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f"
+      },
+      "db.php": {
+        "bytes": 606,
+        "sha256": "2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8"
+      }
+    },
+    "upstream_query_validation_block_sha256": "d5f916f8a8493acec1f1e0fc634bfc90d6e7207acf9cc1ee2dc1782608db02b8",
+    "upstream_query_validation_bytes_preserved": true,
+    "allowed_helper_changes": [
+      "extract-private-channel-validation-functions",
+      "rename-native-duplicate-key-reader-and-check-function",
+      "strict-private-context-schema"
+    ],
+    "allowed_adapter_changes": [
+      "finite-large-result-and-channel-budgets",
+      "upstream-query-invalid-text-validation",
+      "valid-UTF8-escape-only",
+      "bounded-general-server-error-code-state-private-message",
+      "no-public-SQL-row-or-setup-trace"
+    ],
+    "allowed_bootstrap_changes": [
+      "CGI-fixed-GET-and-private-context",
+      "owned-guest-source-paths-and-db-overlay",
+      "dummy-DB-constants-and-Rust-handle",
+      "Wasm-observation-schema-and-context-flags",
+      "private-count-only-RPC-statistics"
+    ],
+    "original_core_theme_plugin_bytes_modified": false,
+    "owned_db_overlay_files": 1
+  },
+  "previous_cgi_derivation": {
+    "fixed_old_source_commit": "4fda5212eeafa01a57116d7024001150c8a39dde",
+    "old_git_objects_verified_by_preparer": false,
+    "old_sources": {
+      "bridge.php": {
+        "bytes": 122,
+        "sha256": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f"
+      },
+      "helpers.php": {
+        "bytes": 12603,
+        "sha256": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1"
+      },
+      "adapter.php": {
+        "bytes": 15853,
+        "sha256": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d"
+      },
+      "corpus.php": {
+        "bytes": 6838,
+        "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+      }
+    },
+    "derived_sources": {
+      "bridge.php": {
+        "bytes": 164,
+        "sha256": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca"
+      },
+      "helpers.php": {
+        "bytes": 11721,
+        "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7"
+      },
+      "adapter.php": {
+        "bytes": 15447,
+        "sha256": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696"
+      },
+      "corpus.php": {
+        "bytes": 6838,
+        "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+      }
+    },
+    "corpus_bytes_unchanged": true,
+    "adapter_business_bytes_unchanged": true,
+    "adapter_business_sha256": "778bb2984adfff4ccee9554c34aec2e92202acb686401df23aa1e5748fcd22d8",
+    "allowed_helper_changes": [
+      "CGI-GET-query-argc-and-env-nonce-entry-only",
+      "wasm-executed-context-flag",
+      "fixed-WASIX-built-in-mysqli-profile-and-opaque-RPC-handle"
+    ],
+    "allowed_transport_changes": [
+      "file-channel-open",
+      "request-and-reply-rewinds",
+      "no-socket-timeouts",
+      "channel-stat-labels"
+    ],
+    "crud": {
+      "fixed_old_source_commit": "255fac3ceefd2548c8a57d82e2b15957fb9610c9",
+      "old_git_objects_verified_by_preparer": false,
+      "old_sources": {
+        "bridge.php": {
+          "bytes": 86,
+          "sha256": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa"
+        },
+        "entry.php": {
+          "bytes": 9507,
+          "sha256": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa"
+        },
+        "corpus.php": {
+          "bytes": 5186,
+          "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+        }
+      },
+      "derived_sources": {
+        "bridge.php": {
+          "bytes": 128,
+          "sha256": "bd57b08ac283def2bf219129ddf48f5bdbc10ea2cca5cc07d8495fc2d4ab63f3"
+        },
+        "entry.php": {
+          "bytes": 9508,
+          "sha256": "954ef332a1ea2e13c321e5a999fe783bb0cb29a8658eb542243f6002e69ebd11"
+        },
+        "corpus.php": {
+          "bytes": 5186,
+          "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+        }
+      },
+      "corpus_bytes_unchanged": true,
+      "crud_api_business_bytes_unchanged": true,
+      "allowed_changes": [
+        "CGI-content-type-header",
+        "wasm-executed-context-flag",
+        "fixed-WASIX-built-in-mysqli-profile"
+      ]
+    }
+  },
+  "core_guest_root": "/wordpress",
+  "private_context_guest_path": "/rp-bootstrap/context.json",
+  "core_manifest_guest_path": "/rp-bootstrap/source-manifest.json",
+  "guest_context_contains_db_credentials": false,
+  "native_reference_binaries_reverified": false,
+  "core_files_modified": false,
+  "secret_context_in_prepared_metadata": false,
+  "php_executed": false,
+  "wasm_executed": false,
+  "database_connected": false,
+  "product_runtime_selected": false,
+  "guest_readonly_enforcement_executed": false,
+  "inputs_unchanged": true
+}

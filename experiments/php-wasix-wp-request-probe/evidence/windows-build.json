@@ -2,47 +2,47 @@
   "schema": "recastpress.php-wasix-wp-request-build.v0.5",
   "outcome": "locked_offline_home_host_build_passed",
   "passed": true,
-  "observed_at_utc": "2026-11-03T09:33:27.535061+00:00",
+  "observed_at_utc": "2026-11-03T10:02:47.672006+00:00",
   "commands": [
     {
       "stage": "unit-build",
       "timeout_seconds": 1200,
-      "owned_pid": 22568,
+      "owned_pid": 22344,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 12.215,
-      "stdout_sha256": "d46b9d2903e28d4ef51a575e9bf026e372c3e3e214506f0bc98a63375209a096",
-      "stderr_sha256": "4f6a11ce701f0f4da4525f59368392860fadc755b16cca2a540ff6c195b3de32"
+      "elapsed_seconds": 13.199,
+      "stdout_sha256": "63ed26aaa2e220db4d6074a1704df85eee325b2373e2645ece1100cef4b07113",
+      "stderr_sha256": "f9a6c440d9396097c2167f0c59ea6afb16d72beb981c63ae0de55bfa98e5a782"
     },
     {
       "stage": "unit-list",
       "timeout_seconds": 10,
-      "owned_pid": 18104,
+      "owned_pid": 25632,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.616,
-      "stdout_sha256": "e5f81638940473c1fa2b1215b54ad9f03cc1ba346ca6c8c0f0bcec09e04d039a",
+      "elapsed_seconds": 0.713,
+      "stdout_sha256": "39a91f42d8a461810204d3925716ffae9abcc475210a0598b2960abc20ebf485",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "unit-run",
       "timeout_seconds": 60,
-      "owned_pid": 1732,
+      "owned_pid": 27548,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.186,
-      "stdout_sha256": "56eed9f1c54728f9e75e6a6a6d87a75597572eabff448848c0def08bffc886c6",
+      "elapsed_seconds": 0.373,
+      "stdout_sha256": "f0abe57b0996c3ab65a85d8214549ba34d3997bde006dbac072eb4cb180361e2",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "normal-build",
       "timeout_seconds": 1200,
-      "owned_pid": 23916,
+      "owned_pid": 31516,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 12.377,
-      "stdout_sha256": "fdf2ad65d9c007875d79c27ab626c6e8381f95bb9e6efab28f00acffcacd0860",
-      "stderr_sha256": "ea1b9322204d9b35e6a871ffb788b420dcda5dbc955831006f60408fb7f6bf45"
+      "elapsed_seconds": 13.023,
+      "stdout_sha256": "684bf9799df03b73834590d23372a381333e193f1d126bb28f6c7bc618aea682",
+      "stderr_sha256": "5de65419cc04592d86e3f958e4b53b5e1ccaba42040f45e6e32500bd4d897155"
     }
   ],
   "locked_offline": true,
@@ -176,10 +176,10 @@
     "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "e46735bb0e76c627fd88fea5f4d48dbe73ea081f9e1951040e2c48da621dc6da",
     "experiments/php-wasix-wp-bootstrap-probe/src/result_budget.rs": "616ff411eb024b96ba0d572cd84da91a2107de25d37e9d8a9401d99565ac7776",
     "experiments/php-wasix-wp-bootstrap-probe/src/rpc_fs.rs": "d9d86f4f72016423990147f9c0cb6bc2b6c9bd486864000995a3d90b762a53fa",
-    "experiments/php-wasix-wp-request-probe/build_check.py": "2e6919bfd87ca485aa3ddd7bf0dd9ae7977d9844bfb25fb5605b41397fdc259e",
+    "experiments/php-wasix-wp-request-probe/build_check.py": "616fd2d3cdb39f1686cf50d0a27b343e10bb3eb5b6c663397be97f6b28769dfd",
     "experiments/php-wasix-wp-request-probe/Cargo.lock": "014006896f0151dda0d1d66715c1b66c7a39a1f601c71a401bd32f024fa3120d",
     "experiments/php-wasix-wp-request-probe/Cargo.toml": "fa173f60744617f51bd70aa164a4a8fa5b1ed7ad462b4daea07dcd6b10ec2c4b",
-    "experiments/php-wasix-wp-request-probe/derivation_gate.py": "a022e5224da198e040cd1edb671ebce8ba1ea13c5f37d4f678b75377a18157e3",
+    "experiments/php-wasix-wp-request-probe/derivation_gate.py": "06736acf5500fd8f015d26b2c3ccd90ba7e868b5e6c19a497f66f7f6d4a0c131",
     "experiments/php-wasix-wp-request-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
     "experiments/php-wasix-wp-request-probe/fixtures/bootstrap.php": "8563358972687a46eefcfcd4a38d3508d392e8b5930842af129a90efdafa82d4",
     "experiments/php-wasix-wp-request-probe/fixtures/db.php": "5e48035bdc93b159237e9742eb90b296748e5a20f96b83c2ef2e1148f225df15",
@@ -188,11 +188,11 @@
     "experiments/php-wasix-wp-request-probe/linux_database.py": "c2701e151e53637654618a346f8d903b5c1af65d28d9d80cf9321e356be1a577",
     "experiments/php-wasix-wp-request-probe/prepare.py": "09a2d3dedede2b206f090afe30d2d42834cc90f6875e05f78c588bfb13610970",
     "experiments/php-wasix-wp-request-probe/run_check.py": "c929e15f5e3ecdd9e5c45e33ad36e66a972928a7a3fbffbcdc3dcfe6460cd3c3",
-    "experiments/php-wasix-wp-request-probe/src/access_fs.rs": "fd3d333199f5bc3b9672998721cdf1c112839cf2f6d36a8f82c92d99b44a2d2f",
-    "experiments/php-wasix-wp-request-probe/src/capture.rs": "5e5d11e2c546cf054f506f6c5b99c620336a3c9e186a1129402b7569882162ea",
+    "experiments/php-wasix-wp-request-probe/src/access_fs.rs": "5b2ee985385b7834727ccf36e5284e2dfc33593d1608565994b4e8824f7f4405",
+    "experiments/php-wasix-wp-request-probe/src/capture.rs": "be4c13b1d98350b95816dd350b2fde11f0aa29c6f5ee5e630e59ea893d909c41",
     "experiments/php-wasix-wp-request-probe/src/catalog.rs": "6f6ec144e47dba2612b0976aea13ad6b01cfa6f1e67a925b7f3289aeb8d8aaf7",
     "experiments/php-wasix-wp-request-probe/src/db.rs": "cadce4f3f3e9cc803f9d90da636b90a3ddc43caea644590e9c70aae598064b40",
-    "experiments/php-wasix-wp-request-probe/src/main.rs": "417149b9a883522754345e4bcf63b64f9c0c4275b52b10a8ca82e5ba2ad6d20a",
+    "experiments/php-wasix-wp-request-probe/src/main.rs": "4ec4b8da46e49e5e6d070ec208440ca6c99a428ea3b02c4fed0bbdb9bf341a40",
     "experiments/php-wasix-wp-request-probe/src/response_contract.rs": "d457dd24ae83d588e00ceae64a546f8ec441dd9310ea820d0fae50bc64d7246a",
     "experiments/php-wasix-wp-request-probe/src/result_budget.rs": "616ff411eb024b96ba0d572cd84da91a2107de25d37e9d8a9401d99565ac7776",
     "experiments/php-wasix-wp-request-probe/src/rpc_fs.rs": "d9d86f4f72016423990147f9c0cb6bc2b6c9bd486864000995a3d90b762a53fa",
@@ -289,9 +289,13 @@
     "async_rpc_catalog_and_result_budgets_unchanged": true,
     "access_mount_prefix_only": false,
     "access_exact_diagnostic_edits": 5,
+    "access_exact_mount_edits": 2,
     "access_transaction_bodies_unchanged": true,
-    "access_policy_rejection_conditions_unchanged": true,
-    "access_invalid_reason_counters_only": true,
+    "access_policy_rejection_conditions_unchanged": false,
+    "access_invalid_reason_counters_only": false,
+    "access_mount_interior_separator_adapter": true,
+    "access_global_leading_double_slash_rejection_unchanged": true,
+    "access_ordered_missing_file_and_parent_checks_unchanged": true,
     "capture_limit_bytes": [
       66560,
       3145728
@@ -304,8 +308,10 @@
     "tests": [
       "access_fs::tests::incomplete_and_unread_access_transactions_cannot_finish",
       "access_fs::tests::invalid_reason_counts_retain_rejections_without_paths",
+      "access_fs::tests::mount_interior_slashes_match_catalog_without_erasing_traversal",
       "access_fs::tests::permission_transaction_complete_reply_eof_close_and_finite_counts",
       "access_fs::tests::same_readonly_catalog_exists_readable_and_write_denial",
+      "capture::tests::fragmented_large_cgi_keeps_header_boundaries_hex_body_order_and_eof",
       "capture::tests::native_sized_body_above_old_cap_is_retained_through_complete_eof",
       "capture::tests::oversize_is_rejected_before_the_pipe_queue_retains_any_bytes",
       "cgi_response::tests::default_status_redirect_and_explicit_redirect_are_distinct",
@@ -335,27 +341,33 @@
       "rpc_fs::tests::async_reply_pending_then_consumed_and_closed",
       "rpc_fs::tests::incomplete_unread_and_open_handles_cannot_finish",
       "rpc_fs::tests::namespace_denial_no_reopen_and_identity_before_dispatch",
+      "tests::absent_fixture_envelope_reports_only_fixed_prefix_classes_and_byte_counts",
       "tests::cgi_environment_carries_neither_database_nor_nonce_context",
       "tests::complete_cgi_failure_keeps_only_source_bound_public_diagnostics",
+      "tests::complete_json_cgi_accepts_only_the_known_outer_header_profile",
+      "tests::complete_json_cgi_rejects_missing_wrong_status_or_unknown_outer_headers",
+      "tests::duplicate_exact_fixture_envelopes_are_counted_without_offset_extraction",
+      "tests::duplicate_json_content_type_keeps_the_original_parser_rejection",
       "tests::expanded_columns_are_explicit_and_other_result_limits_stay_fixed",
       "tests::initial_json_with_known_or_private_trailer_is_diagnostic_only",
       "tests::nested_known_json_cgi_frame_is_diagnostic_only",
       "tests::newline_failure_stays_rejected_but_whole_json_diagnostics_are_safe",
       "tests::public_php_excludes_unexpected_rows_secrets_and_nonfixture_titles",
+      "tests::unique_exact_fixture_envelope_recovers_only_safe_diagnostics_after_private_prefix",
       "tests::unknown_prefix_is_never_scanned_or_published"
     ],
     "passed": true,
     "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/deps/recastpress_php_wasix_wp_request_probe-38153bd75ece43d4.exe",
     "executable_identity": {
-      "bytes": 8606720,
-      "sha256": "24aaa49adc42791b38014d1768b3c1ff4a886b5259b680cec6bf49999709b5f5"
+      "bytes": 8711168,
+      "sha256": "c61092b4a8f05ef4b404df5bd85edf6104bda5ae409decaf83ef30a3f75be5ab"
     },
-    "stdout_sha256": "56eed9f1c54728f9e75e6a6a6d87a75597572eabff448848c0def08bffc886c6"
+    "stdout_sha256": "f0abe57b0996c3ab65a85d8214549ba34d3997bde006dbac072eb4cb180361e2"
   },
   "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-wasix-wp-request-probe.exe",
   "executable_identity": {
-    "bytes": 53902336,
-    "sha256": "ffdd00f370181a4b1b78acd9aa036147968f87f8fcec69b453febf5091c70391"
+    "bytes": 53923840,
+    "sha256": "ca98628d1d5dca3a669c62d734d2f692c6da8779cb812853b4ab514dde1f411b"
   },
   "driver_after": {
     "source_trees": {
@@ -400,9 +412,13 @@
     "async_rpc_catalog_and_result_budgets_unchanged": true,
     "access_mount_prefix_only": false,
     "access_exact_diagnostic_edits": 5,
+    "access_exact_mount_edits": 2,
     "access_transaction_bodies_unchanged": true,
-    "access_policy_rejection_conditions_unchanged": true,
-    "access_invalid_reason_counters_only": true,
+    "access_policy_rejection_conditions_unchanged": false,
+    "access_invalid_reason_counters_only": false,
+    "access_mount_interior_separator_adapter": true,
+    "access_global_leading_double_slash_rejection_unchanged": true,
+    "access_ordered_missing_file_and_parent_checks_unchanged": true,
     "capture_limit_bytes": [
       66560,
       3145728

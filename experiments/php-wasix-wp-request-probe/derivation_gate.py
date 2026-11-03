@@ -23,6 +23,16 @@ ACCESS_DIAGNOSTIC_EDITS = [
 ]
 
 
+# The sole compatibility change below adapts mount-relative leading separators.
+# Global path rejection and the ordered finite-tree resolver remain authoritative.
+ACCESS_MOUNT_EDITS = [
+    (b'        // Pass the remaining lexical path unchanged to the SAME frozen tree.\n        // Missing prefixes/file traversal/root escape are never normalized away.\n        match fs.metadata(Path::new(if entry.is_empty(){"/"}else{entry})) {\n',
+     b'        // Global leading // was rejected above. Slashes after a mount are\n        // interior separators, not a new global // prefix in the mounted tree.\n        // Preserve all remaining components: missing/file prefixes and root\n        // escape must still be checked by the SAME frozen tree in order.\n        let mounted=format!("/{}",entry.trim_start_matches(\'/\'));\n        match fs.metadata(Path::new(&mounted)) {\n'),
+    (b'    #[test]\n    fn invalid_reason_counts_retain_rejections_without_paths() {\n        let fs=fixture_fs();\n        {let s=fs.lock().unwrap();let p=&s.policy;\n            for path in ["//wordpress/file.php","/wordpress/colon:file","/wordpress\\\\file.php","/wordpress/\\0file","/wordpress//file.php"] {\n                assert_eq!(p.query(path.as_bytes(),4),Status::Invalid);\n            }\n        }\n        let report=fs.invalid_reason_counts().unwrap();\n        for name in ["double_leading_slash","colon","backslash","control","metadata_invalid"] {assert_eq!(report[name],1);}\n        assert_eq!(report.as_object().unwrap().values().map(|v|v.as_u64().unwrap()).sum::<u64>(),5);\n        assert!(!report.to_string().contains("file.php"));\n    }\n',
+     b'    #[test]\n    fn invalid_reason_counts_retain_rejections_without_paths() {\n        let fs=fixture_fs();\n        {let s=fs.lock().unwrap();let p=&s.policy;\n            for path in ["//wordpress/file.php","/wordpress/colon:file","/wordpress\\\\file.php","/wordpress/\\0file"] {\n                assert_eq!(p.query(path.as_bytes(),4),Status::Invalid);\n            }\n        }\n        let report=fs.invalid_reason_counts().unwrap();\n        for name in ["double_leading_slash","colon","backslash","control"] {assert_eq!(report[name],1);}\n        assert_eq!(report["metadata_invalid"],0);\n        assert_eq!(report.as_object().unwrap().values().map(|v|v.as_u64().unwrap()).sum::<u64>(),4);\n        assert!(!report.to_string().contains("file.php"));\n    }\n    #[test]\n    fn mount_interior_slashes_match_catalog_without_erasing_traversal() {\n        let fs=fixture_fs();let state=fs.lock().unwrap();let p=&state.policy;\n        for root in ["/wordpress","/experiments/php-wasix-wp-request-probe/fixtures","/rp-request"] {\n            for separator in ["/","//","////"] {\n                for (name,directory) in [("file.php",false),("dir",true),("dir//child.php",false)] {\n                    let path=format!("{root}{separator}{name}");\n                    for mode in [0,4] {assert_eq!(p.query(path.as_bytes(),mode),Status::Allow);}\n                    assert_eq!(p.query(path.as_bytes(),2),Status::Denied);\n                    assert_eq!(p.query(path.as_bytes(),1),if directory {Status::Allow}else{Status::Denied});\n                }\n                assert_eq!(p.query(format!("{root}{separator}").as_bytes(),5),Status::Allow);\n                for name in ["missing","missing/../file.php","file.php/../file.php","file.php/"] {\n                    assert_eq!(p.query(format!("{root}{separator}{name}").as_bytes(),4),Status::Missing);\n                }\n                for name in ["../file.php","dir/../../file.php"] {\n                    assert_eq!(p.query(format!("{root}{separator}{name}").as_bytes(),4),Status::Denied);\n                }\n                assert_eq!(p.query(format!("{root}{separator}dir/../file.php").as_bytes(),4),Status::Allow);\n            }\n        }\n        assert_eq!(p.query(b"//wordpress/file.php",4),Status::Invalid);\n        assert_eq!(p.query(b"/wordpress-other//file.php",4),Status::Unmanaged);\n        assert_eq!(p.query(b"/wordpress//colon:file",4),Status::Invalid);\n        assert_eq!(p.query(b"/wordpress//dir\\\\child.php",4),Status::Invalid);\n        assert_eq!(p.query(b"/wordpress//dir/\\0child.php",4),Status::Invalid);\n    }\n'),
+]
+
+
 def require(value,reason):
     if not value:raise ValueError(reason)
 
@@ -55,11 +65,11 @@ def verify():
     original=(OLD/'src/access_fs.rs').read_bytes()
     expected=original.replace(b'php-wasix-wp-bootstrap-probe',b'php-wasix-wp-request-probe').replace(b'/rp-bootstrap',b'/rp-request')
     unchanged=expected
-    for before,after in ACCESS_DIAGNOSTIC_EDITS:
+    for before,after in ACCESS_DIAGNOSTIC_EDITS + ACCESS_MOUNT_EDITS:
         require(expected.count(before)==1,'home_access_diagnostic_context_changed')
         expected=expected.replace(before,after,1)
     actual=(HERE/'src/access_fs.rs').read_bytes()
-    require(expected==actual,'home_access_exact_diagnostic_derivation')
+    require(expected==actual,'home_access_exact_allowed_derivation')
     for start,end in [(b'#[derive(Debug)]\nstruct State',b'impl ManagedAccessFs {'),
         (b'    pub(crate) fn snapshot(',b'fn channel_entry('),(b'fn channel_entry(',b'#[cfg(test)]')]:
         require(between(unchanged,start,end)==between(actual,start,end),'home_access_transaction_body_changed')
@@ -83,7 +93,10 @@ def verify():
         'workspace_and_lock_package_name_only':True,'db_query_escape_actor_wire_budgets_unchanged':True,
         'async_rpc_catalog_and_result_budgets_unchanged':True,
         'access_mount_prefix_only':False,'access_exact_diagnostic_edits':len(ACCESS_DIAGNOSTIC_EDITS),
-        'access_transaction_bodies_unchanged':True,'access_policy_rejection_conditions_unchanged':True,
-        'access_invalid_reason_counters_only':True,'capture_limit_bytes':[66560,3145728],
+        'access_exact_mount_edits':len(ACCESS_MOUNT_EDITS),
+        'access_transaction_bodies_unchanged':True,'access_policy_rejection_conditions_unchanged':False,
+        'access_invalid_reason_counters_only':False,'access_mount_interior_separator_adapter':True,
+        'access_global_leading_double_slash_rejection_unchanged':True,
+        'access_ordered_missing_file_and_parent_checks_unchanged':True,'capture_limit_bytes':[66560,3145728],
         'managed_module_verification_body_unchanged':True,
         'new_input_context_home_routing_and_public_response_policy_explicit':True}

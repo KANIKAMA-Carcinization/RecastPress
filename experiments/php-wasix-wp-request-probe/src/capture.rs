@@ -160,6 +160,42 @@ mod tests {
         assert_eq!(collect_pipe(read).unwrap(),bytes);assert!(!overflow.load(Ordering::Relaxed));
     }
     #[test]
+    fn fragmented_large_cgi_keeps_header_boundaries_hex_body_order_and_eof() {
+        let rt=tokio::runtime::Builder::new_current_thread().build().unwrap();
+        let hex_body=(0..69399).map(|i|format!("{:02x}",i%251)).collect::<String>();
+        assert_eq!(hex_body.len(),138798);
+        let mut body=serde_json::to_vec(&serde_json::json!({
+            "schema":"synthetic.fragmented-cgi.v0.5","body_hex":hex_body,
+            "padding":"bounded-public-fixture".repeat(600)
+        })).unwrap();
+        body.push(b'\n');
+        assert!((150000..160000).contains(&body.len()));
+        let headers:[&[u8];5]=[b"X-Powered-By: PHP/8.5.12\r",b"\nContent-Type: application/json\r",b"\n",b"\r",b"\n"];
+        let mut expected=headers.concat();expected.extend_from_slice(&body);
+        for sizes in [vec![1],vec![4095],vec![4096],vec![4097],vec![65536],vec![1,4095,4096,4097,65536]] {
+            let (send,read)=Pipe::channel();let overflow=Arc::new(AtomicBool::new(false));
+            let mut output=LimitedPipe::new(send,overflow.clone());
+            rt.block_on(async {
+                for header in headers {output.write_all(header).await.unwrap();}
+                let mut offset=0;let mut chunk=0;
+                while offset<body.len() {
+                    let end=(offset+sizes[chunk%sizes.len()]).min(body.len());
+                    output.write_all(&body[offset..end]).await.unwrap();
+                    offset=end;chunk+=1;
+                }
+                output.flush().await.unwrap();
+            });
+            drop(output);
+            let collected=collect_pipe(read).unwrap();
+            assert_eq!(collected,expected,"write sizes {sizes:?}");
+            assert!(!overflow.load(Ordering::Relaxed));
+            let parsed=crate::cgi_response::parse(&collected).unwrap();
+            assert_eq!(parsed.status,200);assert_eq!(parsed.headers.len(),2);
+            assert_eq!(parsed.body,body);
+            assert_eq!(serde_json::from_slice::<serde_json::Value>(&parsed.body).unwrap()["body_hex"].as_str().unwrap().len(),138798);
+        }
+    }
+    #[test]
     fn oversize_is_rejected_before_the_pipe_queue_retains_any_bytes() {
         let rt=tokio::runtime::Builder::new_current_thread().build().unwrap();
         let (send,read)=Pipe::channel();let overflow=Arc::new(AtomicBool::new(false));

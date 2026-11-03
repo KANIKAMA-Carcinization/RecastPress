@@ -29,3 +29,9 @@ source `5f23493237b845ada57c5b3a8488536031c184e8` の[CI 41606262529](https://gi
 この段階ではPHP内報告を解析できていないため、HTML・全headerのnative一致を成功と扱わない。原失敗は[MySQL](evidence/ci-41606262529-mysql/provenance.json)／[MariaDB](evidence/ci-41606262529-mariadb/provenance.json)へ各1,009 binding・173 Git blobの照合付きで保存した。private raw CGIやSQLは公開していない。
 
 次の41 unit版では、先頭からの期待schema JSON objectと、既知のCGI frame／末尾を診断する。任意offsetのobject探索や未知文字列の公開は行わず、元のnewline・body JSON・完全native一致の合格条件は変えない。権限照会も固定分類counterだけを追加し、パス・hashを公開せず、拒否条件は維持する。ヘッダー削除等のPHP処理を原因の根拠なく変更せず、この追加観測で切り分ける。
+
+source `b2ddc09`の[診断CI 41612482169](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41612482169)でも両DBの旧install/readは通過し、homeは同じ`cgi_complete_json_line`で停止した。本文は133,595 B、CR 0／LF 5、先頭は既知のJSON／JSON CGI frameに該当せず、PHP内報告の抽出には至らなかった。4件のinvalidは全て`metadata_invalid`で、他8分類は0だった。原失敗と元sourceの照合結果を両DB別の`evidence/ci-41612482169-*`へ保存した。
+
+この分類と有限FSの処理から、マウント直後の重複`/`が、マウント内の先頭`//`として再判定される不整合を特定した。新profileだけでマウント内の区切りを補正し、全体先頭`//`・不正文字・欠損やfileを通過する探索・ルート脱出の拒否は維持する。旧FSと旧実験は変更しない。元拒否条件からの互換性変更であることをderivationにも明記する。
+
+49 unit版には、この探索の回帰、約152 KBの分割CGI出力の全byte／順序／EOF保持、外側JSON CGIのContent-Type等の固定profile検証を追加した。追加診断はfixtureが生成するbyte完全一致のJSON接頭辞を数え、一意な場合だけ安全なPHP観測を取り出す。任意の`{`探索・未知prefixの公開は行わない。位置・UTF-8可否・固定分類を記録しても、不正なCGI本文は受け入れず、HTMLの日時・属性・空白やheaderを正規化しない。実Wasmでの修正効果と完全応答一致は次のCIで確認する。

@@ -61,9 +61,12 @@ impl Policy {
             else if let Some(p)=mount("/experiments/php-wasix-wp-request-probe/fixtures"){Some((&self.php,p))}
             else {mount("/rp-request").map(|p|(&self.context,p))};
         let Some((fs,entry))=selected else{return Status::Unmanaged};
-        // Pass the remaining lexical path unchanged to the SAME frozen tree.
-        // Missing prefixes/file traversal/root escape are never normalized away.
-        match fs.metadata(Path::new(if entry.is_empty(){"/"}else{entry})) {
+        // Global leading // was rejected above. Slashes after a mount are
+        // interior separators, not a new global // prefix in the mounted tree.
+        // Preserve all remaining components: missing/file prefixes and root
+        // escape must still be checked by the SAME frozen tree in order.
+        let mounted=format!("/{}",entry.trim_start_matches('/'));
+        match fs.metadata(Path::new(&mounted)) {
             Ok(meta)=>if mode&2!=0 || (mode&1!=0 && !meta.is_dir()){Status::Denied}else{Status::Allow},
             Err(FsError::PermissionDenied)=>Status::Denied,
             Err(FsError::EntryNotFound|FsError::BaseNotDirectory|FsError::NotAFile)=>Status::Missing,
@@ -659,14 +662,42 @@ mod tests {
     fn invalid_reason_counts_retain_rejections_without_paths() {
         let fs=fixture_fs();
         {let s=fs.lock().unwrap();let p=&s.policy;
-            for path in ["//wordpress/file.php","/wordpress/colon:file","/wordpress\\file.php","/wordpress/\0file","/wordpress//file.php"] {
+            for path in ["//wordpress/file.php","/wordpress/colon:file","/wordpress\\file.php","/wordpress/\0file"] {
                 assert_eq!(p.query(path.as_bytes(),4),Status::Invalid);
             }
         }
         let report=fs.invalid_reason_counts().unwrap();
-        for name in ["double_leading_slash","colon","backslash","control","metadata_invalid"] {assert_eq!(report[name],1);}
-        assert_eq!(report.as_object().unwrap().values().map(|v|v.as_u64().unwrap()).sum::<u64>(),5);
+        for name in ["double_leading_slash","colon","backslash","control"] {assert_eq!(report[name],1);}
+        assert_eq!(report["metadata_invalid"],0);
+        assert_eq!(report.as_object().unwrap().values().map(|v|v.as_u64().unwrap()).sum::<u64>(),4);
         assert!(!report.to_string().contains("file.php"));
+    }
+    #[test]
+    fn mount_interior_slashes_match_catalog_without_erasing_traversal() {
+        let fs=fixture_fs();let state=fs.lock().unwrap();let p=&state.policy;
+        for root in ["/wordpress","/experiments/php-wasix-wp-request-probe/fixtures","/rp-request"] {
+            for separator in ["/","//","////"] {
+                for (name,directory) in [("file.php",false),("dir",true),("dir//child.php",false)] {
+                    let path=format!("{root}{separator}{name}");
+                    for mode in [0,4] {assert_eq!(p.query(path.as_bytes(),mode),Status::Allow);}
+                    assert_eq!(p.query(path.as_bytes(),2),Status::Denied);
+                    assert_eq!(p.query(path.as_bytes(),1),if directory {Status::Allow}else{Status::Denied});
+                }
+                assert_eq!(p.query(format!("{root}{separator}").as_bytes(),5),Status::Allow);
+                for name in ["missing","missing/../file.php","file.php/../file.php","file.php/"] {
+                    assert_eq!(p.query(format!("{root}{separator}{name}").as_bytes(),4),Status::Missing);
+                }
+                for name in ["../file.php","dir/../../file.php"] {
+                    assert_eq!(p.query(format!("{root}{separator}{name}").as_bytes(),4),Status::Denied);
+                }
+                assert_eq!(p.query(format!("{root}{separator}dir/../file.php").as_bytes(),4),Status::Allow);
+            }
+        }
+        assert_eq!(p.query(b"//wordpress/file.php",4),Status::Invalid);
+        assert_eq!(p.query(b"/wordpress-other//file.php",4),Status::Unmanaged);
+        assert_eq!(p.query(b"/wordpress//colon:file",4),Status::Invalid);
+        assert_eq!(p.query(b"/wordpress//dir\\child.php",4),Status::Invalid);
+        assert_eq!(p.query(b"/wordpress//dir/\0child.php",4),Status::Invalid);
     }
     #[test]
     fn same_readonly_catalog_exists_readable_and_write_denial() {

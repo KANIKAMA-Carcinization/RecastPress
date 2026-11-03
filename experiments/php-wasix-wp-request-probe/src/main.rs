@@ -254,6 +254,11 @@ fn known_json_cgi_headers(frame: &cgi_response::Response) -> bool {
             name == "content-type" || (name == "x-powered-by" && value.as_slice() == b"PHP/8.5.12")
         })
 }
+fn fixed_json_cgi_headers(frame: &cgi_response::Response) -> bool {
+    known_json_cgi_headers(frame)
+        && frame.headers.iter().filter(|(name, _)| name == "content-type").count() == 1
+        && frame.headers.iter().filter(|(name, _)| name == "x-powered-by").count() <= 1
+}
 fn observe_cgi(
     raw: &[u8],
     record: &mut Value,
@@ -276,6 +281,27 @@ fn observe_cgi(
     let known_json_header = tail.starts_with(b"Content-Type: application/json")
         || tail.starts_with(b"Content-type: application/json")
         || tail.starts_with(b"X-Powered-By: PHP/8.5.12");
+    const EXPECTED_JSON_PREFIX: &[u8] =
+        b"{\"schema\":\"recastpress.php-wasix-wp-request-php-observation.v0.5\"";
+    let mut expected_prefix_count = 0usize;
+    let mut expected_prefix_offset = None;
+    for (offset, bytes) in response.body.windows(EXPECTED_JSON_PREFIX.len()).enumerate() {
+        if bytes == EXPECTED_JSON_PREFIX {
+            expected_prefix_count += 1;
+            expected_prefix_offset = Some(offset);
+        }
+    }
+    if expected_prefix_count != 1 { expected_prefix_offset = None; }
+    let first_byte_class = match response.body.first() {
+        None => "empty",
+        Some(0) => "nul",
+        Some(b'{') => "json_object",
+        Some(b'<') => "less_than",
+        Some(b' ' | b'\t' | b'\r' | b'\n') => "ascii_whitespace",
+        Some(0x20..=0x7e) => "ascii_printable",
+        Some(0x80..=0xff) => "non_ascii",
+        Some(_) => "other_control",
+    };
     let class = if tail.starts_with(b"{") {
         if leading == 0 {
             "json_object"
@@ -284,6 +310,14 @@ fn observe_cgi(
         }
     } else if known_json_header {
         "known_json_cgi_header"
+    } else if tail.get(..b"<!DOCTYPE html".len()).is_some_and(|bytes| bytes.eq_ignore_ascii_case(b"<!DOCTYPE html")) {
+        "html_doctype"
+    } else if tail.starts_with(b"PHP Warning:") || tail.starts_with(b"Warning:")
+        || tail.starts_with(b"<br />\n<b>Warning</b>") {
+        "php_warning"
+    } else if tail.starts_with(b"Content-Type:") || tail.starts_with(b"Content-type:")
+        || tail.starts_with(b"Status:") || tail.starts_with(b"X-Powered-By:") {
+        "known_cgi_header"
     } else if tail.is_empty() {
         "empty"
     } else {
@@ -292,7 +326,10 @@ fn observe_cgi(
     let mut diagnostic = json!({"prefix_class":class,"leading_json_whitespace_bytes":leading,"trailing_json_whitespace_bytes":trailing,
         "lf_bytes":response.body.iter().filter(|&&b|b==b'\n').count(),"cr_bytes":response.body.iter().filter(|&&b|b==b'\r').count(),
         "json_decoded":false,"decode_strategy":"none","acceptance_changed":false,
-        "trailing_bytes_after_json":0,"trailing_class":"none"});
+        "trailing_bytes_after_json":0,"trailing_class":"none",
+        "first_byte_class":first_byte_class,"body_utf8_valid":std::str::from_utf8(&response.body).is_ok(),
+        "leading_nul_bytes":response.body.iter().take_while(|&&b|b==0).count(),
+        "expected_json_prefix_count":expected_prefix_count,"expected_json_prefix_offset":expected_prefix_offset});
     let mut decoded = serde_json::from_slice::<Value>(&response.body).ok();
     if decoded.is_some() {
         diagnostic["decode_strategy"] = json!("whole_body_json");
@@ -337,6 +374,29 @@ fn observe_cgi(
             }
         }
     }
+    if decoded.is_none() {
+        // Search only the byte-exact envelope prefix emitted by this fixture.
+        // A unique match can recover safe diagnostics, never CGI acceptance.
+        if let Some(offset) = expected_prefix_offset {
+            let mut stream = serde_json::Deserializer::from_slice(&response.body[offset..])
+                .into_iter::<Value>();
+            if let Some(Ok(value)) = stream.next() {
+                if value.is_object()
+                    && value["schema"] == "recastpress.php-wasix-wp-request-php-observation.v0.5"
+                {
+                    let suffix = &response.body[offset + stream.byte_offset()..];
+                    diagnostic["decode_strategy"] = json!("unique_exact_fixture_json_envelope");
+                    diagnostic["trailing_bytes_after_json"] = json!(suffix.len());
+                    diagnostic["trailing_class"] = json!(if suffix.is_empty() {
+                        "none"
+                    } else if suffix.iter().all(|&b| matches!(b, b' ' | b'\t' | b'\r' | b'\n')) {
+                        "json_whitespace"
+                    } else { "unknown_trailer" });
+                    decoded = Some(value);
+                }
+            }
+        }
+    }
     if let Some(value) = &decoded {
         record["safe_php_observation"] = public_php(value, native);
         diagnostic["json_decoded"] = json!(true);
@@ -352,6 +412,7 @@ fn observe_cgi(
     let value: Value =
         serde_json::from_slice(&response.body).map_err(|_| anyhow::anyhow!("php_json_shape"))?;
     record["safe_php_observation"] = public_php(&value, native);
+    ensure!(fixed_json_cgi_headers(&response), "cgi_json_header_profile");
     Ok(value)
 }
 fn execute(
@@ -757,6 +818,101 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn unique_exact_fixture_envelope_recovers_only_safe_diagnostics_after_private_prefix() {
+        let php = "{\"schema\":\"recastpress.php-wasix-wp-request-php-observation.v0.5\",\"mode\":\"home\",\"phase\":\"wp_dispatch\",\"passed\":false,\"private_message\":\"private-secret-SQL\"}";
+        for (prefix, error) in [
+            ("private-secret-prefix", "php_json_shape"),
+            ("private-secret-prefix\n", "cgi_complete_json_line"),
+        ] {
+            let raw = format!("\r\n{prefix}{php}\n");
+            let mut record = json!({});
+            assert_eq!(observe_cgi(raw.as_bytes(), &mut record, None).unwrap_err().to_string(), error);
+            let diagnostic = &record["framing_diagnostic"];
+            assert_eq!(diagnostic["expected_json_prefix_count"], 1);
+            assert_eq!(diagnostic["expected_json_prefix_offset"], prefix.len());
+            assert_eq!(diagnostic["decode_strategy"], "unique_exact_fixture_json_envelope");
+            assert_eq!(diagnostic["trailing_bytes_after_json"], 1);
+            assert_eq!(diagnostic["acceptance_changed"], false);
+            assert_eq!(record["safe_php_observation"]["phase"], "wp_dispatch");
+            assert!(!record.to_string().contains("private-secret"));
+        }
+    }
+    #[test]
+    fn duplicate_exact_fixture_envelopes_are_counted_without_offset_extraction() {
+        let php = "{\"schema\":\"recastpress.php-wasix-wp-request-php-observation.v0.5\",\"mode\":\"home\",\"phase\":\"wp_dispatch\"}";
+        let raw = format!("\r\nprivate-secret-prefix{php}{php}\n");
+        let mut record = json!({});
+        assert_eq!(observe_cgi(raw.as_bytes(), &mut record, None).unwrap_err().to_string(), "php_json_shape");
+        assert_eq!(record["framing_diagnostic"]["expected_json_prefix_count"], 2);
+        assert!(record["framing_diagnostic"]["expected_json_prefix_offset"].is_null());
+        assert_eq!(record["framing_diagnostic"]["json_decoded"], false);
+        assert!(record.get("safe_php_observation").is_none());
+        assert!(!record.to_string().contains("private-secret"));
+    }
+    #[test]
+    fn absent_fixture_envelope_reports_only_fixed_prefix_classes_and_byte_counts() {
+        for (body, class, first, nul, utf8) in [
+            (b"private-secret-prefix".as_slice(), "other", "ascii_printable", 0, true),
+            (b"\0\0\xffprivate-secret".as_slice(), "other", "nul", 2, false),
+            (b"<!doctype html>private-secret".as_slice(), "html_doctype", "less_than", 0, true),
+            (b"PHP Warning: private-secret".as_slice(), "php_warning", "ascii_printable", 0, true),
+            (b"Content-Type: text/private-secret".as_slice(), "known_cgi_header", "ascii_printable", 0, true),
+        ] {
+            let raw = [b"\r\n".as_slice(), body, b"\n".as_slice()].concat();
+            let mut record = json!({});
+            assert_eq!(observe_cgi(&raw, &mut record, None).unwrap_err().to_string(), "php_json_shape");
+            let diagnostic = &record["framing_diagnostic"];
+            assert_eq!(diagnostic["expected_json_prefix_count"], 0);
+            assert!(diagnostic["expected_json_prefix_offset"].is_null());
+            assert_eq!(diagnostic["prefix_class"], class);
+            assert_eq!(diagnostic["first_byte_class"], first);
+            assert_eq!(diagnostic["leading_nul_bytes"], nul);
+            assert_eq!(diagnostic["body_utf8_valid"], utf8);
+            assert_eq!(diagnostic["json_decoded"], false);
+            assert!(record.get("safe_php_observation").is_none());
+            assert!(!record.to_string().contains("private-secret"));
+        }
+    }
+    #[test]
+    fn complete_json_cgi_accepts_only_the_known_outer_header_profile() {
+        let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"wp_settings","passed":false});
+        for headers in [
+            "Content-Type: application/json\r\n",
+            "X-Powered-By: PHP/8.5.12\r\nContent-Type: application/json; charset=UTF-8\r\n",
+            "Content-Type: application/json; charset=utf-8\r\nX-Powered-By: PHP/8.5.12\r\n",
+        ] {
+            let raw = format!("{headers}\r\n{php}\n");
+            let mut record = json!({});
+            assert_eq!(observe_cgi(raw.as_bytes(), &mut record, None).unwrap(), php);
+            assert_eq!(record["safe_php_observation"]["phase"], "wp_settings");
+        }
+    }
+    #[test]
+    fn complete_json_cgi_rejects_missing_wrong_status_or_unknown_outer_headers() {
+        let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"wp_settings","passed":false});
+        for headers in [
+            "",
+            "Content-Type: text/html\r\n",
+            "Status: 302 Found\r\nContent-Type: application/json\r\n",
+            "Content-Type: application/json\r\nX-Private: private-secret-header\r\n",
+            "Content-Type: application/json\r\nX-Powered-By: PHP/8.5.11\r\n",
+            "Content-Type: application/json\r\nX-Powered-By: PHP/8.5.12\r\nX-Powered-By: PHP/8.5.12\r\n",
+        ] {
+            let raw = format!("{headers}\r\n{php}\n");
+            let mut record = json!({});
+            assert_eq!(observe_cgi(raw.as_bytes(), &mut record, None).unwrap_err().to_string(), "cgi_json_header_profile");
+            assert_eq!(record["safe_php_observation"]["phase"], "wp_settings");
+            assert!(!record.to_string().contains("private-secret-header"));
+        }
+    }
+    #[test]
+    fn duplicate_json_content_type_keeps_the_original_parser_rejection() {
+        let raw = b"Content-Type: application/json\r\nContent-Type: application/json\r\n\r\n{}\n";
+        let mut record = json!({});
+        assert_eq!(observe_cgi(raw, &mut record, None).unwrap_err().to_string(), "duplicate CGI Content-Type");
+        assert!(record.get("safe_php_observation").is_none());
+    }
     #[test]
     fn newline_failure_stays_rejected_but_whole_json_diagnostics_are_safe() {
         let php = json!({"schema":"recastpress.php-wasix-wp-request-php-observation.v0.5","mode":"home","phase":"wp_dispatch","passed":false,"failure":"php_warning","private_message":"never-publish-private-SQL"});

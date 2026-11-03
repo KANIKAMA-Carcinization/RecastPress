@@ -1,0 +1,101 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41612482169,
+  "run_attempt": 1,
+  "head_sha": "b2ddc09d8c2bb707b1865cdfc12aefed118b83c2",
+  "run_conclusion": "failure",
+  "job": {
+    "id": 125837579925,
+    "name": "Cranelift WP theme / mariadb",
+    "conclusion": "failure",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare full pinned WordPress and owned DB dropin",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify original theme host units",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install read and render original theme using php-wasm and Rust DB",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Record CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload JSON evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13220716717,
+    "name": "php-wasix-wp-request-mariadb-1",
+    "size_in_bytes": 261318,
+    "digest": "sha256:795c63019986c01c4737a6a4c883d25d12f4b043932a681b582db59f9ccb48f9"
+  }
+}
