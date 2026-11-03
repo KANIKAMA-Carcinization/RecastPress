@@ -127,11 +127,11 @@ def expected_fixtures(original, wpdb):
     keys=once(keys,b'function rp_boot_json_keys(',b'function rp_context_json_keys(')
     helpers+=keys.replace(b'rp_boot_check(',b'rp_check(')+CONTEXT
     adapter=original['experiments/php-wasix-wpdb-probe/fixtures/adapter.php']
-    for old,new in [(b'$this->seq < 64',b'$this->seq < 1024'),(b'strlen($bytes) <= 4096',b'strlen($bytes) <= 65536'),
+    for old,new in [(b'$this->seq < 64',b'$this->seq < 4096'),(b'strlen($bytes) <= 4096',b'strlen($bytes) <= 65536'),
         (b'strlen($wire) <= 16384',b'strlen($wire) <= 262144'),(b'<= 131072',b'<= 8388608'),
         (b'fgets($this->stream, 65538)',b'fgets($this->stream, 524290)'),(b'strlen($line) <= 65536',b'strlen($line) <= 524288'),
         (b'<= 524288, \'rpc_reply_total_quota\'',b'<= 16777216, \'rpc_reply_total_quota\''),
-        (b"'max_requests' => 64",b"'max_requests' => 1024"),
+        (b"'max_requests' => 64",b"'max_requests' => 4096"),
         (b"count($data['columns']) <= 16",b"count($data['columns']) <= 32"),
         (b"count($data['rows']) <= 16",b"count($data['rows']) <= 256"),
         (b'private array $setup = [];',b'private int $setupQueries = 0;'),

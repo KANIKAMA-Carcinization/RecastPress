@@ -15,7 +15,7 @@ pub const REPLY: usize = 512 * 1024;
 pub const REQUEST_TOTAL: usize = 8 * 1024 * 1024;
 pub const REPLY_TOTAL: usize = 16 * 1024 * 1024;
 pub const CELL: usize = 65536;
-pub const OPS: u64 = 1024;
+pub const OPS: u64 = 4096;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]

@@ -414,7 +414,7 @@ fn public_php(value: &Value) -> Value {
         "site_config_file_created",
         "source_core_theme_plugin_modified",
         "outbound_mail_or_http_sent_by_fixture",
-        "dropin_verified",
+        "owned_db_dropin_loaded",
     ] {
         if let Some(v) = value.get(key) {
             if v.is_boolean() || v.is_number() {
@@ -577,7 +577,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     Ok(())
 }
 fn main() {
-    let mut report = json!({"schema":"recastpress.php-wasix-wp-bootstrap-observation.v0.5","passed":false,"outcome":"fixed_wasix_wp_bootstrap_failed","phase":"input","mode":null,"operations":[],"cgi_capture":{},"php_result":null,"physical_connection_created":false,"physical_disconnect_completed":false,"db_actor_joined":false,"full_wordpress_bootstrap":false,"guest_execution_started":false,"fresh_runtime":true,"module_compilations":0,"guest_networking":false,"host_environment_forwarded":false,"host_home_mapped":false,"db_credentials_supplied_to_guest":false,"native_php_fallback":false,"product_runtime":false,"standard_wpdb_compatibility_proven":false,"raw_error_bytes_preserved":false,"server_error_string_lossy_gap_unresolved":true,"native_metadata_compatibility_verified":false,"underlying_virtual_file_counts_only":true,"limits":{"operation_ms":10000,"actor_execution_ms":120000,"actor_join_ms":3000,"disconnect_cleanup_ms":2000,"runtime_shutdown_ms":2000,"capture_cleanup_ms":2000,"query_or_escape_bytes":65536,"request_frame_bytes":262144,"reply_frame_bytes":524288,"operations":1024,"request_total_bytes":8388608,"reply_total_bytes":16777216,"rows":256,"columns":32,"cell_bytes":65536,"raw_result_bytes":262144,"metadata_bytes":4096,"managed_access_max_operations":16384,"managed_access_max_frame_bytes":4103,"managed_access_max_path_bytes":4096,"synchronous_guest_cpu_cancellation":false,"outer_owned_process_deadline_required":true}});
+    let mut report = json!({"schema":"recastpress.php-wasix-wp-bootstrap-observation.v0.5","passed":false,"outcome":"fixed_wasix_wp_bootstrap_failed","phase":"input","mode":null,"operations":[],"cgi_capture":{},"php_result":null,"physical_connection_created":false,"physical_disconnect_completed":false,"db_actor_joined":false,"full_wordpress_bootstrap":false,"guest_execution_started":false,"fresh_runtime":true,"module_compilations":0,"guest_networking":false,"host_environment_forwarded":false,"host_home_mapped":false,"db_credentials_supplied_to_guest":false,"native_php_fallback":false,"product_runtime":false,"standard_wpdb_compatibility_proven":false,"raw_error_bytes_preserved":false,"server_error_string_lossy_gap_unresolved":true,"native_metadata_compatibility_verified":false,"underlying_virtual_file_counts_only":true,"limits":{"operation_ms":10000,"actor_execution_ms":120000,"actor_join_ms":3000,"disconnect_cleanup_ms":2000,"runtime_shutdown_ms":2000,"capture_cleanup_ms":2000,"query_or_escape_bytes":65536,"request_frame_bytes":262144,"reply_frame_bytes":524288,"operations":4096,"request_total_bytes":8388608,"reply_total_bytes":16777216,"rows":256,"columns":32,"cell_bytes":65536,"raw_result_bytes":262144,"metadata_bytes":4096,"managed_access_max_operations":16384,"managed_access_max_frame_bytes":4103,"managed_access_max_path_bytes":4096,"synchronous_guest_cpu_cancellation":false,"outer_owned_process_deadline_required":true}});
     let mut secrets = vec![];
     let result = (|| -> Result<()> {
         ensure!(std::env::args_os().count() == 1, "closed_arguments");

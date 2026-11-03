@@ -19,7 +19,7 @@ final class RpRpcClient {
     }
 
     public function request(string $op, string $bytes = ''): array {
-        rp_check(is_resource($this->stream) && !$this->closed && $this->seq < 1024,
+        rp_check(is_resource($this->stream) && !$this->closed && $this->seq < 4096,
             'rpc_channel_closed_or_budget');
         rp_check(isset($this->counts[$op]) && strlen($bytes) <= 65536
             && (($op !== 'hello' && $op !== 'close') || $bytes === ''), 'rpc_request_shape');
@@ -75,7 +75,7 @@ final class RpRpcClient {
     public function stats(): array {
         return ['requests' => $this->seq, 'counts' => $this->counts,
             'request_bytes' => $this->written, 'reply_bytes' => $this->read,
-            'transport_closed' => $this->closed, 'max_requests' => 1024,
+            'transport_closed' => $this->closed, 'max_requests' => 4096,
             'kind' => 'file-channel', 'channel_guest_path' => '/rp-wpdb/channel'];
     }
 

@@ -69,7 +69,8 @@ def validate(value,mode,native):
     php=value['php_result']
     require(php['passed'] is True and php['phase']=='complete' and php['mode']==mode
         and php['rust_executed'] is True and php['wasm_executed'] is True
-        and php['native_mysqli_handle'] is False,'php_rust_bootstrap_contract')
+        and php['native_mysqli_handle'] is False and php['owned_db_dropin_loaded'] is True,
+        'php_rust_bootstrap_contract')
     for key in COMPARE:
         require(canonical(php[key])==canonical(native[key]),'native_bootstrap_'+key+'_differs')
     access=value['managed_access']
@@ -85,7 +86,7 @@ def validate(value,mode,native):
     require(rpc['finished'] is True and rpc['opened_once'] is True and rpc['close_dispatched'] is True
         and rpc['failure'] is None and rpc['channel_open'] is False and rpc['response_pending'] is False
         and rpc['pending_bytes']==rpc['unread_response_bytes']==0,'private_channel_sealed')
-    require(0<len(ops)<=1024 and len(ops)==rpc['operations'] and ops[0]['op']=='hello'
+    require(0<len(ops)<=4096 and len(ops)==rpc['operations'] and ops[0]['op']=='hello'
         and ops[-1]['op']=='close','rpc_sequence_bounds')
     allowed={'seq','op','request_data_bytes','request_data_sha256','request_frame_bytes',
         'request_frame_sha256','reply_frame_bytes','reply_frame_sha256','ok','row_count',

@@ -6,7 +6,7 @@
 
 private immutable `/rp-bootstrap/context.json`には厳密schema・mode・nonce・8個のsalt・install時だけのadmin passwordを与える。DBの実host／port／user／passwordはguestへ渡さず、DB定数はdummy値である。`require_wp_db()`が所有dropinを発見し、元wpdbを継承するadapterをglobal `$wpdb`へ配置する。専有Rust actorの接続はinstaller時はschema限定DDL＋CRUD、read時はCRUD権限とし、同じ所有DBとsaltを使う別PHP／WASI processで比較する。管理資格情報はguestへ渡さない。
 
-transportは既存の私的`/rp-wpdb/channel` JSONLとhello／query／escape／closeを維持する。新候補の有限上限は256行、32列、cell 64 KiB、raw cell合計256 KiB、reply 512 KiB、1,024 operations、request frame 256 KiB、SQL／escape入力64 KiB、総request 8 MiB／reply 16 MiB。元`get_posts()`の`wp_posts.*`は23列あるため、列上限だけ旧16から明示的に広げた。超過はfailureとし、truncate・`LIMIT`追加・戻り値や件数の補正はしない。これらは本実験の候補上限であり、WP全体や製品の受入値ではない。
+transportは既存の私的`/rp-wpdb/channel` JSONLとhello／query／escape／closeを維持する。新候補の有限上限は256行、32列、cell 64 KiB、raw cell合計256 KiB、reply 512 KiB、4,096 operations、request frame 256 KiB、SQL／escape入力64 KiB、総request 8 MiB／reply 16 MiB。元`get_posts()`の`wp_posts.*`は23列あるため、列上限だけ旧16から明示的に広げた。超過はfailureとし、truncate・`LIMIT`追加・戻り値や件数の補正はしない。これらは本実験の候補上限であり、WP全体や製品の受入値ではない。
 
 旧ASCII corpusのbusinessをそのまま全WP対応と扱わない。新adapterは上流`wpdb::query()`のinvalid-text検証ブロックをbyte一致で取り込み、prepare・get_*・CRUD helper・table charset照会は元実装を継承する。queryは上流検証後のbytesをCOM_QUERYへ渡し、結果NULL／binary／数値textを変換しない。escapeはvalid UTF-8と実sessionのNO_BACKSLASH_ESCAPES状態に限定する。invalid UTF-8 escape、任意mysqli handle API、name以外の`get_col_info()`、非UTF-8 ERRのraw保持は未対応／未検証であり、汎用互換性を主張しない。server errorは1064限定を外すが、code／SQLSTATE／bounded messageの範囲を検査し、messageは私的`last_error`にとどめる。
 
@@ -20,4 +20,8 @@ python -B experiments/php-wasix-wp-bootstrap-probe/prepare.py
 python -B experiments/php-wasix-wp-bootstrap-probe/build_check.py
 ```
 
-Linux CIは所有MySQL／MariaDBの固定imageで実接続する。Windowsでのlint・接続前拒否やRust buildだけを、PHP WASIXでのinstall／read成功へ読み替えない。現時点で新fixtureのnative CGI lint6、private contextの有効2／拒否10、CGI guardの接続前拒否6と、準備metadataの検証を確認した。新結合の実guest／DB結果、HTTP listener、theme rendering、全plugin互換、製品runtimeの採用、全資源の即時回収は未検証である。
+Linux CIは所有MySQL／MariaDBの固定imageで実接続する。Windowsでのlint・接続前拒否やRust buildだけを、PHP WASIXでのinstall／read成功へ読み替えない。現時点で新fixtureのnative CGI lint6、private contextの有効2／拒否10、CGI guardの接続前拒否6と、準備metadataの検証を確認した。新結合のinstall／read完遂、HTTP listener、theme rendering、全plugin互換、製品runtimeの採用、全資源の即時回収は未検証である。
+
+最初のMySQL実測[CI 41595534740](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41595534740)では、元`wp-settings.php`の正常bootstrapに到達した後、`wp_install`中に初期候補1,024 operationsへ到達して`rpc_channel_closed_or_budget`で失敗した。hello 1／query 407／escape 616／close 0、request 259,279 bytes／reply 205,203 bytes、実行1,457 msであり、byte上限や時間上限へ達したという観測ではない。finallyからの明示closeもcapで送れず、RPCは`close_missing`となった。未読応答なし・channel封印、actor側fallback物理切断／join／exit、stdout／stderr EOFとcontainer正常清掃は成立したが、成功したRPC contractやinstaller完了へ読み替えない。
+
+この失敗を保持し、新profileだけoperation上限を4,096へ広げる。行・列・cell・raw・frame・総byte・時間の各上限は変更しない。managed accessも43照会（allowed 32／missing 11／invalid 0／IO 0）、全handle closed、full 5-byte reply読了までの観測である。4,096候補でのinstall／read成功は次のCI結果で別に受け入れる。

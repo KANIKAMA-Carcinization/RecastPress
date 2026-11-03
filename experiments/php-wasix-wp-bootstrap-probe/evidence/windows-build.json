@@ -2,32 +2,32 @@
   "schema": "recastpress.php-wasix-wp-bootstrap-build.v0.5",
   "outcome": "locked_offline_bootstrap_host_build_passed",
   "passed": true,
-  "observed_at_utc": "2026-11-03T07:16:43.841547+00:00",
+  "observed_at_utc": "2026-11-03T07:45:56.235050+00:00",
   "commands": [
     {
       "stage": "unit-build",
       "timeout_seconds": 1200,
-      "owned_pid": 25136,
+      "owned_pid": 9140,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 10.654,
-      "stdout_sha256": "18696885eff7abcea973bc9f3840655a0a4e4fd3b23a131c28a73b70744791e2",
-      "stderr_sha256": "60972ef61ee3f61b95559356cff54ec6ef96257385dc0d9c6fb4409fa3c0b7b5"
+      "elapsed_seconds": 10.49,
+      "stdout_sha256": "bb835bede5683cc06e754c6774a1ebf81675ddb4a4f8f5a714e874175d69a90a",
+      "stderr_sha256": "d68d71fa982408262df4f09660c0a8db57af5566bbd222eaf358a9fd90c5f77c"
     },
     {
       "stage": "unit-list",
       "timeout_seconds": 10,
-      "owned_pid": 28916,
+      "owned_pid": 192,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.51,
+      "elapsed_seconds": 0.475,
       "stdout_sha256": "040100b09807ca8c723719a59304cebd9a646f19a7442a0e98444c6e199ad6ab",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "unit-run",
       "timeout_seconds": 60,
-      "owned_pid": 17336,
+      "owned_pid": 22380,
       "owned_reaped": true,
       "exit_code": 0,
       "elapsed_seconds": 0.158,
@@ -37,12 +37,12 @@
     {
       "stage": "normal-build",
       "timeout_seconds": 1200,
-      "owned_pid": 12120,
+      "owned_pid": 27040,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 11.45,
-      "stdout_sha256": "4e48af33d4a46eb445c0473924559bb20ddd192a4b2f31f787307d06fab480b5",
-      "stderr_sha256": "7ad9dab189e086b0debb584a4f9d98bd783ef02ab59e3bb951bcc9bcbf6c100c"
+      "elapsed_seconds": 11.016,
+      "stdout_sha256": "a2b429ec5aeb3c34159c21b3d365674bc626605bfc52a90301ae64d1166d02d7",
+      "stderr_sha256": "3eaf44a6d1387f8a24a875eac276a74060044e7dc1197b0e379ffd72dda270a0"
     }
   ],
   "locked_offline": true,
@@ -139,20 +139,20 @@
     "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "55749b7ecd3a8e851d48a61819241caa109d9fd24c233e0c2e4f1620fe9d395c",
     "experiments/php-wasix-wp-bootstrap-probe/Cargo.toml": "c923080bc8ce9dbc04105f6b66ade3877472ef91daa8add9b8078d685bce1225",
     "experiments/php-wasix-wp-bootstrap-probe/derivation_gate.py": "24594b7abb0da39d15cbbad84732754d010b54acf0ff8e0fe58f2a6c30e86179",
-    "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php": "16ef4fe42ccd5ab97cfa27b0893dd616256d3675e2e8dd934ebfdf7377444682",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php": "8dafd2175cc766567d8f75cb054319394e4c53efbb462809a415a5552e5fd08d",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/db.php": "2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/helpers.php": "0581034ca4f4ce54e1a4a515c8e803503b8b79ae906ffd2d879b9f8e2b319850",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/install.php": "8e7489b5c0e821314386ed3dc7951b6433ceeee656acbd22697fb2bd124352f4",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/read.php": "855db45d512920ccadffa9104686691cdae6468fd3fc934f9ad8416920a4095a",
     "experiments/php-wasix-wp-bootstrap-probe/linux_database.py": "c8d01c4b29ed7769e6d5624c9d0835db0bcfc2032cfe89cc05782d9d8092fbae",
-    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "9ea1fcec8875b051f8478e0dcc906350bc6af859109f78f08e3fa760a7ee5060",
-    "experiments/php-wasix-wp-bootstrap-probe/run_check.py": "826f74e91267ac3a55eef2719a20ba4432e8aceb1003e5f3af5471def2f9d7cb",
+    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "032da0f787ba76071bf649bc0f230206b3f4282cbadba8d7df5dd77a455cb570",
+    "experiments/php-wasix-wp-bootstrap-probe/run_check.py": "092130abe215ddcf7f8fb038ac6282ebd5fd88170e39bde3437dd575ee79c63b",
     "experiments/php-wasix-wp-bootstrap-probe/src/access_fs.rs": "390a6d55f042623d0299fd365fb96be6f340a8928c5d955f6d8f1647fbbdfbff",
     "experiments/php-wasix-wp-bootstrap-probe/src/capture.rs": "78a8e0ee21185313b66d74b32f0bede4674a72485dea695c64015f81c8e05ca9",
     "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "6f6ec144e47dba2612b0976aea13ad6b01cfa6f1e67a925b7f3289aeb8d8aaf7",
-    "experiments/php-wasix-wp-bootstrap-probe/src/db.rs": "4a7ed08da0f45a2f95d4fee887540268d9fb1fcb6740f3028b6fbf6c6ec3e201",
-    "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "228f0793b2fa79ce3b1b8f1732739a8308dd697c5f6c2529718ed89af3bb1e36",
+    "experiments/php-wasix-wp-bootstrap-probe/src/db.rs": "368cbf4736cec5c24f7f8c213d756dbb52955f2df3a9878b55f141e13d0d299f",
+    "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "e46735bb0e76c627fd88fea5f4d48dbe73ea081f9e1951040e2c48da621dc6da",
     "experiments/php-wasix-wp-bootstrap-probe/src/result_budget.rs": "616ff411eb024b96ba0d572cd84da91a2107de25d37e9d8a9401d99565ac7776",
     "experiments/php-wasix-wp-bootstrap-probe/src/rpc_fs.rs": "d9d86f4f72016423990147f9c0cb6bc2b6c9bd486864000995a3d90b762a53fa",
     "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
@@ -282,14 +282,14 @@
     "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/deps/recastpress_php_wasix_wp_bootstrap_probe-def7b637498cb08a.exe",
     "executable_identity": {
       "bytes": 8275456,
-      "sha256": "85699ef1c9c6a0147b68bfabfa79d73a4c59e3a6f0a473249508ff604570a3fe"
+      "sha256": "ce93df429abbab8a51a36256b5a6efc5dc9b961084846060580870450f371544"
     },
     "stdout_sha256": "b50b80996dd3ccb401d140190296fc0f46c3c17aa79c9e14aaf382b81634c519"
   },
   "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-wasix-wp-bootstrap-probe.exe",
   "executable_identity": {
     "bytes": 53763072,
-    "sha256": "39a0ae5d3a8edb0fdda0a127e93696be67f5d9c095759fb9b7b102ed400caa82"
+    "sha256": "1397584f01096f2b2fc44239051b6c2d35bb25ea545b24f3b96f46e6339d413c"
   },
   "driver_after": {
     "source_trees": {
