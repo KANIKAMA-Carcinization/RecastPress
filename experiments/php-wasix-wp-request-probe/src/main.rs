@@ -14,6 +14,7 @@ mod inputs;
 mod response_contract;
 mod result_budget;
 mod rpc_fs;
+mod warning_diagnostic;
 use anyhow::{Context, Result, ensure};
 use recastpress_wp_source_fs_probe::SourceFs;
 use serde_json::{Value, json};
@@ -330,6 +331,14 @@ fn observe_cgi(
         "first_byte_class":first_byte_class,"body_utf8_valid":std::str::from_utf8(&response.body).is_ok(),
         "leading_nul_bytes":response.body.iter().take_while(|&&b|b==0).count(),
         "expected_json_prefix_count":expected_prefix_count,"expected_json_prefix_offset":expected_prefix_offset});
+    diagnostic["warning_diagnostic"] = warning_diagnostic::classify(
+        &response.body[..expected_prefix_offset.unwrap_or(response.body.len())],
+        &[warning_diagnostic::KnownSource {
+            path: "/experiments/php-wasix-wp-request-probe/fixtures/bootstrap.php",
+            label: warning_diagnostic::SourceLabel::HomeBootstrap,
+            line_count: include_str!("../fixtures/bootstrap.php").lines().count(),
+        }],
+    );
     let mut decoded = serde_json::from_slice::<Value>(&response.body).ok();
     if decoded.is_some() {
         diagnostic["decode_strategy"] = json!("whole_body_json");

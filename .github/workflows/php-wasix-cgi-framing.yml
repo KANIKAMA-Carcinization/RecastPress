@@ -1,0 +1,162 @@
+name: PHP WASIX CGI framing diagnostic
+
+"on":
+  push:
+    branches: ["dev/v0.5"]
+    paths:
+      - "experiments/php-wasix-cgi-framing-probe/**"
+      - "!experiments/php-wasix-cgi-framing-probe/evidence/**"
+      - "!experiments/php-wasix-cgi-framing-probe/README.ja.md"
+      - "!experiments/php-wasix-cgi-framing-probe/import_evidence.py"
+      - "experiments/php-cgi-framing-probe/fixtures/**"
+      - "experiments/php-cgi-framing-probe/prepare.py"
+      - "experiments/php-cgi-framing-probe/check.py"
+      - "experiments/php-cgi-framing-probe/evidence/windows-native.json"
+      - "experiments/php-wasix-wp-request-probe/src/capture.rs"
+      - "experiments/php-wasix-wp-request-probe/src/access_fs.rs"
+      - "experiments/php-wasix-wp-request-probe/src/warning_diagnostic.rs"
+      - ".github/workflows/php-wasix-cgi-framing.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: php-wasix-cgi-framing-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  framing:
+    name: Cranelift eight CGI frames without WP or DB
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.94.0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out fixed experiment inputs
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Check out the fixed PHP source
+        id: php
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: wasix-org/php
+          ref: f4bfae79d5c19028349082f707930cf0951d23b9
+          path: target/php-wasix-managed-access-probe/source/php
+          persist-credentials: false
+
+      - name: Check out fixed WASIX dependencies
+        id: deps
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: wasix-org/php-wasix-deps
+          ref: b77ecbede97aba2df32c86eaeb54ff9f5e44f543
+          path: target/php-wasix-managed-access-probe/source/php-wasix-deps
+          persist-credentials: false
+
+      - name: Preseed the fixed parser
+        id: parser
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nikic/PHP-Parser
+          ref: f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2
+          path: target/php-wasix-managed-access-probe/source/php/build/PHP-Parser-5.6.1
+          persist-credentials: false
+
+      - name: Install native build tools only
+        id: packages
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential autoconf automake bison re2c pkg-config wabt \
+            curl xz-utils tar php-cli php-xml cmake ninja-build \
+            libzstd-dev zlib1g-dev libxml2-dev libncurses-dev libffi-dev
+
+      - name: Verify and place fixed WASIX tools
+        id: tools
+        run: python3 experiments/php-wasix-cgi-build/prepare.py --record
+
+      - name: Build the same three-patch PHP CGI candidate
+        id: module
+        run: python3 experiments/php-wasix-managed-access-probe/build.py --record
+
+      - name: Fetch fixed host dependencies only
+        id: rust
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.0 --profile minimal --no-self-update
+          cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
+          python3 experiments/wpdb-rpc-probe/prepare_driver.py
+          cargo fetch --locked --manifest-path experiments/php-wasix-wp-bootstrap-probe/Cargo.toml
+          cargo fetch --locked --manifest-path experiments/php-wasix-cgi-framing-probe/Cargo.toml
+
+      - name: Build and verify unchanged bootstrap host without running it
+        id: bootstrap
+        run: python3 experiments/php-wasix-wp-bootstrap-probe/build_check.py
+
+      - name: Prepare unchanged native framing sources without native binaries
+        id: guest
+        run: |
+          set -euo pipefail
+          python3 experiments/php-cgi-framing-probe/prepare.py
+          python3 experiments/php-wasix-cgi-framing-probe/prepare.py
+
+      - name: Build and verify independent framing host and pure WAT units
+        id: host
+        run: python3 experiments/php-wasix-cgi-framing-probe/build_check.py
+
+      - name: Compare all eight fresh CGI frames using the same PHP WASIX module
+        id: contract
+        run: python3 experiments/php-wasix-cgi-framing-probe/run_check.py --record
+
+      - name: Record diagnostic CI stage outcomes
+        if: ${{ always() }}
+        env:
+          STAGE_PHP: ${{ steps.php.outcome }}
+          STAGE_DEPS: ${{ steps.deps.outcome }}
+          STAGE_PARSER: ${{ steps.parser.outcome }}
+          STAGE_PACKAGES: ${{ steps.packages.outcome }}
+          STAGE_TOOLS: ${{ steps.tools.outcome }}
+          STAGE_MODULE: ${{ steps.module.outcome }}
+          STAGE_RUST: ${{ steps.rust.outcome }}
+          STAGE_BOOTSTRAP: ${{ steps.bootstrap.outcome }}
+          STAGE_GUEST: ${{ steps.guest.outcome }}
+          STAGE_HOST: ${{ steps.host.outcome }}
+          STAGE_CONTRACT: ${{ steps.contract.outcome }}
+        run: |
+          python3 - <<'PY_STAGE'
+          import json, os, pathlib
+          p=pathlib.Path('experiments/php-wasix-cgi-framing-probe/evidence/ci-stages.json')
+          p.parent.mkdir(exist_ok=True)
+          value={'schema':'recastpress.php-wasix-cgi-framing-ci-stages.v0.5',
+              'source_commit':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],
+              'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],
+              'stages':{k[6:].lower():v for k,v in os.environ.items() if k.startswith('STAGE_')}}
+          p.write_text(json.dumps(value,indent=2)+'\n')
+          PY_STAGE
+
+      - name: Upload diagnostic JSON evidence only
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: php-wasix-cgi-framing-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            experiments/php-wasix-cgi-framing-probe/evidence/linux-check.json
+            experiments/php-wasix-cgi-framing-probe/evidence/linux-build.json
+            experiments/php-wasix-wp-bootstrap-probe/evidence/linux-build.json
+            experiments/php-wasix-cgi-framing-probe/evidence/ci-stages.json
+            experiments/php-wasix-managed-access-probe/evidence/build.json
+            experiments/php-wasix-cgi-build/evidence/toolchain.json
+            target/php-wasix-cgi-framing-probe/prepared.json
+            target/php-cgi-framing-probe/prepared.json

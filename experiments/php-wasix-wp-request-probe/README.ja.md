@@ -35,3 +35,7 @@ source `b2ddc09`の[診断CI 41612482169](https://github.com/KANIKAMA-Carcinizat
 この分類と有限FSの処理から、マウント直後の重複`/`が、マウント内の先頭`//`として再判定される不整合を特定した。新profileだけでマウント内の区切りを補正し、全体先頭`//`・不正文字・欠損やfileを通過する探索・ルート脱出の拒否は維持する。旧FSと旧実験は変更しない。元拒否条件からの互換性変更であることをderivationにも明記する。
 
 49 unit版には、この探索の回帰、約152 KBの分割CGI出力の全byte／順序／EOF保持、外側JSON CGIのContent-Type等の固定profile検証を追加した。追加診断はfixtureが生成するbyte完全一致のJSON接頭辞を数え、一意な場合だけ安全なPHP観測を取り出す。任意の`{`探索・未知prefixの公開は行わない。位置・UTF-8可否・固定分類を記録しても、不正なCGI本文は受け入れず、HTMLの日時・属性・空白やheaderを正規化しない。実Wasmでの修正効果と完全応答一致は次のCIで確認する。
+
+source `e84bd43`の[CI 41616419086](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41616419086)では両DBでinvalidが0になり、内側のstatus 200・全3header・HTML 69,399 B／SHA-256 `ef43f26984536cae43c4e703edef98dbaaf2bca79cc972a4373bf27f01cabdd1`が固定native応答に完全一致した。追加診断が取り出したPHP報告はcomplete／passed trueだった。ただし外側CGIはheader 0のままで、JSONの前に480 BのPHP warning（全本文はUTF-8、CR 0／LF 5、JSON接頭辞offset 480）があり、元の`cgi_complete_json_line`で失敗した。合格とは扱わず、原観測を両DB別に保存した。
+
+PHP報告のwarning_count 0は最終emit前の値である。finallyではerror handlerを戻してからbuffer破棄・JSON化・header操作・echoを行うため、この値を外側警告の不存在とは解釈しない。53 unit版は、実WASIの2 iovec／空iovec／大容量分割writeの正常動作をpure WATで確認し、警告の固定文言と既知bootstrap sourceの行番号だけを分類する。PHPの順序・元WP・合格条件は変更しない。[独立した通常PHPの8条件](../php-cgi-framing-probe/README.ja.md)と[同じWasm候補の比較host](../php-wasix-cgi-framing-probe/README.ja.md)も別に用意し、サイズ・buffer・header削除のどの境界で再現するかを切り分ける。
