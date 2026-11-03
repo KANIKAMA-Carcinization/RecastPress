@@ -18,3 +18,19 @@ python -B experiments/php-wasix-wp-request-context-probe/prepare.py --verify-onl
 preparerは既存Wasm homeのportable source metadataを読み取る。native contextのWindows専用inputs／package verifierは呼ばず、追跡済みPHP sourceと固定native証拠だけを読む。元full WP sourceとmanifestを用意した後ならLinuxでも同じ処理を行える。native binaries、PHP、Wasm、DB、networkを実行しない。
 
 製品runtime、任意theme／plugin、HTTP listener、キャッシュ、raw非UTF-8 ERRやnative metadata全互換、全資源予算の製品受入は対象外のままである。旧仕様・旧証拠・旧実装は書き換えない。
+
+## buildと実行の検証
+
+source `f9f1f61`の[Windows build](evidence/windows-build.json)は58 unit／195 inputs・locked/offline buildが成功した。55 prepared inputs／7 fixturesも固定し、元起動hostの31 unit／145 inputsと元theme hostの53 unit／172 inputsについて、receipt・host binary・unit binaryの前後一致を確認した。unitには既存のplain WATによるwrite／EOF回帰も含む。固定PHP WasmのWindows実行を実証した記録ではない。
+
+```powershell
+python -B experiments/php-wasix-wp-request-context-probe/build_check.py
+```
+
+Linuxでは元installer・fresh readの後、home・missing・missing-repeatをそれぞれ新規所有host processで実行する。各hostでmoduleを1回compileし、PHP／WASI／actorをfreshにするため、要求3件のmodule compile数も3となる。module cacheやhost process間共有の実証にはしない。
+
+```sh
+python3 experiments/php-wasix-wp-request-context-probe/run_check.py --backend mysql --record
+```
+
+[CI 41742369145](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41742369145)で両DBの実行結果を検証する。CI成功と元sourceへの証跡照合が完了するまで、同じcontext／404のWasm受入は未完了である。
