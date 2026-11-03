@@ -42,7 +42,7 @@ function rp_context_public(): void {
     $uri = $missing ? '/?p=2147483647' : '/';
     foreach (array_keys(getenv()) as $name) {
         if (preg_match('/\A(?:HTTP_|CONTENT_|REQUEST_|SCRIPT_|SERVER_|REDIRECT_|GATEWAY_|PHP_|RP_)/i', $name)
-            || in_array(strtoupper($name), ['PHPRC', 'TEMP', 'TMP', 'DOCUMENT_ROOT'], true)) { putenv($name); }
+            || in_array(strtoupper($name), ['PHPRC', 'TEMP', 'TMP', 'DOCUMENT_ROOT', 'QUERY_STRING'], true)) { putenv($name); }
     }
     foreach (['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => $uri, 'HTTP_HOST' => 'rp-fixture.invalid',
         'SERVER_NAME' => 'rp-fixture.invalid', 'SERVER_PORT' => '80', 'SERVER_PROTOCOL' => 'HTTP/1.1',
@@ -66,6 +66,9 @@ function rp_context_snapshot(string $stage): array {
     rp_boot_check(($_SERVER['REQUEST_METHOD'] ?? null) === 'GET' && ($_SERVER['REQUEST_URI'] ?? null) === $uri
         && ($_SERVER['QUERY_STRING'] ?? null) === $query && ($_SERVER['HTTP_HOST'] ?? null) === 'rp-fixture.invalid'
         && $_GET === $expected_get && $_REQUEST === $expected_get && $_POST === [] && $_COOKIE === [], 'public_context_changed');
+    $environment_query = getenv('QUERY_STRING');
+    rp_boot_check(getenv('REQUEST_METHOD') === 'GET' && getenv('REQUEST_URI') === $uri
+        && $environment_query === ($missing ? $query : false), 'public_environment_context_changed');
     $absent = ['CONTENT_TYPE', 'CONTENT_LENGTH', 'HTTP_ACCEPT', 'HTTP_COOKIE', 'HTTP_AUTHORIZATION', 'PHP_AUTH_USER', 'PHP_AUTH_PW'];
     foreach ($absent as $name) { rp_boot_check(!isset($_SERVER[$name]) && getenv($name) === false, 'private_transport_leaked'); }
     rp_boot_check(getenv('PHPRC') === false && getenv('TEMP') === false && getenv('TMP') === false
@@ -77,6 +80,8 @@ function rp_context_snapshot(string $stage): array {
         && ini_get('display_errors') === '1', 'public_json_or_error_display_profile');
     return ['stage' => $stage, 'method' => $_SERVER['REQUEST_METHOD'], 'uri' => $_SERVER['REQUEST_URI'],
         'query' => $_SERVER['QUERY_STRING'], 'get' => $_GET, 'post' => $_POST, 'cookie' => $_COOKIE, 'request' => $_REQUEST,
+        'environment_query_present' => $environment_query !== false,
+        'environment_query' => $environment_query === false ? null : $environment_query,
         'content_type_present' => false, 'content_type' => null, 'content_length_present' => false, 'content_length' => null,
         'http_accept_present' => false, 'http_accept' => null, 'auth_or_cookie_header_present' => false,
         'private_path_environment_present' => false, 'script_filename_matches_public_entry' =>

@@ -92,6 +92,7 @@ def environment(directory, case):
 def expected_snapshot(case, stage):
     route = prepared.CASES[case]; available = stage != 'before_bootstrap'
     return {'stage': stage, 'method': 'GET', 'uri': route['uri'], 'query': route['query'], 'get': route['get'],
+        'environment_query_present': case == 'missing', 'environment_query': route['query'] if case == 'missing' else None,
         'post': [], 'cookie': [], 'request': route['get'], 'content_type_present': False, 'content_type': None,
         'content_length_present': False, 'content_length': None, 'http_accept_present': False, 'http_accept': None,
         'auth_or_cookie_header_present': False, 'private_path_environment_present': False,
