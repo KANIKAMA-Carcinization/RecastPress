@@ -1,0 +1,219 @@
+{
+  "schema": "recastpress.php-cgi-framing-prepared.v0.5",
+  "source_files": {
+    "experiments/php-cgi-framing-probe/fixtures/common.php": {
+      "bytes": 2961,
+      "sha256": "f9cc42bfcb76d8a1abf8e736715515fa7c89ac8549bd26834a3c6fa0fe01a6c5"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-small-plain-keep.php": {
+      "bytes": 217,
+      "sha256": "b29ef78f4b97259976c20b7caf911c6242b8ade1adc2f7484777bde207800377"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-small-plain-remove.php": {
+      "bytes": 218,
+      "sha256": "d7435c38d86a3a62e39f9240249af1f9f03a9109dc3ac77d9c55afe4f5c25979"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-small-buffered-keep.php": {
+      "bytes": 219,
+      "sha256": "21fb118b4d48804ee0690498b690285af7fa1f0df73fc06483bb106c647f51fc"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-small-buffered-remove.php": {
+      "bytes": 220,
+      "sha256": "8192e5544a8dc9494c66e0b4a3b09b6d6990e227dbab63d9b0ed0ad97be73f7a"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-large-plain-keep.php": {
+      "bytes": 220,
+      "sha256": "10ea682a8cbee08b86d1b198c8a16787f26642ae830943c60e5f49798da96543"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-large-plain-remove.php": {
+      "bytes": 221,
+      "sha256": "b33e55f078694e7d4c2611b249cc84528c497f2a62dd6023316bd653e771e907"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-large-buffered-keep.php": {
+      "bytes": 222,
+      "sha256": "e6c4785845c76070610655f60c90246730a8b357eab816e500d415071184acae"
+    },
+    "experiments/php-cgi-framing-probe/fixtures/case-large-buffered-remove.php": {
+      "bytes": 223,
+      "sha256": "bba0086efd14c1bee9de8c8009613962d4717f50d219283263e6c08ceb0d21a9"
+    },
+    "experiments/php-cgi-framing-probe/prepare.py": {
+      "bytes": 4273,
+      "sha256": "67d5cad4ddc7e213f701b1534d48e703be6e190e27ba6f364bbcc6086f76c424"
+    },
+    "experiments/php-cgi-framing-probe/check.py": {
+      "bytes": 9996,
+      "sha256": "14145b7ede78a03728bb290fc8eb9188923bb585a37f174b59dc31918c709d69"
+    }
+  },
+  "cases": [
+    {
+      "case": "small-plain-keep",
+      "script": "case-small-plain-keep.php",
+      "payload_bytes": 64,
+      "buffered": false,
+      "header_remove": false,
+      "expected_body": {
+        "bytes": 389,
+        "sha256": "15a779ff101925a6f51556fcfab75c32bb28431d412febd6db4b6768b97f0986"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "582d506f77657265642d42793a205048502f382e352e3132",
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 449,
+        "sha256": "3ad03d4013399f912098abb71a85e748c1d881cef57982ec6ea5fcf1d3b561ef"
+      }
+    },
+    {
+      "case": "small-plain-remove",
+      "script": "case-small-plain-remove.php",
+      "payload_bytes": 64,
+      "buffered": false,
+      "header_remove": true,
+      "expected_body": {
+        "bytes": 390,
+        "sha256": "78abe1c989f54084103c45ee76b5d139fc3a91d9b703675209c8d232374ebaf0"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 424,
+        "sha256": "4d855d93c30db529a0fd272efe719a07536d76f424890e4e5e919e0e9d1eb868"
+      }
+    },
+    {
+      "case": "small-buffered-keep",
+      "script": "case-small-buffered-keep.php",
+      "payload_bytes": 64,
+      "buffered": true,
+      "header_remove": false,
+      "expected_body": {
+        "bytes": 391,
+        "sha256": "9facb223a0e9276f277a18af459d762c8fd43610f32f81086831ca9af8777cb5"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "582d506f77657265642d42793a205048502f382e352e3132",
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 451,
+        "sha256": "15385a34c2ba66c9344553cc0b077892651d61164f4f9db4350484583c01c0a5"
+      }
+    },
+    {
+      "case": "small-buffered-remove",
+      "script": "case-small-buffered-remove.php",
+      "payload_bytes": 64,
+      "buffered": true,
+      "header_remove": true,
+      "expected_body": {
+        "bytes": 392,
+        "sha256": "9ffdfe0d5922e400265c8f014c5b0b8c27e7ebe2bd6ce428391563287652d4df"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 426,
+        "sha256": "394d7c8f21720410f31bf3594d7271050dfc0ed51737db67ff3b4da0cd8c54bf"
+      }
+    },
+    {
+      "case": "large-plain-keep",
+      "script": "case-large-plain-keep.php",
+      "payload_bytes": 70000,
+      "buffered": false,
+      "header_remove": false,
+      "expected_body": {
+        "bytes": 140264,
+        "sha256": "4035294cc58b4b3438dd07d7dddb21f69f60b1d12e7cb8fc32a09df840baf43d"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "582d506f77657265642d42793a205048502f382e352e3132",
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 140324,
+        "sha256": "c72f82ea0a412e664d94b8d1ee16501734ea76959f1e80c4a2e0af0b2ca503d9"
+      }
+    },
+    {
+      "case": "large-plain-remove",
+      "script": "case-large-plain-remove.php",
+      "payload_bytes": 70000,
+      "buffered": false,
+      "header_remove": true,
+      "expected_body": {
+        "bytes": 140265,
+        "sha256": "3f4071a40a1501f63508ecbb697abafa080dc24a9897c3d9d11baab9134dd8dd"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 140299,
+        "sha256": "28d0685b03f178512f512f7abd9bcebb3bf139dbabfd893f55059c1aed08226f"
+      }
+    },
+    {
+      "case": "large-buffered-keep",
+      "script": "case-large-buffered-keep.php",
+      "payload_bytes": 70000,
+      "buffered": true,
+      "header_remove": false,
+      "expected_body": {
+        "bytes": 140266,
+        "sha256": "7984908e50e1b14fb5217dc96c3908e9e57965b6028424eb69eb36983ae29a03"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "582d506f77657265642d42793a205048502f382e352e3132",
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 140326,
+        "sha256": "ec9bf0986cf50d797953ecb686725870c1cd3aae5636fce368be9905e2935ffe"
+      }
+    },
+    {
+      "case": "large-buffered-remove",
+      "script": "case-large-buffered-remove.php",
+      "payload_bytes": 70000,
+      "buffered": true,
+      "header_remove": true,
+      "expected_body": {
+        "bytes": 140267,
+        "sha256": "73ac478cacacffbd3fbd0dd00510fd4201869f821f0ff8016e21d1e421a356fc"
+      },
+      "expected_status": 200,
+      "expected_header_lines_hex": [
+        "436f6e74656e742d547970653a206170706c69636174696f6e2f6a736f6e"
+      ],
+      "expected_cgi_wire": {
+        "bytes": 140301,
+        "sha256": "97382dd1878b799fae072dc2b600780c08bd78766b7f549336a667a7284ffdf8"
+      }
+    }
+  ],
+  "cgi_context": {
+    "query": "rp_request=1",
+    "request_uri": "/__rp_framing.php?rp_request=1",
+    "method": "GET",
+    "content_length": 0,
+    "argc": 0
+  },
+  "php_executed": false,
+  "wasm_executed": false,
+  "database_connected": false,
+  "network_calls_made": false,
+  "product_runtime_selected": false
+}

@@ -1,0 +1,101 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41621940003,
+  "run_attempt": 1,
+  "head_sha": "4002816b7da8ecf3265b154f9a764639c8476f53",
+  "run_conclusion": "success",
+  "job": {
+    "id": 125869557909,
+    "name": "Cranelift eight CGI frames without WP or DB",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed host dependencies only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host without running it",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare unchanged native framing sources without native binaries",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify independent framing host and pure WAT units",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare all eight fresh CGI frames using the same PHP WASIX module",
+        "conclusion": "success"
+      },
+      {
+        "name": "Record diagnostic CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload diagnostic JSON evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13224363838,
+    "name": "php-wasix-cgi-framing-1",
+    "size_in_bytes": 84518,
+    "digest": "sha256:ee17b25aab9c6d01c50e5d26f6eec34d384332ec9c682a249b32a1bad1650b0d"
+  }
+}
