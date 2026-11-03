@@ -269,7 +269,9 @@ def positive_gate(data,raw,source,backend):
     return {'both_install_and_read_verified':True,'prepared':summary,'managed':managed,
         'runtime_source_inputs':len(run['input_files']),'host_units':len(host['units']['tests']),
         'source_operation_limit':checker['source_operation_limit'],
-        'public_host_json_reserialization_verified':True,'raw_dropin_flag_omitted_by_public_projection':True,
+        'public_host_json_reserialization_verified':True,
+        'raw_dropin_flag_omitted_by_public_projection':any('owned_db_dropin_loaded' not in run['observations'][mode]['php_result']
+            for mode in ['install','read']),
         'dropin_raw_php_assertion_bound_to_frozen_source':True,
         'private_query_reply_cgi_and_nonce_digests_recomputed_offline':False}
 

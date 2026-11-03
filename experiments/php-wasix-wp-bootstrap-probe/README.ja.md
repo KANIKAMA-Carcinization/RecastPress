@@ -2,7 +2,7 @@
 
 固定3patch PHP CGI候補に、変更しないWordPress 7.1.3全core・theme・pluginと、所有する`wp-content/db.php`だけを重ねる新実験。通常native PHPの[MySQL](../wp-bootstrap-probe/evidence/windows-mysql-native.json)／[MariaDB](../wp-bootstrap-probe/evidence/windows-mariadb-native.json)のinstall・read公開観測を比較基準とする。元native source／記録と既存Wasm27＋CRUD15ケースは変更しない。
 
-`prepare.py`は元full sourceの3,782ファイル／467ディレクトリ／110,077,999 bytesと元archiveを既存preparerで読み取り照合し、新PHP6ファイル・元native基準・許容差分をmetadataへ固定する。coreは`/wordpress`へ、追加`db.php`は同tree内の1ファイルだけとして重ねる。追加以外のcore bytesを変えず、`SHORTINIT`を使わず元`wp-settings.php`と元`wp_install()`を実行する計画である。PHPのsource inventoryも元3,782ファイルを検査し、追加dropinだけは別の固定SHAで照合する。
+`prepare.py`は元full sourceの3,782ファイル／467ディレクトリ／110,077,999 bytesと元archiveを既存preparerで読み取り照合し、新PHP6ファイル・元native基準・許容差分をmetadataへ固定する。coreは`/wordpress`へ、追加`db.php`は同tree内の1ファイルだけとして重ねる。追加以外のcore bytesを変えず、`SHORTINIT`を使わず元`wp-settings.php`と元`wp_install()`を実行する。PHPのsource inventoryも元3,782ファイルを検査し、追加dropinだけは別の固定SHAで照合する。
 
 private immutable `/rp-bootstrap/context.json`には厳密schema・mode・nonce・8個のsalt・install時だけのadmin passwordを与える。DBの実host／port／user／passwordはguestへ渡さず、DB定数はdummy値である。`require_wp_db()`が所有dropinを発見し、元wpdbを継承するadapterをglobal `$wpdb`へ配置する。専有Rust actorの接続はinstaller時はschema限定DDL＋CRUD、read時はCRUD権限とし、同じ所有DBとsaltを使う別PHP／WASI processで比較する。管理資格情報はguestへ渡さない。
 
@@ -20,8 +20,30 @@ python -B experiments/php-wasix-wp-bootstrap-probe/prepare.py
 python -B experiments/php-wasix-wp-bootstrap-probe/build_check.py
 ```
 
-Linux CIは所有MySQL／MariaDBの固定imageで実接続する。Windowsでのlint・接続前拒否やRust buildだけを、PHP WASIXでのinstall／read成功へ読み替えない。現時点で新fixtureのnative CGI lint6、private contextの有効2／拒否10、CGI guardの接続前拒否6と、準備metadataの検証を確認した。新結合のinstall／read完遂、HTTP listener、theme rendering、全plugin互換、製品runtimeの採用、全資源の即時回収は未検証である。
+## 両DBでの通常起動
 
-最初のMySQL実測[CI 41595534740](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41595534740)では、元`wp-settings.php`の正常bootstrapに到達した後、`wp_install`中に初期候補1,024 operationsへ到達して`rpc_channel_closed_or_budget`で失敗した。hello 1／query 407／escape 616／close 0、request 259,279 bytes／reply 205,203 bytes、実行1,457 msであり、byte上限や時間上限へ達したという観測ではない。finallyからの明示closeもcapで送れず、RPCは`close_missing`となった。未読応答なし・channel封印、actor側fallback物理切断／join／exit、stdout／stderr EOFとcontainer正常清掃は成立したが、成功したRPC contractやinstaller完了へ読み替えない。
+source `5c531b301036f90902abb13965753f8c9e369b8b` の[CI 41598717225](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41598717225)で、同じ3patch CGI候補からMySQL／MariaDBへのinstallとfresh readが成功した。Windowsの31 unit・通常ビルドとPHP非接続検査に加え、各Linux jobでも31 unitと通常ビルドを確認した。元`wp-settings.php`・`wp_install()`・init／wp_loaded、所有dropinの読込、公開options/posts、既知12 table、sourceの実行前後一致、明示close・物理切断・actor終了/join・channel封印・EOF・所有containerの正常終了/削除を通過した。
 
-この失敗を保持し、新profileだけoperation上限を4,096へ広げる。行・列・cell・raw・frame・総byte・時間の各上限は変更しない。managed accessも43照会（allowed 32／missing 11／invalid 0／IO 0）、全handle closed、full 5-byte reply読了までの観測である。4,096候補でのinstall／read成功は次のCI結果で別に受け入れる。
+| 観測（両DB共通） | install | fresh read |
+| --- | --- | --- |
+| hello／query／escape／close | 1／527／794／1 | 1／58／102／1 |
+| 全RPC操作数 | 1,323 | 162 |
+| 一結果の最大行数／列数 | 23／23 | 100／23 |
+| 最大reply frame | 19,182 B | 64,975 B |
+| 公開autoload集計 件数／最大値 | 100／3,133 B | 115／23,778 B |
+
+公開観測19 fieldsは固定Windows native基準と一致した。同じjobでnative PHPを実行した比較ではない。autoload115件という集計と、実RPCで観測した最大100行は異なる観測である。今回の最大replyは64 KiB未満であり、別の合成115行実験の79,758 Bを通常WPの実replyとして扱わない。実結果の23列は旧16列を超える。read後のDBにあるautoload最大値23,778 Bは旧4 KiB/cellを超えるが、この集計だけでは、その値を今回の個々のRPCでreadしたかを断定しない。元SQLの変更・結果truncate・戻り値の補正はしていない。
+
+[MySQLの取込記録](evidence/ci-41598717225-mysql/provenance.json)／[MariaDBの取込記録](evidence/ci-41598717225-mariadb/provenance.json)では、各586件のsource binding・149 Git blob、全6原JSON、API metadata、artifactのsize/SHA、3patch/source/tool/moduleの対応と元native比較を照合した。private SQL・結果・CGI bodyのdigestはCIによる観測として保持し、offlineで原bytesやnonceを復元・再計算したとはしない。バイナリや期限付き取得URLはGitへ含めない。
+
+## 初回停止と上限の補完
+
+source `0b9905f7b5fd499439f8cfb1dac167fe6bc77e5a` の[CI 41595534740](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41595534740)では、両DBで通常bootstrap完了後、installerが初期1,024操作へ達して`rpc_channel_closed_or_budget`で停止した。内訳はhello1／query407／escape616／close0だった。MySQLはrequest259,279 B／reply205,203 B、MariaDBは259,287 B／205,266 Bで、byte・時間上限の到達ではなかった。
+
+finallyからの明示closeも送れず、RPCは`rpc_close_missing`となった。actor側fallbackの物理切断・join・exit、未読応答なし、EOFとcontainer正常清掃は成立したが、成功したRPC contractへ変更しない。[MySQL原記録](evidence/ci-41595534740-mysql/provenance.json)／[MariaDB原記録](evidence/ci-41595534740-mariadb/provenance.json)を各559 binding・146 Git blobの照合付きで保持した。
+
+その後、この新profileの操作数だけ4,096へ広げ、他の時間・frame・合計byte・行・列・cell・metadata上限と元WPのSQL処理を維持した。上記成功はこの有限候補での成立であり、製品上限の確定ではない。
+
+## 残る境界
+
+通常bootstrapとinstallerの成立までの実験であり、HTTP listener・theme HTML描画・実plugin・管理画面・REST・cron・全wpdb互換は別に確認する。native metadata/filemtimeの一致、非UTF-8 ERRのraw保持、統合時の全資源上限・即時回収、製品runtime採用は未受入である。次に[元テーマのnative CGI基準](../wp-request-probe/README.ja.md)と同じ要求をphp-wasmへ接続する。
