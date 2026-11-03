@@ -38,9 +38,13 @@ frame 16KiB／reply 64KiB、総要求128KiB／総応答512KiB、64操作、16行
 
 ## 追加CRUD profile
 
-通常PHPとRust接続で両DB各15ケースが一致した[標準更新ヘルパーcorpus](../wpdb-crud-probe/README.ja.md)を、同じ実行候補へ接続した。`--corpus crud`で、CGI入口と組込みmysqliのprofile判定だけを固定変換したPHPを選ぶ。元corpus本文・元adapter class・元WP sourceは変更しない。追加profileの実Wasm結果はLinux CIで確認する段階であり、前回の27ケースの成功と区別する。
+通常PHPとRust接続で両DB各15ケースが一致した[標準更新ヘルパーcorpus](../wpdb-crud-probe/README.ja.md)を、同じ実行候補へ接続した。`--corpus crud`で、CGI入口と組込みmysqliのprofile判定だけを固定変換したPHPを選ぶ。元corpus本文・元adapter class・元WP sourceは変更しない。
 
 Linux jobは同じ生成moduleを使って標準27とCRUD15を順に実行し、DB container・nonce・Rust所有session・PHP/WASI環境は試験ごとに新設する。CRUDのschema DDLは通常PHP基準の元literalと同じbytesを使う。期待値は固定Windows native JSONとし、API引数・floatのbytes・戻り値・公開状態・query差分・親schema照会を含む全16 SQL・sessionを比較する。40 RPCと正常清掃を確認するまで合格にしない。
+
+[CI 41550553907](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41550553907)、source `60b4e5d`で両DBの両profileが通過した。既存27ケースの回帰に加え、追加15ケースも固定native基準と全観測一致。各20 unit、CRUDの親schema照会・公開16 SQL・40 RPC（hello 1/query 20/escape 18/close 1）、完全CGI/EOF、物理disconnect・actor exit/join、別admin最終COUNT 0、所有containerの正常停止・削除を確認した。[MySQL証跡](evidence/ci-41550553907-mysql/provenance.json)・[MariaDB証跡](evidence/ci-41550553907-mariadb/provenance.json)は各6個の原JSONと対応づける。既存profileとCRUDではcontainer/runを分け、同jobのbinary・module・固定入力を共通に照合する。
+
+この成功は有効なASCII入力の固定42ケースまでであり、通常WP bootstrap・非ASCII／不正入力・name以外のmetadata・raw ERR・TLS・全wpdbの互換性や製品採用の受入ではない。
 
 ```powershell
 python experiments/php-wasix-wpdb-probe/prepare.py

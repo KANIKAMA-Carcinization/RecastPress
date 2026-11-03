@@ -1,0 +1,97 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41550553907,
+  "run_attempt": 1,
+  "head_sha": "60b4e5d68c76c04c8b84bbaa583cd94d23a45987",
+  "run_conclusion": "success",
+  "job": {
+    "id": 125636778593,
+    "name": "Cranelift wpdb / mariadb",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare fifteen readonly guest files for both corpora",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify units and execute php-wasm wpdb against an owned database",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare standard CRUD helpers through php-wasm against a fresh owned database",
+        "conclusion": "success"
+      },
+      {
+        "name": "Record CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload JSON evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13193071688,
+    "name": "php-wasix-wpdb-mariadb-1",
+    "size_in_bytes": 86666,
+    "digest": "sha256:d10722b2bbfe326ff54556c5cc917d1960e3694c85f70e5ce2f975b7d697f223"
+  }
+}

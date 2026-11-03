@@ -1,0 +1,298 @@
+{
+  "schema": "recastpress.php-wasix-wpdb-prepared.v0.5",
+  "outcome": "fixed_fifteen_guest_sources_prepared",
+  "input_files": {
+    "experiments/php-wasix-wpdb-probe/prepare.py": "2d9b0e6ab95a13e2700bb69801a5ca19b6276dd6247eb4525cfb7a042a357eb3",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303",
+    "experiments/wpdb-bridge-probe/fixtures/bridge.php": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f",
+    "experiments/wpdb-bridge-probe/fixtures/helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1",
+    "experiments/wpdb-bridge-probe/fixtures/adapter.php": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d",
+    "experiments/wpdb-bridge-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+    "experiments/php-wasix-wpdb-probe/fixtures/bridge.php": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca",
+    "experiments/php-wasix-wpdb-probe/fixtures/helpers.php": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
+    "experiments/php-wasix-wpdb-probe/fixtures/adapter.php": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696",
+    "experiments/php-wasix-wpdb-probe/fixtures/corpus.php": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+    "experiments/wpdb-crud-probe/fixtures/bridge.php": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa",
+    "experiments/wpdb-crud-probe/fixtures/entry.php": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa",
+    "experiments/wpdb-crud-probe/fixtures/corpus.php": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/bridge.php": "bd57b08ac283def2bf219129ddf48f5bdbc10ea2cca5cc07d8495fc2d4ab63f3",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/entry.php": "954ef332a1ea2e13c321e5a999fe783bb0cb29a8658eb542243f6002e69ebd11",
+    "experiments/php-wasix-wpdb-probe/crud-fixtures/corpus.php": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+  },
+  "derivation": {
+    "fixed_old_source_commit": "4fda5212eeafa01a57116d7024001150c8a39dde",
+    "old_git_objects_verified_by_preparer": false,
+    "old_sources": {
+      "bridge.php": {
+        "bytes": 122,
+        "sha256": "e90449a763e1ff80bae675e56d331864de9ac34b1855abc11b836c3c44accb4f"
+      },
+      "helpers.php": {
+        "bytes": 12603,
+        "sha256": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1"
+      },
+      "adapter.php": {
+        "bytes": 15853,
+        "sha256": "e153d831fe35a2e40d4ffc34f434b9c4915e4a233ad4ffbb44f2ee90e2442a6d"
+      },
+      "corpus.php": {
+        "bytes": 6838,
+        "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+      }
+    },
+    "derived_sources": {
+      "bridge.php": {
+        "bytes": 164,
+        "sha256": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca"
+      },
+      "helpers.php": {
+        "bytes": 11721,
+        "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7"
+      },
+      "adapter.php": {
+        "bytes": 15447,
+        "sha256": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696"
+      },
+      "corpus.php": {
+        "bytes": 6838,
+        "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf"
+      }
+    },
+    "corpus_bytes_unchanged": true,
+    "adapter_business_bytes_unchanged": true,
+    "adapter_business_sha256": "778bb2984adfff4ccee9554c34aec2e92202acb686401df23aa1e5748fcd22d8",
+    "allowed_helper_changes": [
+      "CGI-GET-query-argc-and-env-nonce-entry-only",
+      "wasm-executed-context-flag",
+      "fixed-WASIX-built-in-mysqli-profile-and-opaque-RPC-handle"
+    ],
+    "allowed_transport_changes": [
+      "file-channel-open",
+      "request-and-reply-rewinds",
+      "no-socket-timeouts",
+      "channel-stat-labels"
+    ],
+    "crud": {
+      "fixed_old_source_commit": "255fac3ceefd2548c8a57d82e2b15957fb9610c9",
+      "old_git_objects_verified_by_preparer": false,
+      "old_sources": {
+        "bridge.php": {
+          "bytes": 86,
+          "sha256": "a9280502cde2346c87fd61ef0a5aecd7262f21677ce90ebd224f757fd82ca9fa"
+        },
+        "entry.php": {
+          "bytes": 9507,
+          "sha256": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa"
+        },
+        "corpus.php": {
+          "bytes": 5186,
+          "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+        }
+      },
+      "derived_sources": {
+        "bridge.php": {
+          "bytes": 128,
+          "sha256": "bd57b08ac283def2bf219129ddf48f5bdbc10ea2cca5cc07d8495fc2d4ab63f3"
+        },
+        "entry.php": {
+          "bytes": 9508,
+          "sha256": "954ef332a1ea2e13c321e5a999fe783bb0cb29a8658eb542243f6002e69ebd11"
+        },
+        "corpus.php": {
+          "bytes": 5186,
+          "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950"
+        }
+      },
+      "corpus_bytes_unchanged": true,
+      "crud_api_business_bytes_unchanged": true,
+      "allowed_changes": [
+        "CGI-content-type-header",
+        "wasm-executed-context-flag",
+        "fixed-WASIX-built-in-mysqli-profile"
+      ]
+    }
+  },
+  "source_archive": {
+    "path": ".reference/wordpress-7.1.3.tar.gz",
+    "bytes": 35368461,
+    "sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "members_checked": 4250,
+    "declared_expanded_bytes_checked": 110077999
+  },
+  "files": [
+    {
+      "source": "experiments/php-wasix-wpdb-probe/fixtures/bridge.php",
+      "guest": "/experiments/wpdb-bridge-probe/fixtures/bridge.php",
+      "bytes": 164,
+      "sha256": "9ea2c849d3462402e33292c0ff5ac1e8007e031c233cce0ca039fc3e7e9a0eca",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/fixtures/helpers.php",
+      "guest": "/experiments/wpdb-bridge-probe/fixtures/helpers.php",
+      "bytes": 11721,
+      "sha256": "1fc2723fbab4a9641d3248db40e49f1d1397f03c0824b58a47aa67807af1cfa7",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/fixtures/adapter.php",
+      "guest": "/experiments/wpdb-bridge-probe/fixtures/adapter.php",
+      "bytes": 15447,
+      "sha256": "dbbadf65715feb0924bb48b9f5b9cb9eacd35e9239a942e019e754b9ffacc696",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/fixtures/corpus.php",
+      "guest": "/experiments/wpdb-bridge-probe/fixtures/corpus.php",
+      "bytes": 6838,
+      "sha256": "b206c4353126cb3416f3935845c43e126f6170837608680f59131c60aa8b34bf",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/crud-fixtures/bridge.php",
+      "guest": "/experiments/wpdb-crud-probe/fixtures/bridge.php",
+      "bytes": 128,
+      "sha256": "bd57b08ac283def2bf219129ddf48f5bdbc10ea2cca5cc07d8495fc2d4ab63f3",
+      "guest_read_only": true,
+      "kind": "derived_crud_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/crud-fixtures/entry.php",
+      "guest": "/experiments/wpdb-crud-probe/fixtures/entry.php",
+      "bytes": 9508,
+      "sha256": "954ef332a1ea2e13c321e5a999fe783bb0cb29a8658eb542243f6002e69ebd11",
+      "guest_read_only": true,
+      "kind": "derived_crud_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-probe/crud-fixtures/corpus.php",
+      "guest": "/experiments/wpdb-crud-probe/fixtures/corpus.php",
+      "bytes": 5186,
+      "sha256": "b0bc90d107e9c095d38bca98bd31d82a325771dcb627dd8859e7f86c86cb0950",
+      "guest_read_only": true,
+      "kind": "derived_crud_fixture"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/load.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/load.php",
+      "bytes": 56475,
+      "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/plugin.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/plugin.php",
+      "bytes": 37123,
+      "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/class-wp-hook.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-hook.php",
+      "bytes": 17584,
+      "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/class-wp-filter-sentinel.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
+      "bytes": 760,
+      "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/class-wpdb.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wpdb.php",
+      "bytes": 121437,
+      "sha256": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/functions.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/functions.php",
+      "bytes": 295481,
+      "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/option.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/option.php",
+      "bytes": 105246,
+      "sha256": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-probe/wp-core/class-wp-error.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-error.php",
+      "bytes": 7514,
+      "sha256": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    }
+  ],
+  "wordpress_files": {
+    "load.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/load.php",
+      "bytes": 56475,
+      "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+    },
+    "plugin.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/plugin.php",
+      "bytes": 37123,
+      "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d"
+    },
+    "class-wp-hook.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/class-wp-hook.php",
+      "bytes": 17584,
+      "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "class-wp-filter-sentinel.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/class-wp-filter-sentinel.php",
+      "bytes": 760,
+      "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+    },
+    "class-wpdb.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/class-wpdb.php",
+      "bytes": 121437,
+      "sha256": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd"
+    },
+    "functions.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/functions.php",
+      "bytes": 295481,
+      "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+    },
+    "option.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/option.php",
+      "bytes": 105246,
+      "sha256": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0"
+    },
+    "class-wp-error.php": {
+      "path": "target/php-wasix-wpdb-probe/wp-core/class-wp-error.php",
+      "bytes": 7514,
+      "sha256": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94"
+    }
+  },
+  "wordpress_version": "7.1.3",
+  "guest_path_labels": "previous experiment mirror paths; new compiled-source hashes are separate",
+  "full_wordpress_bootstrap": false,
+  "wordpress_executed": false,
+  "wasm_executed_by_preparer": false,
+  "native_php_executed_by_preparer": false,
+  "network_used_by_preparer": false,
+  "guest_network_enabled": false,
+  "guest_readonly_enforcement_executed": false,
+  "wordpress_raw_source_git_objects_verified": false,
+  "product_abi_selected": false,
+  "inputs_unchanged": true
+}
