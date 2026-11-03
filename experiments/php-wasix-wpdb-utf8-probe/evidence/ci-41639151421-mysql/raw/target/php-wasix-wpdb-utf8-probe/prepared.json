@@ -1,0 +1,370 @@
+{
+  "schema": "recastpress.php-wasix-wpdb-utf8-prepared.v0.5",
+  "outcome": "fixed_thirteen_utf8_guest_sources_prepared",
+  "input_files": {
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+    "experiments/php-wasix-wpdb-probe/container-images.json": "5e8f79b95147e80e9120c33b8c14c61ab39923f52d489dff9b4e2a2ad656018d",
+    "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mariadb/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mariadb-crud.json": "afa9311363197a5dc6f6532e04f598ed9dd0452fab6ee78a11cac1c21ed21a56",
+    "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mysql/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mysql-crud.json": "3ef256597e35de2c7036af987d8a3f8637a39d963ff119628f84efb6d77820e8",
+    "experiments/php-wasix-wpdb-probe/prepare.py": "2d9b0e6ab95a13e2700bb69801a5ca19b6276dd6247eb4525cfb7a042a357eb3",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/adapter.php": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/bridge.php": "f116ecde591e7912418128a9bd30f1455b92de911fbbc6dcf6f1fc5ba31eaf10",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/corpus.php": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/entry.php": "dd8be48c44edc30a9122c5822a3057a415f035d33b73c9ddb2be3f662f55d080",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/helpers.php": "f3a2278be589835cc869809216cab142f050d636da199697996fd2e90e12ee1b",
+    "experiments/php-wasix-wpdb-utf8-probe/prepare.py": "b83aeb128054eececbb5f03dbba1e4e7682292314d6f4ec1a26a0706f32ef8ce",
+    "experiments/php-wasix-wpdb-utf8-probe/server-metadata.json": "bbed9c4bddc5aedb79974309d056ff777b32bf446558f0fff46d605d30c0980a",
+    "experiments/wpdb-bridge-probe/fixtures/helpers.php": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1",
+    "experiments/wpdb-bridge-probe/owned_database.py": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c",
+    "experiments/wpdb-crud-probe/evidence/windows-mariadb-native.json": "345b1ae77f1cd0dbc622cdb8a292cbca0a699c411fa697bcfae20c289c244e51",
+    "experiments/wpdb-crud-probe/evidence/windows-mysql-native.json": "eeae9d70025bc23874efbab9fd55368fa21b898996ffe63c6349ac73cd3c1b00",
+    "experiments/wpdb-crud-probe/fixtures/entry.php": "6dce4d2b66602eee8a3fde14bc6d7d6f6a06573e5400a84e7119e0605ade5caa",
+    "experiments/wpdb-crud-probe/fixtures/native.php": "97b3e6e737328de0a4d6f129dfd73dddf04568689d47ddf755269570c03c56a8",
+    "experiments/wpdb-crud-probe/native_check.py": "ae8116f1d149c3afe0d21969f5cb5b3679d0375568b437c57f2d2df01514de87",
+    "experiments/wpdb-crud-probe/owned_database.py": "bf275a13036b764f080485bd61e2ab2873ce90c14fe047a119bba32bd11b6c86",
+    "experiments/wpdb-rpc-probe/database_check.py": "86e9e6ddc38aa579013f7281ff5295e5a26f3a4907b1eebb70440b0fc9e83900",
+    "experiments/wpdb-rpc-probe/native_check.py": "b275027d59436e7db69ef59f1c235be0f9f429839ef76f9d05106dad129f5df0",
+    "experiments/wpdb-rpc-probe/prepare_driver.py": "2dd38414fefa10147b6d25b54bdb2bbd264c11e0d5e0063ecb2a5c6734b2bc7c",
+    "experiments/wpdb-rpc-probe/wire_check.py": "5293179ba3ee1b42bbe9b79186c08b0aeca2fb4048e04766ff83d32df31f532d",
+    "experiments/wpdb-utf8-probe/check.py": "42509030eda642e8ae0696279e575c6f6daf24fc85e55187d407dab9b6c9566e",
+    "experiments/wpdb-utf8-probe/evidence/windows-mariadb-native.json": "18c01e8105f7e41e407ebdd36f4e057233b3d808028d06b37168877e2ec2ba90",
+    "experiments/wpdb-utf8-probe/evidence/windows-mysql-native.json": "c1d7a9e4d55c68b030830e1d8e883d52f42bae031df4bd3062f3bcf4d5370ada",
+    "experiments/wpdb-utf8-probe/fixtures/corpus.php": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9",
+    "experiments/wpdb-utf8-probe/fixtures/entry.php": "4c3602b7ed1a4ffbababafd9ced741bf2866c7c7b3b384c896de3ab9199b82a1",
+    "experiments/wpdb-utf8-probe/fixtures/native.php": "97b3e6e737328de0a4d6f129dfd73dddf04568689d47ddf755269570c03c56a8",
+    "experiments/wpdb-utf8-probe/prepare.py": "7b0227012c7b82a8094e96b5cf1adce8d05ebf2087f5fd52fa0bcde2f74cca46",
+    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+  },
+  "derivation": {
+    "parents": {
+      "experiments/wpdb-utf8-probe/prepare.py": {
+        "bytes": 10213,
+        "sha256": "7b0227012c7b82a8094e96b5cf1adce8d05ebf2087f5fd52fa0bcde2f74cca46"
+      },
+      "experiments/wpdb-utf8-probe/check.py": {
+        "bytes": 10822,
+        "sha256": "42509030eda642e8ae0696279e575c6f6daf24fc85e55187d407dab9b6c9566e"
+      },
+      "experiments/wpdb-utf8-probe/fixtures/entry.php": {
+        "bytes": 9618,
+        "sha256": "4c3602b7ed1a4ffbababafd9ced741bf2866c7c7b3b384c896de3ab9199b82a1"
+      },
+      "experiments/wpdb-utf8-probe/fixtures/native.php": {
+        "bytes": 86,
+        "sha256": "97b3e6e737328de0a4d6f129dfd73dddf04568689d47ddf755269570c03c56a8"
+      },
+      "experiments/wpdb-utf8-probe/fixtures/corpus.php": {
+        "bytes": 4014,
+        "sha256": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9"
+      },
+      "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php": {
+        "bytes": 16212,
+        "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f"
+      },
+      "experiments/php-wasix-wpdb-probe/prepare.py": {
+        "bytes": 18605,
+        "sha256": "2d9b0e6ab95a13e2700bb69801a5ca19b6276dd6247eb4525cfb7a042a357eb3"
+      },
+      "experiments/wpdb-bridge-probe/fixtures/helpers.php": {
+        "bytes": 12603,
+        "sha256": "1220aa52f8a967f7d4981a1b668e07c7343cdff9c10caf42ea99c32a348fccb1"
+      }
+    },
+    "fixtures": {
+      "bridge.php": {
+        "bytes": 139,
+        "sha256": "f116ecde591e7912418128a9bd30f1455b92de911fbbc6dcf6f1fc5ba31eaf10"
+      },
+      "entry.php": {
+        "bytes": 9262,
+        "sha256": "dd8be48c44edc30a9122c5822a3057a415f035d33b73c9ddb2be3f662f55d080"
+      },
+      "corpus.php": {
+        "bytes": 4014,
+        "sha256": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9"
+      },
+      "adapter.php": {
+        "bytes": 16212,
+        "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f"
+      },
+      "helpers.php": {
+        "bytes": 12258,
+        "sha256": "f3a2278be589835cc869809216cab142f050d636da199697996fd2e90e12ee1b"
+      }
+    },
+    "native_corpus_bytes_unchanged": true,
+    "full_wp_adapter4096_bytes_unchanged": true,
+    "original_wpdb_business_and_typed_observer_bytes_unchanged": true,
+    "allowed_changes": [
+      "closed_CGI_bridge_entry_and_JSON_header",
+      "immutable_canonical_nonce_context_reader",
+      "owned_include_labels_and_guard",
+      "wasm_schema_runtime_extension_and_execution_flags"
+    ],
+    "original_git_objects_verified_by_preparer": false
+  },
+  "source_archive": {
+    "path": ".reference/wordpress-7.1.3.tar.gz",
+    "bytes": 35368461,
+    "sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "members_checked": 4250,
+    "declared_expanded_bytes_checked": 110077999
+  },
+  "files": [
+    {
+      "source": "experiments/php-wasix-wpdb-utf8-probe/fixtures/bridge.php",
+      "guest": "/experiments/php-wasix-wpdb-utf8-probe/fixtures/bridge.php",
+      "bytes": 139,
+      "sha256": "f116ecde591e7912418128a9bd30f1455b92de911fbbc6dcf6f1fc5ba31eaf10",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-utf8-probe/fixtures/entry.php",
+      "guest": "/experiments/php-wasix-wpdb-utf8-probe/fixtures/entry.php",
+      "bytes": 9262,
+      "sha256": "dd8be48c44edc30a9122c5822a3057a415f035d33b73c9ddb2be3f662f55d080",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-utf8-probe/fixtures/corpus.php",
+      "guest": "/experiments/php-wasix-wpdb-utf8-probe/fixtures/corpus.php",
+      "bytes": 4014,
+      "sha256": "a484470e73bf5c2be07d2ad90b510a7769e22adb5a22e7893045adededce9ee9",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-utf8-probe/fixtures/adapter.php",
+      "guest": "/experiments/php-wasix-wpdb-utf8-probe/fixtures/adapter.php",
+      "bytes": 16212,
+      "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "experiments/php-wasix-wpdb-utf8-probe/fixtures/helpers.php",
+      "guest": "/experiments/php-wasix-wpdb-utf8-probe/fixtures/helpers.php",
+      "bytes": 12258,
+      "sha256": "f3a2278be589835cc869809216cab142f050d636da199697996fd2e90e12ee1b",
+      "guest_read_only": true,
+      "kind": "derived_fixture"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-error.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-error.php",
+      "bytes": 7514,
+      "sha256": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-filter-sentinel.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
+      "bytes": 760,
+      "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-hook.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wp-hook.php",
+      "bytes": 17584,
+      "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wpdb.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/class-wpdb.php",
+      "bytes": 121437,
+      "sha256": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/functions.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/functions.php",
+      "bytes": 295481,
+      "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/load.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/load.php",
+      "bytes": 56475,
+      "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/option.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/option.php",
+      "bytes": 105246,
+      "sha256": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    },
+    {
+      "source": "target/php-wasix-wpdb-utf8-probe/wp-core/plugin.php",
+      "guest": "/.reference/wordpress-7.1.3/wp-includes/plugin.php",
+      "bytes": 37123,
+      "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "guest_read_only": true,
+      "kind": "wordpress_source"
+    }
+  ],
+  "wordpress_files": {
+    "class-wp-error.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-error.php",
+      "bytes": 7514,
+      "sha256": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94"
+    },
+    "class-wp-filter-sentinel.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-filter-sentinel.php",
+      "bytes": 760,
+      "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+    },
+    "class-wp-hook.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wp-hook.php",
+      "bytes": 17584,
+      "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "class-wpdb.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/class-wpdb.php",
+      "bytes": 121437,
+      "sha256": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd"
+    },
+    "functions.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/functions.php",
+      "bytes": 295481,
+      "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+    },
+    "load.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/load.php",
+      "bytes": 56475,
+      "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+    },
+    "option.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/option.php",
+      "bytes": 105246,
+      "sha256": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0"
+    },
+    "plugin.php": {
+      "path": "target/php-wasix-wpdb-utf8-probe/wp-core/plugin.php",
+      "bytes": 37123,
+      "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d"
+    }
+  },
+  "wordpress_version": "7.1.3",
+  "wordpress_source_sha256": {
+    "wp-includes/class-wp-error.php": "a9e971548bf6a1d93c821f980f530efba985c25d5d0b13d9b63e63b378a81a94",
+    "wp-includes/class-wp-filter-sentinel.php": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c",
+    "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "wp-includes/class-wpdb.php": "e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd",
+    "wp-includes/functions.php": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c",
+    "wp-includes/load.php": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a",
+    "wp-includes/option.php": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0",
+    "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d"
+  },
+  "expected_include_names": [
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-error.php",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php",
+    ".reference/wordpress-7.1.3/wp-includes/class-wpdb.php",
+    ".reference/wordpress-7.1.3/wp-includes/functions.php",
+    ".reference/wordpress-7.1.3/wp-includes/load.php",
+    ".reference/wordpress-7.1.3/wp-includes/option.php",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/adapter.php",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/bridge.php",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/corpus.php",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/entry.php",
+    "experiments/php-wasix-wpdb-utf8-probe/fixtures/helpers.php"
+  ],
+  "native_oracles": {
+    "mysql": {
+      "path": "experiments/wpdb-utf8-probe/evidence/windows-mysql-native.json",
+      "bytes": 140766,
+      "sha256": "c1d7a9e4d55c68b030830e1d8e883d52f42bae031df4bd3062f3bcf4d5370ada"
+    },
+    "mariadb": {
+      "path": "experiments/wpdb-utf8-probe/evidence/windows-mariadb-native.json",
+      "bytes": 138410,
+      "sha256": "18c01e8105f7e41e407ebdd36f4e057233b3d808028d06b37168877e2ec2ba90"
+    }
+  },
+  "native_api_cases": 31,
+  "native_public_queries": 22,
+  "server_metadata": {
+    "schema": "recastpress.php-wasix-wpdb-utf8-server-metadata.v0.5",
+    "reference_derivation": {
+      "source": "pinned_windows_native_observation",
+      "changed_fields": [
+        "server_info_hex"
+      ],
+      "actual_result_modified": false
+    },
+    "image_manifest": {
+      "path": "experiments/php-wasix-wpdb-probe/container-images.json",
+      "bytes": 1185,
+      "sha256": "5e8f79b95147e80e9120c33b8c14c61ab39923f52d489dff9b4e2a2ad656018d"
+    },
+    "backends": {
+      "mysql": {
+        "native_version": "8.4.13",
+        "linux_version": "8.4.13",
+        "native_version_hex": "382e342e3133",
+        "linux_version_hex": "382e342e3133",
+        "image": {
+          "platform_digest": "sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
+          "image_config_digest": "sha256:d2a0d367629f5b5dcd6cdabc53fe9183a0a3c313f9bd354e368290ba6fbf6d3f"
+        },
+        "linux_reference": {
+          "path": "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mysql/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mysql-crud.json",
+          "bytes": 239339,
+          "sha256": "3ef256597e35de2c7036af987d8a3f8637a39d963ff119628f84efb6d77820e8"
+        }
+      },
+      "mariadb": {
+        "native_version": "11.8.9-MariaDB",
+        "linux_version": "11.8.9-MariaDB-ubu2404",
+        "native_version_hex": "31312e382e392d4d617269614442",
+        "linux_version_hex": "31312e382e392d4d6172696144422d75627532343034",
+        "image": {
+          "platform_digest": "sha256:8a4a99eff981d95c3ab12d019b82fe59725fb7761f1f9a5f155bc3f025528f4f",
+          "image_config_digest": "sha256:0f2506b4b989879f5e004ba606b1d6711d467dee12be80c81799dd046fcc753c"
+        },
+        "linux_reference": {
+          "path": "experiments/php-wasix-wpdb-probe/evidence/ci-41550553907-mariadb/raw/experiments/php-wasix-wpdb-probe/evidence/linux-mariadb-crud.json",
+          "bytes": 237465,
+          "sha256": "afa9311363197a5dc6f6532e04f598ed9dd0452fab6ee78a11cac1c21ed21a56"
+        }
+      }
+    }
+  },
+  "server_metadata_identity": {
+    "path": "experiments/php-wasix-wpdb-utf8-probe/server-metadata.json",
+    "bytes": 1937,
+    "sha256": "bbed9c4bddc5aedb79974309d056ff777b32bf446558f0fff46d605d30c0980a"
+  },
+  "private_context_guest_path": "/rp-utf8/context.json",
+  "private_context_keys": [
+    "schema",
+    "nonce"
+  ],
+  "guest_context_contains_db_credentials_or_salts": false,
+  "full_wordpress_bootstrap": false,
+  "wordpress_executed": false,
+  "wasm_executed_by_preparer": false,
+  "native_php_executed_by_preparer": false,
+  "native_reference_binaries_reverified": false,
+  "network_used_by_preparer": false,
+  "guest_network_enabled": false,
+  "product_runtime_selected": false,
+  "guest_readonly_enforcement_executed": false,
+  "inputs_unchanged": true
+}

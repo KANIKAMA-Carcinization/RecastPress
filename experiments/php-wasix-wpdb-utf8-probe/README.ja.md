@@ -29,7 +29,7 @@ Linux CIでは固定3patch moduleとhostをbuildし、digest固定の新規所�
 python3 experiments/php-wasix-wpdb-utf8-probe/run_check.py --backend mysql --record
 ```
 
-実Wasm／DBの結果は別途必要であり、native基準やpure unitだけでRust DBとの一致を宣言しない。製品runtime、HTTP listener、TLS変更、資源上限の製品受入、raw非UTF-8 ERR、任意plugin対応は対象外のままである。
+実Wasm／DBの受入は末尾のCI証跡に基づき、native基準やpure unitだけでRust DBとの一致を宣言しない。製品runtime、HTTP listener、TLS変更、資源上限の製品受入、raw非UTF-8 ERR、任意plugin対応は対象外のままである。
 
 ## platformごとのserver metadata
 
@@ -43,4 +43,19 @@ Linux用の期待referenceは固定Windows native observationの新しいclone�
 python -B scripts/verify_utf8_platform_metadata.py --record
 ```
 
-監査はPHP／Wasm／DB／networkを実行しない。実guestのraw本文・wireを取得／公開せず、private request frame・nonceも再構成しない。初回の原判定（MySQL成功、MariaDB失敗）は維持し、監査で過去の失敗を成功へ変更しない。metadata契約を適用した新CIの受入は別途必要である。
+監査はPHP／Wasm／DB／networkを実行しない。実guestのraw本文・wireを取得／公開せず、private request frame・nonceも再構成しない。初回の原判定（MySQL成功、MariaDB失敗）は維持し、監査で過去の失敗を成功へ変更しない。
+
+## 実Wasmでの有効UTF-8受入
+
+source `10eaa687600cc381f5015613e8ddefe359afd1ce`の[CI 41639151421](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41639151421)は両DBで成功した。[MySQL証跡](evidence/ci-41639151421-mysql/provenance.json)・[MariaDB証跡](evidence/ci-41639151421-mariadb/provenance.json)を元のJSON bytesのまま保存し、各185 Git sources・1,066 source bindingsと照合して`overall_positive: true`を確認した。
+
+31観測・22 SQLの全値／型／公開state、session条件と10比較項目が、明示的に導出したplatform別referenceと一致した。元のPHP corpus・adapter・Rust actor／RPC／collectorは変更していない。各52 RPC（hello 1・query 26・escape 24・close 1）、CGI status 200・正常JSON、両EOF・明示close・物理disconnect・actor exit/join・最終空table・所有containerの正常停止と削除を確認した。Linuxでも35 unit／178 inputsが通過し、旧hostの31 unit／145 inputsは維持された。
+
+MySQLのCGI本文31,492 B、MariaDBの31,532 Bは初回公開captureのlength／SHAとも一致した。metadata契約は実結果を書き換えず、独立SQL versionとPHP versionの一致も要求する。無効UTF-8・text-only table／任意collation・byte上限境界・raw非UTF-8 ERR・HTTP listener・全wpdb互換は引き続き未受入である。
+
+```powershell
+python -B experiments/php-wasix-wpdb-utf8-probe/import_evidence.py --run 41639151421 --backend mysql --verify-only
+python -B experiments/php-wasix-wpdb-utf8-probe/import_evidence.py --run 41639151421 --backend mariadb --verify-only
+```
+
+importerは別schemaのnested provenanceを流用せず、このprofileのflat module snapshot全15項目を同じjobのbuild／tool／patch／sourceへ照合する。取り込みはofflineで、元moduleやprivate RPC frameの再実行・再構成を行ったとは扱わない。

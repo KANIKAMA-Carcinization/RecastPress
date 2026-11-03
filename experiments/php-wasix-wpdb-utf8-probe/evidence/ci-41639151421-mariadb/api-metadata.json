@@ -1,0 +1,101 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41639151421,
+  "run_attempt": 1,
+  "head_sha": "10eaa687600cc381f5015613e8ddefe359afd1ce",
+  "run_conclusion": "success",
+  "job": {
+    "id": 125927896566,
+    "name": "Cranelift UTF-8 wpdb / mariadb",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare fixed thirteen guest files and native UTF-8 contracts",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged full WP actor host without running it",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify UTF-8 host and pure units",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare UTF-8 corpus through php-wasm and Rust on owned DB",
+        "conclusion": "success"
+      },
+      {
+        "name": "Record UTF-8 CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload UTF-8 public JSON evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13232228328,
+    "name": "php-wasix-wpdb-utf8-mariadb-1",
+    "size_in_bytes": 95551,
+    "digest": "sha256:a98355cd9d6c4833d56bfbe1a3ffcb9842d26daf4a1f8e4945638d08c16ce709"
+  }
+}
