@@ -33,4 +33,17 @@ Linuxでは元installer・fresh readの後、home・missing・missing-repeatを�
 python3 experiments/php-wasix-wp-request-context-probe/run_check.py --backend mysql --record
 ```
 
-[CI 41742369145](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41742369145)で両DBの実行結果を検証する。CI成功と元sourceへの証跡照合が完了するまで、同じcontext／404のWasm受入は未完了である。
+## 同じ公開contextと404の実Wasm受入
+
+source `f9f1f6141a5ffe84097d4053dce40d3294e74e01`の[CI 41742369145](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41742369145)はMySQL・MariaDBとも成功した。[MySQL証跡](evidence/ci-41742369145-mysql/provenance.json)と[MariaDB証跡](evidence/ci-41742369145-mariadb/provenance.json)の各10 public JSONを全bytesのまま保存し、各203 Git sources／1,883 source bindingsへ照合して`overall_positive: true`を確認した。
+
+元installer・fresh readと、home・missing・missing-repeatの全5実行が通過した。新しい要求では元19項目・要求応答5項目・context関連7項目を比較し、公開contextの全3 snapshotもnativeと完全一致した。homeのCGI内応答はstatus200・全3 headers・HTML69,399 B、missingはstatus404・全5 headers・HTML58,177 B。両DBともhome 145 RPC（hello1／query50／escape93／close1）、missingと再実行は各74 RPC（hello1／query28／escape44／close1）で、反復404も全応答が一致した。HTML・header・query・Unicodeの正規化は加えていない。
+
+元`wp_is_json_request()`は起動後・描画後にfalse、起動前は未定義／nullと確認した。display_errors 1・body 0・homeの環境query未設定／missingの公開queryのみは全3段階で一致した。両EOF・物理disconnect・actor exit/join・source/module不変、独立SQLによる不在post／公開DB状態／日時／autoload、所有containerの正常停止と削除も通過した。Linuxでも新58 unit／195 inputs、旧31／145と53／172の不変性を確認した。
+
+```powershell
+python -B experiments/php-wasix-wp-request-context-probe/import_evidence.py --run 41742369145 --backend mysql --verify-only
+python -B experiments/php-wasix-wp-request-context-probe/import_evidence.py --run 41742369145 --backend mariadb --verify-only
+```
+
+取り込みは公開host JSONの再serializationとsource／tool／patch／module metadataを照合する。private nonce・RPC query/reply・元CGI本文のdigestをofflineで再計算したという主張ではない。製品runtime採用、HTTP listener、任意request／theme／plugin、共有module cacheと全資源予算は次の受入条件として残る。
