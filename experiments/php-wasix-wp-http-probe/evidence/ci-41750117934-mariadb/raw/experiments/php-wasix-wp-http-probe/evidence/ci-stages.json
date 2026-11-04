@@ -1,0 +1,22 @@
+{
+  "schema": "recastpress.php-wasix-wp-http-ci-stages.v0.5",
+  "source_commit": "3c4dbf1de2fc1cdb89e35bc3180ce15f31e1553d",
+  "run_id": "41750117934",
+  "run_attempt": "1",
+  "backend": "mariadb",
+  "stages": {
+    "tools": "success",
+    "bootstrap": "success",
+    "deps": "success",
+    "context": "success",
+    "module": "success",
+    "host": "success",
+    "packages": "success",
+    "guest": "success",
+    "php": "success",
+    "parser": "success",
+    "theme": "success",
+    "contract": "success",
+    "rust": "success"
+  }
+}

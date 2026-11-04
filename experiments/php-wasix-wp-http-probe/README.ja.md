@@ -18,4 +18,19 @@ python -B experiments/php-wasix-wp-http-probe/build_check.py
 python3 experiments/php-wasix-wp-http-probe/run_check.py --backend mysql --record
 ```
 
-Linuxの実行結果と元sourceの照合は別途必要である。今回の有限HTTP profileは製品CLIや任意request／認証／plugin、module cache、全process資源予算の受入にはしない。
+## 実HTTP経由の両DB受入
+
+source `3c4dbf1de2fc1cdb89e35bc3180ce15f31e1553d`の[Linux CI 41750117934](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41750117934)はMySQL／MariaDBとも成功した。[MySQL証跡](evidence/ci-41750117934-mysql/provenance.json)と[MariaDB証跡](evidence/ci-41750117934-mariadb/provenance.json)は各11件の元JSONを変更せず保存し、各2,711 source bindings・215 Git source blobsを元commitへ照合した。HTTP hostは21 unit／206 inputs、context workerは58 unit／195 inputsである。
+
+| 実HTTP要求 | 結果 | nativeとの照合 |
+| --- | --- | --- |
+| home | 200・origin 3 headers・69,399 B | 全bodyと同名headerの値・順序が一致 |
+| missing | 404・origin 5 headers・58,177 B | 全bodyと同名headerの値・順序が一致 |
+| missing反復 | fresh workerで404・58,177 B | 初回404と全応答が一致 |
+| 固定7不正要求 | 全て400・固定拒否本文 | workerを起動せず拒否 |
+
+各DBで元installer・fresh readも再通過し、HTTP要求3件ではfresh workerを各1回だけ起動した。3段階の公開context、home145／404各74 RPC、物理DB切断・actor終了・workerのEOF／reap、HTTP serverの正常終了／reap、所有DBの正常清掃、元sourceとmoduleの前後一致を確認した。clientは実socketからContent-LengthとDateを検査し、EOFまで完全応答を取得した。server内の応答構築記録だけで送信完了とは判定しない。
+
+取り込み処理は固定`authorization`拒否ケースを認証headerと区別するが、名前の例外を適用する前に全観測項目・本文identity・固定要求identity・時刻窓を検証する。scalar等22種の不正形状と28種のcontract変異を拒否し、実証跡の両DB照合も通過した。公開証跡には生HTTP wireを保存しないため、そのdigestをofflineで再計算したとは主張しない。
+
+今回の有限HTTP profileは製品CLIや任意request／認証／plugin、module cache、全process資源予算の受入にはしない。要求3件ではmoduleを3回compileする。次は新しい独立workerで完了済み応答のprivate IPCを抽出し、native期待値との比較を検証adapter側へ分ける。未知のHTMLの公開許可や製品HTTP経路への採用は、その後の明示した契約で確認する。
