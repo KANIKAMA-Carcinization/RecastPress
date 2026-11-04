@@ -1,0 +1,36 @@
+name: Private WordPress response codec
+on:
+  push:
+    branches: [dev/v0.5]
+    paths:
+      - experiments/wp-private-response-probe/**
+      - '!experiments/wp-private-response-probe/evidence/**'
+      - '!experiments/wp-private-response-probe/README.ja.md'
+      - .github/workflows/wp-private-response.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  codec:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      RUSTUP_TOOLCHAIN: 1.94.0
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install fixed Rust toolchain
+        run: rustup toolchain install 1.94.0 --profile minimal --no-self-update
+      - name: Fetch locked compiler dependencies
+        run: cargo fetch --locked --manifest-path experiments/wp-private-response-probe/Cargo.toml
+      - name: Verify private codec units and immutable response corpus
+        run: python3 -B experiments/wp-private-response-probe/check.py
+      - name: Upload public summary evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wp-private-response-${{ github.run_attempt }}
+          path: experiments/wp-private-response-probe/evidence/linux.json
+          if-no-files-found: error
+          retention-days: 30
