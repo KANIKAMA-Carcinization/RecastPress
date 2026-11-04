@@ -88,7 +88,7 @@ def observer(source):
     return pure
 
 
-def public_gate(value, references=None, fields=None):
+def public_gate(value, references=None, fields=None, rejection_contract=None):
     if fields is None: fields = []
     def inspect(v):
         if type(v) is dict:
@@ -97,6 +97,10 @@ def public_gate(value, references=None, fields=None):
                 require(type(cases) is dict and set(cases) <= {'wrong_host', 'post', 'cookie',
                     'authorization', 'nonzero_length', 'unknown_query', 'unknown_header'},
                     'closed_public_http_rejection_labels')
+                for label, observation in cases.items():
+                    require(type(observation) is dict and rejection_contract is not None,
+                        'fixed_http_rejection_metrics_object_required')
+                    http_metrics_gate(observation, label, None, rejection_contract)
                 # This is a fixed test-case label, never an HTTP field/value.
                 # Preserve its entire value for recursive privacy inspection.
                 v = {**v, 'http_rejections': {('fixed_authorization_rejection' if k == 'authorization' else k): item
@@ -170,7 +174,8 @@ def archive_gate(path, api, backend, source):
     data = {n: parse_json(b) for n, b in raw.items()}
     response = native_references(source)
     fields = origin_maps(source, response)
-    for value in data.values(): public_gate(value, response, fields)
+    rejection_contract = observer(source)
+    for value in data.values(): public_gate(value, response, fields, rejection_contract)
     return raw, data, members
 
 
