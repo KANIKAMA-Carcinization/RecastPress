@@ -81,8 +81,66 @@ def validate_private(value,case,native):
 
 def publish_verified(value,case,native,report,label):
     validation=validate_private(value,case,native)
-    report['observations'][label]=value
+    projection=public_projection(value)
+    validate_private(projection,case,native)
+    report['observations'][label]=projection
     report['validations'][label]=validation
+
+
+def public_projection(value):
+    """Select verified observations, never republish the private IPC wholesale."""
+    def pick(source,names): return {key:copy.deepcopy(source[key]) for key in names}
+    def integers(source,names,maximum):
+        for key in names:
+            require(type(source[key]) is int and 0<=source[key]<=maximum,'public_metric_integer')
+    def digest(value):
+        require(type(value) is str and re.fullmatch('[0-9a-f]{64}',value) is not None,'public_metric_digest')
+    top=['schema','passed','outcome','phase','mode','case','module_compilations','db_actor_failure',
+        'physical_connection_created','physical_disconnect_completed','db_actor_joined','db_actor_exited',
+        'fresh_runtime','source_rechecked_after_execution','full_wordpress_bootstrap','guest_networking',
+        'host_environment_forwarded','host_home_mapped','db_credentials_supplied_to_guest','native_php_fallback',
+        'product_runtime','standard_wpdb_compatibility_proven','private_ipc_only','publication_authorized',
+        'native_comparison_performed','private_response','private_contexts']
+    result=pick(value,top)
+    integers(result,['module_compilations'],1)
+    php_keys=sorted((set(context.COMPARE)-{'response',*FIELDS})|{'schema','outcome','passed','phase','mode',
+        'rust_executed','wasm_executed','native_mysqli_handle','owned_db_dropin_loaded','response_summary'})
+    result['php_result']=pick(value['php_result'],php_keys)
+    rpc_keys=['finished','opened_once','close_dispatched','failure','channel_open','response_pending',
+        'pending_bytes','unread_response_bytes','operations','request_bytes','response_bytes','response_read_bytes']
+    result['rpc']=pick(value['rpc'],rpc_keys)
+    integers(result['rpc'],['pending_bytes','unread_response_bytes','operations','request_bytes',
+        'response_bytes','response_read_bytes'],16777216)
+    # validate_private already requires this entire fixed operation shape and
+    # its closed op/error-state strings; no unknown field is copied from a row.
+    op_keys=['seq','op','request_data_bytes','request_data_sha256','request_frame_bytes',
+        'request_frame_sha256','reply_frame_bytes','reply_frame_sha256','ok','row_count',
+        'column_count','server_error_code','server_error_state_hex']
+    result['operations']=[pick(row,op_keys) for row in value['operations']]
+    access_keys=['finished','protocol_error','pending_bytes','unread_response_bytes','active_handles',
+        'requests','generated_bytes','read_bytes','open_events','closed_handles','invalid','io_errors',
+        'allowed','denied','missing','unmanaged']
+    result['managed_access']=pick(value['managed_access'],access_keys)
+    integers(result['managed_access'],[k for k in access_keys if k not in ('finished','protocol_error')],16777216)
+    capture_keys=['guest_exit_success','runtime_shutdown_returned','stdout_eof','stderr_eof',
+        'stdout_overflow','stderr_overflow','stdout_bytes','stderr_bytes','stdout_sha256','stderr_sha256']
+    capture=result['cgi_capture']=pick(value['cgi_capture'],capture_keys)
+    integers(capture,['stdout_bytes','stderr_bytes'],3*1024*1024)
+    for key in ('stdout_sha256','stderr_sha256'): digest(capture[key])
+    response=capture['response']=pick(value['cgi_capture']['response'],
+        ['status','header_count','body_bytes','body_sha256','representation_length'])
+    integers(response,['status','header_count','body_bytes'],3*1024*1024)
+    require(response['status']==200 and response['header_count']<=64
+        and response['representation_length'] is None,'public_outer_response_metrics')
+    digest(response['body_sha256'])
+    prepared=pick(value['prepared'],['verification_scope','transitive_inputs_verified_by_worker',
+        'source_verified','core_files','owned_dropin_files'])
+    require(canonical(prepared)==canonical({'verification_scope':'compiled_fixtures_and_core_only',
+        'transitive_inputs_verified_by_worker':False,'source_verified':True,'core_files':3782,
+        'owned_dropin_files':1}),'private_worker_prepared_scope')
+    result['prepared']=prepared
+    result.update(worker_fields_projected=True,original_worker_json_published=False)
+    return result
 
 
 def execute_worker(binary,environment,payload,report,label,native,case):
@@ -128,6 +186,8 @@ def self_test():
             original=old['observations'][label]; value=copy.deepcopy(original)
             value.update(schema=SCHEMA,outcome='fixed_private_wp_worker_passed',phase='full_private_response_verified',
                 private_ipc_only=True,publication_authorized=False,native_comparison_performed=False)
+            value['prepared'].update(verification_scope='compiled_fixtures_and_core_only',
+                transitive_inputs_verified_by_worker=False)
             php=value['php_result']
             value['private_response']=php.pop('response')
             value['private_contexts']={k:php.pop(k) for k in FIELDS}
@@ -139,6 +199,18 @@ def self_test():
             for k in ['response','response_observation',*FIELDS]: safe.pop(k,None)
             expected=native['requests'][label]['observation']
             validate_private(value,case,expected); tests.append(backend+'-'+label+'-positive-synthetic-view')
+            poisoned=copy.deepcopy(value); marker='private-unaccepted-controller-placeholder'
+            for container in (poisoned,poisoned['php_result'],poisoned['cgi_capture'],poisoned['rpc'],
+                    poisoned['managed_access'],poisoned['prepared']):
+                container['extra_private_payload']=marker
+            clean={'observations':{},'validations':{}}
+            publish_verified(poisoned,case,expected,clean,'test')
+            encoded=canonical(clean)
+            require(marker.encode() not in encoded and marker.encode().hex().encode() not in encoded,
+                'unknown_private_fields_published')
+            require(clean['observations']['test']['worker_fields_projected'] is True
+                and clean['observations']['test']['original_worker_json_published'] is False,'public_projection_scope')
+            tests.append(backend+'-'+label+'-unknown_private_fields_excluded')
             bad=copy.deepcopy(value); body=b'private-unaccepted-body-placeholder'
             bad['private_response'].update(body_hex=body.hex(),body_bytes=len(body),body_sha256=sha(body))
             rejects(backend+'-'+label+'-unknown-complete-body',bad,case,expected)

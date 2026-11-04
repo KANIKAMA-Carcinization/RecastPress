@@ -2,47 +2,47 @@
   "schema": "recastpress.php-wasix-wp-private-worker-build.v0.5",
   "outcome": "locked_offline_private_worker_build_passed",
   "passed": true,
-  "observed_at_utc": "2026-11-04T03:50:47.187994+00:00",
+  "observed_at_utc": "2026-11-04T04:06:06.998262+00:00",
   "commands": [
     {
       "stage": "unit-build",
       "timeout_seconds": 1200,
-      "owned_pid": 11376,
+      "owned_pid": 18348,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 33.222,
-      "stdout_sha256": "91335dfd6d9baf34a7e9293a52f5c3ce6751dcb081f491ae1447ff0bb39be718",
-      "stderr_sha256": "b81948f7f08ab4e6d34c97d6091b338c60b2e9dd49a7ae11a2eab5c63a60ad2a"
+      "elapsed_seconds": 3.513,
+      "stdout_sha256": "ae68cc812852a3a52ac1450faecad117ed119b45a83d1726b7ba3ce7069e5efa",
+      "stderr_sha256": "6bdfd4baa882cedc7230b62b02c7258ad51e0cb4b314e440c45f7d31f4897ac4"
     },
     {
       "stage": "unit-list",
       "timeout_seconds": 10,
-      "owned_pid": 17188,
+      "owned_pid": 25480,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.802,
+      "elapsed_seconds": 0.084,
       "stdout_sha256": "14a8f151ebfbac1728b6b75bed45b48aa3743d17a450e48fec1df5a96e60b492",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "unit-run",
       "timeout_seconds": 60,
-      "owned_pid": 29040,
+      "owned_pid": 30876,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.564,
-      "stdout_sha256": "034fad51026dda4b7218507337619a88f336cd924c12384077234a046d4cbcb3",
+      "elapsed_seconds": 0.531,
+      "stdout_sha256": "5636a2ce179586bece0a425fb138b482480f72a335f5ac7c35d973f8b8aa83d2",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "normal-build",
       "timeout_seconds": 1200,
-      "owned_pid": 25460,
+      "owned_pid": 21576,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 12.519,
-      "stdout_sha256": "9f797ec1f83bd2da5b6e442220ff2d984b83453359e46b4c761a4abccd3d882c",
-      "stderr_sha256": "f50297c03315f03165f2ea1998054004505beb7046679dc7a5ba51e5a64a1649"
+      "elapsed_seconds": 3.637,
+      "stdout_sha256": "f82f314c6c03423521666d2f48b5ab8a1e91405b05b6e46ef39b9dbcb59562b3",
+      "stderr_sha256": "744e38981e3e3020655cb24470a63f0b4caa09d3b498cd8b91d6684645eeb030"
     }
   ],
   "locked_offline": true,
@@ -254,7 +254,7 @@
     "experiments/php-wasix-wp-private-worker-probe/Cargo.lock": "0f4a52e43a1bea2b8b8e4ff438cdfd1dab24fe8288d363071d8a10bae1431266",
     "experiments/php-wasix-wp-private-worker-probe/Cargo.toml": "702057cff379e5d74e4ab5deac5759f16402c4e4b136d146ac95bae2b4f050a7",
     "experiments/php-wasix-wp-private-worker-probe/derivation_gate.py": "9b6d3c5e1e409f45487323ebcdde276abb388af6e6625ad0a427bc2cd1352bb7",
-    "experiments/php-wasix-wp-private-worker-probe/run_check.py": "ce14f2597d8582272c1a883007ad5c3e14ecadd21877bc186f3396850f7647e2",
+    "experiments/php-wasix-wp-private-worker-probe/run_check.py": "d18278fa29b1db9af92e050bd58ea422ca06757e08a7e3f73c2506253b5d166e",
     "experiments/php-wasix-wp-private-worker-probe/src/main.rs": "e6dca46c07b88deb322e8c022f4f957344508e0c8fd9327b08a62a8df4d764bb",
     "experiments/php-wasix-wp-private-worker-probe/src/strict_json.rs": "c30ab9e32b1d9177acbf324a4f29a76a790f1481f09f1979f3a0442b9dd01b51",
     "experiments/php-wasix-wp-request-context-probe/build_check.py": "6465b1ba65cdf1827c5a0d9581bd73850298a7710abe0802b1b6bf613edd1e75",
@@ -487,7 +487,7 @@
       "bytes": 52964864,
       "sha256": "0bdb90812b3267aec5fbb92a7508f8c5778e46c5a9405b96ade39f795bc1d78a"
     },
-    "stdout_sha256": "034fad51026dda4b7218507337619a88f336cd924c12384077234a046d4cbcb3"
+    "stdout_sha256": "5636a2ce179586bece0a425fb138b482480f72a335f5ac7c35d973f8b8aa83d2"
   },
   "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-wasix-wp-private-worker-probe.exe",
   "executable_identity": {

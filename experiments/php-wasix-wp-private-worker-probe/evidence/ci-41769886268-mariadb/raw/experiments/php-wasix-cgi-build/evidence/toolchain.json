@@ -1,0 +1,115 @@
+{
+  "format_version": 1,
+  "observed_at_utc": "2026-11-04T03:54:28.206563+00:00",
+  "outcome": "verified_host_build_tools_prepared",
+  "guest_executed": false,
+  "product_runtime_selected": false,
+  "redistributed_binaries": false,
+  "assets": [
+    {
+      "name": "wasixcc",
+      "repository": "wasix-org/wasixcc",
+      "tag": "v0.4.4",
+      "asset_id": 496323636,
+      "url": "https://github.com/wasix-org/wasixcc/releases/download/v0.4.4/wasixcc-x86_64-unknown-linux-gnu.tar.gz",
+      "bytes": 3554031,
+      "sha256": "f4c7d4417d4699adc9e56972ab033bb7c05acc87553fd34ea81243470fe8de45",
+      "verified": true,
+      "observed_bytes": 3554031,
+      "observed_sha256": "f4c7d4417d4699adc9e56972ab033bb7c05acc87553fd34ea81243470fe8de45",
+      "required_files": {
+        "wasixccenv": {
+          "bytes": 9239568,
+          "sha256": "847870222a0503e239604e605032578c2e30129dea5e3bd9b0b063debf0eb9d4"
+        }
+      }
+    },
+    {
+      "name": "sysroot",
+      "repository": "wasix-org/wasix-libc",
+      "tag": "v2026-07-03.1",
+      "asset_id": 465375751,
+      "url": "https://github.com/wasix-org/wasix-libc/releases/download/v2026-07-03.1/sysroot-eh.tar.gz",
+      "bytes": 6142222,
+      "sha256": "8c54240afabda1106c19f284bdfff77f29932caa55f82756f87d01f69ffd50f4",
+      "verified": true,
+      "observed_bytes": 6142222,
+      "observed_sha256": "8c54240afabda1106c19f284bdfff77f29932caa55f82756f87d01f69ffd50f4",
+      "required_files": {
+        "lib/wasm32-wasi/libc.a": {
+          "bytes": 1429828,
+          "sha256": "e0837c66fecab3cef5d8d202939c6125986685e9d8e589f90a253f5f18a17af9"
+        }
+      }
+    },
+    {
+      "name": "llvm",
+      "repository": "wasix-org/llvm-project",
+      "tag": "21.1.206",
+      "asset_id": 504888362,
+      "url": "https://github.com/wasix-org/llvm-project/releases/download/21.1.206/LLVM-Linux-x86_64.tar.gz",
+      "bytes": 81191584,
+      "sha256": "4066b52816c3382d10c5a7d7cfd6252a5f432459f007c143f07e23bf367c43ea",
+      "verified": true,
+      "observed_bytes": 81191584,
+      "observed_sha256": "4066b52816c3382d10c5a7d7cfd6252a5f432459f007c143f07e23bf367c43ea",
+      "required_files": {
+        "bin/clang": {
+          "bytes": 106130672,
+          "sha256": "fe668c18dcadb64838f8c41a37e2d7101e43b311fdbc0dfd14a2f1809b88ab7f"
+        },
+        "bin/wasm-ld": {
+          "bytes": 62829016,
+          "sha256": "7381e4931ddc0ae10533ed43d5ab6bc3b545e9dec5d44cb3ff8b908327b1668a"
+        },
+        "bin/llvm-ar": {
+          "bytes": 5963016,
+          "sha256": "9f8a6de9f39e60ddb20c7a75747dcbe9fcd6c3acbb66ec981c206e4cf17f68ad"
+        }
+      }
+    },
+    {
+      "name": "binaryen",
+      "repository": "WebAssembly/binaryen",
+      "tag": "version_130",
+      "asset_id": 435610959,
+      "url": "https://github.com/WebAssembly/binaryen/releases/download/version_130/binaryen-version_130-x86_64-linux.tar.gz",
+      "bytes": 107371282,
+      "sha256": "0a18362361ad05465118cd8eeb72edaeec89de6894bc283576ef4e07aa3babcc",
+      "verified": true,
+      "observed_bytes": 107371282,
+      "observed_sha256": "0a18362361ad05465118cd8eeb72edaeec89de6894bc283576ef4e07aa3babcc",
+      "required_files": {
+        "bin/wasm-opt": {
+          "bytes": 18133984,
+          "sha256": "052fe3ae03ba9c566f9d0273cc94d943258bc20a92a0d25f148b55c1caf43558"
+        }
+      }
+    }
+  ],
+  "input_files": {
+    "experiments/php-wasix-cgi-build/build.py": "66428ef0b96a40c0185e6bb4080d342d5beb743e7414bb441489680d8a1817e1",
+    "experiments/php-wasix-cgi-build/import_link_evidence.py": "8edffc7fd117b25db54f020621cd682d5aeae7d78d1167ca3dcfca12025792ac",
+    "experiments/php-wasix-cgi-build/link_audit.py": "df83c879f445773bb394c98d5936a3cba03bcc7f0f92d31628884e8b3b895caa",
+    "experiments/php-wasix-cgi-build/link_map.py": "9fc3f09ff551c6a69af1e8e437df9074465030b6b330fd35d658543a347be4af",
+    "experiments/php-wasix-cgi-build/patch_source.py": "751fa61d9e81af55098bc1a8f67fd87c188490b30bdef30664969cb29b9e8d9d",
+    "experiments/php-wasix-cgi-build/prepare.py": "b21138e94eb32f33f8cd51412e1fd9708211c480888e934fca800ba727578540",
+    "experiments/php-wasix-cgi-build/patches/0001-wasi-disable-cgi-prefork.patch": "941f0f2ce80edcc0077e746bb7e080b163e837a1e60fb3a2faa21ca4008da1e2",
+    "experiments/php-wasix-cgi-build/manifest.json": "8c625e73920e6dc3fa7f842da0f553b75b6f65ff17e64349dcb98359a62ffd28",
+    "experiments/php-wasix-cgi-build/README.ja.md": "f9b2523bcacdbca3438d21d3fc96cd919873daa182298a244d2ac683542e4508",
+    ".github/workflows/php-wasix-cgi-build.yml": "d31457fddd3e2a72a097b6d133af5bfb5cb514952f07ca423d026c60f62f2b43"
+  },
+  "tool_versions": {
+    "wasixccenv": "wasixcc 0.4.4",
+    "clang": "WASIX clang version 21.1.2\nTarget: unknown\nThread model: posix\nInstalledDir: /home/runner/work/RecastPress/RecastPress/target/php-wasix-cgi-build/tools/llvm/bin",
+    "wasm_opt": "wasm-opt version 130 (version_130)"
+  },
+  "selected_sysroot": "tools/sysroot-eh",
+  "environment": {
+    "WASIXCC_SYSROOT": "<owned-build>/tools/sysroot-eh",
+    "WASIXCC_LLVM_LOCATION": "<owned-build>/tools/llvm",
+    "WASIXCC_BINARYEN_LOCATION": "<owned-build>/tools/binaryen",
+    "WASIXCC_WASM_EXCEPTIONS": "legacy",
+    "WASIXCC_INCLUDE_CPP_SYMBOLS": "yes"
+  }
+}

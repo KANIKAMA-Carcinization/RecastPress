@@ -10,7 +10,7 @@ guestの元JSONを再帰的な重複キー拒否で読んでから、[独立code
 
 実行中のsource検証は、compileへ結び付く7 PHP fixtures・prepare script・元WP全catalog／manifestを対象にする。旧preparedの55 transitive inputsの一括読取りにはWP比較基準も含まれていたため、worker側のそのscanは外し、`compiled_fixtures_and_core_only`／`transitive_inputs_verified_by_worker:false`として記録する。全準備入力と比較基準の照合はbuild／controller側へ残す。managed moduleの由来を確かめる従来の検証と、WP応答の期待値比較は別である。
 
-controllerは所有processの終了・captureを確認してprivate fieldsを受け取り、固定nativeの全応答と3 snapshotに一致してから元worker記録を公開証跡へ保存する。一致しない本文・contextはfailure artifactへ保存せず、サイズ／digestと限定した診断を残す。既存の31 fields・RPC・access・終了処理のvalidatorは、schema等3値とprivate fieldsの配置を明示した検証用viewへ適用する。元workerのverdictやJSONをそのviewで上書きしない。
+controllerは所有processの終了・captureを確認してprivate fieldsを受け取り、固定nativeの全応答と3 snapshotに一致してから、検証済みの項目だけを選んだ記録を公開証跡へ保存する。未知の追加fieldや不要な内部診断はコピーしない。元schema／verdictは保持し、`worker_fields_projected:true`／`original_worker_json_published:false`を明記する。一致しない本文・contextはfailure artifactへ保存せず、サイズ／digestと限定した診断を残す。既存の31 fields・RPC・access・終了処理のvalidatorは、schema等3値とprivate fieldsの配置を明示した検証用viewへ適用する。元workerのprivate stdoutは公開せず、その全bytesのサイズ／SHAだけを記録する。
 
 ```powershell
 python -B experiments/php-wasix-wp-private-worker-probe/run_check.py --self-test
@@ -21,8 +21,10 @@ python -B experiments/php-wasix-wp-private-worker-probe/build_check.py
 python3 experiments/php-wasix-wp-private-worker-probe/run_check.py --backend mysql --record
 ```
 
-controllerの31 pure checksは、両DB・3ケースの合成view 6件、未知の完成body／contextや未完了actor等の拒否24件、nested duplicate拒否1件を確認する。実PHP-Wasm／DB／HTTPの実行結果とは区別する。WindowsではRust build／unitだけを検証し、実PHP-WasmはLinux CIで別途受け入れる。
+controllerの37 pure checksは、両DB・3ケースの合成view 6件、未知fieldの公開除外6件、未知の完成body／contextや未完了actor等の拒否24件、nested duplicate拒否1件を確認する。公開除外ではtop・PHP診断・capture・RPC・access・preparedへ同時に未知値を加えても、raw／hexのどちらも公開記録へ出ないことを確かめる。実PHP-Wasm／DB／HTTPの実行結果とは区別する。WindowsではRust build／unitだけを検証し、実PHP-WasmはLinux CIで別途受け入れる。
 
 [Windows build記録](evidence/windows-build.json)は59 unit／219 inputsで成功した。compile済みprivate codecと新workerのbuild・unitだけを実行し、source再照合と所有child回収も通過した。旧4 hostのreceipt・host／unit binaryは前後一致した。この結果で実PHP-WasmのLinux要求実行を代替しない。
+
+初回source `87f29f7`のCI 41769886268は、controllerが未知の追加fieldを丸ごと記録し得ることをレビューで確認し、実WP要求の試験前に停止した。[MySQL途中証跡](evidence/ci-41769886268-mysql/provenance.json)と[MariaDB途中証跡](evidence/ci-41769886268-mariadb/provenance.json)は各3件の原JSON・37 source bindingsを照合して保持する。元のrun／job判定はcancelledのままで、要求実行の受入ではない。修正版は公開項目の選択と37 pure checksを加え、別のCI sourceとして検証する。
 
 依存lockは元contextの445 packagesにlocal codec一つだけを加え、registry packageの追加・version／source／checksumの変更はない。旧bootstrap・theme・context・HTTPのreceipt／host／unit binaryを前後照合し、新しいhost／unit名だけで共有build targetを使う。module cache・任意request／plugin・認証・書込み・全process資源予算や未知応答の公開条件は残件である。
