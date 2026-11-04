@@ -27,4 +27,6 @@ controllerの37 pure checksは、両DB・3ケースの合成view 6件、未知fi
 
 初回source `87f29f7`のCI 41769886268は、controllerが未知の追加fieldを丸ごと記録し得ることをレビューで確認し、実WP要求の試験前に停止した。[MySQL途中証跡](evidence/ci-41769886268-mysql/provenance.json)と[MariaDB途中証跡](evidence/ci-41769886268-mariadb/provenance.json)は各3件の原JSON・37 source bindingsを照合して保持する。元のrun／job判定はcancelledのままで、要求実行の受入ではない。修正版は公開項目の選択と37 pure checksを加え、別のCI sourceとして検証する。
 
+取り込み処理も、後続段階の失敗に先立つ成功要求を含め、元sourceの公開処理とnative／終了処理の検査を通った記録だけを許可する。固定4 fieldsの検証adapter説明はデータを持たないmetadataとして区別する。両DBの合成正常記録が通過し、archive／API・部分失敗・非公開データ・metadataの型等84変異を拒否した。元の取消し証跡は補強後の`--verify-only`でも再確認し、上書きしない。
+
 依存lockは元contextの445 packagesにlocal codec一つだけを加え、registry packageの追加・version／source／checksumの変更はない。旧bootstrap・theme・context・HTTPのreceipt／host／unit binaryを前後照合し、新しいhost／unit名だけで共有build targetを使う。module cache・任意request／plugin・認証・書込み・全process資源予算や未知応答の公開条件は残件である。

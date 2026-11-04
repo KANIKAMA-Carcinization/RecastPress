@@ -57,7 +57,7 @@ php_diagnostic = context.php_diagnostic
 operation_types = context.operation_types
 
 
-def public_gate(value, references=None):
+def public_gate(value, references=None, source=None, backend=None):
     approved, responses = [], []
     if references is not None:
         for native in references.values():
@@ -66,8 +66,48 @@ def public_gate(value, references=None):
                 responses.append(observation['response'])
                 approved.append({key: observation[key] for key in ('case', 'is_home', 'is_404', 'transport_body',
                     'context_before_bootstrap', 'context_after_bootstrap', 'context_after_dispatch')})
+    checker = None
     def inspect(v):
+        nonlocal checker
         if type(v) is dict:
+            if 'observations' in v:
+                observations = v['observations']
+                require(type(observations) is dict and set(observations) <=
+                    {'install', 'read', 'home', 'missing', 'missing_repeat'}, 'closed_private_run_observation_labels')
+                for label in ('home', 'missing', 'missing_repeat'):
+                    if label in observations:
+                        require(type(observations[label]) is dict and observations[label].get('schema') ==
+                            'recastpress.php-wasix-wp-private-worker-observation.v0.5', 'stored_private_worker_schema')
+                        require(observations[label].get('case') == ('home' if label == 'home' else 'missing'),
+                            'stored_private_worker_case_label')
+            adapter_description = {'schema': 'recastpress.php-wasix-wp-private-worker-observation.v0.5',
+                'outcome': 'fixed_private_wp_worker_passed', 'phase': 'full_private_response_verified',
+                'existing_lifecycle_rpc_and_native_checks_retained': True}
+            if 'legacy_validator_envelope_adapter' in v:
+                exact(v['legacy_validator_envelope_adapter'], adapter_description, 'fixed_legacy_adapter_description')
+            if v.get('schema') == adapter_description['schema'] and canonical(v) != canonical(adapter_description):
+                # A failed outer job can retain earlier successful requests.
+                # Those records must still be the source controller's exact
+                # verified projection, never an arbitrary private IPC packet.
+                # This lazy gate reads no build anchor and runs no run-wide
+                # positive gate; old cancelled archives with no worker packet
+                # do not require a projector in their historical source.
+                require(source is not None and references is not None and backend in references,
+                    'source_bound_private_projection_required')
+                if checker is None: checker = frozen_checker(source)
+                exact(checker['public_projection'](v), v, 'only_idempotent_private_worker_projection_public')
+                case = v.get('case')
+                require(case in ('home', 'missing'), 'closed_private_projection_case')
+                labels = ('home',) if case == 'home' else ('missing', 'missing_repeat')
+                accepted = False
+                for label in labels:
+                    try:
+                        checker['validate_private'](v, case, references[backend]['requests'][label]['observation'])
+                        accepted = True
+                        break
+                    except (ValueError, KeyError, TypeError):
+                        pass
+                require(accepted, 'private_projection_native_and_lifecycle_validation')
             if 'private_worker_diagnostics' in v:
                 diagnostics = v['private_worker_diagnostics']
                 require(type(diagnostics) is dict and set(diagnostics) <= {'home', 'missing', 'missing_repeat'},
@@ -142,7 +182,7 @@ def archive_gate(path, api, backend, source):
     require('ci-stages.json' in raw, 'stage_record_required')
     data = {n: parse_json(b) for n, b in raw.items()}
     response = native_references(source)
-    for value in data.values(): public_gate(value, response)
+    for value in data.values(): public_gate(value, response, source, backend)
     return raw, data, members
 
 
