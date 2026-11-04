@@ -1,0 +1,97 @@
+{
+  "schema": "recastpress.wp-private-response-ci-import.v0.5",
+  "run_id": 41766160923,
+  "source_commit": "18059d92772b6c059b9d60704a96957e06050032",
+  "overall_positive": true,
+  "api_metadata": {
+    "bytes": 1377,
+    "sha256": "68ec269bcf22437ff3c0e6c42e0a78fc1ca5b9f5f5e51fae5c77fdc1f8d4a285"
+  },
+  "archive": {
+    "bytes": 3741,
+    "sha256": "8776599f09308b6956258b2e15492aff0b0c2fed55cb9d2ade334906ed3bbec9"
+  },
+  "raw_json": {
+    "bytes": 19591,
+    "sha256": "7237b839ec1bc9eb9c8850fe9367f26d2f24c6eadecfadbe23b44742852fcfa8"
+  },
+  "original_git_sources": {
+    ".github/workflows/wp-private-response.yml": {
+      "bytes": 1377,
+      "sha256": "a48bb14e3f25a1a007241cefa3b1e3e66b0e5da8534945940f47dadee147bae1"
+    },
+    "Cargo.lock": {
+      "bytes": 39639,
+      "sha256": "f85f9fcd4ffc85079f7596f700286d497a4c48663b5e214c535ca6eb98d75c1c"
+    },
+    "experiments/php-wasi-host-probe/src/cgi_response.rs": {
+      "bytes": 13116,
+      "sha256": "d7ef796e0bea093c862e67b3591d97ecf4a8ce53428e17196a22a7d06551bc49"
+    },
+    "experiments/php-wasix-wp-http-probe/Cargo.lock": {
+      "bytes": 13329,
+      "sha256": "dfc5f75f32da61cf74e707877b530044ee1f17f41752eae93af56ecfd4d33021"
+    },
+    "experiments/php-wasix-wp-http-probe/evidence/ci-41750117934-mariadb/provenance.json": {
+      "bytes": 46149,
+      "sha256": "de55e6638df4fbf46afb7a34b511d3350dea649470a0607815d8550b96ee16c2"
+    },
+    "experiments/php-wasix-wp-http-probe/evidence/ci-41750117934-mariadb/raw/experiments/php-wasix-wp-http-probe/evidence/linux-mariadb.json": {
+      "bytes": 2445126,
+      "sha256": "da26c4e1e03c895a57c59be3afc58ae06f34e9e14b28627b997b971d17d12224"
+    },
+    "experiments/php-wasix-wp-http-probe/evidence/ci-41750117934-mysql/provenance.json": {
+      "bytes": 46141,
+      "sha256": "0dd42d2212d02214d9e131d1c0e1751d54563862ee2d8e7004d9473aab448410"
+    },
+    "experiments/php-wasix-wp-http-probe/evidence/ci-41750117934-mysql/raw/experiments/php-wasix-wp-http-probe/evidence/linux-mysql.json": {
+      "bytes": 2447945,
+      "sha256": "5fb6203019df8a9343ee2ddca98a493ead6cdb179de61c18c5c62f7d59440034"
+    },
+    "experiments/wp-private-response-probe/Cargo.lock": {
+      "bytes": 5117,
+      "sha256": "9657e189a57964a43899a23d330c92a506880ac62c2dcc11d4219751c2c0d0bf"
+    },
+    "experiments/wp-private-response-probe/Cargo.toml": {
+      "bytes": 355,
+      "sha256": "45b3b5ec55fedb23f6900a9893259b48a09e9e5b91ea66ca01df7198f8999602"
+    },
+    "experiments/wp-private-response-probe/check.py": {
+      "bytes": 18117,
+      "sha256": "23e4836cc22ae642c12d7e100b545a417f7b95b6872d50de44e683de8e9c66ca"
+    },
+    "experiments/wp-private-response-probe/src/lib.rs": {
+      "bytes": 15609,
+      "sha256": "7ba2afcc76764681afda17c2ac40680fe0a78dbcbdbb04958945c72ef362637c"
+    },
+    "experiments/wp-private-response-probe/src/main.rs": {
+      "bytes": 1317,
+      "sha256": "be63cd6ebcd48e7e8b026f148a395b4ac7bb3ce196c7ca53e046224203ef4195"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mariadb-native.json": {
+      "bytes": 792967,
+      "sha256": "a2d54133bc368f9945b5f178aafcc5c1edf60778c90247491f1ad60aeb0fe1df"
+    },
+    "experiments/wp-request-context-probe/evidence/windows-mysql-native.json": {
+      "bytes": 795353,
+      "sha256": "7c2a0b01fdd5e90a120b8e278368245c18618936a268baefb09ff1adba01e00b"
+    },
+    "scripts/owned_probe.py": {
+      "bytes": 16128,
+      "sha256": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+    }
+  },
+  "source_input_count": 16,
+  "units": 16,
+  "public_fixture_cases": 12,
+  "private_cli_cases": 3,
+  "verifier_inputs": {
+    "scripts/verify_private_response_ci.py": "06120f10108f7d804efaa5f2e9f2e9958b83afcba4646920a4627670554b883e",
+    "experiments/wp-private-response-probe/check.py": "23e4836cc22ae642c12d7e100b545a417f7b95b6872d50de44e683de8e9c66ca",
+    "experiments/php-wasix-wpdb-probe/import_evidence.py": "5e049318726672f4794d2db4e2c7caf8751271ea87866142ddfe4a2939c7e66e"
+  },
+  "runtime_or_database_executed_by_verifier": false,
+  "ci_binaries_reverified_offline": false,
+  "unknown_response_publication_authorized": false,
+  "raw_evidence_rewritten": false
+}

@@ -1,0 +1,53 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41766160923,
+  "run_attempt": 1,
+  "head_sha": "18059d92772b6c059b9d60704a96957e06050032",
+  "run_conclusion": "success",
+  "job": {
+    "id": 126364908225,
+    "name": "codec",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install fixed Rust toolchain",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch locked compiler dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify private codec units and immutable response corpus",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload public summary evidence",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13292782200,
+    "name": "wp-private-response-1",
+    "size_in_bytes": 3741,
+    "digest": "sha256:8776599f09308b6956258b2e15492aff0b0c2fed55cb9d2ade334906ed3bbec9"
+  }
+}
