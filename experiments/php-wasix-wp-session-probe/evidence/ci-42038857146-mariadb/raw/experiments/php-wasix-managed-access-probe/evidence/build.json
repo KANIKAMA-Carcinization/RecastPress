@@ -1,0 +1,917 @@
+{
+  "format_version": 1,
+  "schema": "recastpress.php-wasix-managed-access-build.v0.5",
+  "variant": "nts-fresh-wasi-zend-fibers-managed-access-v1",
+  "observed_at_utc": "2026-11-05T13:48:02.955003+00:00",
+  "outcome": "managed_access_candidate_built_not_executed",
+  "phase": "build_complete",
+  "guest_executed": false,
+  "php_guest_executed": false,
+  "patched_php_executed": false,
+  "product_runtime_selected": false,
+  "native_runtime_fallback_used": false,
+  "redistributed_binaries": false,
+  "php_wasm_fiber_cgi_compatibility_verified": false,
+  "postopt_module_inspected": false,
+  "sysroot_source_build_attestation_verified": false,
+  "binaryen_validation_enabled": true,
+  "build_steps": [
+    {
+      "name": "configure",
+      "command": [
+        "bash",
+        "wasix-configure-eh-64.sh"
+      ],
+      "working_directory": "target/php-wasix-managed-access-probe/source/php",
+      "linker_flags_environment": {
+        "present": false,
+        "value_sha256": null
+      },
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_ms": 393830,
+      "timeout_seconds": 600,
+      "output_quota_bytes": 16777216,
+      "live_output_quota_enforced": true,
+      "output_capture_complete": true,
+      "process_group_failure_cleanup": false,
+      "owned_leader_reaped": true,
+      "stdout_bytes": 29448,
+      "stderr_bytes": 551,
+      "stdout_sha256": "3c56b4ff0204e839f73787b1bcbc37e7a99863b0b379467e2da59ec86f92a5b3",
+      "stderr_sha256": "14010fb6aed843af8ea4603ae86cf56a585d2003f3469955cf23e44effbceeb0"
+    },
+    {
+      "name": "make_cgi",
+      "command": [
+        "make",
+        "-j2",
+        "PHP=<host-stub-php>",
+        "cgi"
+      ],
+      "working_directory": "target/php-wasix-managed-access-probe/source/php",
+      "linker_flags_environment": {
+        "present": true,
+        "value_sha256": "3f939dca21bcdc00fd1666a521a9eff36fd307841c2d679e3558f0c913651109"
+      },
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_ms": 544332,
+      "timeout_seconds": 1200,
+      "output_quota_bytes": 16777216,
+      "live_output_quota_enforced": true,
+      "output_capture_complete": true,
+      "process_group_failure_cleanup": false,
+      "owned_leader_reaped": true,
+      "stdout_bytes": 3135623,
+      "stderr_bytes": 33981,
+      "stdout_sha256": "124c327bc5b4c1ae765bbd6d1877dca761293d18c9e6f1869224e4894bc960be",
+      "stderr_sha256": "cd7a7e4b18bac10ddd5b6fc1fddc3991d31ff1d3d1a64bf78172ac300b30c84c"
+    },
+    {
+      "name": "optimize_cgi",
+      "command": [
+        "target/php-wasix-cgi-build/tools/binaryen/bin/wasm-opt",
+        "--emit-exnref",
+        "--all-features",
+        "--strip-debug",
+        "--asyncify",
+        "--pass-arg=asyncify-imports@wasix_32v1.proc_snapshot",
+        "--pass-arg=asyncify-ignore-indirect",
+        "--pass-arg=max-func-params@32",
+        "target/php-wasix-managed-access-probe/php-fiber-cgi.raw.wasm",
+        "-o",
+        "target/php-wasix-managed-access-probe/php-fiber-cgi.wasm"
+      ],
+      "working_directory": "<workspace>",
+      "linker_flags_environment": {
+        "present": false,
+        "value_sha256": null
+      },
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_ms": 3780,
+      "timeout_seconds": 300,
+      "output_quota_bytes": 16777216,
+      "live_output_quota_enforced": true,
+      "output_capture_complete": true,
+      "process_group_failure_cleanup": false,
+      "owned_leader_reaped": true,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "input_files": {
+    ".github/workflows/php-wasix-cgi-build.yml": "d31457fddd3e2a72a097b6d133af5bfb5cb514952f07ca423d026c60f62f2b43",
+    "experiments/php-wasix-cgi-build/README.ja.md": "f9b2523bcacdbca3438d21d3fc96cd919873daa182298a244d2ac683542e4508",
+    "experiments/php-wasix-cgi-build/build.py": "66428ef0b96a40c0185e6bb4080d342d5beb743e7414bb441489680d8a1817e1",
+    "experiments/php-wasix-cgi-build/import_link_evidence.py": "8edffc7fd117b25db54f020621cd682d5aeae7d78d1167ca3dcfca12025792ac",
+    "experiments/php-wasix-cgi-build/link_audit.py": "df83c879f445773bb394c98d5936a3cba03bcc7f0f92d31628884e8b3b895caa",
+    "experiments/php-wasix-cgi-build/link_map.py": "9fc3f09ff551c6a69af1e8e437df9074465030b6b330fd35d658543a347be4af",
+    "experiments/php-wasix-cgi-build/manifest.json": "8c625e73920e6dc3fa7f842da0f553b75b6f65ff17e64349dcb98359a62ffd28",
+    "experiments/php-wasix-cgi-build/patch_source.py": "751fa61d9e81af55098bc1a8f67fd87c188490b30bdef30664969cb29b9e8d9d",
+    "experiments/php-wasix-cgi-build/patches/0001-wasi-disable-cgi-prefork.patch": "941f0f2ce80edcc0077e746bb7e080b163e837a1e60fb3a2faa21ca4008da1e2",
+    "experiments/php-wasix-cgi-build/prepare.py": "b21138e94eb32f33f8cd51412e1fd9708211c480888e934fca800ba727578540",
+    "experiments/php-wasix-fiber-cgi-probe/build.py": "94835a38f075d8fc73530294891f6200dd986da8b2fe0314a3b6b93b7640a50a",
+    "experiments/php-wasix-fiber-cgi-probe/fixtures/fiber_cgi_contract.php": "3d6b17234b12d1f391293b79366ab1575f0d9322e699ef76131c86818eadeff2",
+    "experiments/php-wasix-fiber-cgi-probe/manifest.json": "b0fdc9d3bff6b0e2cc92a7c4961111c5b1ed959ca1a3ecf87916780779bb39f8",
+    "experiments/php-wasix-fiber-cgi-probe/patch_source.py": "70d985f23d0cb24d4c6aea7db5bff9a1f18f9a87a579a8b52cff00381a3babad",
+    "experiments/php-wasix-fiber-probe/build.py": "b1aaaea4379d966bdde8493ff5979884e546c85544c7dbeaf51e0765a63bc774",
+    "experiments/php-wasix-fiber-probe/fixtures/fiber_contract.php": "9da4b5ffb45677eaa0e81ddbac8c101c692663bf685bbc1157a4689c61c17831",
+    "experiments/php-wasix-fiber-probe/fixtures/zend_wasix_fiber.S": "c0f44bef8e8a4d54713e3ba989be064995ae527924724edcd4bec1f8e4040c19",
+    "experiments/php-wasix-fiber-probe/manifest.json": "81cd79838d653453e27e2bb69ad3afefbbd01293846372080e2db8eb134b5c87",
+    "experiments/php-wasix-fiber-probe/patch_source.py": "607140f77676773d34053d67c46e03241c5e1bf1dd87d871b2409469045f2793",
+    "experiments/php-wasix-fiber-probe/patches/0001-nts-fresh-wasi-zend-fibers.patch": "2c334bcfcc34cb518971a8b7965ede50032b2813fa0c426ddfde206a8105d231",
+    "experiments/php-wasix-managed-access-probe/build.py": "8dd2db46ee1897976301876d551d2e098f5b5ea63c9c0fd94f957326f3a6c8bd",
+    "experiments/php-wasix-managed-access-probe/fixtures/recastpress_fs_access.h": "3973380aeaf7354496dd18bb2f82ffe3f6467ac7ebe9e2c82a0a634f9514268f",
+    "experiments/php-wasix-managed-access-probe/manifest.json": "6f639e1d80e4d9c2fcd3ea7b05df564ca01ad612dc4dac711005603a4d04f605",
+    "experiments/php-wasix-managed-access-probe/patch-plan.json": "2855b71e5add527b3113fb250ab3d91d0540bb1222bf78cff68b94612c7f0cb5",
+    "experiments/php-wasix-managed-access-probe/patch_source.py": "e725a0edacbd859b3f952683c85ac9ef67176f02709fcccc442f79fb259e3a67",
+    "experiments/php-wasix-managed-access-probe/patches/0001-wasi-managed-access.patch": "343bd0bcd1adb4abcf22653973a5f2d3a75360c1fe06c2748ed83b5646fe3be1",
+    "experiments/php-wasix-managed-access-probe/source_profile.py": "e38c16665f2e8f23f2e212f4a49bd793bca3136d381e5aaadab22e5f20f436b0"
+  },
+  "build_config": {
+    "variant": "nts-fresh-wasi-zend-fibers-managed-access-v1",
+    "sources": {
+      "php": {
+        "repository": "wasix-org/php",
+        "commit": "f4bfae79d5c19028349082f707930cf0951d23b9",
+        "directory": "source/php"
+      },
+      "deps": {
+        "repository": "wasix-org/php-wasix-deps",
+        "commit": "b77ecbede97aba2df32c86eaeb54ff9f5e44f543",
+        "directory": "source/php-wasix-deps"
+      },
+      "parser": {
+        "repository": "nikic/PHP-Parser",
+        "commit": "f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2",
+        "directory": "source/php/build/PHP-Parser-5.6.1"
+      }
+    },
+    "configure_command": [
+      "bash",
+      "wasix-configure-eh-64.sh"
+    ],
+    "extra_configure_flags": [
+      "--enable-cgi",
+      "--enable-rp-wasix-fibers",
+      "--disable-zts"
+    ],
+    "make_target": "cgi",
+    "make_jobs": 2,
+    "tool_environment_additions": {
+      "WASIXCC_COMPILER_POST_FLAGS": "-fno-lto",
+      "WASIXCC_RUN_WASM_OPT": "no",
+      "WASIXCC_PIC": "no",
+      "WASIXCC_GENERATE_SHELL_SCRIPT": "no"
+    },
+    "make_only_environment_additions": {
+      "WASIXCC_LINKER_FLAGS": "--export=rp_zend_wasix_switch_raw:--export=rp_zend_wasix_entry:--export=rp_zend_wasix_dispatch:--export=rp_zend_wasix_bootstrap_sp:--export=__stack_pointer"
+    },
+    "link_export_scope": "make_cgi only; configure conftests do not define the PHP adapter symbols",
+    "required_exports": [
+      "rp_zend_wasix_switch_raw",
+      "rp_zend_wasix_entry",
+      "rp_zend_wasix_dispatch",
+      "rp_zend_wasix_bootstrap_sp",
+      "__stack_pointer"
+    ],
+    "raw_output": "target/php-wasix-managed-access-probe/php-fiber-cgi.raw.wasm",
+    "wasm_output": "target/php-wasix-managed-access-probe/php-fiber-cgi.wasm",
+    "linked_output": "target/php-wasix-managed-access-probe/source/php/sapi/cgi/php-cgi",
+    "optimizer_flags": [
+      "--emit-exnref",
+      "--all-features",
+      "--strip-debug",
+      "--asyncify",
+      "--pass-arg=asyncify-imports@wasix_32v1.proc_snapshot",
+      "--pass-arg=asyncify-ignore-indirect",
+      "--pass-arg=max-func-params@32"
+    ],
+    "module_limit_bytes": 134217728,
+    "command_recipe": [
+      {
+        "name": "configure",
+        "command": [
+          "bash",
+          "wasix-configure-eh-64.sh"
+        ],
+        "working_directory": "target/php-wasix-managed-access-probe/source/php",
+        "timeout_seconds": 600
+      },
+      {
+        "name": "make_cgi",
+        "command": [
+          "make",
+          "-j2",
+          "PHP=<host-stub-php>",
+          "cgi"
+        ],
+        "working_directory": "target/php-wasix-managed-access-probe/source/php",
+        "timeout_seconds": 1200
+      },
+      {
+        "name": "optimize_cgi",
+        "command": [
+          "target/php-wasix-cgi-build/tools/binaryen/bin/wasm-opt",
+          "--emit-exnref",
+          "--all-features",
+          "--strip-debug",
+          "--asyncify",
+          "--pass-arg=asyncify-imports@wasix_32v1.proc_snapshot",
+          "--pass-arg=asyncify-ignore-indirect",
+          "--pass-arg=max-func-params@32",
+          "target/php-wasix-managed-access-probe/php-fiber-cgi.raw.wasm",
+          "-o",
+          "target/php-wasix-managed-access-probe/php-fiber-cgi.wasm"
+        ],
+        "working_directory": "<workspace>",
+        "timeout_seconds": 300
+      }
+    ],
+    "configure_timeout_seconds": 600,
+    "make_timeout_seconds": 1200,
+    "optimizer_timeout_seconds": 300,
+    "live_command_output_limit_bytes": 16777216,
+    "failure_cleanup_timeout_seconds": 5,
+    "configure_difference": "same opt-in NTS CGI flags; Fiber, prefork and explicit managed-access source patches",
+    "lto_difference": "64bit script unconditionally sets -flto; WASIXCC_COMPILER_POST_FLAGS=-fno-lto overrides it last for C/CXX/assembly",
+    "optimizer_difference": "validation enabled and no -O3; final stackless-shape inspection is required before execution",
+    "postopt_inspected_by_builder": false,
+    "sysroot_source_build_attestation_verified": false
+  },
+  "toolchain": {
+    "manifest": "experiments/php-wasix-cgi-build/manifest.json",
+    "manifest_sha256": "8c625e73920e6dc3fa7f842da0f553b75b6f65ff17e64349dcb98359a62ffd28",
+    "receipt": "experiments/php-wasix-cgi-build/evidence/toolchain.json",
+    "receipt_sha256": "f4dd1417b6404678b244906b3f984ca93e9d42f0b8c61bc1df3b30323e7b3d40",
+    "assets": [
+      {
+        "name": "wasixcc",
+        "asset_id": 496323636,
+        "bytes": 3554031,
+        "sha256": "f4c7d4417d4699adc9e56972ab033bb7c05acc87553fd34ea81243470fe8de45"
+      },
+      {
+        "name": "sysroot",
+        "asset_id": 465375751,
+        "bytes": 6142222,
+        "sha256": "8c54240afabda1106c19f284bdfff77f29932caa55f82756f87d01f69ffd50f4"
+      },
+      {
+        "name": "llvm",
+        "asset_id": 504888362,
+        "bytes": 81191584,
+        "sha256": "4066b52816c3382d10c5a7d7cfd6252a5f432459f007c143f07e23bf367c43ea"
+      },
+      {
+        "name": "binaryen",
+        "asset_id": 435610959,
+        "bytes": 107371282,
+        "sha256": "0a18362361ad05465118cd8eeb72edaeec89de6894bc283576ef4e07aa3babcc"
+      }
+    ],
+    "scope": "pinned archives and extracted tools, not source-build attestation"
+  },
+  "sources": {
+    "php": {
+      "repository": "wasix-org/php",
+      "commit": "f4bfae79d5c19028349082f707930cf0951d23b9",
+      "directory": "target/php-wasix-managed-access-probe/source/php"
+    },
+    "deps": {
+      "repository": "wasix-org/php-wasix-deps",
+      "commit": "b77ecbede97aba2df32c86eaeb54ff9f5e44f543",
+      "directory": "target/php-wasix-managed-access-probe/source/php-wasix-deps",
+      "prebuilt_archive_files": {
+        "lib-eh/libMagickCore-7.Q16HDRI.a": {
+          "bytes": 22295738,
+          "sha256": "44a1f445a2561e607a521ed829b3ef738d12e03bc8eb4d65f8701752f00ef0d9"
+        },
+        "lib-eh/libMagickWand-7.Q16HDRI.a": {
+          "bytes": 4496268,
+          "sha256": "d2eedc6a5f0d7fb6f6954d77773dd6fa6cb2b20cf3b22bbbd1c6d8dedc3181bb"
+        },
+        "lib-eh/libcharset.a": {
+          "bytes": 7328,
+          "sha256": "1011da9d5676f58cd71e313b37c5770b30b3a1d7d804c2b3bf118b6a69b40d0e"
+        },
+        "lib-eh/libcrypto.a": {
+          "bytes": 22475032,
+          "sha256": "1fc3a525381c5e7fe18f1f0c316cd0f31a4aaa4dd898091f68a374d4a5711292"
+        },
+        "lib-eh/libcurl.a": {
+          "bytes": 882520,
+          "sha256": "2c8b0d85f5c18a4578a07fb19047eed6e509b5558f031b2ac35d20a1a80ae061"
+        },
+        "lib-eh/libfreetype.a": {
+          "bytes": 5208636,
+          "sha256": "4aa2c4e8bcd637d3a5545ee25597c5177a470f1cf908f6d5cc7dfcb6acbc277f"
+        },
+        "lib-eh/libiconv.a": {
+          "bytes": 1647614,
+          "sha256": "898c0d8bfab607c497f7a3232cc00002000b55e3df802f42890d7a10ed4a7070"
+        },
+        "lib-eh/libicrt.a": {
+          "bytes": 197384,
+          "sha256": "b8751dd62ed441914761aff4a2b1dc2057be3dc90f26e4aebc8f2ac99a778283"
+        },
+        "lib-eh/libicudata.a": {
+          "bytes": 604,
+          "sha256": "5765020339aae2a310d9d10a6b3925c72b57ad0f624dfee59751002e6c62d562"
+        },
+        "lib-eh/libicui18n.a": {
+          "bytes": 4720320,
+          "sha256": "97aa00d1538ca467a4d0223afd09c88f04b2a6a0ee1c58d20be4ef746a7b1337"
+        },
+        "lib-eh/libicuio.a": {
+          "bytes": 53058,
+          "sha256": "3ab5bd28370ea89618814a950ff64127e01a9698a7292e12436c330bc973935d"
+        },
+        "lib-eh/libicuuc.a": {
+          "bytes": 2614330,
+          "sha256": "85f853243650c9bc157bb7dd1feff367131dd1dd2ad51d3d751cc6eab8c183c1"
+        },
+        "lib-eh/libjpeg.a": {
+          "bytes": 2699124,
+          "sha256": "66a0f594adfec2ee6084bf36f1de8c1ff32998d87957968cc55c141271a3aa7e"
+        },
+        "lib-eh/liblzma.a": {
+          "bytes": 1049468,
+          "sha256": "92d724330424a56ce6542b62115d8eef8a05adc29f87aada541365d764ad53e8"
+        },
+        "lib-eh/libonig.a": {
+          "bytes": 1932602,
+          "sha256": "62a607553aec01e373825987a12841ade04ed8716d3a501f24b13cf7d4caf0d8"
+        },
+        "lib-eh/libpng.a": {
+          "bytes": 1416112,
+          "sha256": "2c34b0a0c622a626a5237de15ef028c04715fbc0dc6821f29b02adf6b23ee823"
+        },
+        "lib-eh/libsharpyuv.a": {
+          "bytes": 77332,
+          "sha256": "02c271be6d0ddb7972cbda861db1468846791931f15e32fb68be5e03651065c6"
+        },
+        "lib-eh/libsodium.a": {
+          "bytes": 1681422,
+          "sha256": "20a6062613a31d64ba8331f9a98ea17ddb92449f224a215dcc3405bd91f4c90d"
+        },
+        "lib-eh/libsqlite3.a": {
+          "bytes": 6311874,
+          "sha256": "21e4a4312a7a8f98d75d81a6a6bb63c279bdd8b5f1968c5b6b2f7668a4513889"
+        },
+        "lib-eh/libssl.a": {
+          "bytes": 4744880,
+          "sha256": "290fc269625ae915e9f32acd31f58300044f48b273ec17e24eefebfcf7b1a2b4"
+        },
+        "lib-eh/libtiff.a": {
+          "bytes": 2591882,
+          "sha256": "f71a68e208f6b70cce3373f3a67d937b2984d3cbfc9ece9fbf8461f292acf09c"
+        },
+        "lib-eh/libwasix_rust_libs.a": {
+          "bytes": 13851546,
+          "sha256": "005ea965ad05e1109fe0f22719b1becd23aa42880a6a33326b5b4342a00cf6ad"
+        },
+        "lib-eh/libwasix_sendmail.a": {
+          "bytes": 12964844,
+          "sha256": "18927dfcf5bdaa08a9117a90f8d10417594b7abc07485296da00bb9c191be346"
+        },
+        "lib-eh/libwebp.a": {
+          "bytes": 2482104,
+          "sha256": "670ebb6eca74a7ef9fa44f9bc63300edbc78b9405527b07aa3a70abbbd1e066b"
+        },
+        "lib-eh/libxml2.a": {
+          "bytes": 7212900,
+          "sha256": "1f35a454c429497a702c2453d82734ac673fc954798b898ecacf59224b07a302"
+        },
+        "lib-eh/libz.a": {
+          "bytes": 462456,
+          "sha256": "40114257c62a5036664f806869191ab8d52cf6af8b565221648e586b31a1ef14"
+        },
+        "lib-eh/libzip.a": {
+          "bytes": 184016,
+          "sha256": "07c638af02224f1dbd45b25a0fcd8874a33ae93598e868ce9bbec04a7a0aa87c"
+        },
+        "pgsql-eh/lib/libpq.a": {
+          "bytes": 4392304,
+          "sha256": "6a1c8f93df9ffe33f0349b2383b77939d790b33c34328ea1c34e4b1b1b8073c0"
+        }
+      },
+      "rebuilt_here": false,
+      "all_archives_linked_verified": false
+    },
+    "parser": {
+      "repository": "nikic/PHP-Parser",
+      "commit": "f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2",
+      "directory": "target/php-wasix-managed-access-probe/source/php/build/PHP-Parser-5.6.1"
+    }
+  },
+  "tracked_sources_clean_before_build": true,
+  "stub_headers_before": {
+    "Zend/zend_attributes_arginfo.h": "ef87b52f9b8b42ccbb24f79d71156c187a74c39ff2601b9c1aae35dff2887826",
+    "Zend/zend_builtin_functions_arginfo.h": "57eca8ce703edade046f277f7d017dca90ebe500c705923784803f11d17c8d0e",
+    "Zend/zend_closures_arginfo.h": "72d4ef96a85cc0e6894aa81bac9be044464f528787eb1a644f8eab65ceea5096",
+    "Zend/zend_constants_arginfo.h": "e107e986d62e0eb5a1eed288af4293f8dea74b6c444cd74450e85f120e8baa5c",
+    "Zend/zend_enum_arginfo.h": "eafda3a23bf7728ba615ba5add3ad8add511d425b1a67754626cc597873b89a5",
+    "Zend/zend_exceptions_arginfo.h": "99ae7ccf40b42bd6134de3a1b4b22b0f4a2f7fbb8b7ae8f4c61b4719b095d673",
+    "Zend/zend_fibers_arginfo.h": "9fbd3d5eb122f18d7de61d5e6f1d6be14c06ff99a4e92ac15201fffc3c8fdc7f",
+    "Zend/zend_generators_arginfo.h": "bd1dfe842ec716f6febe475cc5c0d49871591206732821353d5f14cb604ffd0c",
+    "Zend/zend_interfaces_arginfo.h": "3b88e3833046d1227aebb7e5b972f66ecdebbc6c635ca74d23b0dcf8f90276ad",
+    "Zend/zend_weakrefs_arginfo.h": "e04edc382c28ba2a9a5d609c915359687417607f6b6bcc9f1e7b5dbe01fbaa92",
+    "ext/bcmath/bcmath_arginfo.h": "a18e35143245d2a4ff0acbdf3c1ec9f58abe25fa3a88298e2e81ea1feb840335",
+    "ext/bz2/bz2_arginfo.h": "20416a99d836c63ea29bbc219dca1008259841c1a4894fe505fca802da5c6419",
+    "ext/calendar/calendar_arginfo.h": "9f6f06bc5d591a2e4cab29ae95180eb7ad86ce22f1ad3b5caf6e3b50aaecc250",
+    "ext/com_dotnet/com_extension_arginfo.h": "6ea730a9948d280549e1bff699cb10e3808fee2e4e3044c4fda6ffa2756118e4",
+    "ext/com_dotnet/com_persist_arginfo.h": "6cfe997e4c4c595f4cf5b5945352b303f200889952709dcd9fcb26aaab6b8425",
+    "ext/ctype/ctype_arginfo.h": "b69fa00d8790a8369eb2b73783c211a0742e12f0bd552bc8455f37c6c83305e4",
+    "ext/curl/curl_arginfo.h": "90343624112914e2b4ea4e1001a90f28c6b05564acd39b01ff5a4c0ee2a5b9f1",
+    "ext/curl/curl_file_arginfo.h": "785940e8c9457923438a863cf0752a882eb2e5f95241d5936988a7ee8bd28f31",
+    "ext/date/php_date_arginfo.h": "77599e9e79d73b3ef6b44a19d8ebccdb644d118c1f73a1c88a586adf607e453a",
+    "ext/dba/dba_arginfo.h": "1da6c5509d60fe4f3dd1875edee73656fe3ed9d24cef44da0f05c0a74a267cd2",
+    "ext/dl_test/dl_test_arginfo.h": "e2c235f52052a37edc55e5cce37424a618ebc5c66266892d62585f11ba2a05da",
+    "ext/dom/php_dom_arginfo.h": "de5e5fa210c803b6d81c37c001658155255184d50df1f9e475e34c770dad20a3",
+    "ext/enchant/enchant_arginfo.h": "853448fb3ef8c0c0f25f2ee752bd0a322a9ab90e3570d830d0d46082f13813db",
+    "ext/exif/exif_arginfo.h": "e8839a6977d5398efa53fc087110f745a028033d486ec1c092db9757112670fb",
+    "ext/ffi/ffi_arginfo.h": "0c23358456683d810a87ce25461d752b2e6226504daeed1c88d87df7ed6a07cb",
+    "ext/fileinfo/fileinfo_arginfo.h": "4ef9350880a857a3865355473077c6a349008418ee29788867b55ba4d47bdd00",
+    "ext/filter/filter_arginfo.h": "6163e5ca5d4ca421e9df093e8adbca7793c13d6d910bff2501117c0cf1c60910",
+    "ext/ftp/ftp_arginfo.h": "e0146d5ed135ab7c01987f60427c840f1016d39ea63acb06690cd9a9d6cfb1ee",
+    "ext/gd/gd_arginfo.h": "5fe839a7a2bb249a4d7eabb8075ce1ba3a227f92455f92b7393bf5ea29162084",
+    "ext/gettext/gettext_arginfo.h": "2a2ee5ebe9bd36b63430524b8bea1b9ea98b37f7ab6b23890ef34757af62de00",
+    "ext/gmp/gmp_arginfo.h": "f601381e86e4e4438f6d3ac6a561a498d1ce4dcc84b4ae60c1d1e453a5bb2378",
+    "ext/hash/hash_arginfo.h": "b718c37af97753c0a5ec14af12ed7e991b00ce3c23f86f9ade7e8942efcbe338",
+    "ext/iconv/iconv_arginfo.h": "ac925c763bf3e53f01ebf2570ae3913af78f8d465ac2aa974c8bf9ae7c13121e",
+    "ext/imagick/ImagickDraw_arginfo.h": "5d973c1a9e3407b3c26023993dfade299294aef66b8b27a6c41ac98b8c7c0610",
+    "ext/imagick/ImagickKernel_arginfo.h": "1107d54e8a1093cca1f5c86fe2bec300991bab6d3802d4a6f0e3c71c41fd5946",
+    "ext/imagick/ImagickPixelIterator_arginfo.h": "c08e02ef08ff638cf18eaa40db16af1edc86f7bd9c862c52b9d974315086f18f",
+    "ext/imagick/ImagickPixel_arginfo.h": "823930b067ca1173c89ed7fcd43f971b4242dc2b83756d062a961a45bc9b99b4",
+    "ext/imagick/Imagick_arginfo.h": "69b2e3ed03c807f6c8579d2bedae4b9cafb066f98639dda4d7d42e54e8e267fa",
+    "ext/intl/breakiterator/breakiterator_arginfo.h": "fbc2a969d2ee9c68ca4333217038778ddf6ee856a6c9e91eae3126b998747b9f",
+    "ext/intl/breakiterator/breakiterator_iterators_arginfo.h": "415411039af9a580cb20a8e852086a94c0ab2cfde8ba1f3efe6da5becf029963",
+    "ext/intl/calendar/calendar_arginfo.h": "12a41b94c844c67b25e329e4a94f8467a2d42ebef8256a67d31d1f26a81b2a78",
+    "ext/intl/collator/collator_arginfo.h": "4bf161aeda550ef7a482e59f1f58f1117f0586834a03bef5695244a2b84eefd3",
+    "ext/intl/collator/collator_functions_arginfo.h": "20a08b631d6aaf4c01677e19c923ea2f085b66ccd16d9a8a6c064642964125f2",
+    "ext/intl/common/common_arginfo.h": "473129c8fe428d4d5e2dc4405d7dce975dcbb29c92eb059f72b46e31e31e7b84",
+    "ext/intl/converter/converter_arginfo.h": "d1f3429ae2ebfe7618c46d7cef30531062a8f68a2f59428391c85e82a790c78c",
+    "ext/intl/dateformat/dateformat_arginfo.h": "3c23366536a8aa8bc314c6241da467a1838dba23ea139f12ba0474e9b6d56afd",
+    "ext/intl/dateformat/datepatterngenerator_arginfo.h": "16c1ccf70d57973a91761ced18054962b9d6780747045e158d203ff61d96948c",
+    "ext/intl/formatter/formatter_arginfo.h": "123d44e945cf9c03e2f831d0920a60c963a40932b061d6f606a6740dd1ea9830",
+    "ext/intl/formatter/formatter_functions_arginfo.h": "1eedd4a740828a57b3a6ed228d56bae128d859fd0ab05e62d2cad295e31c5c71",
+    "ext/intl/listformatter/listformatter_arginfo.h": "cb21f8550fe1e87628c442cf53c084bb1cadee22013605849118c0ff442de6f8",
+    "ext/intl/locale/locale_arginfo.h": "ab34ae708ef72b5cd7d45271ec649397cf39166308062abf51ec5f8bd2b947b5",
+    "ext/intl/msgformat/msgformat_arginfo.h": "e3c08c6ea48c85fb68d50e1fa1ba5f334e088c4dc3af839b6f10377266d50377",
+    "ext/intl/normalizer/normalizer_arginfo.h": "ea4aba13de6c517b23c31cdcf8c6e3f6fb6369376cb51ea4813adc4688ad349b",
+    "ext/intl/php_intl_arginfo.h": "b37999697b2d8f468ec7c6ddca1278417b844de3af3d50c0d8365a06e114c085",
+    "ext/intl/resourcebundle/resourcebundle_arginfo.h": "c8531230694b938544fd83b8e7b2a180ce41128e848662d277728c3e397126fd",
+    "ext/intl/spoofchecker/spoofchecker_arginfo.h": "50632df5bc9a80691b54a2af6b1597823f9dacfa73eed1fd06f79c966b542f95",
+    "ext/intl/timezone/timezone_arginfo.h": "e61a64ea137603ef569d42c9e8a30a7763fef249ac4401fb5abcc9d7aa7ee033",
+    "ext/intl/transliterator/transliterator_arginfo.h": "f87170ac0a109541f720d6950e5e014633fafea1d947a2329b717548ae58b2f3",
+    "ext/intl/uchar/uchar_arginfo.h": "bcf47f631dc40ad744bb6f58ad8df54fbd1efaf43f9546d1e78f39af90192c04",
+    "ext/json/json_arginfo.h": "0777e232af20a64cbb006373a099363e22d86184e728597d0c736f3693d660e5",
+    "ext/ldap/ldap_arginfo.h": "1dd049de406c5701df2fa1faf28d82b989097ac419002c723036bfed2bd1d233",
+    "ext/libxml/libxml_arginfo.h": "d6a086b7ed61e53bbb005f744edb259735e303533fad8cf693d0da27faef7962",
+    "ext/mbstring/mbstring_arginfo.h": "591dac0d7a4469e44f2e3e632e7aa3255d70a5fc33219cb13fa50327fbb4f091",
+    "ext/mysqli/mysqli_arginfo.h": "f5306e7a8bd13d82a58276afdafe44ea8192f75ca4c68739bc12dbe1bf6659d7",
+    "ext/odbc/odbc_arginfo.h": "363112259bbda54da1eab25687968f613cdf1df86df2c28e3f83787c7c4823db",
+    "ext/opcache/opcache_arginfo.h": "af22ddb4e067babf9e94423e839d420803e8b96719828a1a7d704b184bdf26af",
+    "ext/openssl/openssl_arginfo.h": "3e1e5950fd1d54f25cee6af6858c067e762c76946fe7b7e69ed8fbd9c81c3f5d",
+    "ext/openssl/openssl_pwhash_arginfo.h": "06087cb1312ae0e5891027f81f0a17b4b1912e97f55d6e55472edd9e093e4404",
+    "ext/pcntl/pcntl_arginfo.h": "fe458ae316c1e6d1a5f540877c1f9b91ed34e736105f1e7760ddd7445c9986a1",
+    "ext/pcre/php_pcre_arginfo.h": "6ad3b9971bb5b1c33cf70801a14344d65405652773fbe9a54abeda44f864f5b3",
+    "ext/pdo/pdo_arginfo.h": "4868fd8e1fd29f6811aee8e5374f7075106454b134498bd1480595bdb6489375",
+    "ext/pdo/pdo_dbh_arginfo.h": "cf9208b59b703ef995658c713d1f1684dcd76b18149d8ba97f81712448b83cc8",
+    "ext/pdo/pdo_stmt_arginfo.h": "6fbee80575c5a11bbaf4c964372ef2bf15f699dd9de593a7e3506118979d2668",
+    "ext/pdo_dblib/pdo_dblib_arginfo.h": "93a15a3ed88f83f538ec823f94b7b9fef09b071e9eb4dcbdb9085929a177edf4",
+    "ext/pdo_firebird/pdo_firebird_arginfo.h": "5580d5f42a7fe33c12a05de713753ee86d57c849ca2dcdc9830bde8de804026b",
+    "ext/pdo_mysql/pdo_mysql_arginfo.h": "5ddd3d7feec2a14a58e8dee69f01d73c0fa85753664922f929b5f2f40e6b9045",
+    "ext/pdo_odbc/pdo_odbc_arginfo.h": "65ea22502cecac45dd0f65fe78a4aa1b9c85673b84ce49a871ec8f088108499b",
+    "ext/pdo_pgsql/pdo_pgsql_arginfo.h": "0ff9b16ef22242ff4944b3434f469a8eeb017b2866d8a8e863bc6ab55f92b3df",
+    "ext/pdo_pgsql/pgsql_driver_arginfo.h": "fa918d4e526f28df5dccfadf5ed121fad23a9c720e72a351a5813e33911037ca",
+    "ext/pdo_sqlite/pdo_sqlite_arginfo.h": "a7c844296fd15e040d4aff41e959c66bba4dec2eda70f8e69245a001e6c4a753",
+    "ext/pdo_sqlite/sqlite_driver_arginfo.h": "5348c53bc01a23a4afa023e2bcd705de863d1c54998b1465623d0fd21ddb10a8",
+    "ext/pgsql/pgsql_arginfo.h": "47ef23430574fde7046f0dbb42e80cbedd10f4fc081879c49202980cd2fda251",
+    "ext/phar/phar_object_arginfo.h": "bdc6517465cc874a783474a8d11c3c60d2d9a13c1eee64b07202691ba0030b70",
+    "ext/posix/posix_arginfo.h": "99d665f331360271da0ecc84835bb6899d2e095594842f9658aeb92a315a04fa",
+    "ext/random/random_arginfo.h": "e91fe0902246136f0d513846f858393152e3d73be1714b9c92e292281c4c3354",
+    "ext/readline/readline_arginfo.h": "08cda44029262db14060c995b559b019f68f7c54752a5272361e1d5805983ade",
+    "ext/reflection/php_reflection_arginfo.h": "a8c158b9648b4fe9b0defcb8447b238915e41f283c48161e899a7d2495846aa5",
+    "ext/session/session_arginfo.h": "bc4ae9c4d9bf0500d5bb7cd69c5431b23c730b0c5c29631f4e1ac1d43b5617de",
+    "ext/shmop/shmop_arginfo.h": "dc16ce1f359b071839ddcaac8f50f4c91c63d5f53e2a834ca0f5f6dc6519315c",
+    "ext/simplexml/simplexml_arginfo.h": "7be839380ad2518be6e2ac19fecf072188c0d41e45e99fa6e65efb06179ac7b7",
+    "ext/skeleton/skeleton_arginfo.h": "d046a128535f49ed6687e17e84f4001407fad7090851a775a8891746d34fbccd",
+    "ext/snmp/snmp_arginfo.h": "9660859855e2f5379211a9fa28ccf0b6b66be3d5a45826df641ff6f2f9001d43",
+    "ext/soap/soap_arginfo.h": "2bc1f147915797b7234345b7be57e606dc0c6d3b88c637c2848bea420d6ba94d",
+    "ext/sockets/sockets_arginfo.h": "5a6326cd4fc00b552784132bfec65c8d99ee3dfe509e0358aa4aa4153b7d5c2f",
+    "ext/sodium/libsodium_arginfo.h": "d1b3ce99163a7ecf17865a373a06d66a8ecc8364f555fbeed6b92a578fc3c2d2",
+    "ext/sodium/sodium_pwhash_arginfo.h": "a0c8aeb0eae6c54b03df54398a6e8cdb89dabe6467f19fa352cf75a8c8390a2b",
+    "ext/spl/php_spl_arginfo.h": "80055567f50692d7649e8ee0ddf76e4267cbcbd1d3850a380edbaf3aea0e6f07",
+    "ext/spl/spl_array_arginfo.h": "4716c19de46cb79d40fa8032bf2b4e262b792dc1384d759a989048d1df293913",
+    "ext/spl/spl_directory_arginfo.h": "c5b57907c68541733b1ee8c5f4c4a480e6c7a3f27c244c0b034a8838edb76788",
+    "ext/spl/spl_dllist_arginfo.h": "1809afc4ec3271c9c52243b1f6b215ec09cb1a8de265f7a3dead5eebf95c1203",
+    "ext/spl/spl_exceptions_arginfo.h": "f7b07f15db2a1d9f58ac0f4b797b1b0a86357d4e72df0644da592c5745b12859",
+    "ext/spl/spl_fixedarray_arginfo.h": "dee977c9c07a1f832b12518ab1e3483398ba93cb12e76efc7f24fad4f636ca23",
+    "ext/spl/spl_heap_arginfo.h": "33d3492e37131cae6b6cdc800325f367ce6c7776d9084e5511cc481273b40f32",
+    "ext/spl/spl_iterators_arginfo.h": "dc2f016138b414906ccbf173a7084bd61b11dec82e6a42027ec0320a73542429",
+    "ext/spl/spl_observer_arginfo.h": "3cbcaa5c554338a3c92cae60cfd2a254969a98917c35ac104916208404c7b30b",
+    "ext/sqlite3/sqlite3_arginfo.h": "0ddac2b06419dcf1e53415fa8a8e8805110bfc6ce2771b48a5baceae5c023330",
+    "ext/standard/basic_functions_arginfo.h": "6213ea625e2eae6167610d62f4842a828a51e9ab922a7c585352e97d5b70e851",
+    "ext/standard/dir_arginfo.h": "2672b0a36f6738dfc4d7c5495c330f3127e20f1ac86516bb2213ad68a2a8e308",
+    "ext/standard/dl_arginfo.h": "f5788c034abc5f61677bc1bbc729e149644ad1219f3ba8614d0285ba6750d038",
+    "ext/standard/file_arginfo.h": "9a86298ab6163455b54c39860db50e47845ed9eed3834d82ed48fe82e540ba88",
+    "ext/standard/password_arginfo.h": "e5d91a36713e1413ffde76b010699721d39e9fb8854cc51a946f75001dd61bda",
+    "ext/standard/user_filters_arginfo.h": "35e4bbf3f22be7109a5d306591cf993902641e7cdf2da0553f75209aa7885db2",
+    "ext/sysvmsg/sysvmsg_arginfo.h": "15028b06624f441acb899ea38e4cb84d999934a310b794c13cb83840bee544e4",
+    "ext/sysvsem/sysvsem_arginfo.h": "1e3ec165ff178b92dc665ca44a064b2f06551404a817dc1c9c0ddb11255901e2",
+    "ext/sysvshm/sysvshm_arginfo.h": "33839408fd0f3c90e76f691c7d4d5f74de222fbf652df13934d77c0d5fff800c",
+    "ext/tidy/tidy_arginfo.h": "5cb4e8e30c33bb68350881af928a5513f7c128c269100347ac36a5585d8272ba",
+    "ext/tokenizer/tokenizer_arginfo.h": "2b3fcba7b36ec3239438efd339405cee22e8663886797f41ecf36be7a5860fdd",
+    "ext/tokenizer/tokenizer_data_arginfo.h": "2bed0869bf76a6977ca2a6adfef7c9472dff99de25b1793fa528ba2a1721423d",
+    "ext/uri/php_uri_arginfo.h": "1bba305e20ac187edffae8e7844ba3d52ade21950b159c44d20e398cfe960a37",
+    "ext/xml/xml_arginfo.h": "62aa70d5cdbac3ab583fd73dda94514520341e93f3df77ef997507067a07152d",
+    "ext/xmlreader/php_xmlreader_arginfo.h": "ffd05fcb06911c9da19aaa5f69e90549abc1e36d982c235569f951baaab75d0c",
+    "ext/xmlwriter/php_xmlwriter_arginfo.h": "08f255afc97e61a414548f492b650c10aa98a80c00ef50c63bb6c777cd653f5a",
+    "ext/xsl/php_xsl_arginfo.h": "f402ef2e912e18caa18aafc8cbbe89b89e02a515ed9815af0110a12284e71eb8",
+    "ext/zend_test/fiber_arginfo.h": "8168c555a3811ff14dc6c49034adc53c71b5ffb7051d6dbcefce2ee311548ce4",
+    "ext/zend_test/iterators_arginfo.h": "515269d0f2812304f239b93cb7c95d311493f04b5cc916a076ba18eadf6f1a4b",
+    "ext/zend_test/object_handlers_arginfo.h": "e02f31add68e6450568bd0e97857daf6b2a9d152c628abc61fc14618561ccc57",
+    "ext/zend_test/test_arginfo.h": "9da054644bea84dbf62cbb861e16fd6bbe6ccace147624e1cdf837b31a630729",
+    "ext/zip/php_zip_arginfo.h": "d5d77e9cb7c31521b248553aceaeb399b1e103c48e9fbb92a622906565798057",
+    "ext/zlib/zlib_arginfo.h": "4bfdc83f91bbbf247a866b0e331cdf1ef3dd20845df7286a706657b0838de0a0",
+    "main/main_arginfo.h": "f9645c741ebea311502a80964efd13fe8e89f1811682e0c01ebbf862854c68c2",
+    "main/streams/userspace_arginfo.h": "170d816d18387108128aad013c14802c6adf76fa6e01ba81ac3c08a18f9f6f8b",
+    "sapi/apache2handler/php_functions_arginfo.h": "ab7d07724d3d8206e1abf105f480cbe07f1f10a2626bd9ecffd0c61ae29b3c57",
+    "sapi/cgi/cgi_main_arginfo.h": "997c05feb9a738e3198366b9f017637e1b1fefde2e6082abe6b02c4bf46030f7",
+    "sapi/cli/php_cli_process_title_arginfo.h": "9f498da0fddabfe5ef8975ad081f90dd539d67488abee385db3e94b5cf638813",
+    "sapi/cli/php_cli_server_arginfo.h": "ba954052262900f321ea15f4d1887f682a21776d634deb2f09267b15ba16f83e",
+    "sapi/fpm/fpm/fpm_main_arginfo.h": "cbe18e6b19250e27d0a7974ffe3cec12f586fe1e7306cb8bae87bfc996f1a555",
+    "sapi/litespeed/lsapi_main_arginfo.h": "3e60e7c159597af06128011e87873428d349e46b2e9b5b116eed5d2ce8b4cd6f",
+    "sapi/phpdbg/phpdbg_arginfo.h": "98e0a1bf2b9dce8cbe3cada1d90ffce029f949b63bfe0f49b679fe97261aaa12"
+  },
+  "source_patches": [
+    {
+      "kind": "fiber",
+      "path": "experiments/php-wasix-fiber-probe/patches/0001-nts-fresh-wasi-zend-fibers.patch",
+      "bytes": 19479,
+      "sha256": "2c334bcfcc34cb518971a8b7965ede50032b2813fa0c426ddfde206a8105d231",
+      "source_commit": "f4bfae79d5c19028349082f707930cf0951d23b9",
+      "combined_tracked_source_clean_before_first_patch": true,
+      "applied": true,
+      "git_apply_check_passed": true,
+      "git_apply_passed": true,
+      "index_updated": false,
+      "before": {
+        "configure.ac": {
+          "bytes": 53849,
+          "git_blob_sha1": "6fd5a92366a38c927dba8e4d1b5488d96464ca27",
+          "sha256": "349248c22ad03d509a717c79d6c17987858b8dcc8c050a640d29d357de59d353"
+        },
+        "Zend/zend_fibers.c": {
+          "bytes": 34251,
+          "git_blob_sha1": "8e73330e51bbfcc4b3e150a553a32b88f4cc12a5",
+          "sha256": "4e06b55134e35c9eb6a193b9f4c5b7f02b630b10355e6bc8e2384aa9a4cf5cfb"
+        },
+        "Zend/asm/recastpress_wasix_fiber.S": null
+      },
+      "after": {
+        "configure.ac": {
+          "bytes": 55143,
+          "sha256": "cbe8ba27ade859f17de47904ecbb4a84e81472cbd4ffe5316ef6fa32590de7ce",
+          "git_blob_sha1": "ae18278e7752ddd6546349766e836fde01bb0891"
+        },
+        "Zend/zend_fibers.c": {
+          "bytes": 43637,
+          "sha256": "0573d1250ebd8204b21b387481b89ec2c0e347825be3925d3ba7c2977804d353",
+          "git_blob_sha1": "9c864b1617b7b58754ba823fc9a341a1c1c3d314"
+        },
+        "Zend/asm/recastpress_wasix_fiber.S": {
+          "bytes": 1153,
+          "sha256": "c0f44bef8e8a4d54713e3ba989be064995ae527924724edcd4bec1f8e4040c19",
+          "git_blob_sha1": "c7edb0570871f015c971aca30a34ea585d8500ac"
+        }
+      }
+    },
+    {
+      "kind": "cgi_prefork",
+      "path": "experiments/php-wasix-cgi-build/patches/0001-wasi-disable-cgi-prefork.patch",
+      "bytes": 673,
+      "sha256": "941f0f2ce80edcc0077e746bb7e080b163e837a1e60fb3a2faa21ca4008da1e2",
+      "source_commit": "f4bfae79d5c19028349082f707930cf0951d23b9",
+      "combined_tracked_source_clean_before_first_patch": true,
+      "applied": true,
+      "git_apply_check_passed": true,
+      "git_apply_passed": true,
+      "index_updated": false,
+      "before": {
+        "sapi/cgi/cgi_main.c": {
+          "bytes": 74873,
+          "sha256": "e33b16fc29faec5dd8b9b3b7bdd7747832a83c48525b6b336ef8d263fd8c07e6",
+          "git_blob_sha1": "6db96a43ac97bcaefe8e4c22686435a7d4bf39c7"
+        }
+      },
+      "after": {
+        "sapi/cgi/cgi_main.c": {
+          "bytes": 75146,
+          "sha256": "f5fe5e6e4534397cb5b8dbf538bdff32ae988659c7400fe555b703554c210832",
+          "git_blob_sha1": "5ca9c897dfe78e83f6177ed4660c94fbc1df22a6"
+        }
+      }
+    },
+    {
+      "kind": "managed_access",
+      "path": "experiments/php-wasix-managed-access-probe/patches/0001-wasi-managed-access.patch",
+      "bytes": 9077,
+      "sha256": "343bd0bcd1adb4abcf22653973a5f2d3a75360c1fe06c2748ed83b5646fe3be1",
+      "source_commit": "f4bfae79d5c19028349082f707930cf0951d23b9",
+      "fixed_own_targets_verified_before_patch": true,
+      "tracked_sources_clean_before_patch": false,
+      "prior_canonical_patch_set_verified": true,
+      "tracked_changes_before_patch": [
+        "Zend/zend_fibers.c",
+        "configure.ac",
+        "sapi/cgi/cgi_main.c"
+      ],
+      "applied": true,
+      "git_apply_check_passed": true,
+      "git_apply_passed": true,
+      "index_updated": false,
+      "before": {
+        "ext/standard/filestat.c": {
+          "bytes": 29692,
+          "sha256": "fac3258f4ed14964bc9d28c69c2de3a05f637b62ee938f670b7c362bd0f0070a",
+          "git_blob_sha1": "d960d4e8535d91d5432dc54ff3bfed1a9b2d7db0"
+        },
+        "main/streams/plain_wrapper.c": {
+          "bytes": 47201,
+          "sha256": "e612184e21e8b1cb311feaac3d54fb0902f514b749ca57096d94e0a9c9cd8edf",
+          "git_blob_sha1": "74d8877a7f3819f5fb1fb3de49082e7ee94f7b4d"
+        },
+        "main/recastpress_fs_access.h": null
+      },
+      "after": {
+        "ext/standard/filestat.c": {
+          "bytes": 30529,
+          "sha256": "db2460056917b7c3689971d8da30fe08f1e32ea657147585bf81a35f672f069f",
+          "git_blob_sha1": "ecd58dda113f209e1a5a49021d7d041549d00cf0"
+        },
+        "main/streams/plain_wrapper.c": {
+          "bytes": 47407,
+          "sha256": "e202a4ef58c7cb776463003db13079850109b341f243dd55109d48bfdeab47ca",
+          "git_blob_sha1": "4ca68635f209b5d2fe880a92d6b5f0d946e8d2ad"
+        },
+        "main/recastpress_fs_access.h": {
+          "bytes": 7066,
+          "sha256": "3973380aeaf7354496dd18bb2f82ffe3f6467ac7ebe9e2c82a0a634f9514268f",
+          "git_blob_sha1": "beedbef4a7fc6b6249bc894b8da55f933e8ef4a4"
+        }
+      },
+      "installed_header_matches_fixed_fixture": true,
+      "canonical_patch_targets_disjoint": true
+    }
+  ],
+  "host_stub_generator_php": {
+    "version": "8.3.6",
+    "version_id": 80306,
+    "sapi": "cli",
+    "tokenizer": true,
+    "executable_name": "php8.3",
+    "executable_sha256": "7f1ac2fe89d267364311651c0e7e6651d32ea006c9a701c0cab68eb2394a67d7",
+    "role": "gen_stub.php build tool only, never product fallback"
+  },
+  "apt_packages": [
+    "autoconf=2.71-3",
+    "automake=1:1.16.5-1.3ubuntu1",
+    "bison=2:3.8.2+dfsg-1ubuntu0.24.04.1",
+    "build-essential=12.10ubuntu1",
+    "php-cli=2:8.3+93ubuntu2",
+    "php-common=2:93ubuntu2",
+    "php-xml=2:8.3+93ubuntu2",
+    "pkg-config=1.8.1-2build1",
+    "re2c=3.1-1build1"
+  ],
+  "configuration_policy": {
+    "backend_enabled": true,
+    "zts_enabled": false,
+    "ucontext_enabled": false,
+    "assembly_rule_observed": true,
+    "compiler_post_flags": "-fno-lto",
+    "source_script_flto_preserved": true,
+    "effective_non_lto_basis": "verified wasixcc appends compiler post flags after original script -flto args"
+  },
+  "linked_php_output": {
+    "path": "target/php-wasix-managed-access-probe/source/php/sapi/cgi/php-cgi",
+    "bytes": 101137494,
+    "sha256": "05153abb5f0f8333a1e6016e69476315a478bfc3e55a9af9928798dd27924e87",
+    "wasm_header_verified": true,
+    "executed": false
+  },
+  "raw_wasm": {
+    "path": "target/php-wasix-managed-access-probe/php-fiber-cgi.raw.wasm",
+    "bytes": 101137494,
+    "sha256": "05153abb5f0f8333a1e6016e69476315a478bfc3e55a9af9928798dd27924e87",
+    "wasm_header_verified": true,
+    "executed": false
+  },
+  "php_wasm": {
+    "path": "target/php-wasix-managed-access-probe/php-fiber-cgi.wasm",
+    "bytes": 39150496,
+    "sha256": "1b0d9e9c4b5be8dae8fca765be2369b9ea7a9daddc808c0100ccb1b0f5ea84bb",
+    "wasm_header_verified": true,
+    "executed": false
+  },
+  "generated_configuration_files": {
+    "config.log": {
+      "bytes": 1589902,
+      "sha256": "e2cdb0ecdc95722464d2a9f05ddb960b837553d2af637c4ecdc735bd16d89714"
+    },
+    "config.status": {
+      "bytes": 61340,
+      "sha256": "8f044a4e9ac3ecb200109bd29d6077a30bd11dc04115943d0ec6c48bdb63aea2"
+    },
+    "config.nice": {
+      "bytes": 3860,
+      "sha256": "80a5fd5087f82e1d00fcc394013aa3b305e8760946164ab6fd1bc15128974ef1"
+    },
+    "configure": {
+      "bytes": 2529982,
+      "sha256": "44bcf059c39e2d7a4ae591cbcd1583be2103a9efe9678e811ef0150b8a35c6b9"
+    },
+    "Makefile": {
+      "bytes": 742709,
+      "sha256": "b7315ad3ab6540c125ea2958c2d0a3f0ca98caa88aed3730ef346b7d2aad68c1"
+    },
+    "main/php_config.h": {
+      "bytes": 69078,
+      "sha256": "42efbbdfdfc4d8d6ce0dd565ae9da1b6ad1dcda658889529753c632d4a482e31"
+    },
+    "Zend/zend_config.h": {
+      "bytes": 32,
+      "sha256": "f9a43d0609d797975ebbe0b777ce0a49af806db9b7f15eaacaa983d354027a1a"
+    }
+  },
+  "stub_headers_after": {
+    "Zend/zend_attributes_arginfo.h": "ef87b52f9b8b42ccbb24f79d71156c187a74c39ff2601b9c1aae35dff2887826",
+    "Zend/zend_builtin_functions_arginfo.h": "57eca8ce703edade046f277f7d017dca90ebe500c705923784803f11d17c8d0e",
+    "Zend/zend_closures_arginfo.h": "72d4ef96a85cc0e6894aa81bac9be044464f528787eb1a644f8eab65ceea5096",
+    "Zend/zend_constants_arginfo.h": "e107e986d62e0eb5a1eed288af4293f8dea74b6c444cd74450e85f120e8baa5c",
+    "Zend/zend_enum_arginfo.h": "eafda3a23bf7728ba615ba5add3ad8add511d425b1a67754626cc597873b89a5",
+    "Zend/zend_exceptions_arginfo.h": "99ae7ccf40b42bd6134de3a1b4b22b0f4a2f7fbb8b7ae8f4c61b4719b095d673",
+    "Zend/zend_fibers_arginfo.h": "9fbd3d5eb122f18d7de61d5e6f1d6be14c06ff99a4e92ac15201fffc3c8fdc7f",
+    "Zend/zend_generators_arginfo.h": "bd1dfe842ec716f6febe475cc5c0d49871591206732821353d5f14cb604ffd0c",
+    "Zend/zend_interfaces_arginfo.h": "3b88e3833046d1227aebb7e5b972f66ecdebbc6c635ca74d23b0dcf8f90276ad",
+    "Zend/zend_weakrefs_arginfo.h": "e04edc382c28ba2a9a5d609c915359687417607f6b6bcc9f1e7b5dbe01fbaa92",
+    "ext/bcmath/bcmath_arginfo.h": "a18e35143245d2a4ff0acbdf3c1ec9f58abe25fa3a88298e2e81ea1feb840335",
+    "ext/bz2/bz2_arginfo.h": "20416a99d836c63ea29bbc219dca1008259841c1a4894fe505fca802da5c6419",
+    "ext/calendar/calendar_arginfo.h": "9f6f06bc5d591a2e4cab29ae95180eb7ad86ce22f1ad3b5caf6e3b50aaecc250",
+    "ext/com_dotnet/com_extension_arginfo.h": "6ea730a9948d280549e1bff699cb10e3808fee2e4e3044c4fda6ffa2756118e4",
+    "ext/com_dotnet/com_persist_arginfo.h": "6cfe997e4c4c595f4cf5b5945352b303f200889952709dcd9fcb26aaab6b8425",
+    "ext/ctype/ctype_arginfo.h": "b69fa00d8790a8369eb2b73783c211a0742e12f0bd552bc8455f37c6c83305e4",
+    "ext/curl/curl_arginfo.h": "90343624112914e2b4ea4e1001a90f28c6b05564acd39b01ff5a4c0ee2a5b9f1",
+    "ext/curl/curl_file_arginfo.h": "785940e8c9457923438a863cf0752a882eb2e5f95241d5936988a7ee8bd28f31",
+    "ext/date/php_date_arginfo.h": "77599e9e79d73b3ef6b44a19d8ebccdb644d118c1f73a1c88a586adf607e453a",
+    "ext/dba/dba_arginfo.h": "1da6c5509d60fe4f3dd1875edee73656fe3ed9d24cef44da0f05c0a74a267cd2",
+    "ext/dl_test/dl_test_arginfo.h": "e2c235f52052a37edc55e5cce37424a618ebc5c66266892d62585f11ba2a05da",
+    "ext/dom/php_dom_arginfo.h": "de5e5fa210c803b6d81c37c001658155255184d50df1f9e475e34c770dad20a3",
+    "ext/enchant/enchant_arginfo.h": "853448fb3ef8c0c0f25f2ee752bd0a322a9ab90e3570d830d0d46082f13813db",
+    "ext/exif/exif_arginfo.h": "e8839a6977d5398efa53fc087110f745a028033d486ec1c092db9757112670fb",
+    "ext/ffi/ffi_arginfo.h": "0c23358456683d810a87ce25461d752b2e6226504daeed1c88d87df7ed6a07cb",
+    "ext/fileinfo/fileinfo_arginfo.h": "4ef9350880a857a3865355473077c6a349008418ee29788867b55ba4d47bdd00",
+    "ext/filter/filter_arginfo.h": "6163e5ca5d4ca421e9df093e8adbca7793c13d6d910bff2501117c0cf1c60910",
+    "ext/ftp/ftp_arginfo.h": "e0146d5ed135ab7c01987f60427c840f1016d39ea63acb06690cd9a9d6cfb1ee",
+    "ext/gd/gd_arginfo.h": "5fe839a7a2bb249a4d7eabb8075ce1ba3a227f92455f92b7393bf5ea29162084",
+    "ext/gettext/gettext_arginfo.h": "2a2ee5ebe9bd36b63430524b8bea1b9ea98b37f7ab6b23890ef34757af62de00",
+    "ext/gmp/gmp_arginfo.h": "f601381e86e4e4438f6d3ac6a561a498d1ce4dcc84b4ae60c1d1e453a5bb2378",
+    "ext/hash/hash_arginfo.h": "b718c37af97753c0a5ec14af12ed7e991b00ce3c23f86f9ade7e8942efcbe338",
+    "ext/iconv/iconv_arginfo.h": "ac925c763bf3e53f01ebf2570ae3913af78f8d465ac2aa974c8bf9ae7c13121e",
+    "ext/imagick/ImagickDraw_arginfo.h": "5d973c1a9e3407b3c26023993dfade299294aef66b8b27a6c41ac98b8c7c0610",
+    "ext/imagick/ImagickKernel_arginfo.h": "1107d54e8a1093cca1f5c86fe2bec300991bab6d3802d4a6f0e3c71c41fd5946",
+    "ext/imagick/ImagickPixelIterator_arginfo.h": "c08e02ef08ff638cf18eaa40db16af1edc86f7bd9c862c52b9d974315086f18f",
+    "ext/imagick/ImagickPixel_arginfo.h": "823930b067ca1173c89ed7fcd43f971b4242dc2b83756d062a961a45bc9b99b4",
+    "ext/imagick/Imagick_arginfo.h": "69b2e3ed03c807f6c8579d2bedae4b9cafb066f98639dda4d7d42e54e8e267fa",
+    "ext/intl/breakiterator/breakiterator_arginfo.h": "fbc2a969d2ee9c68ca4333217038778ddf6ee856a6c9e91eae3126b998747b9f",
+    "ext/intl/breakiterator/breakiterator_iterators_arginfo.h": "415411039af9a580cb20a8e852086a94c0ab2cfde8ba1f3efe6da5becf029963",
+    "ext/intl/calendar/calendar_arginfo.h": "12a41b94c844c67b25e329e4a94f8467a2d42ebef8256a67d31d1f26a81b2a78",
+    "ext/intl/collator/collator_arginfo.h": "4bf161aeda550ef7a482e59f1f58f1117f0586834a03bef5695244a2b84eefd3",
+    "ext/intl/collator/collator_functions_arginfo.h": "20a08b631d6aaf4c01677e19c923ea2f085b66ccd16d9a8a6c064642964125f2",
+    "ext/intl/common/common_arginfo.h": "473129c8fe428d4d5e2dc4405d7dce975dcbb29c92eb059f72b46e31e31e7b84",
+    "ext/intl/converter/converter_arginfo.h": "d1f3429ae2ebfe7618c46d7cef30531062a8f68a2f59428391c85e82a790c78c",
+    "ext/intl/dateformat/dateformat_arginfo.h": "3c23366536a8aa8bc314c6241da467a1838dba23ea139f12ba0474e9b6d56afd",
+    "ext/intl/dateformat/datepatterngenerator_arginfo.h": "16c1ccf70d57973a91761ced18054962b9d6780747045e158d203ff61d96948c",
+    "ext/intl/formatter/formatter_arginfo.h": "123d44e945cf9c03e2f831d0920a60c963a40932b061d6f606a6740dd1ea9830",
+    "ext/intl/formatter/formatter_functions_arginfo.h": "1eedd4a740828a57b3a6ed228d56bae128d859fd0ab05e62d2cad295e31c5c71",
+    "ext/intl/listformatter/listformatter_arginfo.h": "cb21f8550fe1e87628c442cf53c084bb1cadee22013605849118c0ff442de6f8",
+    "ext/intl/locale/locale_arginfo.h": "ab34ae708ef72b5cd7d45271ec649397cf39166308062abf51ec5f8bd2b947b5",
+    "ext/intl/msgformat/msgformat_arginfo.h": "e3c08c6ea48c85fb68d50e1fa1ba5f334e088c4dc3af839b6f10377266d50377",
+    "ext/intl/normalizer/normalizer_arginfo.h": "ea4aba13de6c517b23c31cdcf8c6e3f6fb6369376cb51ea4813adc4688ad349b",
+    "ext/intl/php_intl_arginfo.h": "b37999697b2d8f468ec7c6ddca1278417b844de3af3d50c0d8365a06e114c085",
+    "ext/intl/resourcebundle/resourcebundle_arginfo.h": "c8531230694b938544fd83b8e7b2a180ce41128e848662d277728c3e397126fd",
+    "ext/intl/spoofchecker/spoofchecker_arginfo.h": "50632df5bc9a80691b54a2af6b1597823f9dacfa73eed1fd06f79c966b542f95",
+    "ext/intl/timezone/timezone_arginfo.h": "e61a64ea137603ef569d42c9e8a30a7763fef249ac4401fb5abcc9d7aa7ee033",
+    "ext/intl/transliterator/transliterator_arginfo.h": "f87170ac0a109541f720d6950e5e014633fafea1d947a2329b717548ae58b2f3",
+    "ext/intl/uchar/uchar_arginfo.h": "bcf47f631dc40ad744bb6f58ad8df54fbd1efaf43f9546d1e78f39af90192c04",
+    "ext/json/json_arginfo.h": "0777e232af20a64cbb006373a099363e22d86184e728597d0c736f3693d660e5",
+    "ext/ldap/ldap_arginfo.h": "1dd049de406c5701df2fa1faf28d82b989097ac419002c723036bfed2bd1d233",
+    "ext/libxml/libxml_arginfo.h": "d6a086b7ed61e53bbb005f744edb259735e303533fad8cf693d0da27faef7962",
+    "ext/mbstring/mbstring_arginfo.h": "591dac0d7a4469e44f2e3e632e7aa3255d70a5fc33219cb13fa50327fbb4f091",
+    "ext/mysqli/mysqli_arginfo.h": "f5306e7a8bd13d82a58276afdafe44ea8192f75ca4c68739bc12dbe1bf6659d7",
+    "ext/odbc/odbc_arginfo.h": "363112259bbda54da1eab25687968f613cdf1df86df2c28e3f83787c7c4823db",
+    "ext/opcache/opcache_arginfo.h": "af22ddb4e067babf9e94423e839d420803e8b96719828a1a7d704b184bdf26af",
+    "ext/openssl/openssl_arginfo.h": "3e1e5950fd1d54f25cee6af6858c067e762c76946fe7b7e69ed8fbd9c81c3f5d",
+    "ext/openssl/openssl_pwhash_arginfo.h": "06087cb1312ae0e5891027f81f0a17b4b1912e97f55d6e55472edd9e093e4404",
+    "ext/pcntl/pcntl_arginfo.h": "fe458ae316c1e6d1a5f540877c1f9b91ed34e736105f1e7760ddd7445c9986a1",
+    "ext/pcre/php_pcre_arginfo.h": "6ad3b9971bb5b1c33cf70801a14344d65405652773fbe9a54abeda44f864f5b3",
+    "ext/pdo/pdo_arginfo.h": "4868fd8e1fd29f6811aee8e5374f7075106454b134498bd1480595bdb6489375",
+    "ext/pdo/pdo_dbh_arginfo.h": "cf9208b59b703ef995658c713d1f1684dcd76b18149d8ba97f81712448b83cc8",
+    "ext/pdo/pdo_stmt_arginfo.h": "6fbee80575c5a11bbaf4c964372ef2bf15f699dd9de593a7e3506118979d2668",
+    "ext/pdo_dblib/pdo_dblib_arginfo.h": "93a15a3ed88f83f538ec823f94b7b9fef09b071e9eb4dcbdb9085929a177edf4",
+    "ext/pdo_firebird/pdo_firebird_arginfo.h": "5580d5f42a7fe33c12a05de713753ee86d57c849ca2dcdc9830bde8de804026b",
+    "ext/pdo_mysql/pdo_mysql_arginfo.h": "5ddd3d7feec2a14a58e8dee69f01d73c0fa85753664922f929b5f2f40e6b9045",
+    "ext/pdo_odbc/pdo_odbc_arginfo.h": "65ea22502cecac45dd0f65fe78a4aa1b9c85673b84ce49a871ec8f088108499b",
+    "ext/pdo_pgsql/pdo_pgsql_arginfo.h": "0ff9b16ef22242ff4944b3434f469a8eeb017b2866d8a8e863bc6ab55f92b3df",
+    "ext/pdo_pgsql/pgsql_driver_arginfo.h": "fa918d4e526f28df5dccfadf5ed121fad23a9c720e72a351a5813e33911037ca",
+    "ext/pdo_sqlite/pdo_sqlite_arginfo.h": "a7c844296fd15e040d4aff41e959c66bba4dec2eda70f8e69245a001e6c4a753",
+    "ext/pdo_sqlite/sqlite_driver_arginfo.h": "5348c53bc01a23a4afa023e2bcd705de863d1c54998b1465623d0fd21ddb10a8",
+    "ext/pgsql/pgsql_arginfo.h": "47ef23430574fde7046f0dbb42e80cbedd10f4fc081879c49202980cd2fda251",
+    "ext/phar/phar_object_arginfo.h": "bdc6517465cc874a783474a8d11c3c60d2d9a13c1eee64b07202691ba0030b70",
+    "ext/posix/posix_arginfo.h": "99d665f331360271da0ecc84835bb6899d2e095594842f9658aeb92a315a04fa",
+    "ext/random/random_arginfo.h": "e91fe0902246136f0d513846f858393152e3d73be1714b9c92e292281c4c3354",
+    "ext/readline/readline_arginfo.h": "08cda44029262db14060c995b559b019f68f7c54752a5272361e1d5805983ade",
+    "ext/reflection/php_reflection_arginfo.h": "a8c158b9648b4fe9b0defcb8447b238915e41f283c48161e899a7d2495846aa5",
+    "ext/session/session_arginfo.h": "bc4ae9c4d9bf0500d5bb7cd69c5431b23c730b0c5c29631f4e1ac1d43b5617de",
+    "ext/shmop/shmop_arginfo.h": "dc16ce1f359b071839ddcaac8f50f4c91c63d5f53e2a834ca0f5f6dc6519315c",
+    "ext/simplexml/simplexml_arginfo.h": "7be839380ad2518be6e2ac19fecf072188c0d41e45e99fa6e65efb06179ac7b7",
+    "ext/skeleton/skeleton_arginfo.h": "d046a128535f49ed6687e17e84f4001407fad7090851a775a8891746d34fbccd",
+    "ext/snmp/snmp_arginfo.h": "9660859855e2f5379211a9fa28ccf0b6b66be3d5a45826df641ff6f2f9001d43",
+    "ext/soap/soap_arginfo.h": "2bc1f147915797b7234345b7be57e606dc0c6d3b88c637c2848bea420d6ba94d",
+    "ext/sockets/sockets_arginfo.h": "5a6326cd4fc00b552784132bfec65c8d99ee3dfe509e0358aa4aa4153b7d5c2f",
+    "ext/sodium/libsodium_arginfo.h": "d1b3ce99163a7ecf17865a373a06d66a8ecc8364f555fbeed6b92a578fc3c2d2",
+    "ext/sodium/sodium_pwhash_arginfo.h": "a0c8aeb0eae6c54b03df54398a6e8cdb89dabe6467f19fa352cf75a8c8390a2b",
+    "ext/spl/php_spl_arginfo.h": "80055567f50692d7649e8ee0ddf76e4267cbcbd1d3850a380edbaf3aea0e6f07",
+    "ext/spl/spl_array_arginfo.h": "4716c19de46cb79d40fa8032bf2b4e262b792dc1384d759a989048d1df293913",
+    "ext/spl/spl_directory_arginfo.h": "c5b57907c68541733b1ee8c5f4c4a480e6c7a3f27c244c0b034a8838edb76788",
+    "ext/spl/spl_dllist_arginfo.h": "1809afc4ec3271c9c52243b1f6b215ec09cb1a8de265f7a3dead5eebf95c1203",
+    "ext/spl/spl_exceptions_arginfo.h": "f7b07f15db2a1d9f58ac0f4b797b1b0a86357d4e72df0644da592c5745b12859",
+    "ext/spl/spl_fixedarray_arginfo.h": "dee977c9c07a1f832b12518ab1e3483398ba93cb12e76efc7f24fad4f636ca23",
+    "ext/spl/spl_heap_arginfo.h": "33d3492e37131cae6b6cdc800325f367ce6c7776d9084e5511cc481273b40f32",
+    "ext/spl/spl_iterators_arginfo.h": "dc2f016138b414906ccbf173a7084bd61b11dec82e6a42027ec0320a73542429",
+    "ext/spl/spl_observer_arginfo.h": "3cbcaa5c554338a3c92cae60cfd2a254969a98917c35ac104916208404c7b30b",
+    "ext/sqlite3/sqlite3_arginfo.h": "0ddac2b06419dcf1e53415fa8a8e8805110bfc6ce2771b48a5baceae5c023330",
+    "ext/standard/basic_functions_arginfo.h": "6213ea625e2eae6167610d62f4842a828a51e9ab922a7c585352e97d5b70e851",
+    "ext/standard/dir_arginfo.h": "2672b0a36f6738dfc4d7c5495c330f3127e20f1ac86516bb2213ad68a2a8e308",
+    "ext/standard/dl_arginfo.h": "f5788c034abc5f61677bc1bbc729e149644ad1219f3ba8614d0285ba6750d038",
+    "ext/standard/file_arginfo.h": "9a86298ab6163455b54c39860db50e47845ed9eed3834d82ed48fe82e540ba88",
+    "ext/standard/password_arginfo.h": "e5d91a36713e1413ffde76b010699721d39e9fb8854cc51a946f75001dd61bda",
+    "ext/standard/user_filters_arginfo.h": "35e4bbf3f22be7109a5d306591cf993902641e7cdf2da0553f75209aa7885db2",
+    "ext/sysvmsg/sysvmsg_arginfo.h": "15028b06624f441acb899ea38e4cb84d999934a310b794c13cb83840bee544e4",
+    "ext/sysvsem/sysvsem_arginfo.h": "1e3ec165ff178b92dc665ca44a064b2f06551404a817dc1c9c0ddb11255901e2",
+    "ext/sysvshm/sysvshm_arginfo.h": "33839408fd0f3c90e76f691c7d4d5f74de222fbf652df13934d77c0d5fff800c",
+    "ext/tidy/tidy_arginfo.h": "5cb4e8e30c33bb68350881af928a5513f7c128c269100347ac36a5585d8272ba",
+    "ext/tokenizer/tokenizer_arginfo.h": "2b3fcba7b36ec3239438efd339405cee22e8663886797f41ecf36be7a5860fdd",
+    "ext/tokenizer/tokenizer_data_arginfo.h": "2bed0869bf76a6977ca2a6adfef7c9472dff99de25b1793fa528ba2a1721423d",
+    "ext/uri/php_uri_arginfo.h": "1bba305e20ac187edffae8e7844ba3d52ade21950b159c44d20e398cfe960a37",
+    "ext/xml/xml_arginfo.h": "62aa70d5cdbac3ab583fd73dda94514520341e93f3df77ef997507067a07152d",
+    "ext/xmlreader/php_xmlreader_arginfo.h": "ffd05fcb06911c9da19aaa5f69e90549abc1e36d982c235569f951baaab75d0c",
+    "ext/xmlwriter/php_xmlwriter_arginfo.h": "08f255afc97e61a414548f492b650c10aa98a80c00ef50c63bb6c777cd653f5a",
+    "ext/xsl/php_xsl_arginfo.h": "f402ef2e912e18caa18aafc8cbbe89b89e02a515ed9815af0110a12284e71eb8",
+    "ext/zend_test/fiber_arginfo.h": "8168c555a3811ff14dc6c49034adc53c71b5ffb7051d6dbcefce2ee311548ce4",
+    "ext/zend_test/iterators_arginfo.h": "515269d0f2812304f239b93cb7c95d311493f04b5cc916a076ba18eadf6f1a4b",
+    "ext/zend_test/object_handlers_arginfo.h": "e02f31add68e6450568bd0e97857daf6b2a9d152c628abc61fc14618561ccc57",
+    "ext/zend_test/test_arginfo.h": "9da054644bea84dbf62cbb861e16fd6bbe6ccace147624e1cdf837b31a630729",
+    "ext/zip/php_zip_arginfo.h": "d5d77e9cb7c31521b248553aceaeb399b1e103c48e9fbb92a622906565798057",
+    "ext/zlib/zlib_arginfo.h": "4bfdc83f91bbbf247a866b0e331cdf1ef3dd20845df7286a706657b0838de0a0",
+    "main/main_arginfo.h": "f9645c741ebea311502a80964efd13fe8e89f1811682e0c01ebbf862854c68c2",
+    "main/streams/userspace_arginfo.h": "170d816d18387108128aad013c14802c6adf76fa6e01ba81ac3c08a18f9f6f8b",
+    "sapi/apache2handler/php_functions_arginfo.h": "ab7d07724d3d8206e1abf105f480cbe07f1f10a2626bd9ecffd0c61ae29b3c57",
+    "sapi/cgi/cgi_main_arginfo.h": "997c05feb9a738e3198366b9f017637e1b1fefde2e6082abe6b02c4bf46030f7",
+    "sapi/cli/php_cli_process_title_arginfo.h": "9f498da0fddabfe5ef8975ad081f90dd539d67488abee385db3e94b5cf638813",
+    "sapi/cli/php_cli_server_arginfo.h": "ba954052262900f321ea15f4d1887f682a21776d634deb2f09267b15ba16f83e",
+    "sapi/fpm/fpm/fpm_main_arginfo.h": "cbe18e6b19250e27d0a7974ffe3cec12f586fe1e7306cb8bae87bfc996f1a555",
+    "sapi/litespeed/lsapi_main_arginfo.h": "3e60e7c159597af06128011e87873428d349e46b2e9b5b116eed5d2ce8b4cd6f",
+    "sapi/phpdbg/phpdbg_arginfo.h": "98e0a1bf2b9dce8cbe3cada1d90ffce029f949b63bfe0f49b679fe97261aaa12"
+  },
+  "tracked_changes_after_build": {
+    "Zend/zend_fibers.c": {
+      "bytes": 43637,
+      "sha256": "0573d1250ebd8204b21b387481b89ec2c0e347825be3925d3ba7c2977804d353"
+    },
+    "configure.ac": {
+      "bytes": 55143,
+      "sha256": "cbe8ba27ade859f17de47904ecbb4a84e81472cbd4ffe5316ef6fa32590de7ce"
+    },
+    "ext/standard/filestat.c": {
+      "bytes": 30529,
+      "sha256": "db2460056917b7c3689971d8da30fe08f1e32ea657147585bf81a35f672f069f"
+    },
+    "main/streams/plain_wrapper.c": {
+      "bytes": 47407,
+      "sha256": "e202a4ef58c7cb776463003db13079850109b341f243dd55109d48bfdeab47ca"
+    },
+    "sapi/cgi/cgi_main.c": {
+      "bytes": 75146,
+      "sha256": "f5fe5e6e4534397cb5b8dbf538bdff32ae988659c7400fe555b703554c210832"
+    }
+  },
+  "changed_stub_headers": []
+}

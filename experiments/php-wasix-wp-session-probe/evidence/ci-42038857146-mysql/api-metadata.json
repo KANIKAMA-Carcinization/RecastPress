@@ -1,0 +1,121 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 42038857146,
+  "run_attempt": 1,
+  "head_sha": "5dc3519dc00f0b66347d64c5560034359901875e",
+  "run_conclusion": "success",
+  "job": {
+    "id": 127284025972,
+    "name": "Cranelift WP session / mysql",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare full pinned WP and seven context fixtures",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged accepted theme host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged context worker",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify Rust HTTP adapter units",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify private WP response worker",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify private worker HTTP adapter",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify compile-once WordPress session worker",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare compile-once fresh requests and rejected private sessions",
+        "conclusion": "success"
+      },
+      {
+        "name": "Record compile-once session CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload public compile-once session evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13422098274,
+    "name": "php-wasix-wp-session-mysql-1",
+    "size_in_bytes": 448439,
+    "digest": "sha256:0ab0dfa92d410e536c9a0a20f0993d06e6baf52b7e800acffb06c740fa86299e"
+  }
+}

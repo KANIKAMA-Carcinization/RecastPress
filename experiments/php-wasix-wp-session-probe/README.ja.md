@@ -27,3 +27,15 @@ Linux候補は元installer／fresh readの後、正常session1件のhome／missi
 取り込み検証は14 JSON members／16 CI stagesを元Git sourceへ結び付ける。両DBの合成正常記録が通過し、compile・protocol・本文・終了処理・snapshot・API／ZIP／privacyの63変異を拒否した。途中失敗の保存済み要求にも公開項目・native・終了処理の検査を適用する。READYと最終summary、guest未実行の異常session stdoutは全bytesを再構成するが、元ACKと正常session全stdoutはprivate packetを含むためサイズ／SHAの観測だけを扱う。旧6 binaryをoffline importerで再読取りしたとは主張しない。
 
 WASI shutdown_timeoutの帰還を同期CPU取消しや全資源の即時回収の証明とはしない。任意request／plugin、長時間pool、共有FS、応答cacheや製品CLIへの採用は残件である。
+
+## compile1回・fresh要求3回の両DB受入
+
+source `5dc3519dc00f0b66347d64c5560034359901875e`の[Linux CI](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/42038857146)はMySQL／MariaDBとも成功した。元installer／fresh readの後、正常sessionの同一所有PIDでhome／404／反復404を実行した。session全体でcompile1回、各要求内のcompileは0回で、PHP／WASI・DB actor／RPC・FS／context／captureは要求ごとに新設した。64 unit／241 inputs、48 controller checksと親監督mock3件も通過した。
+
+homeは200・全3 origin headers・HTML69,399 B、404は404・全5 origin headers・HTML58,177 Bで、反復404を含む全応答と3段階のcontextがnative基準に一致した。WP応答の比較はcontrollerだけで行い、session workerはnative応答を読まない。各要求の終了、actor join／物理disconnect・capture終了とsource／module不変を確認した。
+
+不正な初回番号と早期EOFは別の所有sessionで試験し、それぞれcompile1回・guest要求0件・失敗終了となった。正常／異常の全3 sessionは強制killを使わずreapでき、stderrは0 B、所有DBも正常停止・削除した。異常session2件のcompileは正常sessionのcompile1回に含めない。
+
+取り込んだ元記録と判定は[MySQL](evidence/ci-42038857146-mysql/provenance.json)・[MariaDB](evidence/ci-42038857146-mariadb/provenance.json)へ保存した。両方とも14 JSON記録・16 CI stages、各3,575 source bindings・254 Git sourcesを照合し、private ACKそのものは公開しない。元のbuild／run判定は書き換えていない。
+
+この受入は有限private sessionまでである。既存のHTTP adapterは要求ごとにworkerを起動する方式を維持している。次は独立HTTP adapterからこのsessionを順次利用し、公開条件・応答の完全一致・要求失敗時のsession廃棄・HTTP切断時の所有権と終了を確認する。最初はworker1件・同時実行1件・固定3要求のままとし、pool拡張や応答cache、任意plugin・製品CLIへの採用は別途検証する。
