@@ -1,0 +1,113 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 41771428584,
+  "run_attempt": 1,
+  "head_sha": "209090a85d19bd3763569f5e18026f573985a7ba",
+  "run_conclusion": "success",
+  "job": {
+    "id": 126381770382,
+    "name": "Cranelift private WP worker / mariadb",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare full pinned WP and seven context fixtures",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged accepted theme host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged context worker",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify Rust HTTP adapter units",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify private WP response worker",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare private home and repeated 404 in controller",
+        "conclusion": "success"
+      },
+      {
+        "name": "Record private worker CI stage outcomes",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload public compared private-worker evidence only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13296365827,
+    "name": "php-wasix-wp-private-worker-mariadb-1",
+    "size_in_bytes": 406543,
+    "digest": "sha256:bab6f038956e6e2ee488bf116aad525cee0e9bcbac8bdb176548073623c1e1e0"
+  }
+}

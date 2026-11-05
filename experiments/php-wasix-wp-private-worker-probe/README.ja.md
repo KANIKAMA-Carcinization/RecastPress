@@ -29,4 +29,20 @@ controllerの37 pure checksは、両DB・3ケースの合成view 6件、未知fi
 
 取り込み処理も、後続段階の失敗に先立つ成功要求を含め、元sourceの公開処理とnative／終了処理の検査を通った記録だけを許可する。固定4 fieldsの検証adapter説明はデータを持たないmetadataとして区別する。両DBの合成正常記録が通過し、archive／API・部分失敗・非公開データ・metadataの型等84変異を拒否した。元の取消し証跡は補強後の`--verify-only`でも再確認し、上書きしない。
 
+## 実PHP-Wasmでの両DB受入
+
+source `209090a85d19bd3763569f5e18026f573985a7ba`の[Linux CI 41771428584](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/41771428584)はMySQL／MariaDBとも成功した。2026-11-04の実行結果を2026-11-05に照合し、[MySQL証跡](evidence/ci-41771428584-mysql/provenance.json)と[MariaDB証跡](evidence/ci-41771428584-mariadb/provenance.json)を保存した。各12件の原JSONを変更せず、各2,598 source bindings・230 Git source blobsを元commitへ結び付けた。
+
+| 要求 | 両DBの結果 | RPC |
+| --- | --- | --- |
+| home | 200・全3 headers・69,399 Bがnativeと一致 | 145 |
+| missing | 404・全5 headers・58,177 Bがnativeと一致 | 74 |
+| missing反復 | fresh workerで初回404の全応答と一致 | 74 |
+
+元installer・fresh readも再通過し、全5実行、公開contextの3 snapshot、59 unit／219 inputs、37 controller checksを確認した。旧4 hostのreceipt／binary不変、元WP source・3patch moduleの前後一致、物理DB切断・actor終了・CGI EOF／所有process回収・所有containerの正常清掃も通過した。要求3件はmoduleを3回compileし、共有compileや製品性能の受入にはしない。
+
+workerの`native_comparison_performed`はfalseのまま、比較はcontrollerだけで行った。公開記録は検証済み項目の選択結果であり、元private stdoutは公開せず、そのサイズ／SHAを実行時の観測として保持する。射影から元stdoutやprivate nonce／RPC bytesをofflineで再構成したという主張ではない。
+
+次はこのprivate workerを使う独立Rust HTTP adapterへ接続し、サービスの実行経路からnative応答比較を外す。既存の有限なHost／method／route／bodyの受付条件と終了監督を保ち、公開許可はHTTP側で明示する。今回の新worker試験自体はHTTP listener・任意request／plugin・製品CLIの受入ではない。
+
 依存lockは元contextの445 packagesにlocal codec一つだけを加え、registry packageの追加・version／source／checksumの変更はない。旧bootstrap・theme・context・HTTPのreceipt／host／unit binaryを前後照合し、新しいhost／unit名だけで共有build targetを使う。module cache・任意request／plugin・認証・書込み・全process資源予算や未知応答の公開条件は残件である。
