@@ -24,4 +24,6 @@ python3 experiments/php-wasix-wp-session-probe/run_check.py --backend mysql --re
 
 Linux候補は元installer／fresh readの後、正常session1件のhome／missing／反復missingをnativeと比較する。正常sessionはcompile1・要求時compile0・3要求・所有PID1件として記録する。別sessionの不正初回番号／早期EOFも各compile1・guest要求0として確認し、正常sessionのcompile数へ混ぜない。
 
+取り込み検証は14 JSON members／16 CI stagesを元Git sourceへ結び付ける。両DBの合成正常記録が通過し、compile・protocol・本文・終了処理・snapshot・API／ZIP／privacyの63変異を拒否した。途中失敗の保存済み要求にも公開項目・native・終了処理の検査を適用する。READYと最終summary、guest未実行の異常session stdoutは全bytesを再構成するが、元ACKと正常session全stdoutはprivate packetを含むためサイズ／SHAの観測だけを扱う。旧6 binaryをoffline importerで再読取りしたとは主張しない。
+
 WASI shutdown_timeoutの帰還を同期CPU取消しや全資源の即時回収の証明とはしない。任意request／plugin、長時間pool、共有FS、応答cacheや製品CLIへの採用は残件である。
