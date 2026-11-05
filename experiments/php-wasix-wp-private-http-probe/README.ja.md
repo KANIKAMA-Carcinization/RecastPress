@@ -27,4 +27,19 @@ controllerの40 pure checksは両DBの保存済みworker記録を使う合成正
 
 取り込み検証は、成功・部分失敗の両方でサービス記録を元sourceの閉じたvalidatorへ通す。両DBの合成正常記録、13 JSON members／15 CI stagesを照合し、schema欠落・未知payload・型／終了状態・archive／API等78変異を拒否した。summaryだけを持つサービスstdoutは全JSON bytesへ結び付け、元private worker stdoutはサイズ／SHAの観測として扱う。
 
-module共有、任意request／theme／plugin、認証・書込み、全process資源予算、portable配布や製品CLIへの接続は残件である。
+## 比較を分離した実HTTPの両DB受入
+
+source `25f93d75d9ed51f217604d56fcc01c4ed6925e6d`の[Linux CI 42027597880](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/42027597880)はMySQL／MariaDBとも成功した。[MySQL証跡](evidence/ci-42027597880-mysql/provenance.json)と[MariaDB証跡](evidence/ci-42027597880-mariadb/provenance.json)は、各13件の原JSONとAPI metadataを変更せず保存し、各4,344 source bindings・244 Git source blobsを元commitへ照合した。
+
+| 実HTTP要求 | 両DBの結果 |
+| --- | --- |
+| home | 200・origin 3 headers・69,399 Bがnativeと一致 |
+| missing | 404・origin 5 headers・58,177 Bがnativeと一致 |
+| missing反復 | fresh workerで初回404の全応答と一致 |
+| 固定7不正要求 | 全て400・固定本文で拒否、workerを起動しない |
+
+元installer・fresh readも再通過した。HTTP要求3件は別workerで実行し、home145／404各74 RPC、context identity、PHP／WASI終了・CGI EOF、物理DB切断・actor終了を確認した。HTTP serverと全3 workerを正常に回収し、強制清掃なしで所有containerを正常停止・削除した。旧5 hostの成果物、元WP source、同じ3patch moduleの前後一致、12 unit／232 inputs、observer47 checks・controller40 checksも通過した。
+
+サービスの`native_comparison_performed:false`と`source_files_rehashed_by_service:false`を保持し、workerの公開許可flagもfalseのままである。HTTP側だけが受付済みの匿名fixture要求を許可し、実workerの完成応答を返した。比較はcontrollerで行い、公開記録はsummary・native-normalized origin fields・bytes／SHAだけとする。サービスのsummary JSONは全byte identityへ照合するが、元private worker packet、HTTP wire、nonce／RPC bytesをofflineで再構成したという主張ではない。
+
+要求3件ではcompile3回であり、module共有はまだ行っていない。次は1所有workerでcompile済みmoduleだけを再利用し、WASI／PHP状態・DB actor・RPC／FS／captureは都度新設する有限実験へ進める。任意request／theme／plugin、認証・書込み、全process資源予算、portable配布や製品CLIへの接続は残件である。
