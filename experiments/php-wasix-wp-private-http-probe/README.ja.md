@@ -25,4 +25,6 @@ controllerの40 pure checksは両DBの保存済みworker記録を使う合成正
 
 [Windows build](evidence/windows-build.json)は232 inputs／12 unitで成功し、`--verify-only`でも再確認した。受付・Admission・未知のprivate応答・summaryの非公開境界・所有childの回収等を含むRust-only検証であり、Windowsで実PHP-WasmやHTTPを実行した結果ではない。旧bootstrap／theme／context／HTTP／private workerのreceipt・host／unit binaryは前後一致した。
 
+取り込み検証は、成功・部分失敗の両方でサービス記録を元sourceの閉じたvalidatorへ通す。両DBの合成正常記録、13 JSON members／15 CI stagesを照合し、schema欠落・未知payload・型／終了状態・archive／API等78変異を拒否した。summaryだけを持つサービスstdoutは全JSON bytesへ結び付け、元private worker stdoutはサイズ／SHAの観測として扱う。
+
 module共有、任意request／theme／plugin、認証・書込み、全process資源予算、portable配布や製品CLIへの接続は残件である。
