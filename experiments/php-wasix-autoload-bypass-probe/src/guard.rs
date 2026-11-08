@@ -2,6 +2,7 @@ use crate::{
     db::Input,
     monitor::{Monitor, PositionMismatch},
     options_cache::{GuardConfig, OptionsCache},
+    source_identity::SourceIdentity,
 };
 use anyhow::{Context, Result, anyhow, ensure};
 use serde_json::{Value, json};
@@ -13,6 +14,7 @@ pub(crate) struct OptionsGuard {
     mismatch: Option<PositionMismatch>,
     post_bypass_verified: bool,
     pub(crate) cache: Arc<OptionsCache>,
+    pub(crate) identity: SourceIdentity,
 }
 
 impl OptionsGuard {
@@ -25,12 +27,15 @@ impl OptionsGuard {
                 && input.database == "rp_wpdb_probe",
             "autoload_bypass_guard_scope"
         );
+        let mut monitor = Monitor::start(config.port, &config.password, &config.nonce)?;
+        let identity = monitor.source_identity()?;
         Ok(Self {
-            monitor: Monitor::start(config.port, &config.password, &config.nonce)?,
+            monitor,
             port: input.port,
             mismatch: None,
             post_bypass_verified: false,
             cache: Arc::new(OptionsCache::new()),
+            identity,
         })
     }
 

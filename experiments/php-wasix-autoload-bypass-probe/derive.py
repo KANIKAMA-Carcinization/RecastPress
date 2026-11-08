@@ -95,10 +95,34 @@ def outputs():
                     "dependency_monitor_position_changed"
                 );''', POSITION_CHECK)
     monitor = once(monitor, '    pub(crate) fn replay(', POST_BYPASS + '    pub(crate) fn replay(')
+    monitor = once(monitor, '    pub(crate) fn unchanged(&mut self)', '''    pub(crate) fn source_identity(&mut self) -> Result<crate::source_identity::SourceIdentity> {
+        self.runtime.block_on(async {
+            timeout(DEADLINE, crate::source_identity::SourceIdentity::from_monitor(&mut self.control, &self.nonce))
+                .await.context("autoload_binding_monitor_timeout")?
+        })
+    }
+
+    pub(crate) fn unchanged(&mut self)''')
     files['src/monitor_impl.rs'] = monitor.encode()
 
     actor = files['src/db.rs'].decode()
     actor = once(actor, '    pub operations: Vec<Value>,', '    pub operations: Vec<Value>,\n    pub direct_autoload_sql: bool,')
+    actor = once(actor, '    pub direct_autoload_sql: bool,', '    pub direct_autoload_sql: bool,\n    pub source_identity_verified: bool,')
+    actor = once(actor, '        cache: Option<Arc<crate::options_cache::OptionsCache>>,',
+        '        cache: Option<Arc<crate::options_cache::OptionsCache>>,\n        identity: Option<crate::source_identity::SourceIdentity>,')
+    actor = once(actor, 'sequence,cache.as_deref()))', 'sequence,cache.as_deref(),identity.as_ref()))')
+    actor = once(actor, '    cache: Option<&crate::options_cache::OptionsCache>,',
+        '    cache: Option<&crate::options_cache::OptionsCache>,\n    identity: Option<&crate::source_identity::SourceIdentity>,')
+    actor = once(actor, '            let c = conn.as_ref().ok_or("connection_missing")?;', '''            let c = conn.as_mut().ok_or("connection_missing")?;
+            let initial_status = c.last_ok_packet().map(|packet| packet.status_flags().bits());
+            if let Some(identity) = identity {
+                identity.verify_actor(c).await?;
+                observation.lock().map_err(|_| "actor_lock_failed")?.source_identity_verified = true;
+            }
+            check(cache.is_none() || identity.is_some(), "autoload_binding_required")?;''')
+    actor = once(actor, '''            *status = c
+                .last_ok_packet()
+                .map(|packet| packet.status_flags().bits());''', '            *status = initial_status;')
     actor = once(actor, '            query(connection, bytes, status).await', '''            let result = query(connection, bytes, status).await?;
             if cache.is_none() && sequence == 10 && bytes == AUTOLOAD_SQL && result.0 {
                 observation.lock().map_err(|_| "actor_lock_failed")?.direct_autoload_sql = true;
@@ -116,7 +140,13 @@ def outputs():
     for old, new in (
         ('target/php-wasix-autoload-binlog-probe/private-capture', 'target/php-wasix-autoload-bypass-probe/private-capture'),
         ('owner.prepare(&input, seq)?;\n                Some(owner.cache.clone())', 'owner.prepare(&input, seq)?'),
+        ('mod options_cache;', 'mod options_cache;\nmod source_identity;'),
+        ('cache: Option<Arc<options_cache::OptionsCache>>, report: &mut Value)',
+         'cache: Option<Arc<options_cache::OptionsCache>>, identity: Option<source_identity::SourceIdentity>, report: &mut Value)'),
+        ('db::Actor::start(input, cache)', 'db::Actor::start(input, cache, identity)'),
+        ('&capture_dir,cache,&mut report)', '&capture_dir,cache,guard.as_ref().map(|owner| owner.identity.clone()),&mut report)'),
         ('        report["operations"] = json!(s.operations);', '''        report["operations"] = json!(s.operations);
+        report["source_identity_verified"] = json!(s.source_identity_verified);
         if seq == 4 {
             ensure!(s.direct_autoload_sql, "autoload_bypass_direct_sql_missing");
             report["autoload_direct_sql"] = json!(true);

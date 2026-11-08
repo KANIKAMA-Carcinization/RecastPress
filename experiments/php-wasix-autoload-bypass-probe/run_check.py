@@ -3,6 +3,7 @@
 import inspect
 from pathlib import Path
 import runpy
+import secrets
 import sys
 
 import derive
@@ -31,9 +32,25 @@ require, equal, sha = (positive[name] for name in ('require', 'equal', 'sha'))
 baseline, process = (positive[name] for name in ('baseline', 'process'))
 
 
+class Database(positive['Database']):
+    def seed_dependency(self, nonce):
+        super().seed_dependency(nonce)
+        binding = secrets.token_hex(24)
+        require(binding != nonce, 'autoload_binding_distinct')
+        sql = (
+            'SET SESSION sql_log_bin=0;\n'
+            'ALTER TABLE `rp_options_guard_fixture`.`identity` ADD binding VARBINARY(48) NOT NULL;\n'
+            f"UPDATE `rp_options_guard_fixture`.`identity` SET binding=X'{binding.encode('ascii').hex()}' WHERE id=1;\n"
+            "GRANT SELECT (id,binding) ON `rp_options_guard_fixture`.`identity` TO 'rp_wpdb_probe'@'%';\n"
+        ).encode('ascii')
+        result = self.run('seed_owned_autoload_binding', self.client(), timeout=15, input_bytes=sql)
+        require(not result.stdout and not result.stderr, 'autoload_binding_seed')
+
+
 def sources():
     inventory = positive['sources']()
-    paths = [HERE / name for name in ('derive.py', 'run_check.py', 'Cargo.toml', 'Cargo.lock', 'src/guard.rs')]
+    paths = [HERE / name for name in ('derive.py', 'run_check.py', 'Cargo.toml', 'Cargo.lock', 'src/guard.rs',
+        'src/source_identity.rs')]
     paths.extend(derive.BASE / name for name in derive.PINS)
     paths.append(ROOT / '.github/workflows/php-wasix-autoload-bypass.yml')
     inventory.update({path.relative_to(ROOT).as_posix(): sha(path.read_bytes()) for path in paths})
@@ -75,16 +92,18 @@ def controller():
         ('php-wasix-autoload-binlog-check.v0.5', 'php-wasix-autoload-bypass-check.v0.5'),
         ("Session(binary, env, report, 'autoload_binlog')", "Session(binary, env, report, 'autoload_bypass')"),
         ('                    traces.append(autoload.comparable_operations(value))',
-         '''                    if seq == 4:
+         '''                    equal(value['source_identity_verified'], seq > 1)
+                    if seq == 4:
                         equal(value['autoload_direct_sql'], True)
                         report['position_mismatch_direct_sql_verified'] = True
                     traces.append(autoload.comparable_operations(value))'''),
         ('only_autoload_reply_digest_changed_after_commit=True, finite_binlog_replay=True',
-         'only_autoload_reply_digest_changed_after_commit=True, finite_binlog_replay=False'),
+         'only_autoload_reply_digest_changed_after_commit=True, finite_binlog_replay=False, verified_actor_connections=3'),
         ('WordPress Wasm autoload binlog: ', 'WordPress Wasm autoload bypass: '),
     ):
         source = derive.once(source, old, new)
-    namespace = dict(positive, HERE=HERE, sources=sources, generated=generated, build=build, check_final=check_final)
+    namespace = dict(positive, HERE=HERE, Database=Database, sources=sources, generated=generated,
+        build=build, check_final=check_final)
     exec(compile(source, '<pinned-autoload-bypass-controller>', 'exec'), namespace)
     return namespace['main']
 
