@@ -20,9 +20,11 @@ AUTOLOAD_IMPORTER = 'experiments/php-wasix-autoload-cache-probe/import_evidence.
 RAW_HELPER = 'experiments/php-wasix-wpdb-raw-error-probe/import_evidence.py'
 SCHEMA = 'recastpress.php-wasix-autoload-bypass-'
 BACKENDS = ('mysql', 'mariadb')
+IDENTITY_COMMIT = 'b3bdc7b9b26c8207ed78f2b70e70b42f8afd2992'
 RUNS = {
     42517825080: ('04b4be1b8f39f9c1c2588f68d07f20fd821498f8',
         {'mysql': 128844622330, 'mariadb': 128844622594}),
+    42532767293: (IDENTITY_COMMIT, {'mysql': 128890407934, 'mariadb': 128890407793}),
 }
 CONTRACT = 'Compare the stock autoload SELECT after rejecting the cached position'
 UPLOAD = 'Upload only the public autoload DB fallback report'
@@ -116,18 +118,25 @@ GENERATED = {name: {'bytes': size, 'sha256': digest} for name, size, digest in (
     ('src/monitor_impl.rs', 17110, '2b437197734fbe174781142fd951bdc9a3375613b1ddca79296ff89bd06cb7e8'),
 )}
 LABELS = positive.LABELS
+IDENTITY_INVENTORY = '611d21888446d33acc944580ba04c93cfef16a6ff271621821841413f460e291'
+IDENTITY_GENERATED = {**GENERATED, **{name: {'bytes': size, 'sha256': digest} for name, size, digest in (
+    ('src/main.rs', 79356, '152d8b2273d4516589d96fa6735d6273511f9e8f345b6f8b7998989a69a8f386'),
+    ('src/db.rs', 29168, '19f66b2900f1ee782ec42141033a455c588b14ce93521db610fe01bc4f0b9266'),
+    ('src/monitor_impl.rs', 17447, '115cb1e07670313d7cbfeb3ac4abd7f76c021740a55bec96ff5d420cf012d801'),
+)}}
 
 
 def source_gate(mapping, source):
-    require(type(mapping) is dict and len(mapping) == 268
-        and sha(old.canonical(mapping)) == SOURCE_INVENTORY, 'autoload_bypass_source_inventory')
+    count, inventory = (269, IDENTITY_INVENTORY) if source.commit == IDENTITY_COMMIT else (268, SOURCE_INVENTORY)
+    require(type(mapping) is dict and len(mapping) == count
+        and sha(old.canonical(mapping)) == inventory, 'autoload_bypass_source_inventory')
     source.bindings(mapping)
     pins = source.constants(positive.PREFIX + 'derive_binlog.py')
     exact(sha(source.read(dependency.PREFIX + 'src/monitor.rs')), pins['MONITOR_SHA'],
         'autoload_bypass_original_monitor_pin')
 
 
-def build_gate(commands, source, passed):
+def build_gate(commands, source, generated, passed):
     (gate,) = positive.derived_gate(source, DEPENDENCY_IMPORTER, ('build_gate',), (
         ('len(commands) <= 4', 'len(commands) <= 3'),
         ('exact(len(commands), 4,', 'exact(len(commands), 3,'),
@@ -135,7 +144,7 @@ def build_gate(commands, source, passed):
         ("if i < 2 and row['exit_code'] == 0:", "if i == 0 and row['exit_code'] == 0:"),
         ("('src/binlog_buffer.rs ' + generated['src/binlog_buffer.rs']['sha256'] + '\\n').encode() if i == 1 else b''", "b''"),
     ), {**vars(dependency), 'STAGES': STAGES})
-    gate(commands, GENERATED, passed)
+    gate(commands, generated, passed)
 
 
 def final_gate(final):
@@ -162,6 +171,10 @@ def report_gate(value, source, backend, steps):
     flags = {'source_reverified_after', 'unchanged_stock_wordpress_guest', 'cold_and_hot_ordered_rpc_exact',
         'only_autoload_reply_digest_changed_after_commit', 'owned_cleanup_completed'}
     success = flags | {'native_comparison_extra_autoload_rows', 'database', 'finite_binlog_replay', 'position_mismatch_direct_sql_verified'}
+    identity_trial = source.commit == IDENTITY_COMMIT
+    generated = IDENTITY_GENERATED if identity_trial else GENERATED
+    if identity_trial:
+        success.add('verified_actor_connections')
     failure = {'failure_stage', 'failure_class', 'failure', 'cleanup_failed'}
     require(type(value) is dict and type(value.get('passed')) is bool and common <= set(value),
         'autoload_bypass_report_shape')
@@ -189,10 +202,10 @@ def report_gate(value, source, backend, steps):
     if 'sources_before' in value:
         source_gate(value['sources_before'], source)
     if 'generated' in value:
-        exact(value['generated'], GENERATED, 'autoload_bypass_six_generated_identities')
+        exact(value['generated'], generated, 'autoload_bypass_six_generated_identities')
     if 'module_provenance' in value:
         plugin.module_gate(value['module_provenance'], source)
-    build_gate(value['commands'], source, passed)
+    build_gate(value['commands'], source, generated, passed)
     if 'units_passed' in value:
         exact(value['units_passed'], 66, 'autoload_bypass_locked_rust_units')
     if 'binary' in value:
@@ -237,6 +250,9 @@ def report_gate(value, source, backend, steps):
     if 'position_mismatch_direct_sql_verified' in value:
         exact(value['position_mismatch_direct_sql_verified'], True, 'autoload_bypass_direct_sql')
         require('4' in requests or not passed, 'autoload_bypass_direct_sql_request')
+    if 'verified_actor_connections' in value:
+        exact(value['verified_actor_connections'], 3, 'autoload_bypass_actor_source_binding')
+        require(set(requests) == set(LABELS), 'autoload_bypass_actor_binding_requests')
     return {'report_passed': passed, 'validated_native_wordpress_requests': len(requests),
         'options_cache': final['options_cache'] if final else None,
         'position_mismatch': final['position_mismatch'] if final else None,

@@ -10,4 +10,4 @@
 
 source `04b4be1` のLinux CIで、同一ログの位置はMySQLで166729から167160、MariaDBで277458から277975へ進んだ。両DBとも初回のキャッシュ対象SQLは1回、共有ヒットは1回、格納した応答は87,682バイトだった。最後の404では予約を0バイトにしてから標準SELECTをDBで直接実行した。対象応答のダイジェストだけが変わり、残りのRPCと標準PHPのページ応答は一致した。Rustテスト66件、固定入力268件と生成ソース6件、所有DBの正常終了を照合した。[MySQL証跡](evidence/ci-42517825080-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42517825080-mariadb/provenance.json)
 
-次の試験では監視接続が既存のnonceとともに独立した識別値を読み、3件の404それぞれで実際にSQLを実行する接続から同じ値を取得する。Rustホスト内で、識別値、サーバー版、異なる接続IDを確認してからWordPressのDB要求を受け付ける。監視用nonceの参照権限は監視接続に持たせる。WordPressから見えるDBの操作列とページ応答は引き続き比較する。
+source `b3bdc7b` のLinux CIでは、監視接続が既存のnonceとともに独立した識別値を読み、3件の404それぞれで実際にSQLを実行する接続から同じ値を取得した。Rustホスト内で、識別値、サーバー版、異なる接続IDを確認してからWordPressのDB要求を受け付けた。監視用nonceの参照権限は監視接続に持たせた。両DBでWordPressから見えるDBの操作列、標準PHPとのページ応答、共有ヒットと更新後のDB直読を照合した。固定入力269件、生成ソース6件、Rustテスト66件を確認した。[MySQL証跡](evidence/ci-42532767293-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42532767293-mariadb/provenance.json)
