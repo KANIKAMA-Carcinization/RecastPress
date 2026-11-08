@@ -1,0 +1,18 @@
+{
+  "all_owned_processes_reaped": true,
+  "backend": "mariadb",
+  "normal_shutdown": true,
+  "observation": {
+    "actor_and_monitor_disconnected": true,
+    "actor_nonce_read_denied": true,
+    "distinct_connection_ids": true,
+    "matching_cache_permit": true,
+    "mismatch_cache_permit": false,
+    "passed": true,
+    "physical_connections": 2
+  },
+  "owned_directory_removed": true,
+  "passed": true,
+  "source_sha256": "9810d61fadd10065b3107bfde7cea7265c4d6ce65c2021c4faf265dcc86d536b",
+  "version": "11.8.9-MariaDB-log"
+}
