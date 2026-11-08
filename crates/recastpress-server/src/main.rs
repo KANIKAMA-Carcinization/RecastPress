@@ -9,7 +9,10 @@ mod shutdown;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let os_args: Vec<_> = std::env::args_os().skip(1).collect();
-    if os_args.first().is_some_and(|arg| arg == "preview-wordpress") {
+    if os_args
+        .first()
+        .is_some_and(|arg| arg == "preview-wordpress")
+    {
         launch_wordpress_preview(&os_args);
         let _ = std::io::stderr()
             .lock()
@@ -231,7 +234,9 @@ fn launch_wordpress_preview(args: &[std::ffi::OsString]) {
     };
     let directory = Path::new(directory);
     let capture = Path::new(capture);
-    if !capture.symlink_metadata().is_ok_and(|metadata| metadata.is_dir())
+    if !capture
+        .symlink_metadata()
+        .is_ok_and(|metadata| metadata.is_dir())
         || recastpress_server::wordpress_release::verify(directory, digest).is_err()
     {
         return;
@@ -242,7 +247,11 @@ fn launch_wordpress_preview(args: &[std::ffi::OsString]) {
     // Replace this process so the parent keeps ownership of the same PID and
     // private stdin while the HTTP adapter supervises the worker.
     let _ = Command::new(root.join("bin/http"))
-        .args([root.as_os_str(), std::ffi::OsStr::new(digest), capture.as_os_str()])
+        .args([
+            root.as_os_str(),
+            std::ffi::OsStr::new(digest),
+            capture.as_os_str(),
+        ])
         .env_clear()
         .exec();
 }
