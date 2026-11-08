@@ -1,0 +1,26 @@
+{
+  "format_version": 1,
+  "scope": "owned_shared_cache_binlog_fixture",
+  "generated_at_utc": "2026-11-08T16:10:10.840564+00:00",
+  "server_version": "8.4.13",
+  "transport": "ca_and_name_verified_tls",
+  "database_owner_sha256": "35d71ab8eecfc5b16227647ba8b02288a3822d3ec2076e2fcbd281001252a9b1",
+  "server_binary_sha256": "7a976874ef3974d612081960b1c193c663b4434692b6257382352c587e367ad6",
+  "tool_archive_sha256": "e9cd98b1d23f122987b1afca26ad942efec5891481103d48ae3cde237fa3ea54",
+  "probe_pid": 2540,
+  "probe_binary_sha256": "125bc8f871bdcf2292a13bfc8503aad21c058a992b9fc7862ba5767033c89a2c",
+  "server_exit_code": 0,
+  "fixture_retained": false,
+  "result": {
+    "backend": "mysql",
+    "commits": 1,
+    "final_charged_bytes": 0,
+    "format_version": 1,
+    "precommit_hit_preserved": true,
+    "refreshed_hit": true,
+    "rollback_preserved": true,
+    "source_end_closed_cache": true,
+    "stale_fill_rejected": true,
+    "target_rows": 1
+  }
+}
