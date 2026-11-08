@@ -1,0 +1,527 @@
+{
+  "all_owned_children_reaped": true,
+  "fresh_processes": [
+    {
+      "cache_class": "WP_Object_Cache",
+      "ext_after": false,
+      "ext_before": false,
+      "mode": "stock",
+      "observations_matched": 56,
+      "observations_sha256": "4ffe0d2c21174a607b1dbee7c9418b801ef73567202f09c13849eb6d021c0887",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 118,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 26240,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 2807,
+        "sha256": "627965740836309d57e3b3eaee0abb6d3eeb489d697caeeabbf53c7c77dc6002"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "shim_late_hook": null,
+      "stock_parent": false,
+      "wrapper_source": "core"
+    },
+    {
+      "cache_class": "RpRustBackedCache",
+      "ext_after": true,
+      "ext_before": false,
+      "mode": "dropin",
+      "observations_matched": 56,
+      "observations_sha256": "4ffe0d2c21174a607b1dbee7c9418b801ef73567202f09c13849eb6d021c0887",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 245,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 12932,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 3044,
+        "sha256": "2284cbd91cf2f02e166f5526887382c6099c5d0c3ff99e0286749f45909b5446"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "rust_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust_stdout": {
+        "bytes": 1105,
+        "sha256": "e47dcea1b8b9dc1dd852927333f37968f17b21c798603b1869950e0095732df0"
+      },
+      "rust_transport": {
+        "exit_code": 0,
+        "finish": {
+          "charged_bytes": 0,
+          "entries": 0,
+          "ok": true,
+          "operations": 32
+        },
+        "flushes": 2,
+        "groups": {
+          "rp-cache-integer": 16,
+          "rp-cache-multiple": 14
+        },
+        "owned_pid": 25436,
+        "owned_reaped": true,
+        "stderr_bytes": 0,
+        "stdout_bytes": 1105
+      },
+      "shim_late_hook": null,
+      "stock_parent": "WP_Object_Cache",
+      "wrapper_source": "dropin"
+    },
+    {
+      "cache_class": "RpRustBackedCache",
+      "ext_after": true,
+      "ext_before": false,
+      "mode": "dropin",
+      "observations_matched": 56,
+      "observations_sha256": "4ffe0d2c21174a607b1dbee7c9418b801ef73567202f09c13849eb6d021c0887",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 235,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 15820,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 3043,
+        "sha256": "3718184b64ef791b164bd170c3b37a465714a9b4827d4b9705e6bf6c03b1e1c3"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "rust_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust_stdout": {
+        "bytes": 1105,
+        "sha256": "e47dcea1b8b9dc1dd852927333f37968f17b21c798603b1869950e0095732df0"
+      },
+      "rust_transport": {
+        "exit_code": 0,
+        "finish": {
+          "charged_bytes": 0,
+          "entries": 0,
+          "ok": true,
+          "operations": 32
+        },
+        "flushes": 2,
+        "groups": {
+          "rp-cache-integer": 16,
+          "rp-cache-multiple": 14
+        },
+        "owned_pid": 6244,
+        "owned_reaped": true,
+        "stderr_bytes": 0,
+        "stdout_bytes": 1105
+      },
+      "shim_late_hook": null,
+      "stock_parent": "WP_Object_Cache",
+      "wrapper_source": "dropin"
+    },
+    {
+      "cache_class": "WP_Object_Cache",
+      "ext_after": true,
+      "ext_before": false,
+      "mode": "direct-before",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 118,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 16128,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 285,
+        "sha256": "2b22707788f93321328804a9db5f1042b151db454d1ce3cd91320d6ca2398bfb"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "shim_late_hook": null,
+      "stock_parent": false,
+      "wrapper_source": "core"
+    },
+    {
+      "cache_class": "RpRustBackedCache",
+      "direct_include_redeclared_init": true,
+      "ext_after": true,
+      "ext_before": false,
+      "mode": "direct-after",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 219,
+        "exit_code": 255,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 26936,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 552,
+        "sha256": "6c5d41a3afb03b19649ccc2d3b42c2e41290dc3d52170b4e710807b9c972f8ef"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "rust_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust_stdout": {
+        "bytes": 57,
+        "sha256": "cb1f0297d42482e22d285f142730a742a9bdf9c6828c08a74d03a849c220daf0"
+      },
+      "rust_transport": {
+        "exit_code": 0,
+        "finish": {
+          "charged_bytes": 0,
+          "entries": 0,
+          "ok": true,
+          "operations": 0
+        },
+        "flushes": 0,
+        "groups": {
+          "rp-cache-integer": 0,
+          "rp-cache-multiple": 0
+        },
+        "owned_pid": 388,
+        "owned_reaped": true,
+        "stderr_bytes": 0,
+        "stdout_bytes": 57
+      },
+      "shim_late_hook": null,
+      "stock_parent": "WP_Object_Cache",
+      "wrapper_source": "dropin"
+    },
+    {
+      "cache_class": "RpRustBackedCache",
+      "explicit_init": {
+        "new_object": true,
+        "routed": [
+          true,
+          "rust"
+        ],
+        "stock": [
+          false,
+          false
+        ]
+      },
+      "ext_after": true,
+      "ext_before": false,
+      "mode": "explicit-init",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 250,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 15556,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 577,
+        "sha256": "b788cac43c84509c7316b6ad1a747d9192c9185428caa5dd7226e65b7e54bb03"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "rust_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust_stdout": {
+        "bytes": 153,
+        "sha256": "0eec0f04cd8ccef66b4a79bdef1a08bd0964459f06fc3ab955487b8d82deadd4"
+      },
+      "rust_transport": {
+        "exit_code": 0,
+        "finish": {
+          "charged_bytes": 0,
+          "entries": 0,
+          "ok": true,
+          "operations": 2
+        },
+        "flushes": 0,
+        "groups": {
+          "rp-cache-integer": 0,
+          "rp-cache-multiple": 2
+        },
+        "owned_pid": 1280,
+        "owned_reaped": true,
+        "stderr_bytes": 0,
+        "stdout_bytes": 153
+      },
+      "shim_late_hook": null,
+      "stock_parent": "WP_Object_Cache",
+      "wrapper_source": "dropin"
+    },
+    {
+      "cache_class": "WP_Object_Cache",
+      "ext_after": false,
+      "ext_before": false,
+      "mode": "shim",
+      "observations_matched": 56,
+      "observations_sha256": "4ffe0d2c21174a607b1dbee7c9418b801ef73567202f09c13849eb6d021c0887",
+      "passed": true,
+      "php_process": {
+        "deadline_seconds": 10,
+        "elapsed_ms": 133,
+        "exit_code": 0,
+        "live_capture_limit_each": 65536,
+        "owned_pid": 2172,
+        "owned_reaped": true,
+        "stderr_eof": true,
+        "stdout_eof": true
+      },
+      "php_stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "php_stdout": {
+        "bytes": 2806,
+        "sha256": "849274fa5bd9c6cce67cd3f6859fa0438d7592a93e26a661fb46671c91b124e8"
+      },
+      "repeat_preserved_object_and_blog_scoping": true,
+      "shim_late_hook": true,
+      "stock_parent": false,
+      "wrapper_source": "core"
+    }
+  ],
+  "full_wordpress_bootstrap": false,
+  "native_corpus_observations_per_profile": 56,
+  "no_database_or_external_cache": true,
+  "owned_trial_directories_removed": true,
+  "passed": true,
+  "schema": "recastpress.wp-object-cache-dropin-native-check.v0.5",
+  "sources": {
+    "accepted": {
+      "fixtures": {
+        "adapter.php": {
+          "bytes": 11477,
+          "sha256": "c85f12b4d8e827995a820db4b661106d6ffa8c373b8edb9a39415dd24d1a7235"
+        },
+        "bridge.php": {
+          "bytes": 2911,
+          "sha256": "fb325dc672aae25ff97923abb3073244e4b0d3f2be83f50c4e8396ba2c7703d2"
+        }
+      },
+      "native_baseline_sha256": "a50e0737e4eb0e61ba1e0bd7416118a9a3970a96c53e4b174dee1fd0c8b4abbf",
+      "native_controller_sha256": "c4741739cef51d7f86efafb532a06b20fd7914902552472820cf1419865f1249",
+      "runner_sha256": "7ae4858ad8373eb884a4b560a487b786e47c66e1af16e3bce267d42170a32572",
+      "rust_binary": {
+        "bytes": 933888,
+        "sha256": "361fd901ff84283127be0b5cb9f79b2d0410b597adba3eb8da5a179c357597d4"
+      },
+      "stock": {
+        "capture_source_sha256": "f22b503c38feab1e11ceee2c6833350f529f3fe1c59c3f59fb6a0b84da9f96f4",
+        "experiment_source_sha256": {
+          "fixtures/corpus.php": "be08a2bf3a782dccd8bd929d9fdbb8f685d66693a1b5f25c0599c2118dd4937d",
+          "fixtures/native.php": "bf8dfe2c4fcd0448587dc57e958af18c5f12221d1ca5774211be3b143ebdd22c",
+          "native_check.py": "c4741739cef51d7f86efafb532a06b20fd7914902552472820cf1419865f1249"
+        },
+        "php": {
+          "all_78_files_and_archive_members_verified": true,
+          "archive": {
+            "bytes": 36306925,
+            "sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477"
+          },
+          "complete_file_map_sha256": "1711770af256947abd7aded6d89b7f32426e0a3a0f80632dcf5dbc8973892d3b",
+          "manifest_sha256": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+          "verified_files": {
+            "README.md": "82549e7bf7ec308e9093ad3efaaaa64362397d79c6dc9253be992bfe09856521",
+            "brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
+            "brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
+            "deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
+            "dev/php8.lib": "5eb1aec626025d84850f4ada1a9e4513fd33cb207a82e6ff40079e7b1e1fb0cc",
+            "ext/php_bz2.dll": "a798baf67801a6119ac95ad68bda39592d86d4c286b18632693522f6c4e8319d",
+            "ext/php_com_dotnet.dll": "4461b3a3450b05c02032d77982f03b83242c01761c9d5f083b30d37cee4f2bc1",
+            "ext/php_curl.dll": "4b8278e6ce4a935b6f9ef927fdf24210f8f52c6fe4ea1f067eb7f5e943caf481",
+            "ext/php_dba.dll": "9c1368cc487e611b43be46afb84da34e779e9f3e06c829a203d3ef79c48818b1",
+            "ext/php_dl_test.dll": "c7695720c8281947752621dc17469a51e9ae5394b5d98ba1e6d572bd0bb65141",
+            "ext/php_enchant.dll": "365ee99829f66e3d473e721be22b86f69ed23cf1d7824776647419cefd44d3ba",
+            "ext/php_exif.dll": "9b63971feb9a680dd373e4a2a998062815e6f51613984357e8dacbc07979cd45",
+            "ext/php_ffi.dll": "90dfeb7d653b8ed6ecd0b1b104f84669eb7a52076af17ad3b6cc54ec891c3557",
+            "ext/php_fileinfo.dll": "d41911eef97afef2b01d0dc3609fd7189d8f40235ca84efc4259917effca3604",
+            "ext/php_ftp.dll": "d2301ec6191daf7e34c16b239a1f82c16fe98292ecc78a781f5299e6d4f81ce7",
+            "ext/php_gd.dll": "7bef1d2b57f03b482429a48696c44990c791a78aee3bc5825ce832c7c9bd64a5",
+            "ext/php_gettext.dll": "c94480f3bc3c5369079b7b68bf7b62071bc3b730582539b0f9a9c15f074f9638",
+            "ext/php_gmp.dll": "da1e8abd2fbac98911fdf57551d7ac315fd32285854c6ae7bb9cd8ff48ac88b7",
+            "ext/php_intl.dll": "80622855920ddb7a1cf442200be614355e379aaf647529f90d164201a20807b4",
+            "ext/php_ldap.dll": "39ca453f83911c724cc6c05968ed20043bd9eb95f4e74f3752831a983e14a935",
+            "ext/php_mbstring.dll": "b2b8382bc757ad97848896e5e0fbec03b5545ed368bd841bd0ad60bfc7ed0811",
+            "ext/php_mysqli.dll": "e5a6a8eafccbed628988c1ab4fdefcc834a90452539e0c9e8b0ebbfc57de602a",
+            "ext/php_odbc.dll": "4d4c71df31bfbaa4c85a093e26c7bc3a311dccaa35cad1ac88e4b11c0d5a95be",
+            "ext/php_openssl.dll": "289057e0322925aac26a7d0079d18518e6ea5b4b59e7ce10185df49f4ab51ce4",
+            "ext/php_pdo_firebird.dll": "b164ff5b8503ecb23950485654e4669b71896c4837b780ba62277afd23e40ad4",
+            "ext/php_pdo_mysql.dll": "155e3facfe906805dcfa74234a4bfca123861969f21eb5874dfe5e0e45576790",
+            "ext/php_pdo_odbc.dll": "f683b8572f4ea8ae0062c765bde239fa4d9c0ab6520dff81a81dcd9bf652039b",
+            "ext/php_pdo_pgsql.dll": "bdbbf46ee71d59bdffaf6f9121581c70c710eeecd252cc3d37987aa6fd8365c1",
+            "ext/php_pdo_sqlite.dll": "40a1c01bc319be8e9c8ace2107ac37306885bd847d045ddadcc62bd851b37edf",
+            "ext/php_pgsql.dll": "9e6bdc720bca2cd6537fbb0665d18b3ca9a8f7e80ec281c063ac0e7f21e8ffb1",
+            "ext/php_shmop.dll": "c7973f5df9c37ebbcbab3fe16ddaed0419443ff88ba81eaa9bee487265094098",
+            "ext/php_snmp.dll": "0c28647b9183f610abde1e829073b08c5d670eae99ff0a905c9e8b61e3c80c34",
+            "ext/php_soap.dll": "21fb43f13dc2d53f9ebcaa9d21bfc4ca9340b942f09bd0d612757058a5cac9ee",
+            "ext/php_sockets.dll": "d7763c61626ce96448ed3460e909d7d50545f2bffd19085650e306ce21a3c87c",
+            "ext/php_sodium.dll": "862ae3fad7c0ac67670aabd68444e9784804e72ec924465d5a3ed0d70899bc57",
+            "ext/php_sqlite3.dll": "f5f26bc9a2677e99afb9903abdf7da0e8d325d0a765af74c60a52f225f7f607b",
+            "ext/php_sysvshm.dll": "8370f7eedd5b3cad34c5567ba5d2318fa8b9f52e061a106b8522b354b5a250b8",
+            "ext/php_tidy.dll": "0a8470d897461e2f95584ac84980059d043a49394ea26b0e9e9918f307b64017",
+            "ext/php_xsl.dll": "0b77747cd6299e9e54f2b974c352289f7aa7c9b40ef3890dd7fe38863f57af38",
+            "ext/php_zend_test.dll": "cfaf18f106965b4d6150923ab0ad205224edb1bf91b583c8352a95640b65ed7a",
+            "ext/php_zip.dll": "397f63319c7984353037faae925dccf90d43ebbcb4c39d8fdca58a028d2e4dc5",
+            "extras/sbom/php.cdx.json": "3055220a9ad121bfe8295ecd5c60f364b37bb241415b54a0cd0c54eddc8e4c3e",
+            "extras/sbom/php.openvex.json": "7a05b90f57d6275762a15283a2f6c3e5d44dbd6d8f60fe76e09dc45cc21ba3d5",
+            "extras/sbom/php.spdx.json": "e19b079d30f05156f4d3bf58d62520e85d7025d7fb8a7f008a165c8c4369aab0",
+            "extras/ssl/legacy.dll": "eae05aafd0c77398162a89c15701e17ebce50d8dd12574b108786cd270fb0757",
+            "extras/ssl/openssl.cnf": "a65a2cb9f4ee8ffdc7ef4f0ac600c0bdafb95b7b1ab457188ac610a62f5ad6b3",
+            "glib-2.dll": "8fff1ad28097fcc30581a46ed7f287c60281e8656f39b2217d4bb3bf7f059eb6",
+            "gmodule-2.dll": "224bac40c38201c53f34863e467a3f2a6a230f4727cd45cdeaf4c9c97b87c12a",
+            "gobject-2.dll": "7ca92bb46fc3c0944dec1d651c25fd3bf483ff78ed6771b9f1543d1545b23c65",
+            "icudt77.dll": "d649c8878be9e8a25c2e074235892ece77371950f8395729cc9158815894a5e7",
+            "icuin77.dll": "b5e225648c1c7067577a74c41b5371c047af26448eb783b640e7ada7d52fe283",
+            "icuio77.dll": "a3046cdda552b55b5a169d4daee8e06595be01aa2fc6395f84b412a6d639135f",
+            "icuuc77.dll": "7954ea7a3fe9bb9bbf565212ec388bf3d0831131a16e7518aeb21deddf00948e",
+            "lib/enchant/libenchant2_hunspell.dll": "3b005a1dc6201d5299d092f10d696ce3627036a81c1cb2d4861193bde1c8f465",
+            "libcrypto-3-x64.dll": "43e20b8c6e3d0d38f184329eacea180be6bdbbdc89871626f1e05c11cbb70fe4",
+            "libenchant2.dll": "96c606dc4e2af422650b53527d0e6a277c99e587341dc274009e0c1ace13ea72",
+            "libpq.dll": "1cf919d33177d1840bbe50a8f0a0b1b25c84767526fc9890008afcd27f0f9958",
+            "libsasl.dll": "f8f3546b80250e24454e52044e1750ef7aff81fa7edec8240880546fa2c183b9",
+            "libsodium.dll": "de64aa6e9078fb32dcb7f9dd275d0ce121999e961498018b8c0f47d3825a8f65",
+            "libsqlite3.dll": "ffa33720407b29c0eb1526344ee006372c47b68589b0389804ccc27528c4e254",
+            "libssh2.dll": "0197a9e0352215235e6a6627298506db65c58ffe3c46ae7a4f6e4144666ff195",
+            "libssl-3-x64.dll": "7574fc9816458b44dbc61d3a28b2b2200084472765bb995775f671aac19d1972",
+            "license.txt": "098bdc5b9808fc16bef4b7154e876ac08ca249549727cde3b3f3f3b431e27cca",
+            "news.txt": "eddb4156f6782b64c63ff9b8665f9109193b414cc31475fdcfa007d20d5f354a",
+            "nghttp2.dll": "4bee6c3aa3270c49395ff528db1ebd1e3d78c211503a7b9ea6c23aa9ad2dec85",
+            "phar.phar.bat": "ef0f0bd1e919ee96c7d20547f7a823218cd73452f36c47d1a22f2726d5d64308",
+            "pharcommand.phar": "1855bdc09ffd9e6f2e890817141ba6c691db57add0cfddf0bb5ca871506a0d48",
+            "php-cgi.exe": "f6007e19a06eddaa6c275539f8c8a4b34991bd8b3db061eb965b40e372dfb4a3",
+            "php-win.exe": "96e5b113d0198340b11fd8ed963d647994fb01e6fff128d3375c8b896d1fe78d",
+            "php.exe": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+            "php.ini-development": "b809158db575a44e10f4e8101ea977e25ed505ce02b3f91523c3614d9d8cb3c7",
+            "php.ini-production": "02004cf8c7beda520b2333e2033f5820b7f22b81c3bd2a68de9385dcce88b27d",
+            "php8.dll": "7af6c47fee46995865a3ac3aaa04915b19547e3ffd7072b6242b0f7a027d5754",
+            "php8embed.lib": "4893a5f493f5bfb970184e5361dd6e5f0bbdd60874742f0f0fbeb714789bc8a8",
+            "php8phpdbg.dll": "ed8b94ca273c04ac093e39a3456646ac63ec5be4db767bf484a4f2281dd49ec6",
+            "phpdbg.exe": "4eea926ee567b5f5102e56959039f8241085faf8adc19f716c38c5e24671e0d0",
+            "readme-redist-bins.txt": "30c4973c42f2a47666da40fcadf55789a9e305557b3ab520cf806dad2724330f",
+            "snapshot.txt": "fb6732d8f6f59b5566fb108e712a4cfcc7e3dd94b0b05292b00dd94081e50c95"
+          },
+          "version": "8.5.12"
+        },
+        "wordpress": {
+          "archive_sha256_from_accepted_manifest": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+          "loaded_core_files": {
+            "wp-includes/cache.php": {
+              "bytes": 13486,
+              "sha256": "a219c2b57cc9990b560c6b497c877db443b7e29239645a6a79b2d76839c46e19"
+            },
+            "wp-includes/class-wp-object-cache.php": {
+              "bytes": 17524,
+              "sha256": "1857b774bd9cfbafbd50a1b1424f7df637d202cf3f2253cda9798d4ad56f3cf0"
+            },
+            "wp-includes/functions.php": {
+              "bytes": 295481,
+              "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+            },
+            "wp-includes/load.php": {
+              "bytes": 56475,
+              "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+            },
+            "wp-includes/option.php": {
+              "bytes": 105246,
+              "sha256": "fe3f0b7e115b2a50c31162ed6428abe4088c080b0f71b9678d84806168fe90d0"
+            },
+            "wp-includes/version.php": {
+              "bytes": 1103,
+              "sha256": "7513dacf90ade66347561ffc2e79d27e74b6a3f05d869bd455144ed7cd378a04"
+            }
+          },
+          "source_manifest": {
+            "bytes": 650759,
+            "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3"
+          },
+          "version": "7.1.3"
+        }
+      }
+    },
+    "accepted_rust_evidence_sha256": "bb00e9f6a17e31c9295b9a53de65e1e78714c111c99e53c30779b29541e07201",
+    "derived_dropin": {
+      "bytes": 13643,
+      "sha256": "0dd894e325eb47532eb3702564f6697c035bf5c5470e22faeda918abf02a2eed"
+    },
+    "extra_wordpress_core_files": {
+      "wp-includes/cache-compat.php": {
+        "bytes": 11021,
+        "sha256": "eebd7161af3ae4feabbcff8cf0206ada14a539635448050f066b1e6d7a2c345d"
+      },
+      "wp-includes/class-wp-filter-sentinel.php": {
+        "bytes": 760,
+        "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+      },
+      "wp-includes/class-wp-hook.php": {
+        "bytes": 17584,
+        "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+      },
+      "wp-includes/plugin.php": {
+        "bytes": 37123,
+        "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d"
+      }
+    },
+    "loader": {
+      "bytes": 6209,
+      "sha256": "579ac5ff59259ae75afc4faf4960fd5847a930b3315ef1abdf444bfbbee2167d"
+    },
+    "runner": {
+      "bytes": 11876,
+      "sha256": "e69f4ed1cb7b8ebdb90387c04f2ae64ce58eaeae11af75799f971c70b27685e4"
+    },
+    "stock_transparent_shim": {
+      "bytes": 214,
+      "sha256": "c3ad7334e940852b74726a15ef9346d45b6d15ac9d23d726eb3fcb46dd92c5f4"
+    }
+  },
+  "sources_reverified_after": true
+}
