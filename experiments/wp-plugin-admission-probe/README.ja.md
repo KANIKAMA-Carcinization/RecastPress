@@ -21,3 +21,5 @@ Windowsの所有MySQL・MariaDBで、複製したWordPress 7.1.3に標準API候�
 拒否・保留候補は配置されず、原本のWordPressとPHP配布物は同一バイトを保った。所有DBの正常停止とCGI子4件の回収も確認した。複製ツリーの初回照合は74.448秒／84.922秒だったため、最初の既定30秒での停止を受け、試験専用PHPに120秒の上限を設定した。[MySQLの基準](evidence/windows-mysql-native.json)・[MariaDBの基準](evidence/windows-mariadb-native.json)
 
 次は同じ候補と観測条件をPHP-Wasm／Rust DBへ接続する。通常PHPで得た基準を、pluginのWasm受入と分けて記録する。
+
+PHP-Wasm／Rust DBでの有効化と描画も両DB CIで通過した。[PHP-Wasmの受入記録](../php-wasix-wp-plugin-admission-probe/README.ja.md)
