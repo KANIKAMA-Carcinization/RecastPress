@@ -58,6 +58,22 @@ impl SharedObjectCache {
         true
     }
 
+    /// The fixture owner has checked continuity through a complete commit on
+    /// the live replacement dump. The previous generation is never reused.
+    pub(crate) fn tracking_reconciled(&self) -> bool {
+        let Ok(mut state) = self.state.lock() else {
+            return false;
+        };
+        if !matches!(*state, State::Unavailable) {
+            return false;
+        }
+        *state = State::Tracking {
+            ticket: Ticket(Arc::new(())),
+            entry: None,
+        };
+        true
+    }
+
     pub(crate) fn ticket(&self) -> Option<Ticket> {
         let state = self.state.lock().ok()?;
         match &*state {
@@ -153,6 +169,7 @@ mod tests {
         let pool = BudgetPool::new(64);
         let cache = SharedObjectCache::new(pool.clone());
         assert!(cache.ticket().is_none());
+        assert!(!cache.tracking_reconciled());
         assert!(cache.tracking_started());
         assert!(!cache.tracking_started());
         let initial = cache.ticket().unwrap();
@@ -174,6 +191,13 @@ mod tests {
         assert!(!cache.tracking_started());
         assert_eq!(cache.charged_bytes(), 0);
         assert_eq!(pool.stats().unwrap().claimed, 0);
+        assert!(cache.tracking_reconciled());
+        assert!(!cache.tracking_reconciled());
+        assert!(cache.get().is_none());
+        assert!(!cache.fill(&current, b"new"));
+        let reconciled = cache.ticket().unwrap();
+        assert_ne!(current, reconciled);
+        assert!(cache.fill(&reconciled, b"recovered"));
     }
 
     #[test]

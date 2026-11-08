@@ -6,7 +6,9 @@ Rustの共有キャッシュ候補を、所有するWindows上のMySQL 8.4.13と
 
 続いて同じコミット座標にライブ監視を接続し、キャッシュを作り直す。別接続から、所有DB上で同じアカウントの専用binlog接続と確認したIDだけを切断する。監視側が接続喪失を受け取ると共有ヒットと格納を止め、旧チケットを拒否し、予約を解放する。DBの値は別接続から引き続き読める。
 
-この試験で確認する整合性は、単一プロセスが対象のコミットまたは監視切断を観測した後のもの。継続監視での遅延上限、切断後の再同期、任意のWordPressキーとDB行の対応付け、PHP-Wasmへの共有層の接続は別途検証する。
+切断中に別のwriterが1件を更新し、独立したSQL接続でコミットの前後を確認する。保持した座標から別のライブ接続で完全な更新とXIDを再生し、検証済みの終端まで到達してから空の新世代を開く。旧チケットの格納を拒否し、SQLで読み直した値を新チケットで格納してヒットを確認する。再開した監視を再度切断し、共有アクセスの停止と予約解放も確認する。
+
+この試験で確認する整合性は、単一プロセスが対象のコミットまたは監視切断を観測した後のもの。復旧条件は、同じDBが稼働し、確定済み座標と同じbinlogファイルが残る固定ケースに限る。継続監視での遅延上限、ログ消失・ローテーション・DB再起動後の再同期、任意のWordPressキーとDB行の対応付け、PHP-Wasmへの共有層の接続は別途検証する。
 
 ## 再現
 
@@ -17,4 +19,4 @@ python -B experiments/binlog-shared-cache-probe/windows_check.py --backend mysql
 python -B experiments/binlog-shared-cache-probe/windows_check.py --backend mariadb
 ```
 
-両DBでコミット1件・更新行1件を確認し、DBは正常終了した。実行記録は [MySQL](evidence/windows-mysql.json) と [MariaDB](evidence/windows-mariadb.json) を参照。
+両DBで最初のコミット1件に加え、切断中のコミット1件の再生と復旧を確認した。DBは正常終了した。実行記録は [MySQL](evidence/windows-mysql.json) と [MariaDB](evidence/windows-mariadb.json) を参照。

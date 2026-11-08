@@ -27,10 +27,11 @@ RESULT_PARSER = '''def parse_shared_cache_result(probe, backend):
         return values
 
     expected = {
-        "format_version": 2, "backend": backend, "commits": 1, "target_rows": 1,
+        "format_version": 3, "backend": backend, "commits": 1, "target_rows": 1,
         "rollback_preserved": True, "precommit_hit_preserved": True,
         "stale_fill_rejected": True, "refreshed_hit": True,
         "source_end_closed_cache": True, "live_cut_closed_cache": True, "final_charged_bytes": 0,
+        "gap_commit_replayed": True, "recovery_fresh_hit": True, "recovery_old_ticket_rejected": True,
     }
     try:
         observed = json.loads(output[len(prefix):-1].decode("utf-8"), object_pairs_hook=unique_keys)
