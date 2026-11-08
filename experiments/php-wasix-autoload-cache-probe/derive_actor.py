@@ -33,12 +33,15 @@ QUERY_WITH_CACHE = '''        "query" => {
                 cache.is_some(), sequence, bytes, *status, observation,
             )) {
                 if let Some(data) = cache.lookup(before_status) {
-                    // The cache requires the returned status to equal this connection's status.
+                    // Preserve the retained reply's diagnostic flags for the RPC client.
+                    *status = Some(data["status"].as_u64()
+                        .and_then(|flags| u16::try_from(flags).ok())
+                        .ok_or("autoload_cached_status")?);
                     return Ok((true, data));
                 }
                 cache.record_sql();
                 let (ok, data) = query(connection, bytes, status).await?;
-                if ok && *status == Some(before_status) && data["warnings"].as_u64() == Some(0) {
+                if ok {
                     cache.remember(before_status, &data);
                 }
                 return Ok((ok, data));

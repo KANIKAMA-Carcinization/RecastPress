@@ -59,6 +59,11 @@ fn safe_status(status: u16) -> bool {
     status & AUTOCOMMIT != 0 && status & UNSAFE == 0
 }
 
+fn compatible_reply_status(before: u16, after: u16) -> bool {
+    const INDEX_DIAGNOSTICS: u16 = 0x0010 | 0x0020;
+    safe_status(before) && safe_status(after) && (before ^ after) & !INDEX_DIAGNOSTICS == 0
+}
+
 fn valid_column(column: &Value, name: &str) -> bool {
     column.as_object().is_some_and(|column| column.len() == 6)
         && column["name_hex"] == name
@@ -74,9 +79,11 @@ fn valid_column(column: &Value, name: &str) -> bool {
 }
 
 fn valid_reply(status: u16, reply: &Value) -> bool {
-    safe_status(status)
-        && reply.as_object().is_some_and(|object| object.len() == 6)
-        && reply["status"].as_u64() == Some(u64::from(status))
+    reply.as_object().is_some_and(|object| object.len() == 6)
+        && reply["status"]
+            .as_u64()
+            .and_then(|value| u16::try_from(value).ok())
+            .is_some_and(|after| compatible_reply_status(status, after))
         && reply["warnings"].as_u64() == Some(0)
         && reply["affected_rows"] == "0"
         && reply.get("insert_id") == Some(&Value::Null)
@@ -115,6 +122,7 @@ struct CacheState {
     sql_reads: usize,
     hits: usize,
     retained_reply_bytes: usize,
+    candidate: Option<(u16, Option<u16>, &'static str)>,
     entry: Option<Entry>,
 }
 
@@ -131,6 +139,7 @@ impl OptionsCache {
                 sql_reads: 0,
                 hits: 0,
                 retained_reply_bytes: 0,
+                candidate: None,
                 entry: None,
             }),
             budget: BudgetPool::new(REPLY_LIMIT),
@@ -163,13 +172,17 @@ impl OptionsCache {
         let Ok(mut state) = self.state.lock() else {
             return;
         };
-        if !state.active
-            || state.sql_reads != 1
-            || state.entry.is_some()
-            || !valid_reply(status, reply)
-        {
+        if !state.active || state.sql_reads != 1 || state.entry.is_some() {
             return;
         }
+        let reply_status = reply["status"]
+            .as_u64()
+            .and_then(|value| u16::try_from(value).ok());
+        state.candidate = Some((status, reply_status, "reply_profile"));
+        if !valid_reply(status, reply) {
+            return;
+        }
+        state.candidate = Some((status, reply_status, "encoding_budget"));
         let Ok(mut writer) = BoundedWriter::new(REPLY_LIMIT) else {
             return;
         };
@@ -177,18 +190,27 @@ impl OptionsCache {
             return;
         }
         let wire = writer.into_bytes().into_boxed_slice();
+        state.candidate = Some((status, reply_status, "reservation"));
         let Ok(reservation) = self
             .budget
             .try_reserve(ResourceKind::ObjectCache, wire.len())
         else {
             return;
         };
+        state.candidate = Some((status, reply_status, "stored"));
         state.retained_reply_bytes = wire.len();
         state.entry = Some(Entry {
             status,
             reply: wire,
             _reservation: reservation,
         });
+    }
+
+    pub(crate) fn diagnostic(&self) -> Value {
+        self.state.lock().ok().and_then(|state| state.candidate)
+            .map_or(Value::Null, |(before, reply, admission)| {
+                json!({"before_status":before,"reply_status":reply,"admission":admission})
+            })
     }
 
     fn disable(&self) {
@@ -209,13 +231,6 @@ impl OptionsCache {
             .stats()
             .map_err(|_| anyhow!("options_cache_budget"))?
             .claimed_for(ResourceKind::ObjectCache);
-        ensure!(
-            state.sql_reads == 1
-                && state.hits == 1
-                && state.retained_reply_bytes > 0
-                && charged == 0,
-            "options_cache_completion"
-        );
         Ok(
             json!({"sql_reads":state.sql_reads,"hits":state.hits,"charged_bytes":charged,
             "retained_reply_bytes":state.retained_reply_bytes}),
@@ -354,5 +369,20 @@ impl Drop for OptionsGuard {
     fn drop(&mut self) {
         self.cache.disable();
         let _ = self.close();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_index_diagnostics_may_change_across_the_cached_select() {
+        for flags in [0, 0x10, 0x20, 0x30] {
+            assert!(compatible_reply_status(2, 2 | flags));
+        }
+        for flags in [0, 1, 3, 0x000a, 0x0202, 0x2002] {
+            assert!(!compatible_reply_status(2, flags));
+        }
     }
 }

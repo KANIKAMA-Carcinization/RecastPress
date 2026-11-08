@@ -66,7 +66,8 @@ def worker():
          '''let request_result=probe(input,case,&compiled,seq,&capture_dir,cache,&mut report)
                 .and_then(|()| guard.as_mut().map(options_cache::OptionsGuard::active).transpose().map(|_|()));'''),
         ('    let passed=result.is_ok() && completed==3 && !protocol.poisoned && cleaned;\n    emit(output,&final_report(passed,1,completed,cleaned),&secrets)?;',
-         '''    let stats = guard.take().map(options_cache::OptionsGuard::finish).transpose();
+         '''    let candidate = guard.as_ref().map_or(Value::Null, |owner| owner.cache.diagnostic());
+    let stats = guard.take().map(options_cache::OptionsGuard::finish).transpose();
     let cache_verified = stats.as_ref().is_ok_and(|stats| stats.as_ref().is_some_and(|stats|
         stats["sql_reads"] == 1 && stats["hits"] == 1 && stats["charged_bytes"] == 0
         && stats["retained_reply_bytes"].as_u64().is_some_and(|bytes| bytes > 0 && bytes <= 128 * 1024)));
@@ -75,6 +76,10 @@ def worker():
     if passed {
         final_observation["options_cache"] = stats?.context("options_cache_stats_missing")?;
         final_observation["options_guard_released"] = json!(true);
+    } else {
+        final_observation["options_guard_released"] = json!(stats.as_ref().is_ok_and(|value| value.is_some()));
+        final_observation["options_cache_diagnostic"] = stats.ok().flatten().unwrap_or(Value::Null);
+        final_observation["options_candidate"] = candidate;
     }
     emit(output,&final_observation,&secrets)?;'''),
     ):

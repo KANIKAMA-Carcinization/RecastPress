@@ -136,6 +136,41 @@ def comparable_operations(request):
         for row in request['operations']]
 
 
+def failure_diagnostic(session):
+    try:
+        with session.stdout.open('rb') as stream:
+            size = stream.seek(0, 2)
+            stream.seek(max(0, size - 2048))
+            tail = stream.read(2048)
+        if not tail.endswith(b'\n'):
+            return None
+        final = process.parse(tail.splitlines()[-1])
+        if final['schema'] != 'recastpress.php-wasix-wp-session-observation.v0.5' or final['passed'] is not False:
+            return None
+        released = final['options_guard_released']
+        stats = final['options_cache_diagnostic']
+        candidate = final['options_candidate']
+        if type(released) is not bool:
+            return None
+        if stats is not None:
+            limits = {'sql_reads': 2, 'hits': 2, 'charged_bytes': 128 * 1024, 'retained_reply_bytes': 128 * 1024}
+            if type(stats) is not dict or stats.keys() != limits.keys() or any(
+                type(stats[key]) is not int or not 0 <= stats[key] <= limit for key, limit in limits.items()
+            ):
+                return None
+        if candidate is not None:
+            if type(candidate) is not dict or set(candidate) != {'before_status', 'reply_status', 'admission'}:
+                return None
+            before, after = candidate['before_status'], candidate['reply_status']
+            if type(before) is not int or not 0 <= before <= 65535 or (
+                after is not None and (type(after) is not int or not 0 <= after <= 65535)
+            ) or candidate['admission'] not in ('reply_profile', 'encoding_budget', 'reservation', 'stored'):
+                return None
+        return {'options_guard_released': released, 'cache': stats, 'candidate': candidate}
+    except (OSError, ValueError, KeyError, TypeError, IndexError):
+        return None
+
+
 def check_final(final):
     cache = final['options_cache']
     retained = cache['retained_reply_bytes']
@@ -212,7 +247,14 @@ def main():
                 stage = 'session_eof'
                 equal(report['requests']['missing']['autoload_query'], report['requests']['missing_repeat']['autoload_query'])
                 equal(report['requests']['missing']['response_body_sha256'], report['requests']['missing_repeat']['response_body_sha256'])
-                final = session.finish()
+                try:
+                    final = session.finish()
+                except ValueError as error:
+                    if str(error) == 'session_expected_exit':
+                        diagnostic = failure_diagnostic(session)
+                        if diagnostic is not None:
+                            report['session_failure_diagnostic'] = diagnostic
+                    raise
                 check_final(final)
                 report['session_final'] = final
             database.verify_context_state('missing_repeat', value['php_result'])
