@@ -84,6 +84,7 @@ jobs:
         rustup toolchain install 1.94.0 --profile minimal --no-self-update
         cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
         python3 -B experiments/wpdb-raw-error-probe/prepare_driver.py
+        python3 -B experiments/php-wasix-wpdb-raw-error-probe/derive_host.py
         cargo fetch --locked --manifest-path experiments/php-wasix-wpdb-raw-error-probe/Cargo.toml
     - name: Compare real ERR wire and wpdb state through PHP-Wasm
       run: python3 -B experiments/php-wasix-wpdb-raw-error-probe/run_check.py --backend ${{ matrix.backend }} --record
