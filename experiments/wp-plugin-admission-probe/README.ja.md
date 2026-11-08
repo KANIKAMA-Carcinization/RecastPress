@@ -13,3 +13,11 @@ python -B experiments/wp-plugin-admission-probe/admission.py --self-test
 ```
 
 判定は固定候補の配置計画と具体的な証拠を対象とする。配布アーカイブ全般の検査、未知のPHPコードの解析、本番サイトでの導入・有効化は後続工程で扱う。
+
+## 通常PHPでの両DB基準
+
+Windowsの所有MySQL・MariaDBで、複製したWordPress 7.1.3に標準API候補だけを配置し、`activate_plugin()` で有効化した。独立SQLで `active_plugins` の遷移を照合し、以降の要求では通常のWordPressローダーがプラグインを読み込んだ。`wp_footer` の固定マーカーは、有効化前は0件、有効化後の新規CGI要求2件では各1件だった。マーカーの出力には、wpdbの `SELECT 42` と、要求内キャッシュのmissからadd／getへの遷移を要求した。2件の応答はバイト単位で一致し、有効化前との差は固定マーカーだけだった。
+
+拒否・保留候補は配置されず、原本のWordPressとPHP配布物は同一バイトを保った。所有DBの正常停止とCGI子4件の回収も確認した。複製ツリーの初回照合は74.448秒／84.922秒だったため、最初の既定30秒での停止を受け、試験専用PHPに120秒の上限を設定した。[MySQLの基準](evidence/windows-mysql-native.json)・[MariaDBの基準](evidence/windows-mariadb-native.json)
+
+次は同じ候補と観測条件をPHP-Wasm／Rust DBへ接続する。通常PHPで得た基準を、pluginのWasm受入と分けて記録する。
