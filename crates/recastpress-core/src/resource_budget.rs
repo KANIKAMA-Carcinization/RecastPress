@@ -7,7 +7,7 @@
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
-const KIND_COUNT: usize = 6;
+const KIND_COUNT: usize = 7;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ResourceKind {
@@ -17,6 +17,7 @@ pub enum ResourceKind {
     IndexBuild,
     ChangeBuffer,
     Rendering,
+    ObjectCache,
 }
 
 impl ResourceKind {
