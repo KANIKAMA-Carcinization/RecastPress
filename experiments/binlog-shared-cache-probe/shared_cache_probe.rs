@@ -31,6 +31,31 @@ async fn value(connection: &mut Conn) -> Result<Vec<u8>> {
         .ok_or("fixture cache row missing")?)
 }
 
+#[derive(Debug, Eq, PartialEq)]
+enum ReadPath {
+    Hit,
+    Filled,
+    Bypassed,
+}
+
+async fn read_dependency(
+    cache: &SharedObjectCache,
+    reader: &mut Conn,
+    sql_reads: &mut usize,
+) -> Result<(ReadPath, Vec<u8>)> {
+    if let Some(bytes) = cache.get() {
+        return Ok((ReadPath::Hit, bytes));
+    }
+    let ticket = cache.ticket();
+    *sql_reads += 1;
+    let bytes = value(reader).await?;
+    match ticket {
+        Some(ticket) if cache.fill(&ticket, &bytes) => Ok((ReadPath::Filled, bytes)),
+        Some(_) => Err("cache dependency read lost its fill ticket".into()),
+        None => Ok((ReadPath::Bypassed, bytes)),
+    }
+}
+
 fn decode_event(event: &Event) -> Result<EventData<'_>> {
     if event.data().len() > 1024 * 1024 {
         return Err("cache source event size bound exceeded".into());
@@ -255,8 +280,18 @@ async fn live_monitor_cut_and_recover(
         return Err("cannot start live cache monitoring".into());
     }
     let old_ticket = cache.ticket().ok_or("no live monitor cache ticket")?;
-    let old = value(control).await?;
-    if old != b"after" || !cache.fill(&old_ticket, &old) || cache.get().as_deref() != Some(&old) {
+    let (mut reader, reader_id) = owned_connection(options.clone(), &control_identity).await?;
+    let autocommit: Option<u8> = reader.query_first("SELECT @@SESSION.autocommit").await?;
+    let mut sql_reads = 0;
+    let (cold, old) = read_dependency(&cache, &mut reader, &mut sql_reads).await?;
+    if reader_id == source_id
+        || autocommit != Some(1)
+        || old != b"after"
+        || cold != ReadPath::Filled
+        || sql_reads != 1
+        || read_dependency(&cache, control, &mut sql_reads).await? != (ReadPath::Hit, old.clone())
+        || sql_reads != 1
+    {
         return Err("cannot warm cache during live monitoring".into());
     }
     cut_live_dump(control, stream, source_id, &cache).await?;
@@ -270,12 +305,9 @@ async fn live_monitor_cut_and_recover(
 
     // Only the owned writer may mutate the fixture. Keep the retained end from
     // the previously verified XID and use global status solely as a stream fence.
-    let (mut reader, reader_id) = owned_connection(options.clone(), &control_identity).await?;
     let (mut writer, writer_id) = owned_connection(options.clone(), &control_identity).await?;
-    let autocommit: Option<u8> = reader.query_first("SELECT @@SESSION.autocommit").await?;
     if reader_id == writer_id
-        || [reader_id, writer_id].contains(&source_id)
-        || autocommit != Some(1)
+        || writer_id == source_id
         || value(&mut reader).await? != old
         || coordinates(control, status).await? != (file.to_vec(), end)
     {
@@ -300,6 +332,9 @@ async fn live_monitor_cut_and_recover(
     if committed_file != file
         || through <= end
         || value(&mut reader).await? != expected
+        || read_dependency(&cache, &mut reader, &mut sql_reads).await?
+            != (ReadPath::Bypassed, expected.to_vec())
+        || sql_reads != 2
         || cache.ticket().is_some()
         || cache.get().is_some()
     {
@@ -335,10 +370,12 @@ async fn live_monitor_cut_and_recover(
     if recovered == old_ticket || cache.fill(&old_ticket, &old) || cache.get().is_some() {
         return Err("reconciled generation accepted a pre-cut fill".into());
     }
-    let fresh = value(&mut reader).await?;
+    let (recovered_read, fresh) = read_dependency(&cache, &mut reader, &mut sql_reads).await?;
     if fresh != expected
-        || !cache.fill(&recovered, &fresh)
-        || cache.get().as_deref() != Some(&fresh)
+        || recovered_read != ReadPath::Filled
+        || sql_reads != 3
+        || read_dependency(&cache, control, &mut sql_reads).await? != (ReadPath::Hit, fresh.clone())
+        || sql_reads != 3
     {
         return Err("fresh SQL value was not shared after recovery".into());
     }
@@ -488,7 +525,7 @@ pub(super) async fn run(
     }
     live_monitor_cut_and_recover(control, options, epoch, &file, end, status, maria).await?;
     Ok(serde_json::json!({
-        "format_version": 3,
+        "format_version": 4,
         "backend": if maria { "mariadb" } else { "mysql" },
         "commits": buffer.applied,
         "target_rows": target_rows,
@@ -501,6 +538,7 @@ pub(super) async fn run(
         "gap_commit_replayed": true,
         "recovery_fresh_hit": true,
         "recovery_old_ticket_rejected": true,
+        "dependency_sql_reads": [1, 0, 1, 1, 0],
         "final_charged_bytes": cache.charged_bytes(),
     }))
 }

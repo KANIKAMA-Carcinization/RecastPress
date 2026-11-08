@@ -27,18 +27,21 @@ RESULT_PARSER = '''def parse_shared_cache_result(probe, backend):
         return values
 
     expected = {
-        "format_version": 3, "backend": backend, "commits": 1, "target_rows": 1,
+        "format_version": 4, "backend": backend, "commits": 1, "target_rows": 1,
         "rollback_preserved": True, "precommit_hit_preserved": True,
         "stale_fill_rejected": True, "refreshed_hit": True,
         "source_end_closed_cache": True, "live_cut_closed_cache": True, "final_charged_bytes": 0,
         "gap_commit_replayed": True, "recovery_fresh_hit": True, "recovery_old_ticket_rejected": True,
+        "dependency_sql_reads": [1, 0, 1, 1, 0],
     }
     try:
         observed = json.loads(output[len(prefix):-1].decode("utf-8"), object_pairs_hook=unique_keys)
     except (ValueError, RecursionError):
         raise ValueError("invalid shared cache result JSON") from None
     if type(observed) is not dict or observed.keys() != expected.keys() or any(
-        type(observed[key]) is not type(value) or observed[key] != value for key, value in expected.items()
+        type(observed[key]) is not type(value) or observed[key] != value
+        or (type(value) is list and any(type(item) is not int for item in observed[key]))
+        for key, value in expected.items()
     ):
         raise ValueError("shared cache result differs from the fixture contract")
     return observed
