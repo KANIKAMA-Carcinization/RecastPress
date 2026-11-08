@@ -1,0 +1,32 @@
+[package]
+name = "recastpress-php-wasix-wp-release-worker-probe"
+version = "0.0.0"
+edition = "2024"
+license = "GPL-2.0-or-later"
+publish = false
+
+[workspace]
+
+[dependencies]
+mysql_async = { path = "../../target/wpdb-rpc-probe/workspace/source/mysql_async-0.37.1", default-features = false, features = ["minimal-rust", "rustls-tls", "ring", "tls12", "binlog"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+sha2 = "=0.10.9"
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync", "io-util", "macros"] }
+
+anyhow = "1.0"
+wasmer = { version = "=7.2.0", default-features = false, features = ["sys", "cranelift", "wasmparser"] }
+wasmer-compiler-cranelift = "=7.2.0"
+wasmer-wasix = { version = "=0.702.0", default-features = false, features = ["sys-minimal"] }
+
+recastpress-wp-source-fs-probe = { path = "../wp-source-fs-probe" }
+recastpress-wp-private-response-probe = { path = "../wp-private-response-probe" }
+
+[patch.crates-io]
+mysql_common = { path = "../../target/wpdb-rpc-probe/workspace/source/mysql_common-0.37.3" }
+
+[dev-dependencies]
+wat = "=1.262.0"
+
+[lints.rust]
+unsafe_code = "forbid"

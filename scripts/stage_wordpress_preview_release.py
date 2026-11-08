@@ -1,8 +1,8 @@
 """Stage the verified Linux WordPress preview inputs for release preflight.
 
-The current adapter and worker binaries still use repository paths when run.
-This command copies their exact bytes and the fixed WordPress inputs for the
-release checker. Its stdout is the SHA-256 of release.json.
+The standalone command stages the original repository-bound binary specimens.
+The release runtime controller can supply the two separately built relocated
+executables. Stdout from the standalone command is the SHA-256 of release.json.
 """
 
 import argparse
@@ -35,6 +35,11 @@ MAX_FIXTURE = 256 * 1024
 MAX_CORE_FILE = 16 * 1024 * 1024
 COPY_CHUNK = 128 * 1024
 RENAME_NOREPLACE = 1
+RUNTIME_BUILD_SCHEMA = 'recastpress.wordpress-preview-runtime-build.v0.5'
+RELOCATED_BINARIES = {
+    'http': 'target/php-wasix-wp-http-probe/cargo-target/release/recastpress-php-wasix-wp-release-http-probe',
+    'worker': 'target/php-wasix-wp-bootstrap-probe/cargo-target/release/recastpress-php-wasix-wp-release-worker-probe',
+}
 
 
 def require(condition, code):
@@ -88,10 +93,23 @@ def copy_checked(source, target, record, limit, executable=False):
     return expected
 
 
-def copy_release(stage):
-    adapter = load('php-wasix-wp-session-http-probe', 'build_check.py')
-    http = adapter.verify_build()
-    worker = adapter.sessionbuild.verify_build()
+def runtime_artifacts(runtime):
+    if runtime is None:
+        adapter = load('php-wasix-wp-session-http-probe', 'build_check.py')
+        return {'http': adapter.verify_build(), 'worker': adapter.sessionbuild.verify_build()}
+    require(runtime['schema'] == RUNTIME_BUILD_SCHEMA and runtime['platform'] == TARGET
+        and runtime['source_reverified_after'] is True, 'release_runtime_build_profile')
+    result = {}
+    for role, expected in RELOCATED_BINARIES.items():
+        record = runtime[role]
+        require(set(record) == {'executable', 'executable_identity'} and record['executable'] == expected,
+            'release_runtime_fixed_binary')
+        result[role] = record
+    return result
+
+
+def copy_release(stage, runtime=None):
+    executables = runtime_artifacts(runtime)
     module = load('php-wasix-managed-access-probe', 'managed_check.py').verify_build()['module']
     prepared = load('php-wasix-wp-request-context-probe', 'prepare.py').verify_prepared()
     context_base = 'experiments/php-wasix-wp-request-context-probe/fixtures/'
@@ -104,7 +122,7 @@ def copy_release(stage):
     for name in ('bin', 'php', 'wordpress', 'wordpress/site'):
         (stage / name).mkdir(mode=0o700)
     files = {}
-    for name, record in (('http', http), ('worker', worker)):
+    for name, record in executables.items():
         member = 'bin/' + name
         files[member] = copy_checked(ROOT / relative(record['executable']), stage / member,
             record['executable_identity'], MAX_BINARY, executable=True)
@@ -146,7 +164,7 @@ def publish(parent_fd, staged_name, output_name):
         raise OSError(ctypes.get_errno(), 'release_publish_failed')
 
 
-def stage_release(output):
+def stage_release(output, runtime=None):
     require(sys.platform == 'linux' and platform.machine() == 'x86_64', 'release_requires_linux_x86_64')
     output = Path(os.path.abspath(output))
     parent = output.parent
@@ -159,7 +177,7 @@ def stage_release(output):
         os.mkdir(name, mode=0o700, dir_fd=parent_fd)
         staged_name = name
         stage = Path('/proc/self/fd') / str(parent_fd) / staged_name
-        digest = copy_release(stage)
+        digest = copy_release(stage, runtime)
         require(os.path.samestat(os.stat(parent, follow_symlinks=False), os.fstat(parent_fd)),
             'release_output_parent_changed')
         publish(parent_fd, staged_name, output.name)

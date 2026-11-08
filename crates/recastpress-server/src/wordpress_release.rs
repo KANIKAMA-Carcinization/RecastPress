@@ -77,13 +77,21 @@ pub struct VerifiedRelease {
     pub wordpress_files: usize,
     pub wordpress_directories: usize,
     pub wordpress_bytes: u64,
+    #[serde(skip)]
+    artifacts: BTreeMap<String, FileIdentity>,
 }
 
-#[derive(Deserialize)]
+impl VerifiedRelease {
+    pub fn artifact(&self, name: &str) -> Option<&FileIdentity> {
+        self.artifacts.get(name)
+    }
+}
+
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Identity {
-    bytes: u64,
-    sha256: String,
+pub struct FileIdentity {
+    pub bytes: u64,
+    pub sha256: String,
 }
 
 #[derive(Deserialize)]
@@ -92,15 +100,15 @@ struct Manifest {
     schema: String,
     target: String,
     #[serde(deserialize_with = "unique_files")]
-    files: BTreeMap<String, Identity>,
+    files: BTreeMap<String, FileIdentity>,
 }
 
 fn unique_files<'de, D: Deserializer<'de>>(
     deserializer: D,
-) -> Result<BTreeMap<String, Identity>, D::Error> {
+) -> Result<BTreeMap<String, FileIdentity>, D::Error> {
     struct FilesVisitor;
     impl<'de> de::Visitor<'de> for FilesVisitor {
-        type Value = BTreeMap<String, Identity>;
+        type Value = BTreeMap<String, FileIdentity>;
 
         fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             formatter.write_str("release file identities with unique paths")
@@ -124,7 +132,7 @@ fn unique_files<'de, D: Deserializer<'de>>(
 #[derive(Deserialize)]
 struct WordPressCatalog {
     directories: BTreeSet<String>,
-    files: BTreeMap<String, Identity>,
+    files: BTreeMap<String, FileIdentity>,
 }
 
 fn digest_valid(digest: &str) -> bool {
@@ -154,7 +162,7 @@ fn read_bounded(path: &Path, maximum: u64) -> Result<Vec<u8>, ReleaseError> {
     Ok(bytes)
 }
 
-fn matches_file(path: &Path, expected: &Identity) -> Result<bool, ReleaseError> {
+fn matches_file(path: &Path, expected: &FileIdentity) -> Result<bool, ReleaseError> {
     let file = file(path)?;
     if file.metadata()?.len() != expected.bytes {
         return Ok(false);
@@ -308,5 +316,6 @@ pub fn verify(
         wordpress_files: WORDPRESS_FILES,
         wordpress_directories: WORDPRESS_DIRECTORIES,
         wordpress_bytes: WORDPRESS_BYTES,
+        artifacts: manifest.files,
     })
 }

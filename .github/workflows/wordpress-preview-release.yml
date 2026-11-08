@@ -11,6 +11,10 @@ name: WordPress preview release placement
     - crates/recastpress-server/src/lib.rs
     - scripts/stage_wordpress_preview_release.py
     - scripts/check_wordpress_preview_release.py
+    - scripts/build_wordpress_preview_runtime.py
+    - scripts/check_wordpress_preview_runtime.py
+    - experiments/php-wasix-wp-release-http-probe/**
+    - experiments/php-wasix-wp-release-worker-probe/**
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -21,7 +25,7 @@ jobs:
   preflight:
     name: Verify staged WordPress preview release
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 60
     env:
       CARGO_BUILD_JOBS: '2'
       CARGO_INCREMENTAL: '0'
@@ -106,9 +110,16 @@ jobs:
       run: |
         set -euo pipefail
         python3 -B scripts/check_wordpress_preview_release.py --binary target/debug/recastpress > target/wordpress-preview-release-check.json
-    - name: Upload only the public preflight report
+    - name: Compare WordPress HTTP from the relocated runtime on both databases
+      run: |
+        set -euo pipefail
+        python3 -B scripts/check_wordpress_preview_runtime.py --binary target/debug/recastpress > target/wordpress-preview-runtime-check.json
+    - name: Upload only public preview reports
+      if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: wordpress-preview-release-check-${{ github.run_attempt }}
         if-no-files-found: error
-        path: target/wordpress-preview-release-check.json
+        path: |
+          target/wordpress-preview-release-check.json
+          target/wordpress-preview-runtime-check.json
