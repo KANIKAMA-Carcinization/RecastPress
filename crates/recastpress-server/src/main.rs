@@ -9,6 +9,13 @@ mod shutdown;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let os_args: Vec<_> = std::env::args_os().skip(1).collect();
+    if os_args.first().is_some_and(|arg| arg == "preview-wordpress") {
+        launch_wordpress_preview(&os_args);
+        let _ = std::io::stderr()
+            .lock()
+            .write_all(b"WordPress preview launch failed\n");
+        std::process::exit(2);
+    }
     if os_args
         .first()
         .is_some_and(|arg| arg == "check-wordpress-release")
@@ -211,6 +218,37 @@ fn check_wordpress_release_command(args: &[std::ffi::OsString]) -> Result<Vec<u8
     wire.push(b'\n');
     Ok(wire)
 }
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+fn launch_wordpress_preview(args: &[std::ffi::OsString]) {
+    use std::{os::unix::process::CommandExt, path::Path, process::Command};
+
+    let [_, directory, digest, capture] = args else {
+        return;
+    };
+    let Some(digest) = digest.to_str() else {
+        return;
+    };
+    let directory = Path::new(directory);
+    let capture = Path::new(capture);
+    if !capture.symlink_metadata().is_ok_and(|metadata| metadata.is_dir())
+        || recastpress_server::wordpress_release::verify(directory, digest).is_err()
+    {
+        return;
+    }
+    let (Ok(root), Ok(capture)) = (directory.canonicalize(), capture.canonicalize()) else {
+        return;
+    };
+    // Replace this process so the parent keeps ownership of the same PID and
+    // private stdin while the HTTP adapter supervises the worker.
+    let _ = Command::new(root.join("bin/http"))
+        .args([root.as_os_str(), std::ffi::OsStr::new(digest), capture.as_os_str()])
+        .env_clear()
+        .exec();
+}
+
+#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+fn launch_wordpress_preview(_args: &[std::ffi::OsString]) {}
 
 fn unpack_package_paths(
     args: &[std::ffi::OsString],

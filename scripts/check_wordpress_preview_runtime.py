@@ -10,7 +10,7 @@ import re
 import sys
 import tempfile
 
-from check_wordpress_preview_release import check
+from check_wordpress_preview_release import check, run
 from stage_wordpress_preview_release import stage_release
 
 
@@ -66,7 +66,7 @@ def supervisor(captures):
          'payload, report, canonical, identity, parse_json, release, manifest_sha, capture_parent, cwd):\n'
          '        self.release_sha = manifest_sha'),
         ('subprocess.Popen([str(binary)], cwd=ROOT,',
-         'subprocess.Popen([binary, release, manifest_sha, capture_parent], cwd=cwd,'),
+         "subprocess.Popen([binary, 'preview-wordpress', release, manifest_sha, capture_parent], cwd=cwd,"),
         ("{'schema', 'port', 'session_ready'}", "{'schema', 'port', 'session_ready', 'release_manifest_sha256'}"),
         ("or type(value['port']) is not int", "or value['release_manifest_sha256'] != self.release_sha\n"
          "                            or type(value['port']) is not int"),
@@ -79,7 +79,7 @@ def supervisor(captures):
     return namespace['Server'], namespace['reap_owned_servers']
 
 
-def compare_backend(backend, release, digest, roles, outside):
+def compare_backend(backend, checker, release, digest, roles, outside):
     base, validate_service = baseline_controller()
     captures = outside / ('adapter-' + backend)
     guest_captures = outside / ('worker-' + backend)
@@ -105,7 +105,7 @@ def compare_backend(backend, release, digest, roles, outside):
             database.seed_public_dates()
             database.verify_context_state('before_requests')
             payload = {'schema': PREFIX + 'input.v0.5', 'database': database.home_request()}
-            with server_class(release / 'bin/http', {}, payload, report, base.canonical, base.identity,
+            with server_class(checker, {}, payload, report, base.canonical, base.identity,
                     base.http.process.parse_json, release, digest, guest_captures, outside) as server:
                 base.equal(server.ready, expected_ready)
                 for label in base.observer.REJECTIONS:
@@ -145,11 +145,19 @@ def main():
         release = outside / 'relocated'
         original.rename(release)
         before = check(checker, release, digest, outside, True)
+        capture = outside / 'rejected-capture'
+        capture.mkdir(mode=0o700)
+        wrong = ('0' if digest[0] != '0' else '1') + digest[1:]
+        invalid = run([checker, 'preview-wordpress', release, wrong, capture], outside)
+        require(invalid.returncode == 2 and not invalid.stdout
+            and invalid.stderr == b'WordPress preview launch failed\n'
+            and not any(capture.iterdir()), 'preview_launcher_rejects_wrong_manifest')
         roles = json.loads((release / 'release.json').read_bytes())['files']
-        backends = {name: compare_backend(name, release, digest, roles, outside) for name in ('mysql', 'mariadb')}
+        backends = {name: compare_backend(name, checker, release, digest, roles, outside) for name in ('mysql', 'mariadb')}
         require(check(checker, release, digest, outside, True) == before, 'preview_release_changed')
     print(json.dumps({'schema': 'recastpress.wordpress-preview-runtime-check.v0.5', 'passed': True,
         'verified_release': before, 'outside_checkout': True, 'relocated_directory': True,
+        'product_cli_launch_verified': True, 'product_cli_wrong_manifest_refused': True,
         'build': runtime, 'backends': backends}, sort_keys=True))
 
 

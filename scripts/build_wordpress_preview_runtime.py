@@ -54,6 +54,9 @@ def sources(adapter):
         ROOT / 'scripts/check_wordpress_preview_release.py', ROOT / 'scripts/check_wordpress_preview_runtime.py',
         ROOT / '.github/workflows/wordpress-preview-release.yml',
         ROOT / 'crates/recastpress-server/src/wordpress_release.rs']
+    added += [ROOT / name for name in ('Cargo.toml', 'Cargo.lock', 'crates/recastpress-server/Cargo.toml',
+        'crates/recastpress-server/src/main.rs', 'crates/recastpress-server/src/lib.rs',
+        'crates/recastpress-server/src/cli.rs')]
     added += [EXPERIMENTS / crate / name for crate in CRATES.values()
         for name in ('Cargo.toml', 'Cargo.lock', 'derive.py')]
     result = dict(adapter.inputs())
