@@ -7,3 +7,5 @@ Linux CIでは所有DBで最初に標準ホームを実行し、その後shimな
 source `7419322` のLinux CIはMySQLとMariaDBの両方で通過した。比較用の同じprivate入力で3つの新規プロセスを実行し、各DBで事前の標準ホーム145 RPC、比較する標準とshimは各89 RPCだった。通常PHPと3回とも同じホーム応答を得た。本文は69,399バイト、ヘッダーは順序込みで3件。Rustキャッシュの9操作で要求882バイト、応答と読み取りは各404バイト、残エントリー・予約・未読応答はゼロだった。62テスト、入力237件・生成7件、所有DBの正常終了を照合した。[MySQL証跡](evidence/ci-42502178019-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42502178019-mariadb/provenance.json)
 
 初回のLinux CIでは両DBでキャッシュ9操作とホーム応答の比較が通過した。最初の標準ホームは145 RPC、後続のshim付きホームは89 RPCで、DB状態を揃えた比較が必要だった。修正版では事前に標準ホームを実行し、その後の2要求を比較する。[初回MySQL](evidence/ci-42500397987-mysql/provenance.json)・[初回MariaDB](evidence/ci-42500397987-mariadb/provenance.json)
+
+接続IDを含む初期応答だけを除外した中間CIでも、同じRPC件数の差が残った。[中間MySQL](evidence/ci-42502105524-mysql/provenance.json)・[中間MariaDB](evidence/ci-42502105524-mariadb/provenance.json)
