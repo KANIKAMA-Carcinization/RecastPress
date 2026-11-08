@@ -142,6 +142,30 @@ def run_home(binary, payload, env, label, native, report):
     return worker
 
 
+def compare_requests(baseline, shim):
+    for key in ('private_response', 'private_contexts'):
+        exact(shim[key], baseline[key], 'cache_bootstrap_unchanged_' + key)
+
+    def comparable_rpc(worker):
+        hello, *remaining = worker['operations']
+        require(hello['op'] == 'hello' and hello['ok'] is True, 'cache_bootstrap_rpc_hello')
+        # Each fresh DB connection has its own ID in the hello response.
+        # Keep its request and result shape, and compare every subsequent frame.
+        first = dict(hello)
+        hello_bytes = first.pop('reply_frame_bytes')
+        first.pop('reply_frame_sha256')
+        totals = dict(worker['rpc'])
+        for key in ('response_bytes', 'response_read_bytes'):
+            require(totals[key] >= hello_bytes, 'cache_bootstrap_rpc_hello_size')
+            totals[key] -= hello_bytes
+        return [first, *remaining], totals
+
+    expected_frames, expected_totals = comparable_rpc(baseline)
+    frames, totals = comparable_rpc(shim)
+    exact(frames, expected_frames, 'cache_bootstrap_unchanged_db_frames')
+    exact(totals, expected_totals, 'cache_bootstrap_unchanged_db_totals')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--backend', choices=('mysql', 'mariadb'), required=True)
@@ -186,9 +210,7 @@ def main():
                 database.verify_context_state('home', worker['php_result'])
                 workers[label] = worker
             stage = 'compare'
-            original, candidate = workers['baseline'], workers['shim']
-            for key in ('private_response', 'private_contexts', 'operations', 'rpc'):
-                exact(candidate[key], original[key], 'cache_bootstrap_unchanged_' + key)
+            compare_requests(workers['baseline'], workers['shim'])
             require(report['executions']['baseline']['owned_pid'] != report['executions']['shim']['owned_pid'],
                 'cache_bootstrap_distinct_workers')
         stage = 'postflight'
@@ -203,7 +225,7 @@ def main():
         exact(context.managed.verify_build(), report['module'], 'cache_bootstrap_module_changed')
         exact(context.oldbuild.verify_build(), bootstrap, 'cache_bootstrap_baseline_build_changed')
         report.update(passed=True, fresh_private_workers=2, native_comparison_controller_only=True,
-            response_context_and_db_rpc_exact=True, source_reverified_after=True)
+            response_context_and_db_rpc_exact_except_hello_reply=True, source_reverified_after=True)
     except (Exception, KeyboardInterrupt) as error:
         report.update(failure_stage=stage, failure_class=type(error).__name__)
         if isinstance(error, ValueError) and re.fullmatch('[a-z][a-z0-9_]{0,127}', str(error)):
