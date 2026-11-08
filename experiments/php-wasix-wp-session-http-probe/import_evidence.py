@@ -153,9 +153,7 @@ def frozen_checker(source, references):
             'native_references': references})
 
 
-def own_build_gate(host, source, worker, old_builds):
-    anchor = parse_json(source.read(PREFIX + 'evidence/windows-build.json'))
-    require(anchor['passed'] is True and anchor['source_reverified_after'] is True, 'accepted_windows_build_anchor')
+def own_build_source(source):
     class BuildPath(SourcePath):
         def __truediv__(self, name):
             return BuildPath(self.source, Path(self.name, name).as_posix())
@@ -172,13 +170,18 @@ def own_build_gate(host, source, worker, old_builds):
         'ROOT': root, 'SESSION': root / SESSION.rstrip('/'), 'PRIVATE_HTTP': root / session.LATEST.rstrip('/'),
         'WORKER': root / session.PRIVATE.rstrip('/'), 'CODEC': root / 'experiments/wp-private-response-probe'})
     derived = inputs['verify']()
+    worker_anchor = parse_json(source.read(SESSION + 'evidence/windows-build.json'))
     source_map = source.functions(PREFIX + 'build_check.py', ['inputs'], {
         'HERE': root / PREFIX.rstrip('/'), 'ROOT': root, 'sha': sha,
         'read': lambda path, maximum: path.read_bytes(),
-        'sessionbuild': SimpleNamespace(inputs=lambda: worker['input_files']),
+        'sessionbuild': SimpleNamespace(inputs=lambda: worker_anchor['input_files']),
         'derivation': SimpleNamespace(inputs=inputs['inputs'])})['inputs']()
+    return source_map, derived, worker_anchor
+
+
+def own_build_gate(host, source, worker, old_builds, build_source):
+    source_map, derived, _ = build_source
     exact(host['input_files'], source_map, 'complete_http_session_source_map')
-    exact(anchor['input_files'], source_map, 'windows_anchor_same_http_session_sources')
     exact(host['derivation_before'], derived, 'source_derived_service_boundaries')
     for field in ('driver', 'source_fs_registry', 'derivation', 'old_build'):
         exact(host[field + '_before'], host[field + '_after'], 'service_build_boundary_unchanged')
@@ -193,7 +196,6 @@ def own_build_gate(host, source, worker, old_builds):
         require(host[key] is False, 'service_build_' + key)
     constants = source.constants(PREFIX + 'build_check.py')
     exact(host['units']['tests'], constants['TESTS'], 'service_source_unit_inventory')
-    exact(host['units']['tests'], anchor['units']['tests'], 'service_windows_unit_inventory')
     require(host['units']['passed'] is True and len(set(host['units']['tests'])) == len(constants['TESTS']),
         'all_service_build_units_passed')
     exact(host['build_profile'], 'release', 'service_linux_release_build')
@@ -377,13 +379,14 @@ def service_gate(run, data, raw, checker, native, source):
     return derived['validations']
 
 
-def positive_gate(data, raw, source, backend, references, pure):
+def positive_gate(data, raw, source, backend, references, pure, build_source=None):
     run, host = data['run.json'], data['host-build.json']
     require(run['passed'] is True and run['outcome'] == 'fixed_compile_once_wp_real_http_passed'
         and run['source_reverified_after'] is True and run['owned_cleanup_completed'] is True
         and run['real_http_listener_exercised'] is True, 'positive_session_http_run')
     snapshots = old_build_gate(data, raw, source)
-    source_map, derived = own_build_gate(host, source, data['session-build.json'], snapshots)
+    source_map, derived = own_build_gate(host, source, data['session-build.json'], snapshots,
+        build_source if build_source is not None else own_build_source(source))
     for field, member in [('build_receipt', 'host-build.json'), ('session_build_receipt', 'session-build.json'),
                           ('bootstrap_build_receipt', 'bootstrap-build.json')]:
         exact(run[field], data[member], 'same_job_' + field)
@@ -461,6 +464,26 @@ def field_shape(value, template, optional=()):
         require(type(template) not in (dict, list) or value is None, 'unexpected_public_record_scalar')
         if type(template) is bool: require(type(value) is bool, 'public_flag_type')
         if type(template) is int: require(type(value) is int or value is None, 'public_numeric_type')
+
+
+def own_build_public_gate(value, build_source):
+    source_map, derived, worker_anchor = build_source
+    # The first CI source predates the adapter's Windows receipt. The build
+    # uses the same receipt layout as the accepted worker, with its own
+    # source-derived maps and one additional old-build snapshot.
+    fields = dict(worker_anchor)
+    fields['input_files'] = source_map
+    for suffix in ('before', 'after'):
+        fields['derivation_' + suffix] = derived
+        previous = worker_anchor['old_build_' + suffix]
+        fields['old_build_' + suffix] = {**previous, 'session': previous['private_http']}
+    field_shape(value, fields, ('failure', 'failure_class', 'after_failure', 'after_failure_class'))
+    if 'input_files' in value:
+        exact(value['input_files'], source_map, 'source_derived_public_build_input_map')
+    for suffix in ('before', 'after'):
+        key = 'derivation_' + suffix
+        if key in value:
+            exact(value[key], derived, 'source_derived_public_build_derivation')
 
 
 def record_privacy(value):
@@ -553,20 +576,21 @@ def run_public_gate(data, raw, source, backend, references, pure, complete):
         if field in run and not complete: exact(run[field], expected(), 'partial_frozen_' + field)
 
 
-def public_gate(data, raw, source, backend, complete, references, pure):
+def public_gate(data, raw, source, backend, complete, references, pure, build_source=None):
     # No HTML body is stored by this controller. Only exact origin headers,
     # compared above to the pinned native response, can appear as raw bytes.
     origins = http.origin_maps(source, references)
     for value in data.values():
         record_privacy(value)
         http.public_gate(value, references, origins, pure)
-    for _, prefix, member, *_ in [*session.PROFILES,
-            ('session', SESSION, 'session-build.json'), ('service', PREFIX, 'host-build.json')]:
+    for _, prefix, member, *_ in [*session.PROFILES, ('session', SESSION, 'session-build.json')]:
         if member in data:
             value = data[member]
             anchor = parse_json(source.read(prefix + 'evidence/windows-build.json'))
             field_shape(value, anchor, ('failure', 'failure_class', 'after_failure', 'after_failure_class'))
             if 'input_files' in value: source.bindings(value['input_files'])
+    if 'host-build.json' in data:
+        own_build_public_gate(data['host-build.json'], build_source if build_source is not None else own_build_source(source))
     previous = session.member_map(backend)
     historical = SESSION + f'evidence/ci-42038857146-{backend}/raw/'
     for member in ('build.json', 'toolchain.json', 'prepared.json', 'theme-prepared.json', 'bootstrap-prepared.json'):
@@ -610,12 +634,13 @@ def main():
         exact(set(data), set(member_map(args.backend)), 'fifteen_positive_public_records')
     references = session.native_references(source)
     pure = http.observer(source)
-    public_gate(data, raw, source, args.backend, complete, references, pure)
+    build_source = own_build_source(source) if 'host-build.json' in data else None
+    public_gate(data, raw, source, args.backend, complete, references, pure, build_source)
     bindings = sum(old.source_bindings_in_records(source, value) for value in data.values())
     verification = {'overall_positive': complete, 'raw_verdicts_rewritten': False,
         'source_binding_entries_checked': bindings, 'source_binding_verification_passed': True}
     if complete:
-        verification.update(positive_gate(data, raw, source, args.backend, references, pure))
+        verification.update(positive_gate(data, raw, source, args.backend, references, pure, build_source))
     else:
         run = data.get('run.json', {})
         verification.update(recorded_outcome=run.get('outcome'), recorded_passed=run.get('passed'),
