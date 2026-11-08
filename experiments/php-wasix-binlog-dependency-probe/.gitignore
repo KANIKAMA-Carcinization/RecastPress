@@ -1,0 +1,6 @@
+/fixtures/
+/src/main.rs
+/src/db.rs
+/src/binlog_buffer.rs
+/target/
+/__pycache__/
