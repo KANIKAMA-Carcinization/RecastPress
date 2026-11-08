@@ -1,0 +1,26 @@
+[package]
+name = "recastpress-php-wasix-wp-object-cache-probe"
+version = "0.0.0"
+edition = "2024"
+license = "GPL-2.0-or-later"
+publish = false
+
+[workspace]
+
+[dependencies]
+anyhow = "1.0"
+recastpress-core = { path = "../../crates/recastpress-core" }
+recastpress-wp-source-fs-probe = { path = "../wp-source-fs-probe" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+sha2 = "=0.10.9"
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync", "io-util", "macros"] }
+wasmer = { version = "=7.2.0", default-features = false, features = ["sys", "cranelift", "wasmparser"] }
+wasmer-compiler-cranelift = "=7.2.0"
+wasmer-wasix = { version = "=0.702.0", default-features = false, features = ["sys-minimal"] }
+
+[dev-dependencies]
+wat = "=1.262.0"
+
+[lints.rust]
+unsafe_code = "forbid"
