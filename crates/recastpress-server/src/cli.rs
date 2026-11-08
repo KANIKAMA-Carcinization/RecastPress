@@ -2,7 +2,7 @@
 
 use std::{net::SocketAddr, path::PathBuf};
 
-pub const USAGE: &str = "Usage: recastpress public [--listen 127.0.0.1:8080] --host HOST [--bundle FILE [--receipt FILE]]\n       recastpress management [--listen 127.0.0.1:8081]\n       recastpress check-bundle <path>\n       recastpress check-package <bundle> <receipt>\n       recastpress unpack-package <zip> <new-dir>\n       recastpress inspect-memory\n       recastpress prepare-post-package <input> <new-dir>\n       recastpress prepare-posts <input>\n       recastpress bundle-receipt <bundle>\nPublic bundles are experimental prebuilt pages. Management mutations are unavailable.";
+pub const USAGE: &str = "Usage: recastpress public [--listen 127.0.0.1:8080] --host HOST [--bundle FILE [--receipt FILE]]\n       recastpress management [--listen 127.0.0.1:8081]\n       recastpress check-bundle <path>\n       recastpress check-package <bundle> <receipt>\n       recastpress check-wordpress-release <directory> <manifest-sha256>\n       recastpress unpack-package <zip> <new-dir>\n       recastpress inspect-memory\n       recastpress prepare-post-package <input> <new-dir>\n       recastpress prepare-posts <input>\n       recastpress bundle-receipt <bundle>\nPublic bundles are experimental prebuilt pages. Management mutations are unavailable.";
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Role {

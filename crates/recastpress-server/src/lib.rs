@@ -17,6 +17,7 @@ pub mod prepared_package;
 pub mod prepared_posts;
 pub mod process_memory_observation;
 mod representation_tags;
+pub mod wordpress_release;
 
 use axum::{
     Router,

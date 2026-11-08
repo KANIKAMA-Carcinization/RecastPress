@@ -11,6 +11,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let os_args: Vec<_> = std::env::args_os().skip(1).collect();
     if os_args
         .first()
+        .is_some_and(|arg| arg == "check-wordpress-release")
+    {
+        let result = check_wordpress_release_command(&os_args).and_then(|wire| {
+            let mut stdout = std::io::stdout().lock();
+            stdout
+                .write_all(&wire)
+                .and_then(|()| stdout.flush())
+                .map_err(|_| ())
+        });
+        if result.is_err() {
+            let _ = std::io::stderr()
+                .lock()
+                .write_all(b"WordPress release check failed\n");
+            std::process::exit(2);
+        }
+        return Ok(());
+    }
+    if os_args
+        .first()
         .is_some_and(|argument| argument == "unpack-package")
     {
         if unpack_package_command(&os_args)
@@ -174,6 +193,23 @@ fn one_path<'a>(args: &'a [std::ffi::OsString], expected: &str) -> Result<&'a st
         return Err(());
     }
     Ok(std::path::Path::new(path))
+}
+
+fn check_wordpress_release_command(args: &[std::ffi::OsString]) -> Result<Vec<u8>, ()> {
+    let [command, directory, sha256] = args else {
+        return Err(());
+    };
+    if command != "check-wordpress-release" || directory.is_empty() {
+        return Err(());
+    }
+    let verified = recastpress_server::wordpress_release::verify(
+        std::path::Path::new(directory),
+        sha256.to_str().ok_or(())?,
+    )
+    .map_err(|_| ())?;
+    let mut wire = serde_json::to_vec(&verified).map_err(|_| ())?;
+    wire.push(b'\n');
+    Ok(wire)
 }
 
 fn unpack_package_paths(
