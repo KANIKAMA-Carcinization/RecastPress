@@ -1,0 +1,91 @@
+{
+  "backend": "mariadb",
+  "database_normal_cleanup": true,
+  "driver_binary": {
+    "bytes": 10491904,
+    "sha256": "855252d5688fb0ef13927be1baa1373a8662527a5b5b731f5aedb75df3a8400f"
+  },
+  "driver_process": {
+    "exit_code": 0,
+    "owned_pid": 3120,
+    "owned_reaped": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 522,
+      "sha256": "73157bc985fb4d7741cb0dcb122365192ca348f8ebb53c5acb0176b5f2c88e5e"
+    }
+  },
+  "fixture_rows_unchanged": true,
+  "observations": {
+    "latin1_signal": {
+      "code": 31002,
+      "legacy_string_preserves_bytes": false,
+      "message_hex": "e9",
+      "sqlstate": "45000"
+    },
+    "next_signal": {
+      "code": 31003,
+      "legacy_string_preserves_bytes": true,
+      "message_hex": "727020666f6c6c6f777570",
+      "sqlstate": "45001"
+    },
+    "recovery": {
+      "retained_error_cleared": true,
+      "value": 42
+    },
+    "utf8_signal": {
+      "code": 31001,
+      "legacy_string_preserves_bytes": true,
+      "message_hex": "c3a9",
+      "sqlstate": "45000"
+    }
+  },
+  "passed": true,
+  "retained_packet_matches_wire": true,
+  "schema": "recastpress.wpdb-raw-error-wire-driver-check.v0.5",
+  "sql_server_version": "11.8.9-MariaDB",
+  "wire": {
+    "authenticated": true,
+    "client_packets": 11,
+    "closed": true,
+    "compression": false,
+    "connections": 1,
+    "mariadb_cache_metadata_negotiated": true,
+    "observations": {
+      "latin1_signal": {
+        "code": 31002,
+        "kind": "err",
+        "message_hex": "e9",
+        "payload_bytes": 10,
+        "payload_sha256": "baed20355fc3f2dc592758049981b349429450a68f2589416e86827a23081c9f",
+        "state_hex": "3435303030"
+      },
+      "next_signal": {
+        "code": 31003,
+        "kind": "err",
+        "message_hex": "727020666f6c6c6f777570",
+        "payload_bytes": 20,
+        "payload_sha256": "9392bf6aaa30662f3627440e43fb2b4cb53e5a259b7c0bd35414f168ca0dc727",
+        "state_hex": "3435303031"
+      },
+      "recovery": {
+        "columns": 1,
+        "kind": "resultset"
+      },
+      "utf8_signal": {
+        "code": 31001,
+        "kind": "err",
+        "message_hex": "c3a9",
+        "payload_bytes": 11,
+        "payload_sha256": "19694166d4004cc8c6553a5a648b36552f059c09df11a242a3e96794e59e359d",
+        "state_hex": "3435303030"
+      }
+    },
+    "quit_observed": true,
+    "server_packets": 18,
+    "tls": false
+  }
+}

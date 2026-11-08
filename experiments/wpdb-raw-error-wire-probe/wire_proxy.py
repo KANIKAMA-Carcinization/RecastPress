@@ -53,6 +53,8 @@ class Protocol:
         self.phase = 'greeting'
         self.pending = None
         self.quit = False
+        self.mariadb_cache_metadata_offered = False
+        self.mariadb_cache_metadata_negotiated = False
         self.observations = {}
         self.packets = {'client': 0, 'server': 0}
         self.wire_bytes = {'client': 0, 'server': 0}
@@ -65,6 +67,10 @@ class Protocol:
         if self.phase == 'greeting':
             require(direction == 'server' and sequence == 0 and payload and payload[0] == 10,
                 'wire_classic_greeting')
+            version_end = payload.find(0, 1)
+            extension = version_end + 1 + 27
+            if version_end > 0 and b'MariaDB' in payload[1:version_end] and len(payload) >= extension + 4:
+                self.mariadb_cache_metadata_offered = bool(int.from_bytes(payload[extension:extension + 4], 'little') & 0x10)
             self.phase = 'capabilities'
         elif self.phase == 'capabilities':
             require(direction == 'client' and sequence == 1 and len(payload) >= 4,
@@ -74,6 +80,8 @@ class Protocol:
             require(not flags & (CLIENT_COMPRESS | CLIENT_SSL | CLIENT_ZSTD_COMPRESSION_ALGORITHM),
                 'wire_tls_or_compression_refused')
             require(len(payload) > 32, 'wire_classic_capabilities')
+            self.mariadb_cache_metadata_negotiated = self.mariadb_cache_metadata_offered and bool(
+                int.from_bytes(payload[28:32], 'little') & 0x10)
             self.phase = 'auth'
         elif self.phase == 'auth':
             if direction == 'server':
@@ -101,8 +109,10 @@ class Protocol:
     def first_reply(self, sequence, payload):
         require(sequence == 1 and payload, 'wire_first_reply_sequence')
         if self.pending == 'recovery':
-            # SELECT 42 has one column. The caller independently reads its row.
-            require(payload == b'\x01', 'wire_recovery_resultset')
+            # MariaDB adds a one-byte metadata indicator only when both peers
+            # negotiated the extension. This fresh SELECT must send definitions.
+            expected = b'\x01\x01' if self.mariadb_cache_metadata_negotiated else b'\x01'
+            require(payload == expected, 'wire_recovery_resultset')
             identity = {'kind': 'resultset', 'columns': 1}
         else:
             identity = err_identity(payload)
@@ -114,6 +124,7 @@ class Protocol:
             and tuple(self.observations) == tuple(label for label, _ in _QUERIES), 'wire_observations_incomplete')
         require(eof_direction == 'client' or self.quit, 'wire_backend_closed_first')
         return {'connections': 1, 'authenticated': True, 'tls': False, 'compression': False,
+            'mariadb_cache_metadata_negotiated': self.mariadb_cache_metadata_negotiated,
             'client_packets': self.packets['client'], 'server_packets': self.packets['server'],
             'quit_observed': self.quit, 'closed': True, 'observations': self.observations}
 

@@ -1,0 +1,26 @@
+{
+  "backend": "mariadb",
+  "driver_binary": {
+    "bytes": 10491904,
+    "sha256": "855252d5688fb0ef13927be1baa1373a8662527a5b5b731f5aedb75df3a8400f"
+  },
+  "driver_failure": "driver_recovery_query",
+  "driver_process": {
+    "exit_code": 1,
+    "owned_pid": 16704,
+    "owned_reaped": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 118,
+      "sha256": "780e70eaf2ab0a22ad863a7c10c7b1989c62e27bc6332e0a670c3795e2f5ee14"
+    }
+  },
+  "failure_class": "ProxyError",
+  "failure_stage": "owned_driver_wire",
+  "passed": false,
+  "proxy_failure": "wire_recovery_resultset",
+  "schema": "recastpress.wpdb-raw-error-wire-driver-check.v0.5"
+}
