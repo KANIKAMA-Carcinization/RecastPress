@@ -20,3 +20,9 @@ python3 -B experiments/php-wasix-wp-session-http-probe/run_check.py --backend my
 ```
 
 実行時に必要な固定入力とbuild手順は[Linux workflow](../../.github/workflows/php-wasix-wp-session-http.yml)に記録する。実DBを使う検証はLinuxで行う。
+
+## 両DBの実HTTP受入
+
+source `d558a23`のLinux CIはMySQL／MariaDBとも成功した。同じworker PIDでcompileは起動時の1回、要求中は0回。匿名homeの200と404を2件実ソケットで取得し、全origin headersとHTMLをnative WordPressに照合した。homeは69,399 B、404は58,177 Bで、3要求の公開contextも一致した。固定7種の不正要求は400で拒否した。[Linux CI](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/42481084326)
+
+3件目の応答前に最終summary、EOF、workerの正常終了とreapを確認した。アダプターも正常終了し、所有DBは正常停止・削除した。各DBの公開15記録と17工程を検証し、2,490件のソース対応と269個のGitソースを照合した。private ACKはサイズとSHAを記録し、本文・資格情報・生のIPCは所有capture内に保持した。[MySQL証跡](evidence/ci-42481084326-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42481084326-mariadb/provenance.json)

@@ -1,0 +1,26 @@
+{
+  "schema": "recastpress.php-wasix-wp-session-http-ci-stages.v0.5",
+  "source_commit": "d558a23c7c9d2cea6e8a03cf2361276400e57b50",
+  "run_id": "42481084326",
+  "run_attempt": "1",
+  "backend": "mysql",
+  "stages": {
+    "private_http": "success",
+    "tools": "success",
+    "bootstrap": "success",
+    "deps": "success",
+    "context": "success",
+    "module": "success",
+    "http": "success",
+    "host": "success",
+    "packages": "success",
+    "guest": "success",
+    "worker": "success",
+    "php": "success",
+    "parser": "success",
+    "theme": "success",
+    "contract": "success",
+    "session_http": "success",
+    "rust": "success"
+  }
+}
