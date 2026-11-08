@@ -4,4 +4,4 @@
 
 最初の404ではDBから得た結果を保存し、次の404では同じ結果を返す。最大128 KiBの論理予算で列メタデータ、行順、値、ステータスを保持し、固定SELECTと前後のRPCを照合する。所有DBの読み取りロックで比較中のオプションを固定し、別接続の更新が拒否されることを確認する。製品の共有層では別に検証したbinlog観測を接続する予定で、今回の実行範囲は固定404での結果と応答の互換比較に限る。[実binlogとの結合](../php-wasix-binlog-dependency-probe/README.ja.md)
 
-WindowsでRustのオフラインテスト65件を通過した。Linuxの両DB実測はCIで判定する。
+Windowsで最初のRustオフラインテスト65件を通過した。初回Linux CIは、両DBで通常PHPとの3要求比較、準備済み404同士のRPC照合、別接続の更新拒否まで通過した。終了時の共有キャッシュ判定で停止したため、判定を保存し、再試験では接続状態とSELECTのインデックス診断ビットを区別する。終了時に失敗した場合は限定したカウンターと格納判定を記録する。[初回MySQL](evidence/ci-42511203154-mysql/provenance.json)・[初回MariaDB](evidence/ci-42511203154-mariadb/provenance.json)

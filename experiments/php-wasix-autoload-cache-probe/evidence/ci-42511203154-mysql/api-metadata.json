@@ -1,0 +1,93 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 42511203154,
+  "run_attempt": 1,
+  "head_sha": "76d82a853d0a10d01eed274e504fa74b35e59b0b",
+  "run_conclusion": "failure",
+  "job": {
+    "id": 128824448238,
+    "name": "Owned PHP-Wasm autoload cache / mysql",
+    "conclusion": "failure",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare full pinned WP and seven context fixtures",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare a guarded stock autoload SELECT across fresh WordPress requests",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Upload only the public autoload cache report",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13630476278,
+    "name": "wordpress-wasix-autoload-cache-mysql-1",
+    "size_in_bytes": 14415,
+    "digest": "sha256:ac8199337deec56c2978c5f2d6012d1ceebb0854e6e495556e03c0ee2292153f"
+  }
+}
