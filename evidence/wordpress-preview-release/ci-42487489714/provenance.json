@@ -1,0 +1,166 @@
+{
+  "api_metadata_sha256": "1dc17d1bdcfd5b03c33a9244f101194b46a947568ef36146e22723dd96f15adf",
+  "archive_identity": {
+    "bytes": 533,
+    "sha256": "6d780bceedfdbdf3a8a9fbea1247d29a23d53972165023a855e6bbd5821c6885"
+  },
+  "artifact": {
+    "digest": "sha256:6d780bceedfdbdf3a8a9fbea1247d29a23d53972165023a855e6bbd5821c6885",
+    "id": 13620592702,
+    "name": "wordpress-preview-release-check-1",
+    "size_in_bytes": 533
+  },
+  "git_inputs": {
+    ".github/workflows/wordpress-preview-release.yml": {
+      "bytes": 5430,
+      "sha256": "62fd303bdd900f6f1afa5319bd434e64eae20b70281d72ceeac07be2290231be"
+    },
+    "experiments/php-wasix-wp-bootstrap-probe/import_evidence.py": {
+      "bytes": 24013,
+      "sha256": "d720220b0ddad54819b1d8d06dcf080428e5e4f8776508fb2d191ffe914bbe32"
+    },
+    "experiments/php-wasix-wp-http-probe/import_evidence.py": {
+      "bytes": 35215,
+      "sha256": "fa04648df27206a066a694e6603da1d7f825f325a8b6bee61bbec9b3343949eb"
+    },
+    "experiments/php-wasix-wp-private-http-probe/import_evidence.py": {
+      "bytes": 30158,
+      "sha256": "7209bbb435c3d9424c3f993a1ab5404ea38c7ccd5819aade37b05a07a652cdcf"
+    },
+    "experiments/php-wasix-wp-private-worker-probe/import_evidence.py": {
+      "bytes": 33884,
+      "sha256": "ce563693288725c98c763a46133bf3419eb3848d14bb8457a4b366522d5bb5cb"
+    },
+    "experiments/php-wasix-wp-request-context-probe/import_evidence.py": {
+      "bytes": 35279,
+      "sha256": "cc39c4153de56ecd1bb809a017422ddde407c9404c594f613fb23bfaa247bbca"
+    },
+    "experiments/php-wasix-wp-request-probe/import_evidence.py": {
+      "bytes": 32466,
+      "sha256": "ef7bd09447b52d159b77dbff87f376a23ab812ff098da3a75f2f51f2cb57a1b9"
+    },
+    "experiments/php-wasix-wp-session-http-probe/import_evidence.py": {
+      "bytes": 42779,
+      "sha256": "e47d80fdb4bf7c66d4acb992a869a34bcf468a92c9647863221bcf97d2411fe8"
+    },
+    "experiments/php-wasix-wp-session-probe/import_evidence.py": {
+      "bytes": 42284,
+      "sha256": "31fb9b0efc40aaaa6aaa99fbd1ca7aff85afb4b77425d055e4ec0ba55e9b4b40"
+    },
+    "experiments/php-wasix-wpdb-probe/import_evidence.py": {
+      "bytes": 61921,
+      "sha256": "5e049318726672f4794d2db4e2c7caf8751271ea87866142ddfe4a2939c7e66e"
+    }
+  },
+  "job": {
+    "conclusion": "success",
+    "id": 128752451437,
+    "name": "Verify staged WordPress preview release",
+    "steps": [
+      {
+        "conclusion": "success",
+        "name": "Set up job"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out fixed experiment inputs"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out the fixed PHP source"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out fixed WASIX dependencies"
+      },
+      {
+        "conclusion": "success",
+        "name": "Preseed the fixed parser"
+      },
+      {
+        "conclusion": "success",
+        "name": "Install native build tools only"
+      },
+      {
+        "conclusion": "success",
+        "name": "Verify and place fixed WASIX tools"
+      },
+      {
+        "conclusion": "success",
+        "name": "Build the same three-patch PHP CGI candidate"
+      },
+      {
+        "conclusion": "success",
+        "name": "Prepare full pinned WP and seven context fixtures"
+      },
+      {
+        "conclusion": "success",
+        "name": "Fetch fixed driver sources and host dependencies"
+      },
+      {
+        "conclusion": "success",
+        "name": "Verify all fixed Linux runtime builds"
+      },
+      {
+        "conclusion": "success",
+        "name": "Build release checker"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check relocated release and reject drift"
+      },
+      {
+        "conclusion": "success",
+        "name": "Upload only the public preflight report"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Preseed the fixed parser"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out fixed WASIX dependencies"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out the fixed PHP source"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out fixed experiment inputs"
+      },
+      {
+        "conclusion": "success",
+        "name": "Complete job"
+      }
+    ]
+  },
+  "raw_json": {
+    "wordpress-preview-release-check.json": {
+      "bytes": 650,
+      "sha256": "f9ff61e925605ac89fe1d54025ab4ab41663b2d11dabc3557b68391392b4b584"
+    }
+  },
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "repository_id": 1432882501,
+  "run_attempt": 1,
+  "run_conclusion": "success",
+  "run_id": 42487489714,
+  "schema": "recastpress.wordpress-preview-ci-import.v0.5",
+  "source_commit": "619fd46ca5db789229e609b23dca948e2c0193e4",
+  "verification": {
+    "actual_binary_or_http_bytes_recomputed_offline": false,
+    "empty_reports": [],
+    "network_or_runtime_used_by_importer": false,
+    "overall_positive": true,
+    "product_cli_launch_verified": false,
+    "raw_verdicts_rewritten": false,
+    "release_manifest_reconstructed_offline": false,
+    "runtime_generated_source_rederived": false,
+    "runtime_source_inputs": null,
+    "verified_reports": [
+      "wordpress-preview-release-check.json"
+    ]
+  },
+  "verifier_sha256": "f4662d56c29c0af7eb040482934f7cf5f2066c5c0c52cad9c47eaff20cdd7fd9"
+}
