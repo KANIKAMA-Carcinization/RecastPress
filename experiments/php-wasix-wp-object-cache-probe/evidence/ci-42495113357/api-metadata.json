@@ -1,0 +1,89 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 42495113357,
+  "run_attempt": 1,
+  "head_sha": "18739c8e2c44c82e88ebe1a4ec4db1f7785fe4ee",
+  "run_conclusion": "failure",
+  "job": {
+    "id": 128775693931,
+    "name": "Compare owned Rust object cache in two fresh PHP-Wasm requests",
+    "conclusion": "failure",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare the fixed stock WordPress source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed Rust host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare object cache API and clean private channel completion",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Upload only public cache trial evidence",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13623712292,
+    "name": "wordpress-wasix-object-cache-1",
+    "size_in_bytes": 5981,
+    "digest": "sha256:90088fcbfee4a0d88e225553682d3a3b5bf573c5f0739d9127ca5194dec1f777"
+  }
+}

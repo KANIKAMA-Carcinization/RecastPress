@@ -12,3 +12,5 @@ WindowsでPHPとRustを2組の独立プロセスとして起動した。各組�
 $digest = python -B experiments/wp-object-cache-rust-probe/build_check.py
 python -B experiments/wp-object-cache-rust-probe/run_check.py --sha256 $digest
 ```
+
+固定2グループと同じ56観測は、PHP-Wasmのprivateチャネルでも通過した。[実Wasmの比較](../php-wasix-wp-object-cache-probe/README.ja.md)
