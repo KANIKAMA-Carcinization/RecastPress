@@ -1,0 +1,40 @@
+{
+  "actual": {
+    "backend": "mysql",
+    "checksums": 6,
+    "commits": 1,
+    "events": 7,
+    "fixture_refill_reused_quiescent_fallback": true,
+    "from_position": 6002,
+    "frontier_queries": 4,
+    "passed": true,
+    "paths": [
+      "hit",
+      "mismatched",
+      "hit",
+      "unavailable"
+    ],
+    "source_file": "probe-bin.000001",
+    "through_position": 6433,
+    "uncached_selects": 2,
+    "watcher_closed": true
+  },
+  "all_processes_reaped": true,
+  "backend": "mysql",
+  "binary_sha256": "d4bd54d4d13fa984486997423cffcb7b121a5458550c66023c98d0b7b5acc570",
+  "elapsed_seconds": 19.38,
+  "normal_admin_shutdown": true,
+  "owned_directory_removed": true,
+  "sources": {
+    "Cargo.lock": "167147a4cf68b410360de3b2ca3e078c590e7d5debff572b06d535b235ed807c",
+    "Cargo.toml": "e230661b6adddd2f1eddc072269b61fffc8e962aca01312a83ee094b3f82608f",
+    "derive.py": "3e1e20fab75ad72fd053bcdc5d573ff8fcbbaa0cf1e50192bf441996ac8e269e",
+    "run_check.py": "c9fa8f37d606d928e9864fe6e6ddd25eb88c7f394d4e2202637eb4ea45b0ecca",
+    "src/binlog_buffer.rs": "83deca0aac19a48504f444d77b6d1215ad4899e2a1c90cba0e476f3b7225ba27",
+    "src/live.rs": "02811fb7e3a8333e78aa371965917e4d238e85af9aed5b1278e8f140892ed165",
+    "src/main.rs": "f3e123545d14dd8712e99b725a1db67fe41d710314f2841a678337e0be043872",
+    "src/monitor.rs": "ba5b71bd920dc905fa2bdc43989b8673f0dc16bb75eee34500872f77c56ba2b7",
+    "src/monitor_impl.rs": "3fe10f0fd53e8442f6ca3b2e290ea21f1641d72dc1d8c8d2a5f3ffe513c85b38"
+  },
+  "version": "8.4.13"
+}

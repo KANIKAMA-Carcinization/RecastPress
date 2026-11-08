@@ -1,0 +1,15 @@
+{
+  "backend": "mysql",
+  "scope": "first_native_frontier_attempt_with_graceful_blocking_dump_close",
+  "passed": false,
+  "failed_stage": "owner_cleanup",
+  "failure_class": "AssertionError",
+  "last_owned_stage": null,
+  "server_reaped": true,
+  "owned_directory_removed": true,
+  "elapsed_seconds": 29.16,
+  "source_sha256": {
+    "run_check.py": "c91cfff6c1a2add760d3a2c41f2b95b90a4918202541d3cf7b230681ec129d00",
+    "src/live.rs": "bee78b573a9ad8ea578d973602bdff5e65607f0e5bba78028f3e7424b208ce33"
+  }
+}
