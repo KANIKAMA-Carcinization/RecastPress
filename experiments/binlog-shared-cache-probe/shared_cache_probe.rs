@@ -1,13 +1,15 @@
 use super::buffer_adapter::ProbeBuffer;
 use super::shared_object_cache::SharedObjectCache;
 use super::{
-    check_row, close_fixture_connection, normalize_maria_initial_rotate, require_fixture_tls,
-    verify_crc,
+    check_row, close_fixture_connection, closed_socket_error, normalize_maria_initial_rotate,
+    require_fixture_tls, verify_crc,
 };
 use futures_util::StreamExt;
 use mysql_async::binlog::events::EventData;
 use mysql_async::{BinlogStreamRequest, Conn, OptsBuilder, Row, prelude::Queryable};
 use recastpress_core::resource_budget::BudgetPool;
+use std::time::Duration;
+use tokio::time::{sleep, timeout};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -27,6 +29,123 @@ async fn value(connection: &mut Conn) -> Result<Vec<u8>> {
         .query_first("SELECT value FROM rp_cache_probe WHERE id=1")
         .await?
         .ok_or("fixture cache row missing")?)
+}
+
+async fn connection_identity(connection: &mut Conn) -> Result<(u32, String, String, u16)> {
+    Ok(connection
+        .query_first("SELECT CONNECTION_ID(), USER(), @@datadir, @@port")
+        .await?
+        .ok_or("cache monitor connection identity missing")?)
+}
+
+async fn live_monitor_cut(
+    control: &mut Conn,
+    options: OptsBuilder,
+    epoch: &[u8],
+    file: &[u8],
+    end: u64,
+    maria: bool,
+) -> Result<()> {
+    let mut source = Conn::new(options).await?;
+    require_fixture_tls(&mut source).await?;
+    let (source_id, account, datadir, port) = connection_identity(&mut source).await?;
+    let (control_id, control_account, control_datadir, control_port) =
+        connection_identity(control).await?;
+    if source_id == 0
+        || source_id == control_id
+        || (account.as_str(), datadir, port)
+            != (control_account.as_str(), control_datadir, control_port)
+    {
+        return Err("live cache monitor is not a distinct owned connection".into());
+    }
+    let user = account.split_once('@').ok_or("invalid fixture account")?.0;
+    let mut stream = source
+        .get_binlog_stream(
+            BinlogStreamRequest::new(7005)
+                .with_filename(file)
+                .with_pos(end),
+        )
+        .await?;
+    let mut anchor = ProbeBuffer::resumed(epoch, file, end, maria);
+    for initial in [true, false] {
+        let mut event = timeout(Duration::from_secs(3), stream.next())
+            .await?
+            .ok_or("live monitor ended before its preamble")??;
+        if initial && maria {
+            event = normalize_maria_initial_rotate(event, file, end)?;
+        }
+        let _ = verify_crc(&event)?;
+        let data = event
+            .read_data()?
+            .ok_or("unsupported live monitor preamble")?;
+        if (initial && !matches!(data, EventData::RotateEvent(_)))
+            || (!initial && !matches!(data, EventData::FormatDescriptionEvent(_)))
+        {
+            return Err("live monitor did not open at its expected anchor".into());
+        }
+        anchor.accept(&event, &data)?;
+    }
+    anchor.finish()?;
+    let cache = SharedObjectCache::new(BudgetPool::new(64));
+    if anchor.checkpoint_offset() != end || !cache.tracking_started() {
+        return Err("live cache monitor anchor did not stabilize".into());
+    }
+    let ticket = cache.ticket().ok_or("no live monitor cache ticket")?;
+    let payload = value(control).await?;
+    if payload != b"after" || !cache.fill(&ticket, &payload) || cache.get().is_none() {
+        return Err("cannot warm cache during live monitoring".into());
+    }
+    timeout(Duration::from_secs(3), async {
+        loop {
+            let rows: Vec<Row> = control.query("SHOW PROCESSLIST").await?;
+            if rows.len() > 16 {
+                return Err::<_, Box<dyn std::error::Error>>(
+                    "cache processlist bound exceeded".into(),
+                );
+            }
+            for mut row in rows {
+                let id: u32 = row.take("Id").ok_or("cache processlist ID missing")?;
+                if id != source_id {
+                    continue;
+                }
+                let owner: String = row.take("User").ok_or("cache processlist user missing")?;
+                let command: String = row
+                    .take("Command")
+                    .ok_or("cache processlist command missing")?;
+                if owner != user {
+                    return Err("live cache monitor process owner changed".into());
+                }
+                if command == "Binlog Dump" {
+                    return Ok(());
+                }
+            }
+            sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await??;
+    // Terminate only the captured, same-account live dump on this owned fixture.
+    control
+        .query_drop(format!("KILL CONNECTION {source_id}"))
+        .await?;
+    let lost = timeout(Duration::from_secs(3), stream.next()).await;
+    cache.monitoring_lost();
+    match lost? {
+        None
+        | Some(Err(mysql_async::Error::Driver(mysql_async::DriverError::ConnectionClosed))) => {}
+        Some(Err(error)) if closed_socket_error(&error) => {}
+        Some(Err(mysql_async::Error::Server(error))) if error.code == 1927 => {}
+        _ => return Err("live binlog transport did not report connection loss".into()),
+    }
+    drop(stream);
+    if cache.ticket().is_some()
+        || cache.get().is_some()
+        || cache.fill(&ticket, &payload)
+        || cache.charged_bytes() != 0
+        || value(control).await? != payload
+    {
+        return Err("live cut did not fence the cache while preserving the source".into());
+    }
+    Ok(())
 }
 
 pub(super) async fn run(
@@ -79,7 +198,7 @@ pub(super) async fn run(
         return Err("committed fixture endpoint invalid".into());
     }
 
-    let mut source = Conn::new(options).await?;
+    let mut source = Conn::new(options.clone()).await?;
     require_fixture_tls(&mut source).await?;
     let mut stream = source
         .get_binlog_stream(
@@ -180,8 +299,9 @@ pub(super) async fn run(
     {
         return Err("source end left the cache accessible".into());
     }
+    live_monitor_cut(control, options, epoch, &file, end, maria).await?;
     Ok(serde_json::json!({
-        "format_version": 1,
+        "format_version": 2,
         "backend": if maria { "mariadb" } else { "mysql" },
         "commits": buffer.applied,
         "target_rows": target_rows,
@@ -190,6 +310,7 @@ pub(super) async fn run(
         "stale_fill_rejected": true,
         "refreshed_hit": true,
         "source_end_closed_cache": true,
+        "live_cut_closed_cache": true,
         "final_charged_bytes": cache.charged_bytes(),
     }))
 }
