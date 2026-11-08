@@ -1,0 +1,89 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 42498452725,
+  "run_attempt": 1,
+  "head_sha": "4ce8bee52173b75974e340f1293ad0f62af09338",
+  "run_conclusion": "success",
+  "job": {
+    "id": 128785790551,
+    "name": "Owned raw ERR through PHP-Wasm / mysql",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare pinned WordPress source files",
+        "conclusion": "success"
+      },
+      {
+        "name": "Stage the fixed driver with retained raw accessor",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare real ERR wire and wpdb state through PHP-Wasm",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload only the public raw-error trial report",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13625630744,
+    "name": "php-wasix-wpdb-raw-error-mysql-1",
+    "size_in_bytes": 7711,
+    "digest": "sha256:e55971e497952ad8f2845ff7b062f8a80309b8be740156fbb4dcd6177fb69cdd"
+  }
+}

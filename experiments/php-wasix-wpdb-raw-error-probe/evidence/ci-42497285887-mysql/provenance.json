@@ -1,0 +1,143 @@
+{
+  "api_metadata_sha256": "4fead0e0ca27b95430e7248b8561b1bb77ebf01051c736797d5a676f973becc6",
+  "archive_identity": null,
+  "artifact": null,
+  "backend": "mysql",
+  "job": {
+    "conclusion": "failure",
+    "id": 128782253914,
+    "name": "Owned raw ERR through PHP-Wasm / mysql",
+    "steps": [
+      {
+        "conclusion": "success",
+        "name": "Set up job"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out fixed experiment inputs"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out the fixed PHP source"
+      },
+      {
+        "conclusion": "success",
+        "name": "Check out fixed WASIX dependencies"
+      },
+      {
+        "conclusion": "success",
+        "name": "Preseed the fixed parser"
+      },
+      {
+        "conclusion": "success",
+        "name": "Install native build tools only"
+      },
+      {
+        "conclusion": "success",
+        "name": "Verify and place fixed WASIX tools"
+      },
+      {
+        "conclusion": "success",
+        "name": "Build the same three-patch PHP CGI candidate"
+      },
+      {
+        "conclusion": "success",
+        "name": "Prepare pinned WordPress source files"
+      },
+      {
+        "conclusion": "failure",
+        "name": "Stage the fixed driver with retained raw accessor"
+      },
+      {
+        "conclusion": "skipped",
+        "name": "Compare real ERR wire and wpdb state through PHP-Wasm"
+      },
+      {
+        "conclusion": "success",
+        "name": "Upload only the public raw-error trial report"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Preseed the fixed parser"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out fixed WASIX dependencies"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out the fixed PHP source"
+      },
+      {
+        "conclusion": "success",
+        "name": "Post Check out fixed experiment inputs"
+      },
+      {
+        "conclusion": "success",
+        "name": "Complete job"
+      }
+    ]
+  },
+  "original_git_sources": {
+    ".github/workflows/php-wasix-wpdb-raw-error.yml": {
+      "bytes": 4190,
+      "sha256": "3243f8e7c419e20088caf17a2aeb73962b8d108a326a3e74abe6740985cd62ac"
+    },
+    "experiments/php-wasix-wp-bootstrap-probe/import_evidence.py": {
+      "bytes": 24013,
+      "sha256": "d720220b0ddad54819b1d8d06dcf080428e5e4f8776508fb2d191ffe914bbe32"
+    },
+    "experiments/php-wasix-wp-http-probe/import_evidence.py": {
+      "bytes": 35215,
+      "sha256": "fa04648df27206a066a694e6603da1d7f825f325a8b6bee61bbec9b3343949eb"
+    },
+    "experiments/php-wasix-wp-plugin-admission-probe/import_evidence.py": {
+      "bytes": 24855,
+      "sha256": "254e142917b3216a8b4f5d3169d15dcb18fdc381d8744f3d0bfb705ec3ddc9e7"
+    },
+    "experiments/php-wasix-wp-private-http-probe/import_evidence.py": {
+      "bytes": 30158,
+      "sha256": "7209bbb435c3d9424c3f993a1ab5404ea38c7ccd5819aade37b05a07a652cdcf"
+    },
+    "experiments/php-wasix-wp-private-worker-probe/import_evidence.py": {
+      "bytes": 33884,
+      "sha256": "ce563693288725c98c763a46133bf3419eb3848d14bb8457a4b366522d5bb5cb"
+    },
+    "experiments/php-wasix-wp-request-context-probe/import_evidence.py": {
+      "bytes": 35279,
+      "sha256": "cc39c4153de56ecd1bb809a017422ddde407c9404c594f613fb23bfaa247bbca"
+    },
+    "experiments/php-wasix-wp-request-probe/import_evidence.py": {
+      "bytes": 32466,
+      "sha256": "ef7bd09447b52d159b77dbff87f376a23ab812ff098da3a75f2f51f2cb57a1b9"
+    },
+    "experiments/php-wasix-wp-session-http-probe/import_evidence.py": {
+      "bytes": 42779,
+      "sha256": "e47d80fdb4bf7c66d4acb992a869a34bcf468a92c9647863221bcf97d2411fe8"
+    },
+    "experiments/php-wasix-wp-session-probe/import_evidence.py": {
+      "bytes": 42284,
+      "sha256": "31fb9b0efc40aaaa6aaa99fbd1ca7aff85afb4b77425d055e4ec0ba55e9b4b40"
+    },
+    "experiments/php-wasix-wpdb-probe/import_evidence.py": {
+      "bytes": 61921,
+      "sha256": "5e049318726672f4794d2db4e2c7caf8751271ea87866142ddfe4a2939c7e66e"
+    }
+  },
+  "raw_json": null,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "repository_id": 1432882501,
+  "run_attempt": 1,
+  "run_conclusion": "failure",
+  "run_id": 42497285887,
+  "schema": "recastpress.php-wasix-wpdb-raw-error-ci-import.v0.5",
+  "source_commit": "946a9a796c16119dce35ef9c072345f3bc63f1d4",
+  "verification": {
+    "network_or_runtime_used_by_importer": false,
+    "overall_positive": false,
+    "private_worker_or_binary_bytes_reconstructed": false,
+    "raw_verdicts_rewritten": false,
+    "report": null
+  },
+  "verifier_sha256": "5aa35c6ea574013a1a22757190f0bd1a1f689f5b846d53c13033f0b093b34b01"
+}

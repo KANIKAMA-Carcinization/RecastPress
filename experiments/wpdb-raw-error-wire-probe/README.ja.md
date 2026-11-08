@@ -8,7 +8,7 @@
 
 初回MariaDBでは、ドライバーがメタデータ保持をネゴシエートした際の回復SELECT先頭が `01 01` だった。観測器の固定 `01` 検査がこれを拒否していたため、両側が機能を交渉した場合にだけ `01 01` を受け入れた。ドライバーが実際に値42を読む検査はそのまま通した。[初回失敗](evidence/windows-mariadb-driver-first.json)・[切り分け時の記録](evidence/windows-mariadb-driver-diagnostic.json)
 
-Rust実行には、既存のraw accessor実験で準備したドライバーを使う。次はこの比較をPHP-Wasm内の所有 `db.php` とRust DB actorへ接続する。[ドライバーの準備手順](../wpdb-raw-error-probe/README.ja.md)
+Rust実行には、既存のraw accessor実験で準備したドライバーを使う。同じ比較はPHP-Wasm内の所有アダプターとRust DB actorでも両DBで通過した。[ドライバーの準備手順](../wpdb-raw-error-probe/README.ja.md)・[PHP-Wasmの実測](../php-wasix-wpdb-raw-error-probe/README.ja.md)
 
 ```powershell
 cargo build --locked --offline --manifest-path experiments/wpdb-raw-error-wire-probe/Cargo.toml --target-dir target/wpdb-raw-error-probe/cargo-target
