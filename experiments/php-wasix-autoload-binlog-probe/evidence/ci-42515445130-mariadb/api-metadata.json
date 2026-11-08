@@ -1,0 +1,93 @@
+{
+  "repository_id": 1432882501,
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "run_id": 42515445130,
+  "run_attempt": 1,
+  "head_sha": "2b18812f13ea34ec4e532cd942d7fe1df99a0c34",
+  "run_conclusion": "success",
+  "job": {
+    "id": 128837327199,
+    "name": "Owned PHP-Wasm autoload binlog / mariadb",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install native build tools only",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify and place fixed WASIX tools",
+        "conclusion": "success"
+      },
+      {
+        "name": "Prepare full pinned WP and seven context fixtures",
+        "conclusion": "success"
+      },
+      {
+        "name": "Fetch fixed driver sources and host dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build the same three-patch PHP CGI candidate",
+        "conclusion": "success"
+      },
+      {
+        "name": "Build and verify unchanged bootstrap host",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compare the stock autoload SELECT before and after an observed commit",
+        "conclusion": "success"
+      },
+      {
+        "name": "Upload only the public autoload binlog report",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Preseed the fixed parser",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed WASIX dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out the fixed PHP source",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Check out fixed experiment inputs",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 13631808138,
+    "name": "wordpress-wasix-autoload-binlog-mariadb-1",
+    "size_in_bytes": 15773,
+    "digest": "sha256:701ce97b4f52a75bf391d0d85e6a1c0cff6f455ba1322817f20c02510fd9b9d7"
+  }
+}
