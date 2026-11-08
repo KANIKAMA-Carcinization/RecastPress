@@ -4,4 +4,4 @@
 
 初回にSQLで値を読み、後続の2要求が共有ヒットすることを検証する。この試験では所有DBの固定行に共有ロックを保持し、別接続の更新が拒否されることも確認する。ライブbinlog監視の実測は別のWindows試験にあり、PHP-Wasmへの監視接続は後続の検証範囲となる。[binlogと共有キャッシュの実測](../binlog-shared-cache-probe/README.ja.md)
 
-Windowsで派生照合、PHP構文検査、Rustのオフラインテスト67件が通過した。Linuxの実DB比較はCIで別に判定する。
+source `8a5e892` のLinux CIはMySQLとMariaDBの両方で通過した。各DBでPHP-Wasmを1回コンパイルし、3つの新規要求を実行した。固定行のSQLは1回、後続の2要求は共有ヒットだった。ホームのレスポンスと要求コンテキストは3回とも通常PHPと一致した。別接続の更新をロック中に拒否し、セッション終了後は予約ゼロ、所有DBは正常終了した。Rustテスト67件、入力251件、生成4件を照合した。[MySQL証跡](evidence/ci-42504791015-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42504791015-mariadb/provenance.json)
