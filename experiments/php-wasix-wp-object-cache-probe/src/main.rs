@@ -394,7 +394,7 @@ fn run_request(
     ensure!(
         php["rust_transport"]
             == json!({"groups": cache["groups"], "flushes": cache["flushes"],
-        "finish": {"operations": cache["operations"], "entries": 0, "charged_bytes": 0}, "channel_closed": true}),
+        "finish": {"ok": true, "operations": cache["operations"], "entries": 0, "charged_bytes": 0}, "channel_closed": true}),
         "guest_transport_mismatch"
     );
     row["php_result"] = php;
