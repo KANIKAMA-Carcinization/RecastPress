@@ -1,0 +1,105 @@
+name: WordPress autoload cache invalidation with PHP WASIX
+'on':
+  push:
+    branches:
+    - dev/v0.5
+    paths:
+    - .github/workflows/php-wasix-autoload-binlog.yml
+    - experiments/php-wasix-autoload-binlog-probe/**
+    - '!experiments/php-wasix-autoload-binlog-probe/evidence/**'
+    - '!experiments/php-wasix-autoload-binlog-probe/README.ja.md'
+    - '!experiments/php-wasix-autoload-binlog-probe/import_evidence.py'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: wordpress-wasix-autoload-binlog-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  trial:
+    name: Owned PHP-Wasm autoload binlog / ${{ matrix.backend }}
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [mysql, mariadb]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '0'
+      RUSTUP_TOOLCHAIN: 1.94.0
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: Check out fixed experiment inputs
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        persist-credentials: false
+    - name: Check out the fixed PHP source
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        repository: wasix-org/php
+        ref: f4bfae79d5c19028349082f707930cf0951d23b9
+        path: target/php-wasix-managed-access-probe/source/php
+        persist-credentials: false
+    - name: Check out fixed WASIX dependencies
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        repository: wasix-org/php-wasix-deps
+        ref: b77ecbede97aba2df32c86eaeb54ff9f5e44f543
+        path: target/php-wasix-managed-access-probe/source/php-wasix-deps
+        persist-credentials: false
+    - name: Preseed the fixed parser
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        repository: nikic/PHP-Parser
+        ref: f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2
+        path: target/php-wasix-managed-access-probe/source/php/build/PHP-Parser-5.6.1
+        persist-credentials: false
+    - name: Install native build tools only
+      run: |
+        set -euo pipefail
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y \
+          build-essential autoconf automake bison re2c pkg-config wabt \
+          curl xz-utils tar php-cli php-xml cmake ninja-build \
+          libzstd-dev zlib1g-dev libxml2-dev libncurses-dev libffi-dev
+    - name: Verify and place fixed WASIX tools
+      run: python3 experiments/php-wasix-cgi-build/prepare.py --record
+    - name: Prepare full pinned WP and seven context fixtures
+      run: |
+        set -euo pipefail
+        mkdir -p .reference
+        curl --fail --silent --show-error --location \
+          --proto '=https' --proto-redir '=https' --connect-timeout 30 --max-time 300 \
+          --retry 2 --retry-max-time 600 --max-filesize 35368461 \
+          --output .reference/wordpress-7.1.3.tar.gz https://wordpress.org/wordpress-7.1.3.tar.gz
+        python3 experiments/wp-bootstrap-probe/prepare.py
+        python3 experiments/php-wasix-wp-bootstrap-probe/prepare.py
+        python3 experiments/wp-request-probe/prepare.py
+        python3 experiments/php-wasix-wp-request-probe/prepare.py
+        python3 experiments/php-wasix-wp-request-context-probe/prepare.py
+    - name: Fetch fixed driver sources and host dependencies
+      run: |
+        set -euo pipefail
+        rustup toolchain install 1.94.0 --profile minimal --no-self-update
+        cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
+        python3 experiments/wpdb-rpc-probe/prepare_driver.py
+        cargo fetch --locked --manifest-path experiments/php-wasix-wp-bootstrap-probe/Cargo.toml
+        python3 -B experiments/php-wasix-autoload-binlog-probe/derive.py
+        python3 -B experiments/php-wasix-autoload-binlog-probe/derive_binlog.py
+        cargo fetch --locked --manifest-path experiments/php-wasix-autoload-binlog-probe/Cargo.toml
+    - name: Build the same three-patch PHP CGI candidate
+      run: python3 experiments/php-wasix-managed-access-probe/build.py --record
+    - name: Build and verify unchanged bootstrap host
+      run: python3 -B experiments/php-wasix-wp-bootstrap-probe/build_check.py
+    - name: Compare the stock autoload SELECT before and after an observed commit
+      run: python3 -B experiments/php-wasix-autoload-binlog-probe/run_check.py --backend ${{ matrix.backend }} --record
+    - name: Upload only the public autoload binlog report
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: wordpress-wasix-autoload-binlog-${{ matrix.backend }}-${{ github.run_attempt }}
+        if-no-files-found: warn
+        path: experiments/php-wasix-autoload-binlog-probe/evidence/linux-${{ matrix.backend }}.json
