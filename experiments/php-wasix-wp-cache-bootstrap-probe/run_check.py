@@ -204,14 +204,16 @@ def main():
             payload = database.context_request('home')
             payload['schema'] = private.INPUT
             workers = {}
-            for label, binary in (('baseline', baseline), ('shim', shim)):
+            # Let the first stock home request finish any one-time database
+            # work before comparing two fresh requests against the warmed DB.
+            for label, binary in (('warmup', baseline), ('baseline', baseline), ('shim', shim)):
                 stage = label
                 worker = run_home(binary, payload, env, label, native, report)
                 database.verify_context_state('home', worker['php_result'])
                 workers[label] = worker
             stage = 'compare'
             compare_requests(workers['baseline'], workers['shim'])
-            require(report['executions']['baseline']['owned_pid'] != report['executions']['shim']['owned_pid'],
+            require(len({row['owned_pid'] for row in report['executions'].values()}) == 3,
                 'cache_bootstrap_distinct_workers')
         stage = 'postflight'
         require(all(owned[key] is True for key in ('container_stopped', 'container_removed',
@@ -224,7 +226,8 @@ def main():
             exact(identity(binary.read_bytes()), report['binaries'][name], 'cache_bootstrap_binary_changed')
         exact(context.managed.verify_build(), report['module'], 'cache_bootstrap_module_changed')
         exact(context.oldbuild.verify_build(), bootstrap, 'cache_bootstrap_baseline_build_changed')
-        report.update(passed=True, fresh_private_workers=2, native_comparison_controller_only=True,
+        report.update(passed=True, fresh_private_workers=3, stock_warmup_before_comparison=True,
+            native_comparison_controller_only=True,
             response_context_and_db_rpc_exact_except_hello_reply=True, source_reverified_after=True)
     except (Exception, KeyboardInterrupt) as error:
         report.update(failure_stage=stage, failure_class=type(error).__name__)
