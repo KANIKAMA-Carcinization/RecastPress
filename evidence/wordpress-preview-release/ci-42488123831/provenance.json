@@ -1,0 +1,69 @@
+{
+  "api_metadata_sha256": "30996068297a81ad5e154edb814644fb0e9534ef5fd0d4cc286db02b3f86f6eb",
+  "archive_identity": null,
+  "artifact": null,
+  "git_inputs": {
+    ".github/workflows/wordpress-preview-release.yml": {
+      "bytes": 5984,
+      "sha256": "90d9bfbc35eacbac8f4265c28ae66199b7476e700e8367da494880cbefe3d431"
+    },
+    "experiments/php-wasix-wp-bootstrap-probe/import_evidence.py": {
+      "bytes": 24013,
+      "sha256": "d720220b0ddad54819b1d8d06dcf080428e5e4f8776508fb2d191ffe914bbe32"
+    },
+    "experiments/php-wasix-wp-http-probe/import_evidence.py": {
+      "bytes": 35215,
+      "sha256": "fa04648df27206a066a694e6603da1d7f825f325a8b6bee61bbec9b3343949eb"
+    },
+    "experiments/php-wasix-wp-private-http-probe/import_evidence.py": {
+      "bytes": 30158,
+      "sha256": "7209bbb435c3d9424c3f993a1ab5404ea38c7ccd5819aade37b05a07a652cdcf"
+    },
+    "experiments/php-wasix-wp-private-worker-probe/import_evidence.py": {
+      "bytes": 33884,
+      "sha256": "ce563693288725c98c763a46133bf3419eb3848d14bb8457a4b366522d5bb5cb"
+    },
+    "experiments/php-wasix-wp-request-context-probe/import_evidence.py": {
+      "bytes": 35279,
+      "sha256": "cc39c4153de56ecd1bb809a017422ddde407c9404c594f613fb23bfaa247bbca"
+    },
+    "experiments/php-wasix-wp-request-probe/import_evidence.py": {
+      "bytes": 32466,
+      "sha256": "ef7bd09447b52d159b77dbff87f376a23ab812ff098da3a75f2f51f2cb57a1b9"
+    },
+    "experiments/php-wasix-wp-session-http-probe/import_evidence.py": {
+      "bytes": 42779,
+      "sha256": "e47d80fdb4bf7c66d4acb992a869a34bcf468a92c9647863221bcf97d2411fe8"
+    },
+    "experiments/php-wasix-wp-session-probe/import_evidence.py": {
+      "bytes": 42284,
+      "sha256": "31fb9b0efc40aaaa6aaa99fbd1ca7aff85afb4b77425d055e4ec0ba55e9b4b40"
+    },
+    "experiments/php-wasix-wpdb-probe/import_evidence.py": {
+      "bytes": 61921,
+      "sha256": "5e049318726672f4794d2db4e2c7caf8751271ea87866142ddfe4a2939c7e66e"
+    }
+  },
+  "job": null,
+  "raw_json": {},
+  "repository": "KANIKAMA-Carcinization/RecastPress",
+  "repository_id": 1432882501,
+  "run_attempt": 1,
+  "run_conclusion": "cancelled",
+  "run_id": 42488123831,
+  "schema": "recastpress.wordpress-preview-ci-import.v0.5",
+  "source_commit": "0c358ccfe2c829041499b7a516a0abab4eb7fca6",
+  "verification": {
+    "actual_binary_or_http_bytes_recomputed_offline": false,
+    "empty_reports": [],
+    "network_or_runtime_used_by_importer": false,
+    "overall_positive": false,
+    "product_cli_launch_verified": false,
+    "raw_verdicts_rewritten": false,
+    "release_manifest_reconstructed_offline": false,
+    "runtime_generated_source_rederived": false,
+    "runtime_source_inputs": null,
+    "verified_reports": []
+  },
+  "verifier_sha256": "f4662d56c29c0af7eb040482934f7cf5f2066c5c0c52cad9c47eaff20cdd7fd9"
+}
