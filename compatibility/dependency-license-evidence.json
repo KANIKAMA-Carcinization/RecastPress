@@ -27,14 +27,14 @@
     "extension_header_nesting": 32
   },
   "input_files": {
-    "Cargo.lock": "eebfe10054ce4a812c1f70539b06ca32ce11cb97197b101b964035d052d98172",
-    "Cargo.toml": "a922eab3b4bc630035faf0780611b8295e89bb1c567925e1608d4bf54af80a84",
-    "compatibility/dependency-inventory.json": "d08104107202b1a05ffe6e14c85044bc039f6e8a8353c3e4863efdb7aec05854",
+    "Cargo.lock": "f85f9fcd4ffc85079f7596f700286d497a4c48663b5e214c535ca6eb98d75c1c",
+    "Cargo.toml": "17631c82601456faa7258b9aa035b80acaed6ec1df2b8322213dae011eeafe69",
+    "compatibility/dependency-inventory.json": "a7ac071c49fc5b06e09203e9470224c7d6b495f54658089d2c9093598486a40a",
     "crates/recastpress-core/Cargo.toml": "36f1fa5f28f9b571d4f07e47ed907479f8c5776d4e962f68b6a1bc0f64002c6a",
     "crates/recastpress-db/Cargo.toml": "5b71062809aaff1e37b69a33248b618abb1311f9c6fc75208f592bb480827843",
     "crates/recastpress-server/Cargo.toml": "2ba45604c918b892941502a46a4d6ecddd3c62aa0ea8dcd6cd317297e933cac0",
-    "crates/recastpress-wp/Cargo.toml": "c8375b25a737b390baf41778f96ce235786cd38a9f55ea599502b0894b635f61",
-    "experiments/binlog-probe/Cargo.lock": "9263e8f9a5aeee29f79f3335b3f8a989cb055f175acb2d5884208c2046edc68e",
+    "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
+    "experiments/binlog-probe/Cargo.lock": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
     "experiments/binlog-probe/Cargo.toml": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377",
     "scripts/dependency_inventory.py": "c179a10577b8317e7b080cc66d5313f82dd8906f5c67b0c4a30409159e23bdb6",
     "scripts/dependency_license_evidence.py": "cec3fe42e1904a45897b3a89b2c1e9c083e8efefd375bda622537d608644fb8f",
@@ -4232,33 +4232,33 @@
       "declared_license": "GPL-2.0-or-later",
       "archive_status": "local_not_archive"
     },
-    "recastpress-core@0.1.0 (path:crates/recastpress-core)": {
+    "recastpress-core@0.5.0 (path:crates/recastpress-core)": {
       "name": "recastpress-core",
-      "version": "0.1.0",
+      "version": "0.5.0",
       "source": null,
       "local_path": "crates/recastpress-core",
       "declared_license": "GPL-2.0-or-later",
       "archive_status": "local_not_archive"
     },
-    "recastpress-db@0.1.0 (path:crates/recastpress-db)": {
+    "recastpress-db@0.5.0 (path:crates/recastpress-db)": {
       "name": "recastpress-db",
-      "version": "0.1.0",
+      "version": "0.5.0",
       "source": null,
       "local_path": "crates/recastpress-db",
       "declared_license": "GPL-2.0-or-later",
       "archive_status": "local_not_archive"
     },
-    "recastpress-server@0.1.0 (path:crates/recastpress-server)": {
+    "recastpress-server@0.5.0 (path:crates/recastpress-server)": {
       "name": "recastpress-server",
-      "version": "0.1.0",
+      "version": "0.5.0",
       "source": null,
       "local_path": "crates/recastpress-server",
       "declared_license": "GPL-2.0-or-later",
       "archive_status": "local_not_archive"
     },
-    "recastpress-wp@0.1.0 (path:crates/recastpress-wp)": {
+    "recastpress-wp@0.5.0 (path:crates/recastpress-wp)": {
       "name": "recastpress-wp",
-      "version": "0.1.0",
+      "version": "0.5.0",
       "source": null,
       "local_path": "crates/recastpress-wp",
       "declared_license": "GPL-2.0-or-later",
