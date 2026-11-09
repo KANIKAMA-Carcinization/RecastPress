@@ -7,8 +7,8 @@ These fixtures measure PHP runtime behavior only. They do not load WordPress and
 Run from the repository root:
 
 ```powershell
-Get-Content -Raw request.json | .reference/php-8.5.12/php.exe -d display_errors=0 experiments/php-compat-v06-probe/fixtures/dispatcher.php
-.reference/php-8.5.12/php.exe -d display_errors=0 experiments/php-compat-v06-probe/fixtures/surface_oracle.php
+Get-Content -Raw request.json | .reference/php-8.5.12/php.exe -n -d display_errors=0 experiments/php-compat-v06-probe/fixtures/dispatcher.php
+.reference/php-8.5.12/php.exe -n -d display_errors=0 experiments/php-compat-v06-probe/fixtures/surface_oracle.php
 ```
 
 `dispatcher.php` accepts exactly one UTF-8 JSON line on stdin and emits one JSON result line on stdout. Diagnostics go to stderr. Request schema (unknown fields rejected):
@@ -30,7 +30,7 @@ The result includes explicit observations for object identity, reference-cell mu
 Start the long-lived PHP side with:
 
 ```powershell
-.reference/php-8.5.12/php.exe -d display_errors=0 experiments/php-compat-v06-probe/fixtures/bridge_driver.php
+.reference/php-8.5.12/php.exe -n -d display_errors=0 experiments/php-compat-v06-probe/fixtures/bridge_driver.php
 ```
 
 The Rust peer reads and writes newline-delimited JSON on the process stdin/stdout pipes. Each direction has its own sequence beginning at zero. `request` is fixed to `surface-probe-1` in this fixture. PHP stdout is reserved for protocol frames; PHP diagnostics belong on stderr. Each encoded line is limited to 1 MiB and the combined bytes in both directions to 32 MiB. Both peers limit depth to 64 and reject unknown frame fields, duplicate decoded keys, and mismatched request/sequence values. No frame field contains PHP source or is evaluated.
@@ -53,4 +53,10 @@ PHP -> Rust  {"v":1,"request":"surface-probe-1","seq":4,"kind":"request_finished
 
 ## Limits
 
-The one-shot fixture's PHP registry token binds request generation, slot, and value kind and checks stale/type-invalid tokens. It is an in-process demonstration, not a cryptographic cross-process authorization token or a production registry. This interactive wire carries no PHP handle; undeclared handle fields are rejected. JSON is only the control envelope; raw bytes are carried in tagged hex fields in the one-shot probe. No Wasm binary is executed by these commands.
+The one-shot fixture's PHP registry token binds request generation, slot, and value kind and checks stale/type-invalid tokens. It is an in-process demonstration, not a cryptographic cross-process authorization token or a production registry. The positive wire carries no PHP handle; undeclared handle fields are rejected. The throwable scenario carries only an allowlisted request-local string ID for an actual PHP Throwable retained in that PHP process; it does not serialize a pointer or authority token. JSON is only the control envelope; raw bytes are carried in tagged hex fields in the one-shot probe. No Wasm binary is executed by these commands.
+
+## Throwable and abort scenario
+
+The runner's `--self-test` and `--record` also start a separate native PHP/Rust pair with the `throwable` scenario. A registered nested PHP callback throws one `RuntimeException`; the PHP transport wrapper catches and retains that exact object in a request-local table, and sends only its allowlisted string ID, class, and message. Rust maps this ID to a typed `PhpHandleKind::Throwable`, resumes the nested effect, and returns a throwable completion to PHP. The PHP API wrapper rethrows the table's same object; the top-level catch compares object identity and checks the catch/finally trace and that the callback ran once.
+
+Rust recovers the child before aborting the still-pending root. It then verifies that a second nested resume returns `EffectAlreadyResumed`, a root resume after abort returns `RequestClosed`, and `finish_request` after abort returns `RequestClosed`; the request depth falls to zero. PHP receives the explicit `Abort` frame, confirms the throwable's class/message/trace and the cleanup observations, and sends `RequestFinished` with `status=throwable`. This tests caller-owned routing using a deterministic fixture handle mapping. It does not pass an actual PHP heap pointer or prove Wasm exception propagation.

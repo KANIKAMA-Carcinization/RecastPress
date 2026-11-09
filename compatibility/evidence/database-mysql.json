@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "scope": "isolated_editing_schema_reader_fixture",
-  "generated_at_utc": "2026-11-09T17:25:35.045303+00:00",
+  "generated_at_utc": "2026-11-09T17:37:35.825703+00:00",
   "wordpress_version": "7.1.3",
   "schema_sha256": "cabfad5a96024c18951e6193289d1b78e5767986c0e21a61e3369e9fb9bbe83c",
   "server_version": "8.4.13",
@@ -134,7 +134,7 @@
     "crates/recastpress-wp/src/bad_protocol_outer.rs": "a80f928577ad7977687c3f993731bc861edaa0856ec250cebf4135f093e83fac",
     "crates/recastpress-wp/src/charset.rs": "c383382d88a34e9a958fb8e4c520e86bd8aa7e442d3d5fa9c63da7914030aeb5",
     "crates/recastpress-wp/src/colors.rs": "01c55e733c5c6dca8586ca6350b2e3c01b9c990c9a31e5007dad2f64a0872789",
-    "crates/recastpress-wp/src/continuation.rs": "e1245f098f87edc8805c0bfcf22559592daa5b71fcadf98fe6dc7287804ae3ee",
+    "crates/recastpress-wp/src/continuation.rs": "0c652e4a22ed75f30c56b6608b251f92e8e85be5d77f44d4ace30015533d649a",
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",

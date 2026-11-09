@@ -111,6 +111,7 @@ impl Default for LimitsProfile {
     }
 }
 
+#[must_use = "the completion carries the PHP effect outcome, including throwable identity"]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Completion<T> {
     Value(T),
@@ -364,12 +365,17 @@ impl<T> Continuation<T> {
         parent.suspended = false;
         Ok(parent_effect)
     }
-    /// Resume a PHP effect exactly once, only after any child CallCore returned.
+    /// Resume a PHP effect exactly once, only after any child CallCore returned,
+    /// and return its accepted outcome unchanged to the caller.
+    ///
+    /// A `PhpThrowable` remains an opaque PHP handle here. The caller owns the
+    /// policy for catching, rethrowing, or otherwise routing it; this state
+    /// machine does not decide PHP exception semantics.
     pub fn resume(
         &mut self,
         effect_id: EffectId,
         completion: Completion<T>,
-    ) -> Result<(), ContinuationError> {
+    ) -> Result<Completion<T>, ContinuationError> {
         self.ensure_running()?;
         let effect = self
             .effects
@@ -382,11 +388,11 @@ impl<T> Continuation<T> {
         if effect.child.is_some() {
             return Err(ContinuationError::ParentNotActive);
         }
-        if let Completion::PhpThrowable(handle) = completion {
+        if let Completion::PhpThrowable(handle) = &completion {
             if handle.kind != PhpHandleKind::Throwable {
                 return Err(ContinuationError::WrongHandleKind);
             }
-            self.validate_handle(handle)?;
+            self.validate_handle(*handle)?;
         }
         let effect = self
             .effects
@@ -399,7 +405,7 @@ impl<T> Continuation<T> {
         }
         effect.resumed = true;
         top.pending_effect = None;
-        Ok(())
+        Ok(completion)
     }
     pub fn finish_operation(
         &mut self,
@@ -423,6 +429,10 @@ impl<T> Continuation<T> {
             .ok_or(ContinuationError::RootHasNoParent)?;
         self.return_child(operation).map(Some)
     }
+    /// Close the in-memory request after the caller has observed PHP's
+    /// `RequestFinished` boundary, including shutdown and output processing.
+    /// This method only checks the Rust state machine; it cannot observe or
+    /// prove that PHP shutdown/output processing actually completed.
     pub fn finish_request(&mut self, root: OperationId) -> Result<(), ContinuationError> {
         self.ensure_running()?;
         if !self.started {

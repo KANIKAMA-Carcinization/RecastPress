@@ -14,11 +14,15 @@ fn nested_php_effect_callcore_returns_then_resumes_outer_in_order() {
     let outer_effect = c.invoke_php(root).unwrap();
     let child = c.begin_child(outer_effect).unwrap();
     let child_effect = c.invoke_php(child).unwrap();
-    c.resume(child_effect, Completion::Value("filtered option"))
-        .unwrap();
+    assert_eq!(
+        c.resume(child_effect, Completion::Value("filtered option")),
+        Ok(Completion::Value("filtered option"))
+    );
     assert_eq!(c.finish_operation(child).unwrap(), Some(outer_effect));
-    c.resume(outer_effect, Completion::Value("callback result"))
-        .unwrap();
+    assert_eq!(
+        c.resume(outer_effect, Completion::Value("callback result")),
+        Ok(Completion::Value("callback result"))
+    );
     assert_eq!(c.finish_operation(root).unwrap(), None);
     c.finish_request(root).unwrap();
     assert_eq!(c.state(), &RequestState::Finished);
@@ -35,9 +39,15 @@ fn rejects_forged_order_duplicate_resume_and_wrong_parent() {
         c.resume(e1, Completion::Value("out of order")),
         Err(E::ParentNotActive)
     );
-    c.resume(e2, Completion::Value("child done")).unwrap();
+    assert_eq!(
+        c.resume(e2, Completion::Value("child done")),
+        Ok(Completion::Value("child done"))
+    );
     c.finish_operation(child).unwrap();
-    c.resume(e1, Completion::Value("parent done")).unwrap();
+    assert_eq!(
+        c.resume(e1, Completion::Value("parent done")),
+        Ok(Completion::Value("parent done"))
+    );
     assert_eq!(
         c.resume(e1, Completion::Value("twice")),
         Err(E::EffectAlreadyResumed)
@@ -105,7 +115,11 @@ fn php_handles_are_request_scoped_and_bounded() {
         ),
         Err(E::WrongHandleKind)
     );
-    c.resume(effect, Completion::PhpThrowable(h)).unwrap();
+    assert_eq!(c.finish_operation(root), Err(E::PendingEffect));
+    assert_eq!(
+        c.resume(effect, Completion::PhpThrowable(h)),
+        Ok(Completion::PhpThrowable(h))
+    );
     c.finish_operation(root).unwrap();
     c.finish_request(root).unwrap();
     assert_eq!(c.validate_handle(h), Err(E::RequestClosed));
@@ -117,13 +131,18 @@ fn request_finish_requires_root_completion_and_has_distinct_shutdown_boundary() 
     let root = c.start_root().unwrap();
     assert_eq!(c.finish_request(root), Err(E::PendingEffect));
     let e = c.invoke_php(root).unwrap();
-    c.resume(e, Completion::Value("done")).unwrap();
+    assert_eq!(
+        c.resume(e, Completion::Value("done")),
+        Ok(Completion::Value("done"))
+    );
     c.finish_operation(root).unwrap();
     assert_eq!(c.state(), &RequestState::RootReturned);
     // Root Return is not RequestFinished: PHP shutdown/output may still re-enter.
     let shutdown_effect = c.invoke_php(root).unwrap();
-    c.resume(shutdown_effect, Completion::Value("shutdown complete"))
-        .unwrap();
+    assert_eq!(
+        c.resume(shutdown_effect, Completion::Value("shutdown complete")),
+        Ok(Completion::Value("shutdown complete"))
+    );
     c.finish_operation(root).unwrap();
     c.finish_request(root).unwrap();
     assert_eq!(c.start_root(), Err(E::RequestClosed));
@@ -151,8 +170,10 @@ fn rejected_depth_does_not_leave_the_parent_suspended() {
     let effect = c.invoke_php(root).unwrap();
     assert_eq!(c.begin_child(effect), Err(E::DepthLimit));
     assert_eq!(c.depth(), 1);
-    c.resume(effect, Completion::Value("parent still active"))
-        .unwrap();
+    assert_eq!(
+        c.resume(effect, Completion::Value("parent still active")),
+        Ok(Completion::Value("parent still active"))
+    );
     c.finish_operation(root).unwrap();
     c.finish_request(root).unwrap();
 }
@@ -167,7 +188,10 @@ fn sequential_php_effects_cannot_bypass_the_request_limit() {
     let root = c.start_root().unwrap();
     for _ in 0..2 {
         let effect = c.invoke_php(root).unwrap();
-        c.resume(effect, Completion::Value("done")).unwrap();
+        assert_eq!(
+            c.resume(effect, Completion::Value("done")),
+            Ok(Completion::Value("done"))
+        );
     }
     assert_eq!(c.invoke_php(root), Err(E::OperationLimit));
     c.finish_operation(root).unwrap();

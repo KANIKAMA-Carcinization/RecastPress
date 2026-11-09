@@ -1,0 +1,73 @@
+{
+  "schema": "recastpress.php-compat-v06-wsl-origin.v1",
+  "scope": "byte-identical fixed input snapshot on an owned WSL temporary filesystem; no WordPress or live bridge",
+  "observed_at_utc": "2026-11-09T17:51:45.594698+00:00",
+  "distribution": "Ubuntu-24.04 / WSL2",
+  "source_inputs_before": {
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": "4b005c82fef29a554d32cbcd81d6a1ba1fccd9903270b1581ef7bbfaf15b1984",
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": "d4991e8204755df27760dc1e798ffed5db3aee4047fa596aa5be81cd2d930bf7",
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": "29fbe53147e17485f45c5e129d73a8056dd5387304163207ed536ba98df40285",
+    "experiments/php-compat-v06-probe/wasm/run.py": "cf15b729871bb4934127386e1c0c02c1c653efdb4171690cc1d156047a1fef47",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
+    ".reference/php-wasix-8.5.12/php.wasm": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+  },
+  "snapshot_inputs": {
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": "4b005c82fef29a554d32cbcd81d6a1ba1fccd9903270b1581ef7bbfaf15b1984",
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": "d4991e8204755df27760dc1e798ffed5db3aee4047fa596aa5be81cd2d930bf7",
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": "29fbe53147e17485f45c5e129d73a8056dd5387304163207ed536ba98df40285",
+    "experiments/php-compat-v06-probe/wasm/run.py": "cf15b729871bb4934127386e1c0c02c1c653efdb4171690cc1d156047a1fef47",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
+    ".reference/php-wasix-8.5.12/php.wasm": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+  },
+  "source_inputs_after": {
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": "4b005c82fef29a554d32cbcd81d6a1ba1fccd9903270b1581ef7bbfaf15b1984",
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": "d4991e8204755df27760dc1e798ffed5db3aee4047fa596aa5be81cd2d930bf7",
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": "29fbe53147e17485f45c5e129d73a8056dd5387304163207ed536ba98df40285",
+    "experiments/php-compat-v06-probe/wasm/run.py": "cf15b729871bb4934127386e1c0c02c1c653efdb4171690cc1d156047a1fef47",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
+    ".reference/php-wasix-8.5.12/php.wasm": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+  },
+  "snapshot_matches_source": true,
+  "rust_preparation": {
+    "rust": "1.94.0",
+    "manifest_sha256": "aaa177def36e01d539bee6bde95295230b9ce378f81057845db8d0ebe97898ee",
+    "components": [
+      {
+        "package": "rustc",
+        "url": "https://static.rust-lang.org/dist/2026-03-05/rustc-1.94.0-x86_64-unknown-linux-gnu.tar.xz",
+        "sha256": "31a0d3ac9383dfdeb4fce86eeed5ade3230131c635264c0eab7252dbf235f28e",
+        "bytes": 78590076
+      },
+      {
+        "package": "rust-std",
+        "url": "https://static.rust-lang.org/dist/2026-03-05/rust-std-1.94.0-x86_64-unknown-linux-gnu.tar.xz",
+        "sha256": "dd33653107c36e040082050d9e547e64dac5b456ba74069430d838c00c189a05",
+        "bytes": 29809088
+      },
+      {
+        "package": "cargo",
+        "url": "https://static.rust-lang.org/dist/2026-03-05/cargo-1.94.0-x86_64-unknown-linux-gnu.tar.xz",
+        "sha256": "8e17624f3de39e079845bfb25ed15a042f4b50ceca78e37c56c4b9b15949b9f7",
+        "bytes": 10986096
+      }
+    ]
+  },
+  "compiler": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "offline_build": true,
+  "cold_build_exit_code": 0,
+  "probe_exit_code": 0,
+  "probe_receipt": "experiments/php-compat-v06-probe/wasm/evidence/run-20261109T175143Z-success.json",
+  "probe_receipt_sha256": "33b2c0c21b47405e04032a6df850ed3dfb61ff569c330b077455d0744567db1f"
+}

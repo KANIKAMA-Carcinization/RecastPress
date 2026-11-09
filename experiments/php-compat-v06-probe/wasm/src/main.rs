@@ -14,6 +14,8 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+#[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
+use wasmer_compiler_cranelift::{Cranelift, CraneliftOptLevel};
 use wasmer_types::ModuleHash;
 use wasmer_wasix::runtime::module_cache::HashedModuleData;
 use wasmer_wasix::runtime::task_manager::tokio::TokioTaskManager;
@@ -40,6 +42,10 @@ const STRICT_ORACLE_SHA256: &str =
 const DISPATCHER_SHA256: &str = "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6";
 const STRICT_JSON_SHA256: &str = "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565";
 const OUTPUT_LIMIT: usize = 64 * 1024;
+#[cfg(feature = "llvm")]
+const COMPILER_PROFILE: &str = "wasmer-7.2.0/llvm-default";
+#[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
+const COMPILER_PROFILE: &str = "wasmer-7.2.0/cranelift-noopt";
 const FILES: [(&str, &[u8]); 4] = [
     ("surface_oracle.php", PHP_FIXTURE),
     ("dispatcher.php", DISPATCHER),
@@ -108,7 +114,7 @@ fn run() -> Result<()> {
     let guard = runtime.enter();
     let tasks = TokioTaskManager::new(runtime.handle().clone());
     let mut wasix = PluggableRuntime::new(Arc::new(tasks));
-    wasix.set_engine(wasmer_compiler_cranelift::Cranelift::default().into());
+    wasix.set_engine(configured_engine());
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let data = HashedModuleData::new(bytes);
@@ -141,7 +147,8 @@ fn run() -> Result<()> {
         json!({
             "schema":"recastpress.php-compat-v06-wasm-surface.v1",
             "execution":"passed",
-            "runtime":"PHP-WASIX 8.5.12 / Wasmer 7.2.0 / Cranelift",
+            "runtime":"PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+            "compiler_profile":COMPILER_PROFILE,
             "artifact":{"path":ARTIFACT_RELATIVE,"bytes":ARTIFACT_BYTES,"sha256":artifact_hash},
             "fixtures":source_hashes,
             "cases":{"surface_oracle":{"status":"passed","result":output},"strict_json_oracle":{"status":"passed","result":strict_output}},
@@ -180,7 +187,7 @@ fn execute(module: &wasmer::Module, module_hash: ModuleHash, guest_path: &str) -
     let _guard = runtime.enter();
     let tasks = TokioTaskManager::new(runtime.handle().clone());
     let mut wasix = PluggableRuntime::new(Arc::new(tasks));
-    wasix.set_engine(wasmer_compiler_cranelift::Cranelift::default().into());
+    wasix.set_engine(configured_engine());
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let (_stdin_tx, stdin_rx) = Pipe::channel();
@@ -329,4 +336,16 @@ impl FileSystem for FixedFilesFs {
     ) -> Pin<Box<dyn Future<Output = std::result::Result<(), FsError>> + Send + 'a>> {
         Box::pin(async { Err(FsError::PermissionDenied) })
     }
+}
+
+#[cfg(feature = "llvm")]
+fn configured_engine() -> wasmer::Engine {
+    wasmer_compiler_llvm::LLVM::default().into()
+}
+
+#[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
+fn configured_engine() -> wasmer::Engine {
+    let mut config = Cranelift::default();
+    config.opt_level(CraneliftOptLevel::None);
+    config.into()
 }

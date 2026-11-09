@@ -8,18 +8,27 @@ import json
 import os
 from pathlib import Path
 import platform
+import subprocess
 import sys
 
 WASM_DIR = Path(__file__).resolve().parent
 ROOT = WASM_DIR.parents[2]
 MANIFEST = WASM_DIR / "Cargo.toml"
 MAIN_RS = WASM_DIR / "src" / "main.rs"
-TARGET = ROOT / "target" / "php-wasix-wp-bootstrap-probe" / "cargo-target"
+_target_override = os.environ.get("RECASTPRESS_V06_TARGET_DIR") or os.environ.get("CARGO_TARGET_DIR")
+if _target_override:
+    TARGET = Path(_target_override).expanduser().resolve()
+else:
+    TARGET = ROOT / "target" / ("php-wasix-wp-bootstrap-probe/cargo-target" if os.name == "nt" else "php-compat-v06-wasm-linux")
+try:
+    TARGET.relative_to((ROOT / "target").resolve())
+except ValueError as error:
+    raise RuntimeError("CARGO_TARGET_DIR must remain under repository target/") from error
 EVIDENCE = WASM_DIR / "evidence"
 ARTIFACT = ROOT / ".reference" / "php-wasix-8.5.12" / "php.wasm"
 FIXTURE_DIR = WASM_DIR.parent / "fixtures"
 SOURCES = ["surface_oracle.php", "dispatcher.php", "strict_json.php", "strict_json_oracle.php"]
-BOUND_INPUTS = [MANIFEST, WASM_DIR / "Cargo.lock", MAIN_RS, Path(__file__).resolve(), ARTIFACT] + [FIXTURE_DIR / name for name in SOURCES]
+BOUND_INPUTS = [MANIFEST, WASM_DIR / "Cargo.lock", MAIN_RS, Path(__file__).resolve(), ROOT / "scripts" / "owned_probe.py", ARTIFACT] + [FIXTURE_DIR / name for name in SOURCES]
 BUILD_TIMEOUT = 600
 HOST_TIMEOUT = 180
 
@@ -58,6 +67,12 @@ def classify_failure(stderr: bytes, exit_code: int) -> tuple[str, str, bool]:
     return "build_or_artifact_verification", "runner_failed", False
 
 
+def source_bound_verdict(status: str, unchanged: bool) -> tuple[str, str | None]:
+    if unchanged:
+        return status, None
+    return "failed", "source_bound_inputs_changed"
+
+
 def self_check() -> None:
     cases = [
         (b"PHP_WASIX_V06_PHASE=module_compile\n", "module_compile"),
@@ -71,6 +86,22 @@ def self_check() -> None:
     panic = classify_failure(b"PHP_WASIX_V06_PHASE=module_compile\nthread panicked machinst\\lower.rs:1107", 101)
     if panic[:2] != ("module_compile", "cranelift_lowering_panic") or panic[2]:
         raise AssertionError(f"module compile panic classification: {panic}")
+    if source_bound_verdict("passed", False) != ("failed", "source_bound_inputs_changed"):
+        raise AssertionError("source-bound mismatch must invalidate a successful result")
+
+
+def run_owned(owned_probe, command: list[str], env: dict, timeout: int):
+    try:
+        pid, result = owned_probe.run_captured_probe(command, env, timeout=timeout)
+        return pid, result, False
+    except subprocess.TimeoutExpired as error:
+        # The helper retains an owned handle when OS cleanup was incomplete.
+        # Confirm retry cleanup before any receipt can claim that it was reaped.
+        owned_probe.reap_owned_probes()
+        result = subprocess.CompletedProcess(
+            command, 124, bytes(error.output or b""), bytes(error.stderr or b"")
+        )
+        return None, result, True
 
 
 def owned_probe_module():
@@ -87,8 +118,9 @@ def main() -> int:
         self_check()
         print("phase classifier self-check passed")
         return 0
-    if sys.argv[1:]:
-        print("usage: python experiments/php-compat-v06-probe/wasm/run.py [--self-test]", file=sys.stderr)
+    use_llvm = sys.argv[1:] == ["--llvm"]
+    if sys.argv[1:] and not use_llvm:
+        print("usage: python experiments/php-compat-v06-probe/wasm/run.py [--self-test|--llvm]", file=sys.stderr)
         return 2
     if not ARTIFACT.is_file():
         print("fixed PHP-WASIX artifact is missing", file=sys.stderr)
@@ -99,22 +131,31 @@ def main() -> int:
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = str(TARGET)
     build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", str(MANIFEST)]
+    public_build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", "experiments/php-compat-v06-probe/wasm/Cargo.toml"]
+    compiler_profile = "wasmer-7.2.0/llvm-default" if use_llvm else "wasmer-7.2.0/cranelift-noopt"
+    if use_llvm:
+        build_command.extend(["--no-default-features", "--features", "llvm"])
+        public_build_command.extend(["--no-default-features", "--features", "llvm"])
     host_path = TARGET / "debug" / ("recastpress-php-compat-v06-wasm-probe.exe" if os.name == "nt" else "recastpress-php-compat-v06-wasm-probe")
     run_command = [str(host_path)]
     started = datetime.now(timezone.utc)
     before = fixed_inputs()
-    build_pid, build = owned_probe.run_captured_probe(build_command, env, timeout=BUILD_TIMEOUT)
+    build_pid, build, build_timed_out = run_owned(owned_probe, build_command, env, BUILD_TIMEOUT)
     raw_stdout = bytearray(build.stdout)
     raw_stderr = bytearray(build.stderr)
     phase = "build"
     run_pid = None
-    host_code = None
+    host_timed_out = False
+    host_binary_before = None
+    host_binary_after = None
+    host_receipt = None
     if build.returncode == 0:
         phase = "host"
-        run_pid, host = owned_probe.run_captured_probe(run_command, env, timeout=HOST_TIMEOUT)
+        host_binary_before = sha_file(host_path)
+        run_pid, host, host_timed_out = run_owned(owned_probe, run_command, env, HOST_TIMEOUT)
+        host_binary_after = sha_file(host_path)
         raw_stdout += b"\n--- HOST STDOUT ---\n" + host.stdout
         raw_stderr += b"\n--- HOST STDERR ---\n" + host.stderr
-        host_code = host.returncode
     else:
         host = None
     ended = datetime.now(timezone.utc)
@@ -127,13 +168,15 @@ def main() -> int:
     (TARGET / "last-stderr.bin").write_bytes(raw_stderr)
 
     if build.returncode != 0:
-        status, error_phase, failure_class, php_reached = "failed", "build", "cargo_build_failed", False
+        status, error_phase, failure_class, php_reached = "failed", "build", "cargo_build_timeout" if build_timed_out else "cargo_build_failed", False
         run_exit_code = build.returncode
         cases = {"surface_oracle": "not_reached", "strict_json_oracle": "not_reached"}
         diagnostic = build.stderr
     elif host.returncode != 0:
         error_phase, failure_class, php_reached = classify_failure(host.stderr, host.returncode)
         status = "failed"
+        if host_timed_out:
+            failure_class = "host_timeout_after_" + error_phase
         run_exit_code = host.returncode
         cases = {
             "surface_oracle": "passed" if error_phase == "strict_json_oracle" else ("failed" if error_phase == "surface_oracle" else "not_reached"),
@@ -149,6 +192,7 @@ def main() -> int:
             host_receipt = json.loads(host.stdout)
             if (host_receipt.get("schema") != "recastpress.php-compat-v06-wasm-surface.v1"
                     or host_receipt.get("execution") != "passed"
+                    or host_receipt.get("compiler_profile") != compiler_profile
                     or host_receipt.get("cases", {}).get("surface_oracle", {}).get("status") != "passed"
                     or host_receipt.get("cases", {}).get("strict_json_oracle", {}).get("status") != "passed"):
                 raise ValueError("fixed host result did not contain both successful cases")
@@ -158,22 +202,35 @@ def main() -> int:
             cases = {"surface_oracle": "unknown", "strict_json_oracle": "unknown"}
             diagnostic = (host.stderr + b"\nhost JSON output validation failed: " + str(error).encode("utf-8"))
 
+    status, source_failure = source_bound_verdict(status, unchanged)
+    if source_failure is not None:
+        error_phase, failure_class = "source_bound_verification", source_failure
+        run_exit_code = 1
+        cases = {"surface_oracle": "invalidated", "strict_json_oracle": "invalidated"}
+    binary_unchanged = host_binary_before == host_binary_after if host_binary_before else None
+    if binary_unchanged is False:
+        status, error_phase, failure_class = "failed", "host_binary_verification", "host_binary_changed"
+        run_exit_code = 1
+        cases = {"surface_oracle": "invalidated", "strict_json_oracle": "invalidated"}
+
     # Do not serialize panic text or absolute paths. Keep only classified phase,
     # dependency source location, byte count and digest in the public receipt.
     report = {
         "schema": "recastpress.php-compat-v06-wasm-run.v2",
         "status": status,
-        "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0 / Cranelift",
+        "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+        "compiler_profile": compiler_profile,
         "started_at_utc": started.isoformat(timespec="seconds").replace("+00:00", "Z"),
         "observed_at_utc": ended.isoformat(timespec="seconds").replace("+00:00", "Z"),
         "os": {"system": platform.system(), "release": platform.release(), "machine": platform.machine()},
         "command": {
-            "build": ["cargo", "build", "--offline", "--locked", "--manifest-path", "experiments/php-compat-v06-probe/wasm/Cargo.toml"],
-            "host": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-compat-v06-wasm-probe.exe" if os.name == "nt" else "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-compat-v06-wasm-probe",
+            "build": public_build_command,
+            "target_dir": TARGET.relative_to(ROOT).as_posix(),
+            "host": TARGET.relative_to(ROOT).as_posix() + "/debug/" + ("recastpress-php-compat-v06-wasm-probe.exe" if os.name == "nt" else "recastpress-php-compat-v06-wasm-probe"),
             "build_timeout_seconds": BUILD_TIMEOUT,
             "host_timeout_seconds": HOST_TIMEOUT,
         },
-        "owned_processes": {"build_pid": build_pid, "host_pid": run_pid, "reaped": True},
+        "owned_processes": {"build_pid": build_pid, "host_pid": run_pid, "build_timed_out": build_timed_out, "host_timed_out": host_timed_out, "reaped": True},
         "phase": error_phase,
         "failure_class": failure_class,
         "exit_code": run_exit_code,
@@ -182,6 +239,9 @@ def main() -> int:
         "source_bound_inputs_before": before,
         "source_bound_inputs_after": after,
         "source_bound_inputs_unchanged": unchanged,
+        "host_binary": {"sha256_before": host_binary_before, "sha256_after": host_binary_after, "unchanged": binary_unchanged},
+        "host_result": host_receipt,
+        "build_environment": {key: env[key] for key in ("CARGO_BUILD_JOBS", "CARGO_INCREMENTAL", "CARGO_PROFILE_DEV_DEBUG", "RUSTUP_TOOLCHAIN") if key in env},
         "stdout_bytes": len(raw_stdout),
         "stdout_sha256": sha_bytes(bytes(raw_stdout)),
         "stderr_bytes": len(diagnostic),

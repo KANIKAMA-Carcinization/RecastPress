@@ -243,10 +243,13 @@ def _reader(stream, label, events, cancelled):
         emit((label, exc))
 
 
-def run_bridge(executable: Path) -> dict:
+def run_bridge(executable: Path, scenario: str = "surface") -> dict:
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith("MYSQL_")}
     flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-    php = subprocess.Popen([str(PHP), "-n", "-d", "display_errors=0", str(FIXTURES / "bridge_driver.php")],
+    php_command = [str(PHP), "-n", "-d", "display_errors=0", str(FIXTURES / "bridge_driver.php")]
+    if scenario == "throwable":
+        php_command.append("throwable")
+    php = subprocess.Popen(php_command,
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                           bufsize=0, env=env, creationflags=flags)
     procs = {"php": php}
@@ -258,7 +261,7 @@ def run_bridge(executable: Path) -> dict:
     ended = set()
     total = 0
     sent_lines = {"php": 0, "rust": 0}
-    transcript_observations = {"rust_child": None, "rust_root": None, "php_final": None}
+    transcript_observations = {"rust_child": None, "rust_root": None, "rust_throwable_return": None, "rust_abort": None, "php_final": None}
     deadline = time.monotonic() + TIMEOUT
 
     def close_write(child):
@@ -270,7 +273,8 @@ def run_bridge(executable: Path) -> dict:
 
     try:
         # Once PHP is owned by this try/finally, even a failed Rust spawn is reaped.
-        rust = subprocess.Popen([str(executable)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        rust_command = [str(executable)] + (["throwable"] if scenario == "throwable" else [])
+        rust = subprocess.Popen(rust_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, bufsize=0, env=env, creationflags=flags)
         procs["rust"] = rust
         for label, child in procs.items():
@@ -330,6 +334,10 @@ def run_bridge(executable: Path) -> dict:
                         transcript_observations["rust_child"] = parsed.get("payload", {}).get("observation")
                     elif operation == "surface_probe":
                         transcript_observations["rust_root"] = parsed.get("payload", {}).get("observation")
+                    elif operation == "raise_nested":
+                        transcript_observations["rust_throwable_return"] = parsed.get("payload")
+                if label == "rust" and parsed.get("kind") == "abort":
+                    transcript_observations["rust_abort"] = parsed.get("payload")
                 if label == "php" and parsed.get("kind") == "request_finished":
                     transcript_observations["php_final"] = parsed.get("payload", {}).get("php_observation")
                 target_name = "rust" if label == "php" else "php"
@@ -348,7 +356,8 @@ def run_bridge(executable: Path) -> dict:
                     view = view[written:]
                 sent_lines[label] += 1
                 # The fixture's final RequestFinished has no response; let both exit.
-                if label == "php" and sent_lines[label] == 5:
+                final_php_frame = 4 if scenario == "throwable" else 5
+                if label == "php" and sent_lines[label] == final_php_frame:
                     close_write(php)
                     close_write(rust)
         if any(buffers.values()):
@@ -358,23 +367,37 @@ def run_bridge(executable: Path) -> dict:
             if code != 0:
                 raise RuntimeError(f"{name} exited {code}; stderr={stderr_bytes[name].decode('utf-8', 'replace')}")
         rust_err = stderr_bytes["rust"].decode("utf-8", "replace")
-        if "V06_BRIDGE_OK native_php=true rust_continuation=true wasm=false" not in rust_err:
+        marker = "V06_THROWABLE_OK native_php=true rust_continuation=true wasm=false" if scenario == "throwable" else "V06_BRIDGE_OK native_php=true rust_continuation=true wasm=false"
+        if marker not in rust_err:
             raise RuntimeError("Rust adapter did not emit its success marker")
         if stderr_bytes["php"].strip():
             raise RuntimeError("PHP emitted diagnostics: " + stderr_bytes["php"].decode("utf-8", "replace"))
-        expected_child = {"public_name_before": "changed-before-child", "public_name_after": "changed-before-child:nested", "name_growth_bytes": 7, "setting_flag": True, "alias_same_object": True}
-        expected_root = {**expected_child, "global_name": "global-replacement"}
         final_observation = transcript_observations["php_final"] or {}
-        if transcript_observations["rust_child"] != expected_child or transcript_observations["rust_root"] != expected_root:
-            raise RuntimeError("Rust observations did not match the independently expected live PHP values")
-        if final_observation.get("rust_child_observation") != expected_child or final_observation.get("rust_root_observation") != expected_root:
-            raise RuntimeError("PHP fixture did not confirm Rust observations against its live heap")
+        if scenario == "throwable":
+            expected_completion = {"kind": "php_throwable", "handle": "php-throwable-1", "class": "RuntimeException", "message": "nested fixture throwable"}
+            expected_return = {"operation": "raise_nested", "completion": expected_completion}
+            expected_abort = {"reason": "php_throwable", "handle": "php-throwable-1", "child_recovered": True, "child_depth_before_abort": 1, "depth_after_abort": 0, "double_resume_rejected": True, "resume_after_abort_rejected": True, "finish_request_after_abort_rejected": True}
+            expected_trace = ["root:enter", "nested:enter", "nested:transport_catch", "nested:finally", "child:rethrow", "root:catch", "root:finally"]
+            if transcript_observations["rust_throwable_return"] != expected_return or transcript_observations["rust_abort"] != expected_abort:
+                raise RuntimeError("Rust throwable return/abort observations mismatch")
+            if final_observation != {"caught_same_object": True, "throwable_class": "RuntimeException", "throwable_message": "nested fixture throwable", "trace": expected_trace, "nested_callback_calls": 1, "abort_reason": "php_throwable", "child_recovered": True, "child_depth_before_abort": 1, "depth_after_abort": 0, "double_resume_rejected": True, "resume_after_abort_rejected": True, "finish_request_after_abort_rejected": True}:
+                raise RuntimeError("PHP did not preserve and rethrow the same Throwable through child Return/Abort")
+        else:
+            expected_child = {"public_name_before": "changed-before-child", "public_name_after": "changed-before-child:nested", "name_growth_bytes": 7, "setting_flag": True, "alias_same_object": True}
+            expected_root = {**expected_child, "global_name": "global-replacement"}
+            if transcript_observations["rust_child"] != expected_child or transcript_observations["rust_root"] != expected_root:
+                raise RuntimeError("Rust observations did not match the independently expected live PHP values")
+            if final_observation.get("rust_child_observation") != expected_child or final_observation.get("rust_root_observation") != expected_root:
+                raise RuntimeError("PHP fixture did not confirm Rust observations against its live heap")
+        expected_php_frames = 4 if scenario == "throwable" else 5
+        if sent_lines != {"php": expected_php_frames, "rust": 4}:
+            raise RuntimeError(f"{scenario} bridge frame counts differ from the closed transcript")
         return {"processes": {name: child.pid for name, child in procs.items()},
                 "returncodes": {name: child.returncode for name, child in procs.items()},
-                "rust_marker": "V06_BRIDGE_OK native_php=true rust_continuation=true wasm=false",
+                "scenario": scenario, "rust_marker": marker,
                 "frames_from_php": sent_lines["php"], "frames_from_rust": sent_lines["rust"],
                 "relayed_bytes": total, "all_reaped": all(child.poll() is not None for child in procs.values()),
-                "observations": transcript_observations}
+                "observations": transcript_observations, "expected_frame_counts": {"php": expected_php_frames, "rust": 4}}
     finally:
         cancelled.set()
         for child in procs.values():
@@ -441,7 +464,7 @@ def php_negative_checks() -> list[str]:
     return passed
 
 
-def make_receipt(one_shot: dict, bridge: dict, negatives: list[str], executable_sha256: str, source_snapshot: dict[str, str]) -> dict:
+def make_receipt(one_shot: dict, bridge: dict, throwable_bridge: dict | None, negatives: list[str], executable_sha256: str, source_snapshot: dict[str, str]) -> dict:
     manifest = check_php_manifest()
     version = captured(["rustc", "--version"])
     php_version = captured([str(PHP), "-n", "-v"])
@@ -458,12 +481,13 @@ def make_receipt(one_shot: dict, bridge: dict, negatives: list[str], executable_
         "limits": {"max_frame_bytes": MAX_FRAME, "max_total_bytes": MAX_TOTAL, "timeout_seconds": TIMEOUT, "max_captured_output_bytes_per_child": MAX_STDERR},
         "one_shot": {"oracle": one_shot["oracle"], "strict_json_oracle": one_shot["strict_oracle"], "selected_independent_php_values": {"same_object_alias": one_shot["surface_result"]["same_object_alias"], "array_reference_cell_after_callback": one_shot["surface_result"]["array_reference_cell_after_callback"], "byte_value_hex": one_shot["surface_result"]["byte_value_hex"]}},
         "interactive_bridge": bridge,
+        "throwable_abort_bridge": throwable_bridge,
         "negative_vectors_rejected_by_rust": negatives,
         "negative_vector_inventory": NEGATIVE_INVENTORY,
         "php_negative_vectors_rejected": PHP_NEGATIVE_INVENTORY,
-        "owned_children": {"spawned_and_reaped": len(CHILD_RUNS) + 2, "all_reaped": all(run["reaped"] for run in CHILD_RUNS) and bridge["all_reaped"], "captured_children": CHILD_RUNS, "bridge_children": bridge["returncodes"]},
-        "wasm": {"status": "pending_not_run", "reason": "This runner executes native PHP only. Fixed-artifact WASIX attempts and their failures are recorded separately under wasm/. The interactive bridge has not run under Wasm."},
-        "known_limits": ["The PHP fixture is synthetic and does not bootstrap WordPress.", "No real PHP handle is serialized in this exchange; the closed wire rejects any undeclared php_handle field.", "No native PHP↔Wasm re-entry, Zend bridge, DB, hooks, Query, or production worker transport was exercised."],
+        "owned_children": {"spawned_and_reaped": len(CHILD_RUNS) + (4 if throwable_bridge else 2), "all_reaped": all(run["reaped"] for run in CHILD_RUNS) and bridge["all_reaped"] and (throwable_bridge is None or throwable_bridge["all_reaped"]), "captured_children": CHILD_RUNS, "bridge_children": {"surface": bridge["returncodes"], "throwable": throwable_bridge["returncodes"] if throwable_bridge else None}},
+        "wasm": {"status": "not_run_by_this_runner", "reason": "This runner executes native PHP only. Fixed-artifact WASIX one-shot results are recorded separately under wasm/. The interactive bridge has not run under Wasm."},
+        "known_limits": ["The PHP fixture is synthetic and does not bootstrap WordPress.", "The throwable scenario retains the actual Throwable only in a request-local PHP table; its string handle maps to a local typed Rust handle and is not a cross-process PHP heap pointer or production authorization token.", "No native PHP↔Wasm re-entry, Zend bridge, DB, hooks, Query, or production worker transport was exercised."],
     }
 
 
@@ -486,6 +510,17 @@ def verify_receipt() -> None:
     bridge = receipt.get("interactive_bridge", {})
     if bridge.get("returncodes") != {"php": 0, "rust": 0} or bridge.get("frames_from_php") != 5 or bridge.get("frames_from_rust") != 4 or not bridge.get("all_reaped"):
         raise RuntimeError("receipt bridge completion/reap expectations mismatch")
+    throwable = receipt.get("throwable_abort_bridge", {})
+    if not throwable or throwable.get("scenario") != "throwable" or throwable.get("returncodes") != {"php": 0, "rust": 0} or throwable.get("frames_from_php") != 4 or throwable.get("frames_from_rust") != 4 or not throwable.get("all_reaped"):
+        raise RuntimeError("receipt nested throwable/abort process result mismatch")
+    failure_observations = throwable.get("observations", {})
+    expected_failure_return = {"operation": "raise_nested", "completion": {"kind": "php_throwable", "handle": "php-throwable-1", "class": "RuntimeException", "message": "nested fixture throwable"}}
+    expected_abort = {"reason": "php_throwable", "handle": "php-throwable-1", "child_recovered": True, "child_depth_before_abort": 1, "depth_after_abort": 0, "double_resume_rejected": True, "resume_after_abort_rejected": True, "finish_request_after_abort_rejected": True}
+    expected_trace = ["root:enter", "nested:enter", "nested:transport_catch", "nested:finally", "child:rethrow", "root:catch", "root:finally"]
+    if failure_observations.get("rust_throwable_return") != expected_failure_return or failure_observations.get("rust_abort") != expected_abort:
+        raise RuntimeError("receipt Rust throwable/abort observations mismatch")
+    if failure_observations.get("php_final") != {"caught_same_object": True, "throwable_class": "RuntimeException", "throwable_message": "nested fixture throwable", "trace": expected_trace, "nested_callback_calls": 1, "abort_reason": "php_throwable", "child_recovered": True, "child_depth_before_abort": 1, "depth_after_abort": 0, "double_resume_rejected": True, "resume_after_abort_rejected": True, "finish_request_after_abort_rejected": True}:
+        raise RuntimeError("receipt PHP did not confirm same-object throwable propagation and cleanup")
     expected_child = {"public_name_before": "changed-before-child", "public_name_after": "changed-before-child:nested", "name_growth_bytes": 7, "setting_flag": True, "alias_same_object": True}
     expected_root = {**expected_child, "global_name": "global-replacement"}
     observations = bridge.get("observations", {})
@@ -495,15 +530,15 @@ def verify_receipt() -> None:
     if php_final.get("rust_child_observation") != expected_child or php_final.get("rust_root_observation") != expected_root:
         raise RuntimeError("receipt PHP heap oracle did not confirm Rust observations")
     children = receipt.get("owned_children", {})
-    if not children.get("all_reaped") or children.get("spawned_and_reaped") != len(children.get("captured_children", [])) + 2:
+    if not children.get("all_reaped") or children.get("spawned_and_reaped") != len(children.get("captured_children", [])) + 4:
         raise RuntimeError("receipt owned-child reap counts are inconsistent")
     if receipt.get("one_shot", {}).get("oracle") != {"oracle": "passed", "checks": 15} or receipt.get("one_shot", {}).get("strict_json_oracle", {}).get("checks") != 11:
         raise RuntimeError("receipt independent PHP oracle result mismatch")
     executable = ROOT / "target" / "php-compat-v06-probe" / "cargo-target" / "debug" / "examples" / "v06_bridge_probe.exe"
     if not executable.is_file() or sha256(executable) != receipt.get("adapter_binary_sha256"):
         raise RuntimeError("receipt adapter binary hash mismatch or missing build artifact")
-    if receipt.get("wasm", {}).get("status") != "pending_not_run":
-        raise RuntimeError("native-only receipt must retain pending Wasm status")
+    if receipt.get("wasm", {}).get("status") != "not_run_by_this_runner":
+        raise RuntimeError("native-only receipt must not claim Wasm execution")
     print("source-bound receipt verified")
 
 
@@ -522,6 +557,7 @@ def main() -> int:
     binary_snapshot = sha256(executable)
     one_shot = php_one_shot()
     bridge = run_bridge(executable)
+    throwable_bridge = run_bridge(executable, "throwable") if args.self_test or args.record else None
     negatives = negative_checks(executable) if args.self_test or args.record else []
     php_negatives = php_negative_checks() if args.self_test or args.record else []
     # Freeze every source and the just-built artifact across execution before persisting evidence.
@@ -530,7 +566,7 @@ def main() -> int:
     check_php_manifest()
     if sha256(executable) != binary_snapshot:
         raise RuntimeError("Rust adapter binary changed while the probe was running")
-    report = make_receipt(one_shot, bridge, negatives, binary_snapshot, source_snapshot)
+    report = make_receipt(one_shot, bridge, throwable_bridge, negatives, binary_snapshot, source_snapshot)
     report["php_negative_vectors_rejected"] = php_negatives
     if args.record:
         if source_files() != source_snapshot:
@@ -540,7 +576,7 @@ def main() -> int:
             raise RuntimeError("Rust adapter binary changed before receipt write")
         RECEIPT.parent.mkdir(parents=True, exist_ok=True)
         RECEIPT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"status": "passed", "bridge": bridge, "oracle": one_shot["oracle"], "strict_json_oracle": one_shot["strict_oracle"], "rust_negative_vectors": negatives, "php_negative_vectors": php_negatives, "receipt": str(RECEIPT) if args.record else None}, ensure_ascii=False, indent=2))
+    print(json.dumps({"status": "passed", "bridge": bridge, "throwable_abort_bridge": throwable_bridge, "oracle": one_shot["oracle"], "strict_json_oracle": one_shot["strict_oracle"], "rust_negative_vectors": negatives, "php_negative_vectors": php_negatives, "receipt": str(RECEIPT) if args.record else None}, ensure_ascii=False, indent=2))
     return 0
 
 

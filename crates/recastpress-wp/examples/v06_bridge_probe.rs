@@ -4,7 +4,8 @@
 //! re-entry. stdout is reserved for protocol frames; diagnostics go to stderr.
 
 use recastpress_wp::continuation::{
-    Completion, Continuation, EffectId, LimitsProfile, OperationId, RequestGeneration,
+    Completion, Continuation, ContinuationError, EffectId, LimitsProfile, OperationId, PhpHandle,
+    PhpHandleKind, RequestGeneration, RequestState,
 };
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
@@ -313,8 +314,12 @@ fn run<R: BufRead, W: Write>(mut wire: Wire<R, W>) -> Result<(), String> {
         .len()
         .checked_sub(before_name.len())
         .ok_or("nested_name_shrank")?;
-    cont.resume(nested_effect, Completion::Value(nested_result.clone()))
+    let nested_completion = cont
+        .resume(nested_effect, Completion::Value(nested_result.clone()))
         .map_err(|e| format!("resume_nested:{e}"))?;
+    if nested_completion != Completion::Value(nested_result.clone()) {
+        return Err("nested_resume_completion_was_not_preserved".into());
+    }
     let parent_effect = cont
         .finish_operation(child)
         .map_err(|e| format!("finish_child:{e}"))?
@@ -374,8 +379,12 @@ fn run<R: BufRead, W: Write>(mut wire: Wire<R, W>) -> Result<(), String> {
         "alias_same_object": after["alias_same_object"],
         "global_name": outer_result["global_name"],
     });
-    cont.resume(root_effect, Completion::Value(outer_result.clone()))
+    let root_completion = cont
+        .resume(root_effect, Completion::Value(outer_result.clone()))
         .map_err(|e| format!("resume_root:{e}"))?;
+    if root_completion != Completion::Value(outer_result.clone()) {
+        return Err("root_resume_completion_was_not_preserved".into());
+    }
     cont.finish_operation(root)
         .map_err(|e| format!("finish_root:{e}"))?;
     wire.send(
@@ -443,6 +452,232 @@ fn run<R: BufRead, W: Write>(mut wire: Wire<R, W>) -> Result<(), String> {
     Ok(())
 }
 
+fn run_throwable<R: BufRead, W: Write>(mut wire: Wire<R, W>) -> Result<(), String> {
+    const THROWABLE_ID: &str = "php-throwable-1";
+    let request = RequestGeneration::new(2);
+    let mut cont = Continuation::<Value>::new(request, LimitsProfile::default())
+        .map_err(|e| format!("throwable_continuation:{e}"))?;
+    let start = wire.receive("start_root", None)?;
+    exact_keys(&start, &["operation"], "throwable_start_payload")?;
+    if string(&start, "operation")? != "throwable_probe" {
+        return Err("throwable_root_operation".into());
+    }
+    let root = cont
+        .start_root()
+        .map_err(|e| format!("throwable_start:{e}"))?;
+    let root_effect = cont
+        .invoke_php(root)
+        .map_err(|e| format!("throwable_invoke_root:{e}"))?;
+    wire.send(
+        "invoke_php",
+        None,
+        json!({"effect_id":"e-root","callback":"probe_throwable_root"}),
+    )?;
+
+    let call = wire.receive("call_core", Some("e-root"))?;
+    exact_keys(&call, &["operation"], "throwable_call_core_payload")?;
+    if string(&call, "operation")? != "raise_nested" {
+        return Err("throwable_child_operation".into());
+    }
+    let child = cont
+        .begin_child(root_effect)
+        .map_err(|e| format!("throwable_begin_child:{e}"))?;
+    let nested_effect = cont
+        .invoke_php(child)
+        .map_err(|e| format!("throwable_invoke_nested:{e}"))?;
+    wire.send(
+        "invoke_php",
+        None,
+        json!({"effect_id":"e-nested","callback":"throwing_nested_callback"}),
+    )?;
+
+    let nested_resume = wire.receive("resume", Some("e-root"))?;
+    exact_keys(
+        &nested_resume,
+        &["effect_id", "completion"],
+        "throwable_nested_resume_payload",
+    )?;
+    if string(&nested_resume, "effect_id")? != "e-nested" {
+        return Err("throwable_nested_effect_correlation".into());
+    }
+    let completion = nested_resume
+        .get("completion")
+        .ok_or("throwable_completion_missing")?;
+    exact_keys(
+        completion,
+        &["kind", "handle", "class", "message"],
+        "throwable_completion",
+    )?;
+    if string(completion, "kind")? != "php_throwable"
+        || string(completion, "handle")? != THROWABLE_ID
+        || string(completion, "class")? != "RuntimeException"
+        || string(completion, "message")? != "nested fixture throwable"
+    {
+        return Err("throwable_completion_mismatch".into());
+    }
+    // This typed Rust handle is only a local mapping for PHP's request-local table
+    // entry. The PHP object itself remains in the real PHP process and is never
+    // serialized as bytes or reconstructed by Rust.
+    let throwable = PhpHandle::new(request, PhpHandleKind::Throwable, 1, 7, 1);
+    cont.register_handle(throwable)
+        .map_err(|e| format!("throwable_register_handle:{e}"))?;
+    let resumed_throwable = cont
+        .resume(nested_effect, Completion::PhpThrowable(throwable))
+        .map_err(|e| format!("throwable_resume_nested:{e}"))?;
+    let returned_throwable = match resumed_throwable {
+        Completion::PhpThrowable(handle) if handle == throwable => handle,
+        _ => return Err("php_throwable_completion_was_lost_or_changed".into()),
+    };
+    let parent_effect = cont
+        .finish_operation(child)
+        .map_err(|e| format!("throwable_finish_child:{e}"))?
+        .ok_or("throwable_child_missing_parent")?;
+    if parent_effect != root_effect || cont.depth() != 1 {
+        return Err("throwable_child_was_not_recovered_before_abort".into());
+    }
+    let child_return = json!({
+        "operation":"raise_nested",
+        "completion":{"kind":"php_throwable","handle":if returned_throwable == throwable { THROWABLE_ID } else { "invalid-handle" },"class":"RuntimeException","message":"nested fixture throwable"}
+    });
+    wire.send("return", Some("e-root"), child_return.clone())?;
+
+    let double_resume_rejected = matches!(
+        cont.resume(nested_effect, Completion::PhpThrowable(throwable)),
+        Err(ContinuationError::EffectAlreadyResumed)
+    );
+    if !double_resume_rejected {
+        return Err("throwable_double_resume_was_accepted".into());
+    }
+    let child_depth_before_abort = cont.depth();
+    cont.abort();
+    let depth_after_abort = cont.depth();
+    let aborted = cont.state() == &RequestState::Aborted;
+    let resume_after_abort_rejected = matches!(
+        cont.resume(root_effect, Completion::Value(json!("must-not-resume"))),
+        Err(ContinuationError::RequestClosed)
+    );
+    if !aborted
+        || child_depth_before_abort != 1
+        || depth_after_abort != 0
+        || !resume_after_abort_rejected
+    {
+        return Err("throwable_abort_did_not_clear_and_close_request".into());
+    }
+    let finish_request_after_abort_rejected = matches!(
+        cont.finish_request(root),
+        Err(ContinuationError::RequestClosed)
+    );
+    if !finish_request_after_abort_rejected {
+        return Err("finish_request_after_abort_was_accepted".into());
+    }
+    let abort_observation = json!({
+        "reason":"php_throwable",
+        "handle":THROWABLE_ID,
+        "child_recovered":true,
+        "child_depth_before_abort":child_depth_before_abort,
+        "depth_after_abort":depth_after_abort,
+        "double_resume_rejected":double_resume_rejected,
+        "resume_after_abort_rejected":resume_after_abort_rejected,
+        "finish_request_after_abort_rejected":finish_request_after_abort_rejected,
+    });
+    wire.send("abort", None, abort_observation.clone())?;
+
+    let finished = wire.receive("request_finished", None)?;
+    exact_keys(
+        &finished,
+        &["status", "php_observation", "transport"],
+        "throwable_request_finished_payload",
+    )?;
+    if string(&finished, "status")? != "throwable" {
+        return Err("throwable_request_finished_status".into());
+    }
+    let observed = finished
+        .get("php_observation")
+        .ok_or("throwable_php_observation_missing")?;
+    exact_keys(
+        observed,
+        &[
+            "caught_same_object",
+            "throwable_class",
+            "throwable_message",
+            "trace",
+            "nested_callback_calls",
+            "abort_reason",
+            "child_recovered",
+            "child_depth_before_abort",
+            "depth_after_abort",
+            "double_resume_rejected",
+            "resume_after_abort_rejected",
+            "finish_request_after_abort_rejected",
+        ],
+        "throwable_php_observation",
+    )?;
+    let expected_trace = json!([
+        "root:enter",
+        "nested:enter",
+        "nested:transport_catch",
+        "nested:finally",
+        "child:rethrow",
+        "root:catch",
+        "root:finally"
+    ]);
+    if observed.get("caught_same_object") != Some(&json!(true))
+        || observed.get("throwable_class") != Some(&json!("RuntimeException"))
+        || observed.get("throwable_message") != Some(&json!("nested fixture throwable"))
+        || observed.get("trace") != Some(&expected_trace)
+        || observed.get("nested_callback_calls") != Some(&json!(1))
+        || observed.get("abort_reason") != Some(&json!("php_throwable"))
+        || observed.get("child_recovered") != Some(&json!(true))
+        || observed.get("child_depth_before_abort") != Some(&json!(1))
+        || observed.get("depth_after_abort") != Some(&json!(0))
+        || observed.get("double_resume_rejected") != Some(&json!(true))
+        || observed.get("resume_after_abort_rejected") != Some(&json!(true))
+        || observed.get("finish_request_after_abort_rejected") != Some(&json!(true))
+    {
+        return Err("php_throwable_did_not_propagate_as_expected".into());
+    }
+    if let Some(transport) = finished.get("transport") {
+        exact_keys(
+            transport,
+            &["frames_sent", "frames_received", "bytes_total"],
+            "throwable_transport_stats",
+        )?;
+        if transport.get("frames_sent").and_then(Value::as_u64) != Some(3)
+            || transport.get("frames_received").and_then(Value::as_u64) != Some(4)
+            || transport
+                .get("bytes_total")
+                .and_then(Value::as_u64)
+                .is_none_or(|n| n > MAX_TOTAL as u64)
+        {
+            return Err("throwable_transport_frame_count_or_limit".into());
+        }
+    } else {
+        return Err("throwable_transport_missing".into());
+    }
+    let mut extra = Vec::new();
+    if (&mut wire.reader)
+        .take((MAX_FRAME + 1) as u64)
+        .read_until(b'\n', &mut extra)
+        .map_err(|e| format!("throwable_eof_check:{e}"))?
+        != 0
+    {
+        return Err("extra_php_bytes_after_throwable_finish".into());
+    }
+    let summary = json!({
+        "child_return":child_return,
+        "abort":abort_observation,
+        "php_observation":observed,
+        "frames_from_php":4,
+        "frames_from_rust":4,
+        "child_recovered_before_abort":true,
+        "resume_after_abort_rejected":true,
+        "double_resume_rejected":true
+    });
+    eprintln!("V06_THROWABLE_RESULT {summary}");
+    eprintln!("V06_THROWABLE_OK native_php=true rust_continuation=true wasm=false");
+    Ok(())
+}
+
 fn main() {
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -453,7 +688,15 @@ fn main() {
         out_seq: 0,
         total: 0,
     };
-    if let Err(error) = run(wire) {
+    let scenario = std::env::args().nth(1);
+    let result = if scenario.as_deref() == Some("throwable") {
+        run_throwable(wire)
+    } else if scenario.is_none() || scenario.as_deref() == Some("surface") {
+        run(wire)
+    } else {
+        Err("unknown_bridge_scenario".into())
+    };
+    if let Err(error) = result {
         fail(error);
     }
 }

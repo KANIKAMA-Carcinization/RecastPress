@@ -2,22 +2,22 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-09T17:05:48+00:00",
+  "recorded_at_utc": "2026-11-09T17:54:47+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "d8e96870e9567c6bcad8e82ad3be46a3d486b5f5c22c306ed94b534e0d18397a",
-    "crates/recastpress-wp/examples/v06_bridge_probe.rs": "34a44d8697536bc231c9b46d41f6714d55e22831b8bd16a3282a47706b8bd09a",
-    "experiments/php-compat-v06-probe/README.ja.md": "14bf07ad2a243d302f7a11c4036bb021fee726266929bcb48e60f907bac6caf9",
+    "experiments/php-compat-v06-probe/run_check.py": "b2b402b1e5e52fec4e91a1f850b6e4661318e61588a76d63337c51898732d223",
+    "crates/recastpress-wp/examples/v06_bridge_probe.rs": "a785cb84d6ddd0f2362d5c38b607eeac27748025df63be4a5d5e5d7aeb2d5668",
+    "experiments/php-compat-v06-probe/README.ja.md": "9314cfe4481996a12afd2da32d71bb641f17dc472941f04e234922af8cd76313",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
     "crates/recastpress-wp/src/lib.rs": "e63e911e9a73997773c26720594c0de04b331481e3ad75aa0b78979d9c3c2b69",
-    "crates/recastpress-wp/src/continuation.rs": "e1245f098f87edc8805c0bfcf22559592daa5b71fcadf98fe6dc7287804ae3ee",
-    "crates/recastpress-wp/tests/continuation_contract.rs": "7685a61c112ed238a416682cb6c2864d1e393d856971cfc661baf2f8e5c44079",
+    "crates/recastpress-wp/src/continuation.rs": "0c652e4a22ed75f30c56b6608b251f92e8e85be5d77f44d4ace30015533d649a",
+    "crates/recastpress-wp/tests/continuation_contract.rs": "fc1974d6228958cf2fbaf226b9cb191592ac845bd8561e3047f48dee0110de88",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
-    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "2a5555aac713298531387a178813a8fcd1f45224cad4c7b7bb622a891eab7888",
+    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "1eebe18b532dcc0269c01e1213d05a37b6fa5a8e56f691455a8662f81fe5646f",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
-    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "4d1831950897168d8fc80b60b4392b87ea2aae0a95eb1f3b62b3639f176e56fd",
+    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "3061ddb07bc96e34caf548ee5fa1ec3c6c53ebb0201491c9a1a3b99cf5c35cb7",
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
@@ -117,7 +117,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "e1c7b5c4b9ded71e84f5322b0f9e1bde8af19a3f7bafac218bf77ed4c32cfbb4",
+  "adapter_binary_sha256": "d69e19fb7b9d222476f1ee4136157c03b0000f1b75e41c1847f2f247ec561789",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -154,13 +154,14 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 26988,
-      "rust": 4908
+      "php": 21048,
+      "rust": 27792
     },
     "returncodes": {
       "php": 0,
       "rust": 0
     },
+    "scenario": "surface",
     "rust_marker": "V06_BRIDGE_OK native_php=true rust_continuation=true wasm=false",
     "frames_from_php": 5,
     "frames_from_rust": 4,
@@ -182,6 +183,8 @@
         "public_name_before": "changed-before-child",
         "setting_flag": true
       },
+      "rust_throwable_return": null,
+      "rust_abort": null,
       "php_final": {
         "same_object_alias": true,
         "public_name_after_resume": "changed-before-child:nested",
@@ -202,6 +205,75 @@
           "setting_flag": true
         }
       }
+    },
+    "expected_frame_counts": {
+      "php": 5,
+      "rust": 4
+    }
+  },
+  "throwable_abort_bridge": {
+    "processes": {
+      "php": 31140,
+      "rust": 3936
+    },
+    "returncodes": {
+      "php": 0,
+      "rust": 0
+    },
+    "scenario": "throwable",
+    "rust_marker": "V06_THROWABLE_OK native_php=true rust_continuation=true wasm=false",
+    "frames_from_php": 4,
+    "frames_from_rust": 4,
+    "relayed_bytes": 1973,
+    "all_reaped": true,
+    "observations": {
+      "rust_child": null,
+      "rust_root": null,
+      "rust_throwable_return": {
+        "completion": {
+          "class": "RuntimeException",
+          "handle": "php-throwable-1",
+          "kind": "php_throwable",
+          "message": "nested fixture throwable"
+        },
+        "operation": "raise_nested"
+      },
+      "rust_abort": {
+        "child_depth_before_abort": 1,
+        "child_recovered": true,
+        "depth_after_abort": 0,
+        "double_resume_rejected": true,
+        "finish_request_after_abort_rejected": true,
+        "handle": "php-throwable-1",
+        "reason": "php_throwable",
+        "resume_after_abort_rejected": true
+      },
+      "php_final": {
+        "caught_same_object": true,
+        "throwable_class": "RuntimeException",
+        "throwable_message": "nested fixture throwable",
+        "trace": [
+          "root:enter",
+          "nested:enter",
+          "nested:transport_catch",
+          "nested:finally",
+          "child:rethrow",
+          "root:catch",
+          "root:finally"
+        ],
+        "nested_callback_calls": 1,
+        "abort_reason": "php_throwable",
+        "child_recovered": true,
+        "child_depth_before_abort": 1,
+        "depth_after_abort": 0,
+        "double_resume_rejected": true,
+        "resume_after_abort_rejected": true,
+        "finish_request_after_abort_rejected": true
+      }
+    },
+    "expected_frame_counts": {
+      "php": 4,
+      "rust": 4
     }
   },
   "negative_vectors_rejected_by_rust": [
@@ -225,92 +297,98 @@
     "escaped_duplicate_key"
   ],
   "owned_children": {
-    "spawned_and_reaped": 16,
+    "spawned_and_reaped": 18,
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 22376,
+        "pid": 35520,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 14344,
+        "pid": 32180,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25508,
+        "pid": 30840,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 29064,
+        "pid": 32924,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 27260,
+        "pid": 25532,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 31908,
+        "pid": 21828,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 32608,
+        "pid": 23168,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25888,
+        "pid": 23964,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 20568,
+        "pid": 30368,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 20420,
+        "pid": 35636,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 18452,
+        "pid": 35148,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 31212,
+        "pid": 35424,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 12636,
+        "pid": 18964,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 9120,
+        "pid": 35752,
         "returncode": 0,
         "reaped": true
       }
     ],
     "bridge_children": {
-      "php": 0,
-      "rust": 0
+      "surface": {
+        "php": 0,
+        "rust": 0
+      },
+      "throwable": {
+        "php": 0,
+        "rust": 0
+      }
     }
   },
   "wasm": {
-    "status": "pending_not_run",
-    "reason": "This runner executes native PHP only. Fixed-artifact WASIX attempts and their failures are recorded separately under wasm/. The interactive bridge has not run under Wasm."
+    "status": "not_run_by_this_runner",
+    "reason": "This runner executes native PHP only. Fixed-artifact WASIX one-shot results are recorded separately under wasm/. The interactive bridge has not run under Wasm."
   },
   "known_limits": [
     "The PHP fixture is synthetic and does not bootstrap WordPress.",
-    "No real PHP handle is serialized in this exchange; the closed wire rejects any undeclared php_handle field.",
+    "The throwable scenario retains the actual Throwable only in a request-local PHP table; its string handle maps to a local typed Rust handle and is not a cross-process PHP heap pointer or production authorization token.",
     "No native PHP↔Wasm re-entry, Zend bridge, DB, hooks, Query, or production worker transport was exercised."
   ]
 }

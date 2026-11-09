@@ -81,7 +81,126 @@ function expect_parent_effect(array $frame, ?string $expected): void {
     }
 }
 
-try {
+function run_throwable_probe(): void {
+    $wire = new BridgeProtocol();
+    $throwableId = 'php-throwable-1';
+    $throwables = [];
+    $originalThrowable = null;
+    $caughtThrowable = null;
+    $nestedCalls = 0;
+    $trace = [];
+
+    $wire->send('start_root', ['operation' => 'throwable_probe']);
+    $rootInvoke = $wire->receive();
+    expect_kind($rootInvoke, 'invoke_php');
+    expect_parent_effect($rootInvoke, null);
+    expect_payload_keys($rootInvoke, ['callback', 'effect_id'], 'throwable_root_invoke');
+    if (($rootInvoke['payload']['callback'] ?? null) !== 'probe_throwable_root' || ($rootInvoke['payload']['effect_id'] ?? null) !== 'e-root') {
+        throw new RuntimeException('throwable_root_callback_not_allowlisted');
+    }
+
+    $rootCallback = static function () use ($wire, $throwableId, &$throwables, &$originalThrowable, &$nestedCalls, &$trace): never {
+        $trace[] = 'root:enter';
+        $wire->send('call_core', ['operation' => 'raise_nested'], 'e-root');
+        while (true) {
+            $frame = $wire->receive();
+            if ($frame['kind'] === 'invoke_php') {
+                expect_parent_effect($frame, null);
+                expect_payload_keys($frame, ['callback', 'effect_id'], 'throwable_nested_invoke');
+                if (($frame['payload']['callback'] ?? null) !== 'throwing_nested_callback' || ($frame['payload']['effect_id'] ?? null) !== 'e-nested') {
+                    throw new RuntimeException('throwable_nested_callback_not_allowlisted');
+                }
+                $nestedCalls++;
+                try {
+                    $trace[] = 'nested:enter';
+                    $originalThrowable = new RuntimeException('nested fixture throwable');
+                    throw $originalThrowable;
+                } catch (Throwable $error) {
+                    if ($error !== $originalThrowable) throw new RuntimeException('throwable_identity_changed_in_nested_callback');
+                    $throwables[$throwableId] = $error;
+                    $trace[] = 'nested:transport_catch';
+                    $wire->send('resume', ['effect_id' => 'e-nested', 'completion' => [
+                        'kind' => 'php_throwable', 'handle' => $throwableId,
+                        'class' => $error::class, 'message' => $error->getMessage(),
+                    ]], 'e-root');
+                } finally {
+                    $trace[] = 'nested:finally';
+                }
+                continue;
+            }
+            if ($frame['kind'] === 'return') {
+                expect_parent_effect($frame, 'e-root');
+                expect_payload_keys($frame, ['operation', 'completion'], 'throwable_child_return');
+                if (($frame['payload']['operation'] ?? null) !== 'raise_nested' || !is_array($frame['payload']['completion'] ?? null)) {
+                    throw new RuntimeException('throwable_child_return_shape');
+                }
+                $completion = $frame['payload']['completion'];
+                $completionKeys = array_keys($completion); sort($completionKeys);
+                $expectedKeys = ['kind', 'handle', 'class', 'message']; sort($expectedKeys);
+                if ($completionKeys !== $expectedKeys || ($completion['kind'] ?? null) !== 'php_throwable'
+                    || ($completion['handle'] ?? null) !== $throwableId
+                    || ($completion['class'] ?? null) !== RuntimeException::class
+                    || ($completion['message'] ?? null) !== 'nested fixture throwable'
+                    || !isset($throwables[$throwableId])) {
+                    throw new RuntimeException('throwable_child_return_handle_mismatch');
+                }
+                $trace[] = 'child:rethrow';
+                // Re-throw the original PHP object held in this request-local table.
+                // Rust returned only its opaque fixture handle; it did not construct it.
+                throw $throwables[$throwableId];
+            }
+            throw new RuntimeException('unexpected_throwable_child_frame');
+        }
+    };
+
+    try {
+        $rootCallback();
+        throw new RuntimeException('throwable_probe_returned_normally');
+    } catch (Throwable $error) {
+        $caughtThrowable = $error;
+        $trace[] = 'root:catch';
+    } finally {
+        $trace[] = 'root:finally';
+    }
+
+    if ($caughtThrowable !== $originalThrowable) throw new RuntimeException('throwable_identity_changed_at_root');
+    $abort = $wire->receive();
+    expect_kind($abort, 'abort');
+    expect_parent_effect($abort, null);
+    expect_payload_keys($abort, [
+        'reason', 'handle', 'child_recovered', 'child_depth_before_abort', 'depth_after_abort',
+        'double_resume_rejected', 'resume_after_abort_rejected', 'finish_request_after_abort_rejected',
+    ], 'throwable_abort');
+    $abortPayload = $abort['payload'];
+    if ($abortPayload['reason'] !== 'php_throwable' || $abortPayload['handle'] !== $throwableId
+        || $abortPayload['child_recovered'] !== true || $abortPayload['child_depth_before_abort'] !== 1
+        || $abortPayload['depth_after_abort'] !== 0 || $abortPayload['double_resume_rejected'] !== true
+        || $abortPayload['resume_after_abort_rejected'] !== true
+        || $abortPayload['finish_request_after_abort_rejected'] !== true) {
+        throw new RuntimeException('throwable_abort_state_mismatch');
+    }
+    $expectedTrace = ['root:enter', 'nested:enter', 'nested:transport_catch', 'nested:finally', 'child:rethrow', 'root:catch', 'root:finally'];
+    if ($trace !== $expectedTrace || $nestedCalls !== 1) throw new RuntimeException('throwable_replay_or_order_mismatch');
+
+    $wire->send('request_finished', ['status' => 'throwable', 'php_observation' => [
+        'caught_same_object' => $caughtThrowable === $originalThrowable,
+        'throwable_class' => $caughtThrowable::class,
+        'throwable_message' => $caughtThrowable->getMessage(),
+        'trace' => $trace,
+        'nested_callback_calls' => $nestedCalls,
+        'abort_reason' => $abortPayload['reason'],
+        'child_recovered' => $abortPayload['child_recovered'],
+        'child_depth_before_abort' => $abortPayload['child_depth_before_abort'],
+        'depth_after_abort' => $abortPayload['depth_after_abort'],
+        'double_resume_rejected' => $abortPayload['double_resume_rejected'],
+        'resume_after_abort_rejected' => $abortPayload['resume_after_abort_rejected'],
+        'finish_request_after_abort_rejected' => $abortPayload['finish_request_after_abort_rejected'],
+    ], 'transport' => $wire->stats()]);
+}
+
+if (($argv[1] ?? 'surface') === 'throwable') {
+    try { run_throwable_probe(); } catch (Throwable $e) { fail_bridge($e); }
+} elseif (($argv[1] ?? 'surface') === 'surface') try {
     $wire = new BridgeProtocol();
     $state = new BridgeState();
     $alias = $state->item;
