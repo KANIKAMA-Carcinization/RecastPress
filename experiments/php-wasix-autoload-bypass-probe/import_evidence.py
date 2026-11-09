@@ -21,10 +21,12 @@ RAW_HELPER = 'experiments/php-wasix-wpdb-raw-error-probe/import_evidence.py'
 SCHEMA = 'recastpress.php-wasix-autoload-bypass-'
 BACKENDS = ('mysql', 'mariadb')
 IDENTITY_COMMIT = 'b3bdc7b9b26c8207ed78f2b70e70b42f8afd2992'
+LIVE_COMMIT = 'e2758d49303ce84ba17b938770df1869443acb67'
 RUNS = {
     42517825080: ('04b4be1b8f39f9c1c2588f68d07f20fd821498f8',
         {'mysql': 128844622330, 'mariadb': 128844622594}),
     42532767293: (IDENTITY_COMMIT, {'mysql': 128890407934, 'mariadb': 128890407793}),
+    42538760772: (LIVE_COMMIT, {'mysql': 128908805480, 'mariadb': 128908805524}),
 }
 CONTRACT = 'Compare the stock autoload SELECT after rejecting the cached position'
 UPLOAD = 'Upload only the public autoload DB fallback report'
@@ -124,10 +126,18 @@ IDENTITY_GENERATED = {**GENERATED, **{name: {'bytes': size, 'sha256': digest} fo
     ('src/db.rs', 29168, '19f66b2900f1ee782ec42141033a455c588b14ce93521db610fe01bc4f0b9266'),
     ('src/monitor_impl.rs', 17447, '115cb1e07670313d7cbfeb3ac4abd7f76c021740a55bec96ff5d420cf012d801'),
 )}}
+LIVE_INVENTORY = 'efd116f56c415cc02a6ec899bdf598d01bb152348b9882eef26b0c3201c620aa'
+LIVE_GENERATED = {**GENERATED, **{name: {'bytes': size, 'sha256': digest} for name, size, digest in (
+    ('src/main.rs', 79421, '256bd70761bfbbd59230ce204a64afa9c39d9828b138e3dcb4a970a19afb2c03'),
+    ('src/db.rs', 29366, 'a09dc4512db807a5ac45a0c25810e5834ba16e57a973fb4111fc42f7a709d668'),
+    ('src/monitor.rs', 1976, 'ccc0212fac97fcc3bdcf73b0560edc807e3e23b941eb9467047971187202e067'),
+    ('src/monitor_impl.rs', 22228, 'd471915adde316c1dc38506fd2927f3ddf68e061c69301d242b59412907225c7'),
+)}}
 
 
 def source_gate(mapping, source):
-    count, inventory = (269, IDENTITY_INVENTORY) if source.commit == IDENTITY_COMMIT else (268, SOURCE_INVENTORY)
+    count, inventory = {IDENTITY_COMMIT: (269, IDENTITY_INVENTORY), LIVE_COMMIT: (271, LIVE_INVENTORY)}.get(
+        source.commit, (268, SOURCE_INVENTORY))
     require(type(mapping) is dict and len(mapping) == count
         and sha(old.canonical(mapping)) == inventory, 'autoload_bypass_source_inventory')
     source.bindings(mapping)
@@ -147,16 +157,24 @@ def build_gate(commands, source, generated, passed):
     gate(commands, generated, passed)
 
 
-def final_gate(final):
+def final_gate(final, live_trial):
     retained = final['options_cache']['retained_reply_bytes']
     old.integer(retained, 1, 128 * 1024)
-    exact(final, {'schema': 'recastpress.php-wasix-wp-session-observation.v0.5', 'passed': True,
+    expected = {'schema': 'recastpress.php-wasix-wp-session-observation.v0.5', 'passed': True,
         'outcome': 'fixed_wp_session_passed', 'module_compilations_total': 1, 'requests_completed': 4,
         'all_requests_cleaned': True, 'request_module_compilations_total': 0, 'private_ipc_only': True,
         'publication_authorized': False, 'native_comparison_performed': False, 'error': None,
         'options_cache': {'sql_reads': 1, 'hits': 1, 'charged_bytes': 0, 'retained_reply_bytes': retained,
             'commit_invalidations': 0}, 'options_guard_released': True,
-        'position_mismatch': final['position_mismatch']}, 'autoload_bypass_single_compile_one_cached_read_one_hit')
+        'position_mismatch': final['position_mismatch']}
+    if live_trial:
+        commit = final['live_commit']
+        closed(commit, ('events', 'checksums', 'commits'), 'autoload_live_commit_shape')
+        old.integer(commit['events'], 1, 16)
+        old.integer(commit['checksums'], 1, commit['events'])
+        exact(commit['commits'], 1, 'autoload_live_one_commit')
+        expected['live_commit'] = commit
+    exact(final, expected, 'autoload_bypass_single_compile_one_cached_read_one_hit')
     mismatch = final['position_mismatch']
     closed(mismatch, ('from_position', 'observed_position'), 'autoload_bypass_position_fields')
     for value in mismatch.values():
@@ -171,8 +189,9 @@ def report_gate(value, source, backend, steps):
     flags = {'source_reverified_after', 'unchanged_stock_wordpress_guest', 'cold_and_hot_ordered_rpc_exact',
         'only_autoload_reply_digest_changed_after_commit', 'owned_cleanup_completed'}
     success = flags | {'native_comparison_extra_autoload_rows', 'database', 'finite_binlog_replay', 'position_mismatch_direct_sql_verified'}
-    identity_trial = source.commit == IDENTITY_COMMIT
-    generated = IDENTITY_GENERATED if identity_trial else GENERATED
+    live_trial = source.commit == LIVE_COMMIT
+    identity_trial = source.commit in (IDENTITY_COMMIT, LIVE_COMMIT)
+    generated = {IDENTITY_COMMIT: IDENTITY_GENERATED, LIVE_COMMIT: LIVE_GENERATED}.get(source.commit, GENERATED)
     if identity_trial:
         success.add('verified_actor_connections')
     failure = {'failure_stage', 'failure_class', 'failure', 'cleanup_failed'}
@@ -207,7 +226,7 @@ def report_gate(value, source, backend, steps):
         plugin.module_gate(value['module_provenance'], source)
     build_gate(value['commands'], source, generated, passed)
     if 'units_passed' in value:
-        exact(value['units_passed'], 66, 'autoload_bypass_locked_rust_units')
+        exact(value['units_passed'], 67 if live_trial else 66, 'autoload_bypass_locked_rust_units')
     if 'binary' in value:
         base.identity_gate(value['binary'], 256 * 1024 * 1024, 1)
     requests = value['requests']
@@ -222,7 +241,7 @@ def report_gate(value, source, backend, steps):
         session.ready_gate(ready, module_sha)
     if 'session_final' in value:
         require(ready is not None and 'session_executions' in value, 'autoload_bypass_final_needs_execution')
-        final_gate(final)
+        final_gate(final, live_trial)
     if 'session_executions' in value:
         closed(value['session_executions'], ('autoload_bypass',), 'autoload_bypass_one_session')
         row = value['session_executions']['autoload_bypass']
@@ -253,10 +272,13 @@ def report_gate(value, source, backend, steps):
     if 'verified_actor_connections' in value:
         exact(value['verified_actor_connections'], 3, 'autoload_bypass_actor_source_binding')
         require(set(requests) == set(LABELS), 'autoload_bypass_actor_binding_requests')
-    return {'report_passed': passed, 'validated_native_wordpress_requests': len(requests),
+    summary = {'report_passed': passed, 'validated_native_wordpress_requests': len(requests),
         'options_cache': final['options_cache'] if final else None,
         'position_mismatch': final['position_mismatch'] if final else None,
         'failure_stage': value.get('failure_stage')}
+    if live_trial and final is not None:
+        summary['live_commit'] = final['live_commit']
+    return summary
 
 def import_evidence(run, backend, verify_only=False):
     directory = ROOT / 'target/php-wasix-autoload-bypass-probe/ci'
