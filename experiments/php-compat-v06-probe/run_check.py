@@ -25,6 +25,7 @@ PHP_ROOT = ROOT / ".reference" / "php-8.5.12"
 PHP = PHP_ROOT / "php.exe"
 MANIFEST = PHP_ROOT / "recastpress-tool.json"
 EXAMPLE = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_probe.rs"
+PEER_MODULE = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_peer" / "mod.rs"
 RECEIPT = HERE / "evidence" / "native-continuation-v1.json"
 MAX_FRAME = 1_048_576
 MAX_TOTAL = 33_554_432
@@ -46,7 +47,7 @@ def sha256(path: Path) -> str:
 
 def source_files() -> dict[str, str]:
     paths = [
-        Path(__file__), EXAMPLE,
+        Path(__file__), EXAMPLE, PEER_MODULE,
         HERE / "README.ja.md",
         ROOT / "Cargo.toml", ROOT / "Cargo.lock",
         ROOT / "crates" / "recastpress-wp" / "Cargo.toml",
@@ -367,7 +368,7 @@ def run_bridge(executable: Path, scenario: str = "surface") -> dict:
             if code != 0:
                 raise RuntimeError(f"{name} exited {code}; stderr={stderr_bytes[name].decode('utf-8', 'replace')}")
         rust_err = stderr_bytes["rust"].decode("utf-8", "replace")
-        marker = "V06_THROWABLE_OK native_php=true rust_continuation=true wasm=false" if scenario == "throwable" else "V06_BRIDGE_OK native_php=true rust_continuation=true wasm=false"
+        marker = "V06_THROWABLE_OK continuation_peer=true" if scenario == "throwable" else "V06_BRIDGE_OK continuation_peer=true"
         if marker not in rust_err:
             raise RuntimeError("Rust adapter did not emit its success marker")
         if stderr_bytes["php"].strip():
@@ -486,7 +487,7 @@ def make_receipt(one_shot: dict, bridge: dict, throwable_bridge: dict | None, ne
         "negative_vector_inventory": NEGATIVE_INVENTORY,
         "php_negative_vectors_rejected": PHP_NEGATIVE_INVENTORY,
         "owned_children": {"spawned_and_reaped": len(CHILD_RUNS) + (4 if throwable_bridge else 2), "all_reaped": all(run["reaped"] for run in CHILD_RUNS) and bridge["all_reaped"] and (throwable_bridge is None or throwable_bridge["all_reaped"]), "captured_children": CHILD_RUNS, "bridge_children": {"surface": bridge["returncodes"], "throwable": throwable_bridge["returncodes"] if throwable_bridge else None}},
-        "wasm": {"status": "not_run_by_this_runner", "reason": "This runner executes native PHP only. Fixed-artifact WASIX one-shot results are recorded separately under wasm/. The interactive bridge has not run under Wasm."},
+        "wasm": {"status": "not_run_by_this_runner", "reason": "This runner executes native PHP only. Fixed-artifact WASIX one-shot and interactive bridge results are recorded separately under wasm/."},
         "known_limits": ["The PHP fixture is synthetic and does not bootstrap WordPress.", "The throwable scenario retains the actual Throwable only in a request-local PHP table; its string handle maps to a local typed Rust handle and is not a cross-process PHP heap pointer or production authorization token.", "No native PHP↔Wasm re-entry, Zend bridge, DB, hooks, Query, or production worker transport was exercised."],
     }
 

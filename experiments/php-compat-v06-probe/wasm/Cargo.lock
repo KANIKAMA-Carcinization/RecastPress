@@ -2334,6 +2334,8 @@ name = "recastpress-php-compat-v06-wasm-probe"
 version = "0.6.0"
 dependencies = [
  "anyhow",
+ "recastpress-wp",
+ "serde",
  "serde_json",
  "sha2 0.10.9",
  "tokio",
@@ -2345,6 +2347,10 @@ dependencies = [
  "wasmer-wasix",
  "wat",
 ]
+
+[[package]]
+name = "recastpress-wp"
+version = "0.6.0"
 
 [[package]]
 name = "redox_syscall"

@@ -5,9 +5,18 @@ edition = "2024"
 rust-version = "1.94"
 license = "GPL-2.0-or-later"
 publish = false
+autobins = false
 
 # Independent P0 candidate. Does not select the product runtime or compiler.
 [workspace]
+
+[[bin]]
+name = "recastpress-php-compat-v06-wasm-probe"
+path = "src/main.rs"
+
+[[bin]]
+name = "recastpress-php-compat-v06-wasm-bridge"
+path = "src/bin/bridge.rs"
 
 [features]
 default = ["cranelift"]
@@ -16,6 +25,8 @@ llvm = ["wasmer/llvm", "dep:wasmer-compiler-llvm"]
 
 [dependencies]
 anyhow = "1.0"
+recastpress-wp = { path = "../../../crates/recastpress-wp", default-features = false }
+serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "=0.10.9"
 wasmer-types = "=7.2.0"

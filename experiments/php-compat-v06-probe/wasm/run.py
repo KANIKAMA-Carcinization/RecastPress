@@ -29,6 +29,10 @@ ARTIFACT = ROOT / ".reference" / "php-wasix-8.5.12" / "php.wasm"
 FIXTURE_DIR = WASM_DIR.parent / "fixtures"
 SOURCES = ["surface_oracle.php", "dispatcher.php", "strict_json.php", "strict_json_oracle.php"]
 BOUND_INPUTS = [MANIFEST, WASM_DIR / "Cargo.lock", MAIN_RS, Path(__file__).resolve(), ROOT / "scripts" / "owned_probe.py", ARTIFACT] + [FIXTURE_DIR / name for name in SOURCES]
+# The independent package now also builds a bridge against the local WP crate.
+# Bind local path inputs as well as registry versions, even for this one-shot bin.
+BOUND_INPUTS += [ROOT / "Cargo.toml", ROOT / "Cargo.lock", ROOT / "crates/recastpress-wp/Cargo.toml"]
+BOUND_INPUTS += sorted((ROOT / "crates/recastpress-wp/src").rglob("*.rs"))
 BUILD_TIMEOUT = 600
 HOST_TIMEOUT = 180
 
@@ -130,8 +134,8 @@ def main() -> int:
     TARGET.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = str(TARGET)
-    build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", str(MANIFEST)]
-    public_build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", "experiments/php-compat-v06-probe/wasm/Cargo.toml"]
+    build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", str(MANIFEST), "--bin", "recastpress-php-compat-v06-wasm-probe"]
+    public_build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path", "experiments/php-compat-v06-probe/wasm/Cargo.toml", "--bin", "recastpress-php-compat-v06-wasm-probe"]
     compiler_profile = "wasmer-7.2.0/llvm-default" if use_llvm else "wasmer-7.2.0/cranelift-noopt"
     if use_llvm:
         build_command.extend(["--no-default-features", "--features", "llvm"])
