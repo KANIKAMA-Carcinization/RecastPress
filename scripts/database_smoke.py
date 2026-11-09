@@ -38,6 +38,31 @@ def run_owned_probe(command, environment, timeout=30, input_bytes=None):
     return run_captured_probe(command, environment, timeout=timeout, input_bytes=input_bytes)
 
 
+def disposable_client_command(backend, executable, config, *arguments, no_login_paths=False):
+    """Build commands for the owned fixture's selected client transport only."""
+    if backend not in ("mysql", "mariadb"):
+        raise ValueError("unknown disposable DB backend")
+    command=[str(executable),f"--defaults-file={config}"]
+    if backend=="mysql" and no_login_paths:
+        command.append("--no-login-paths")
+    if backend=="mariadb":
+        # The established MariaDB evidence profile is loopback plaintext. Its
+        # pinned Windows client defaults to TLS, which requires credentials.
+        command.append("--skip-ssl")
+    command.extend(arguments)
+    return command
+
+
+def disposable_binlog_settings(backend, option_enabled, binlog_path):
+    """Match the pinned database evidence profile inside the owned fixture."""
+    if backend not in ("mysql", "mariadb"):
+        raise ValueError("unknown disposable DB backend")
+    if option_enabled or backend == "mariadb":
+        return (f"server-id=7\nlog-bin={Path(binlog_path).as_posix()}\n"
+                "binlog-format=ROW\nbinlog-row-image=FULL\n")
+    return "skip-log-bin\n"
+
+
 def probe_tls_certificate(data):
     """Sign a loopback SAN certificate using only this disposable server's CA."""
     openssl=Path("C:/Program Files/Git/usr/bin/openssl.exe")
@@ -110,8 +135,8 @@ def main(keep,backend,exercise_cleanup=False,binlog_probe=False,gtid_bootstrap=F
     owned_servers=[]
     config=work/"client.ini"
     config.write_text(f"[client]\nhost=127.0.0.1\nport={port}\nuser={fixture_user}\npassword={password}\nprotocol=tcp\ndefault-character-set=utf8mb4\n",encoding="utf-8")
-    client=[str(tool/"bin"/client_exe),f"--defaults-file={config}","--batch","--skip-column-names"]
-    if backend=="mysql":client.insert(2,"--no-login-paths")
+    client=disposable_client_command(backend,tool/"bin"/client_exe,config,
+        "--batch","--skip-column-names",no_login_paths=backend=="mysql")
     original_error=None
     try:
         initialize=[str(tool/"bin/mariadb-install-db.exe"),f"--datadir={work/'data'}",f"--password={password}",f"--port={port}","--silent"] if backend=="mariadb" else [str(tool/"bin"/server_exe),"--no-defaults","--initialize-insecure",f"--basedir={tool}",f"--datadir={work/'data'}","--console"]
@@ -130,9 +155,8 @@ def main(keep,backend,exercise_cleanup=False,binlog_probe=False,gtid_bootstrap=F
             bootstrap.write_text(grants,encoding="utf-8")
             server_text+="mysqlx=0\nlog-error-verbosity=3\nperformance-schema=OFF\ninnodb-redo-log-capacity=32M\n"
             if not server_restart:server_text+=f"init-file={bootstrap.as_posix()}\n"
-            if not log_enabled:server_text+="skip-log-bin\n"
             with config.open("a",encoding="utf-8") as output:output.write(f"ssl-mode=VERIFY_CA\nssl-ca={(work/'data/ca.pem').as_posix()}\n")
-        if log_enabled:server_text+=f"server-id=7\nlog-bin={(work/'probe-bin').as_posix()}\nbinlog-format=ROW\nbinlog-row-image=FULL\n"
+        server_text+=disposable_binlog_settings(backend,log_enabled,work/"probe-bin")
         if gtid_bootstrap:
             server_text+="gtid-mode=ON\nenforce-gtid-consistency=ON\nbinlog-order-commits=ON\nbinlog-transaction-compression=OFF\n"
         if rotation_handoff:
@@ -346,7 +370,7 @@ def main(keep,backend,exercise_cleanup=False,binlog_probe=False,gtid_bootstrap=F
                 reap_owned_servers(owned_servers)
             elif server is not None and server.poll() is None:
                 if not forced_abort:
-                    try:run_hidden([str(tool/"bin"/admin_exe),f"--defaults-file={config}","shutdown"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
+                    try:run_hidden(disposable_client_command(backend,tool/"bin"/admin_exe,config,"shutdown"),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
                     except (OSError,subprocess.SubprocessError):pass
                 try:server.wait(timeout=0.1 if forced_abort else 10)
                 except subprocess.TimeoutExpired:

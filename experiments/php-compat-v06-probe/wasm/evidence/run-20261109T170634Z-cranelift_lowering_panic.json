@@ -1,0 +1,126 @@
+{
+  "schema": "recastpress.php-compat-v06-wasm-run.v2",
+  "status": "failed",
+  "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0 / Cranelift",
+  "started_at_utc": "2026-11-09T17:05:52Z",
+  "observed_at_utc": "2026-11-09T17:06:34Z",
+  "os": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64"
+  },
+  "command": {
+    "build": [
+      "cargo",
+      "build",
+      "--offline",
+      "--locked",
+      "--manifest-path",
+      "experiments/php-compat-v06-probe/wasm/Cargo.toml"
+    ],
+    "host": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-compat-v06-wasm-probe.exe",
+    "build_timeout_seconds": 600,
+    "host_timeout_seconds": 180
+  },
+  "owned_processes": {
+    "build_pid": 24060,
+    "host_pid": 4728,
+    "reaped": true
+  },
+  "phase": "module_compile",
+  "failure_class": "cranelift_lowering_panic",
+  "exit_code": 101,
+  "php_reached": false,
+  "dependency_source_location": "cranelift-codegen-0.133.0/src/machinst/lower.rs:1107",
+  "source_bound_inputs_before": {
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": {
+      "bytes": 1032,
+      "sha256": "463357d4a4c0d1eb6475865dc7125b8d2637173a8b95d009ed1a5ca73b00e2b0"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": {
+      "bytes": 105722,
+      "sha256": "d4991e8204755df27760dc1e798ffed5db3aee4047fa596aa5be81cd2d930bf7"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": {
+      "bytes": 12426,
+      "sha256": "25b81eb921f6e92aba918465e56c5ae107567ef8950b93e993b8fbb286e058ff"
+    },
+    "experiments/php-compat-v06-probe/wasm/run.py": {
+      "bytes": 10053,
+      "sha256": "635b8846df834bb9f8d6c3a6688f529b5a308ff4a2fef8af3ddddbd5e3d1d25f"
+    },
+    ".reference/php-wasix-8.5.12/php.wasm": {
+      "bytes": 39727549,
+      "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+    },
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": {
+      "bytes": 1145,
+      "sha256": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": {
+      "bytes": 8462,
+      "sha256": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": {
+      "bytes": 4985,
+      "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": {
+      "bytes": 2764,
+      "sha256": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+    }
+  },
+  "source_bound_inputs_after": {
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": {
+      "bytes": 1032,
+      "sha256": "463357d4a4c0d1eb6475865dc7125b8d2637173a8b95d009ed1a5ca73b00e2b0"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": {
+      "bytes": 105722,
+      "sha256": "d4991e8204755df27760dc1e798ffed5db3aee4047fa596aa5be81cd2d930bf7"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": {
+      "bytes": 12426,
+      "sha256": "25b81eb921f6e92aba918465e56c5ae107567ef8950b93e993b8fbb286e058ff"
+    },
+    "experiments/php-compat-v06-probe/wasm/run.py": {
+      "bytes": 10053,
+      "sha256": "635b8846df834bb9f8d6c3a6688f529b5a308ff4a2fef8af3ddddbd5e3d1d25f"
+    },
+    ".reference/php-wasix-8.5.12/php.wasm": {
+      "bytes": 39727549,
+      "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+    },
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": {
+      "bytes": 1145,
+      "sha256": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": {
+      "bytes": 8462,
+      "sha256": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": {
+      "bytes": 4985,
+      "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": {
+      "bytes": 2764,
+      "sha256": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+    }
+  },
+  "source_bound_inputs_unchanged": true,
+  "stdout_bytes": 21,
+  "stdout_sha256": "7581fbe0555742860e74c3becb753ba031a44c9194f05f033269ad06e5428475",
+  "stderr_bytes": 2727,
+  "stderr_sha256": "f3fd7e373318d354e3624d666b7e1efb04b92917c2597a4351c1f263f3a75b88",
+  "raw_capture": {
+    "stdout": "target/php-wasix-wp-bootstrap-probe/cargo-target/last-stdout.bin",
+    "stderr": "target/php-wasix-wp-bootstrap-probe/cargo-target/last-stderr.bin"
+  },
+  "cases": {
+    "surface_oracle": "not_reached",
+    "strict_json_oracle": "not_reached"
+  },
+  "scope": "fixed PHP language fixtures only; no WordPress bootstrap or core algorithm execution",
+  "evidence_path": "experiments/php-compat-v06-probe/wasm/evidence/run-20261109T170634Z-cranelift_lowering_panic.json"
+}

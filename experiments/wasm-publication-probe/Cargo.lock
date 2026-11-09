@@ -731,11 +731,11 @@ dependencies = [
 
 [[package]]
 name = "recastpress-core"
-version = "0.5.0"
+version = "0.6.0"
 
 [[package]]
 name = "recastpress-server"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "axum",
  "recastpress-core",

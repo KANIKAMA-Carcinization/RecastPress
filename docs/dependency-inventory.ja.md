@@ -1,6 +1,12 @@
 # 固定依存の宣言台帳
 
-## 現在地：mainのserde dev-edge追加後は再観測待ち
+## 2026-11-10：v0.6系列の宣言台帳を再生成
+
+v0.6実装開始に伴い、現在のCargo metadataをoffline・lockedで取得して `compatibility/dependency-inventory.json` を再生成し、`--check` の一致を確認した。本体167／binlog188／unique218。RecastPressのlocal package版は0.6.0へ移行し、既存のregistry packageの版・source・checksumは変更していない。
+
+これは依存の宣言台帳の再観測である。保存済みのlicense／notice実ファイル観測、PHP静的依存・配布binaryの対応、追加のPHP-Wasm host試作の依存監査を一括して完了したものではない。以下はそれぞれの日付の履歴として維持する。
+
+## 2026-10-30時点：mainのserde dev-edge追加後は再観測待ち
 
 2026-10-30現在、prepared Cookie照合の専用example用にWPへ既存 `serde` のdev-dependency edgeを追加し、root lock／WP manifestが変わった。`target/auth-cookie-verify-adoption-audit/lock-delta.json` は163 registry version／source／checksum tupleの追加・変更０と、WP recordのserde edgeだけの差を記録する。これはlock差分監査であり、現在のnormal dependency graphや配布binary構成を実測した結果ではない。
 

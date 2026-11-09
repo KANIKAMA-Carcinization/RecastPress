@@ -1,0 +1,33 @@
+﻿[package]
+name = "recastpress-php-compat-v06-wasm-probe"
+version = "0.6.0"
+edition = "2024"
+rust-version = "1.94"
+license = "GPL-2.0-or-later"
+publish = false
+
+# Independent P0 candidate. Does not select the product runtime or compiler.
+[workspace]
+
+[features]
+default = ["cranelift"]
+cranelift = ["wasmer/cranelift", "dep:wasmer-compiler-cranelift"]
+llvm = ["wasmer/llvm", "dep:wasmer-compiler-llvm"]
+
+[dependencies]
+anyhow = "1.0"
+serde_json = "1.0"
+sha2 = "=0.10.9"
+wasmer-types = "=7.2.0"
+wasmer = { version = "=7.2.0", default-features = false, features = ["sys"] }
+wasmer-compiler-cranelift = { version = "=7.2.0", optional = true }
+wasmer-compiler-llvm = { version = "=7.2.0", optional = true }
+wasmer-middlewares = { version = "=7.2.0", default-features = false }
+wasmer-wasix = { version = "=0.702.0", default-features = false, features = ["sys-minimal"] }
+tokio = { version = "1.0", features = ["rt-multi-thread", "time", "sync", "io-util"] }
+
+[dev-dependencies]
+wat = "=1.262.0"
+
+[lints.rust]
+unsafe_code = "forbid"

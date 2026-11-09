@@ -2462,11 +2462,11 @@ dependencies = [
 
 [[package]]
 name = "recastpress-core"
-version = "0.5.0"
+version = "0.6.0"
 
 [[package]]
 name = "recastpress-db"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "recastpress-core",
  "sqlx",

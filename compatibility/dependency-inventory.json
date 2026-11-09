@@ -8,13 +8,13 @@
     "Bundled C/assembly/data, transitive notices, complete license texts, source offers and distribution obligations still require review."
   ],
   "input_files": {
-    "Cargo.lock": "f85f9fcd4ffc85079f7596f700286d497a4c48663b5e214c535ca6eb98d75c1c",
-    "Cargo.toml": "17631c82601456faa7258b9aa035b80acaed6ec1df2b8322213dae011eeafe69",
+    "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
+    "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "crates/recastpress-core/Cargo.toml": "36f1fa5f28f9b571d4f07e47ed907479f8c5776d4e962f68b6a1bc0f64002c6a",
     "crates/recastpress-db/Cargo.toml": "5b71062809aaff1e37b69a33248b618abb1311f9c6fc75208f592bb480827843",
     "crates/recastpress-server/Cargo.toml": "2ba45604c918b892941502a46a4d6ecddd3c62aa0ea8dcd6cd317297e933cac0",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "experiments/binlog-probe/Cargo.lock": "24ce8f6b88f8e3dc8ba341a4297629455013d1581b9ec7ddc319b83616f9574c",
+    "experiments/binlog-probe/Cargo.lock": "308f7a973f64fca835891fac7e513698bd04914b10b4e76d944d2003f5127808",
     "experiments/binlog-probe/Cargo.toml": "5bb59bc54c1fa07b384a29c7f945d8b961e9f29f69b629ce588d768ce8344377",
     "scripts/dependency_inventory.py": "c179a10577b8317e7b080cc66d5313f82dd8906f5c67b0c4a30409159e23bdb6"
   },
@@ -22,10 +22,10 @@
     "core_workspace": {
       "manifest": "Cargo.toml",
       "workspace_members": [
-        "recastpress-core@0.5.0 (path:crates/recastpress-core)",
-        "recastpress-db@0.5.0 (path:crates/recastpress-db)",
-        "recastpress-server@0.5.0 (path:crates/recastpress-server)",
-        "recastpress-wp@0.5.0 (path:crates/recastpress-wp)"
+        "recastpress-core@0.6.0 (path:crates/recastpress-core)",
+        "recastpress-db@0.6.0 (path:crates/recastpress-db)",
+        "recastpress-server@0.6.0 (path:crates/recastpress-server)",
+        "recastpress-wp@0.6.0 (path:crates/recastpress-wp)"
       ],
       "resolved_packages": [
         "allocator-api2@0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -120,10 +120,10 @@
         "proc-macro2@1.0.107 (registry+https://github.com/rust-lang/crates.io-index)",
         "quote@1.0.47 (registry+https://github.com/rust-lang/crates.io-index)",
         "r-efi@6.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-        "recastpress-core@0.5.0 (path:crates/recastpress-core)",
-        "recastpress-db@0.5.0 (path:crates/recastpress-db)",
-        "recastpress-server@0.5.0 (path:crates/recastpress-server)",
-        "recastpress-wp@0.5.0 (path:crates/recastpress-wp)",
+        "recastpress-core@0.6.0 (path:crates/recastpress-core)",
+        "recastpress-db@0.6.0 (path:crates/recastpress-db)",
+        "recastpress-server@0.6.0 (path:crates/recastpress-server)",
+        "recastpress-wp@0.6.0 (path:crates/recastpress-wp)",
         "redox_syscall@0.5.18 (registry+https://github.com/rust-lang/crates.io-index)",
         "ring@0.17.14 (registry+https://github.com/rust-lang/crates.io-index)",
         "rustls-pki-types@1.15.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -301,8 +301,8 @@
         "rand@0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
         "rand_core@0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
         "recastpress-binlog-probe@0.0.0 (path:experiments/binlog-probe)",
-        "recastpress-core@0.5.0 (path:crates/recastpress-core)",
-        "recastpress-db@0.5.0 (path:crates/recastpress-db)",
+        "recastpress-core@0.6.0 (path:crates/recastpress-core)",
+        "recastpress-db@0.6.0 (path:crates/recastpress-db)",
         "redox_syscall@0.5.18 (registry+https://github.com/rust-lang/crates.io-index)",
         "regex-automata@0.4.18 (registry+https://github.com/rust-lang/crates.io-index)",
         "regex-syntax@0.8.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1242,30 +1242,30 @@
       "declared_license": "GPL-2.0-or-later",
       "local_path": "experiments/binlog-probe"
     },
-    "recastpress-core@0.5.0 (path:crates/recastpress-core)": {
+    "recastpress-core@0.6.0 (path:crates/recastpress-core)": {
       "name": "recastpress-core",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "source": null,
       "declared_license": "GPL-2.0-or-later",
       "local_path": "crates/recastpress-core"
     },
-    "recastpress-db@0.5.0 (path:crates/recastpress-db)": {
+    "recastpress-db@0.6.0 (path:crates/recastpress-db)": {
       "name": "recastpress-db",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "source": null,
       "declared_license": "GPL-2.0-or-later",
       "local_path": "crates/recastpress-db"
     },
-    "recastpress-server@0.5.0 (path:crates/recastpress-server)": {
+    "recastpress-server@0.6.0 (path:crates/recastpress-server)": {
       "name": "recastpress-server",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "source": null,
       "declared_license": "GPL-2.0-or-later",
       "local_path": "crates/recastpress-server"
     },
-    "recastpress-wp@0.5.0 (path:crates/recastpress-wp)": {
+    "recastpress-wp@0.6.0 (path:crates/recastpress-wp)": {
       "name": "recastpress-wp",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "source": null,
       "declared_license": "GPL-2.0-or-later",
       "local_path": "crates/recastpress-wp"

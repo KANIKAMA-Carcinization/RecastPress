@@ -7,6 +7,7 @@ nonblocking mode requires Python 3.12+ (the development runtime is 3.13).
 """
 
 from dataclasses import dataclass
+import errno
 import os
 import queue
 import subprocess
@@ -139,6 +140,12 @@ def _write_input(stream, data, cancelled, errors):
         # As with communicate, a child that exits without consuming input is
         # judged by its actual exit/result; no further stdin delivery is needed.
         pass
+    except OSError as error:
+        # CPython's Popen._stdin_write handles this same Windows result when
+        # the child exits or closes stdin before consuming the complete input.
+        # Preserve its actual exit/output; unrelated IO errors still fail.
+        if os.name != "nt" or error.errno != errno.EINVAL:
+            errors.append(error)
     except BaseException as error:
         errors.append(error)
     finally:

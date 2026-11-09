@@ -193,6 +193,7 @@ def main():
     parser.add_argument("--with-credential-stage", action="store_true", help="compare unfinalized username/email credential stage relations with actual PHP")
     parser.add_argument("--with-auth-cookies", action="store_true", help="compare prepared GET cookie/session relations with actual PHP builtin-clock brackets; no principal issuance")
     parser.add_argument("--with-process-smoke", action="store_true", help="build and start temporary loopback public/management servers")
+    parser.add_argument("--with-v06-boundary", action="store_true", help="compare the fixed native PHP fixture with the Rust v0.6 continuation peer; does not run PHP-Wasm")
     parser.add_argument("--with-databases", action="store_true", help="start owned disposable MariaDB/MySQL fixtures and regenerate DB evidence")
     parser.add_argument("--with-binlog-probes", action="store_true", help="also build the isolated candidate and inspect finite row-binlog fixtures")
     parser.add_argument("--with-mysql-overlap", action="store_true", help="also run the separate owned MySQL GTID overlap bootstrap fixture")
@@ -227,7 +228,10 @@ def main():
         checked_run(["cargo", "check", "-p", "recastpress-server", "--all-targets", "--target", "x86_64-unknown-linux-gnu", "--offline", "--locked"])
         checked_run(["cargo", "check", "-p", "recastpress-wp", "--all-targets", "--target", "x86_64-unknown-linux-gnu", "--offline", "--locked"])
     checked_run([sys.executable, "-m", "unittest", "discover", "-s", "scripts", "-p", "test_*.py", "-v"])
+    checked_run([sys.executable, "-B", "compatibility/v06/validate_manifest.py", "--self-test"])
     checked_run([sys.executable, "scripts/dependency_inventory.py", "--check"])
+    if options.with_v06_boundary:
+        checked_run([sys.executable, "-B", "experiments/php-compat-v06-probe/run_check.py", "--self-test"])
     if options.with_license_evidence:
         checked_run([sys.executable, "scripts/dependency_license_evidence.py", "--check"])
     if options.with_reference:

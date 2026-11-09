@@ -1,0 +1,68 @@
+name: v0.6 native PHP compatibility boundary
+
+"on":
+  push:
+    branches: ["dev/v0.6"]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "compatibility/v06/**"
+      - "compatibility/registry.json"
+      - "experiments/php-compat-v06-probe/**"
+      - "!experiments/php-compat-v06-probe/evidence/**"
+      - "scripts/owned_probe.py"
+      - "scripts/setup_php.py"
+      - ".github/workflows/v06-compatibility.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v06-native-boundary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-boundary:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      RUSTUP_TOOLCHAIN: "1.94.0"
+      CARGO_BUILD_JOBS: "2"
+      CARGO_INCREMENTAL: "0"
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install project Rust toolchain
+        run: rustup toolchain install 1.94.0 --profile minimal --component rustfmt --component clippy --no-self-update
+      - name: Fetch the locked dependency set
+        run: cargo fetch --locked
+      - name: Prepare fixed Windows PHP reference
+        run: python -B scripts/setup_php.py
+      - name: Verify inherited inventory and reject false completion claims
+        run: python -B compatibility/v06/validate_manifest.py --self-test
+      - name: Check source formatting
+        run: cargo fmt --all -- --check
+      - name: Run workspace regression tests
+        run: cargo test --workspace --offline --locked
+      - name: Check all workspace targets
+        run: cargo clippy --workspace --all-targets --offline --locked -- -D warnings
+      - name: Verify continuation without authentication providers
+        run: cargo test -p recastpress-wp --no-default-features --test continuation_contract --offline --locked
+      - name: Run native PHP and Rust continuation comparison
+        id: native_probe
+        run: python -B experiments/php-compat-v06-probe/run_check.py --record
+      - name: Verify source-bound native receipt
+        run: python -B experiments/php-compat-v06-probe/run_check.py --verify-only
+      - name: Preserve native boundary evidence
+        if: always() && steps.native_probe.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v06-native-php-boundary
+          path: experiments/php-compat-v06-probe/evidence/native-continuation-v1.json
+          if-no-files-found: warn

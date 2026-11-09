@@ -1,0 +1,50 @@
+{
+  "schema": "recastpress.php-compat-v06-wasm-failure.v1",
+  "status": "failed",
+  "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0 / Cranelift",
+  "phase": "module_compile",
+  "failure_class": "cranelift_lowering_panic",
+  "exit_code": 101,
+  "php_reached": false,
+  "dependency_source_location": "cranelift-codegen-0.133.0/src/machinst/lower.rs:1107",
+  "artifact": {
+    "path": ".reference/php-wasix-8.5.12/php.wasm",
+    "bytes": 39727549,
+    "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+  },
+  "fixture_sources": {
+    "surface_oracle.php": {
+      "path": "experiments/php-compat-v06-probe/fixtures/surface_oracle.php",
+      "bytes": 1145,
+      "sha256": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+    },
+    "dispatcher.php": {
+      "path": "experiments/php-compat-v06-probe/fixtures/dispatcher.php",
+      "bytes": 8462,
+      "sha256": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6"
+    },
+    "strict_json.php": {
+      "path": "experiments/php-compat-v06-probe/fixtures/strict_json.php",
+      "bytes": 4985,
+      "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+    },
+    "strict_json_oracle.php": {
+      "path": "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php",
+      "bytes": 2764,
+      "sha256": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+    }
+  },
+  "stdout_bytes": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_bytes": 3241,
+  "stderr_sha256": "92090f2ef8c106249ea0733f915de2ab4fe3bba24b83820f7e8645a6a42a8bda",
+  "raw_capture": {
+    "stdout": "target/php-wasix-wp-bootstrap-probe/cargo-target/last-stdout.bin",
+    "stderr": "target/php-wasix-wp-bootstrap-probe/cargo-target/last-stderr.bin"
+  },
+  "cases": {
+    "surface_oracle": "not_reached",
+    "strict_json_oracle": "not_reached"
+  },
+  "scope": "fixed PHP language fixtures only; no WordPress bootstrap or core algorithm execution"
+}

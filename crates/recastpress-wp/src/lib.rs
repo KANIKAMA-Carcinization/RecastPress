@@ -14,6 +14,7 @@ pub mod bad_protocol_once;
 pub mod bad_protocol_outer;
 pub mod charset;
 pub mod colors;
+pub mod continuation;
 pub mod credential_input;
 #[cfg(feature = "auth")]
 pub mod credential_stage;

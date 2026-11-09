@@ -185,7 +185,8 @@ async fn serve(args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     let shutdown = shutdown::install()?;
     let listener = tokio::net::TcpListener::bind(config.listen).await?;
     eprintln!(
-        "RecastPress {:?} listening on {} (experimental)",
+        "RecastPress {} {:?} listening on {} (experimental)",
+        env!("CARGO_PKG_VERSION"),
         config.role,
         listener.local_addr()?
     );

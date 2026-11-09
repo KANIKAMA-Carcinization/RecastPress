@@ -1,0 +1,2864 @@
+{
+  "schema": "recastpress.compatibility.v0.6",
+  "product_version": "0.6.0",
+  "universe_enumerated": false,
+  "baseline": {
+    "branch": "dev/v0.5",
+    "commit": "b3c819b",
+    "role": "previous product baseline"
+  },
+  "design": {
+    "branch": "design/v0.6",
+    "commit": "ad2c286",
+    "role": "design reference, not implementation evidence"
+  },
+  "wordpress": {
+    "version": "7.1.3",
+    "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "source_inventory": "compatibility/registry.json"
+  },
+  "inherited_inventory": {
+    "api_count": 79,
+    "component_count": 2,
+    "meaning": "bounded subset copied from the prior registry; not a WordPress universe enumeration or a v0.6 completion claim"
+  },
+  "evidence_axes": [
+    "status",
+    "integration_status",
+    "differential_status",
+    "retirement_status"
+  ],
+  "implementation_kinds": [
+    "RustCore",
+    "PhpSurface",
+    "PhpCoreDelegate",
+    "ThirdPartyRuntime",
+    "Unavailable"
+  ],
+  "domains": [
+    {
+      "id": "bootstrap",
+      "implementation_kind": "PhpCoreDelegate",
+      "status": "not_v06_migrated",
+      "integration_status": "historical_probe_only",
+      "differential_status": "not_v06_validated",
+      "retirement_status": "not_started",
+      "temporary_delegate": {
+        "scope": "existing PHP/Wasm WordPress bootstrap and runtime surface",
+        "exit_stage": "V06 bootstrap migration stage; requires differential and product integration evidence"
+      }
+    },
+    {
+      "id": "query",
+      "implementation_kind": "PhpCoreDelegate",
+      "status": "unavailable_in_v06_product",
+      "integration_status": "not_integrated",
+      "differential_status": "not_validated",
+      "retirement_status": "not_started",
+      "temporary_delegate": {
+        "scope": "WordPress query execution and query mutation remain in PHP runtime",
+        "exit_stage": "V06 Query/Loop migration stage after query semantics and extension hooks match"
+      }
+    },
+    {
+      "id": "saving",
+      "implementation_kind": "PhpCoreDelegate",
+      "status": "unavailable_in_v06_product",
+      "integration_status": "not_integrated",
+      "differential_status": "not_validated",
+      "retirement_status": "not_started",
+      "temporary_delegate": {
+        "scope": "WordPress persistence and save semantics remain outside Rust core",
+        "exit_stage": "V06 persistence migration stage after transactional and differential validation"
+      }
+    },
+    {
+      "id": "authentication",
+      "implementation_kind": "PhpCoreDelegate",
+      "status": "unavailable_in_v06_product",
+      "integration_status": "not_integrated",
+      "differential_status": "not_validated",
+      "retirement_status": "not_started",
+      "temporary_delegate": {
+        "scope": "WordPress authentication, session lifecycle and authorization remain outside Rust core",
+        "exit_stage": "V06 authentication migration stage after security and compatibility validation"
+      }
+    },
+    {
+      "id": "hooks",
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "temporary_delegate": null
+    },
+    {
+      "id": "standard_ui",
+      "implementation_kind": "PhpCoreDelegate",
+      "status": "not_v06_migrated",
+      "integration_status": "not_integrated",
+      "differential_status": "not_validated",
+      "retirement_status": "not_started",
+      "temporary_delegate": {
+        "scope": "unmigrated standard block and administrative view logic; extension templates are tracked separately",
+        "exit_stage": "V06-5: retire standard PHP render and view bodies after end-to-end comparison"
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "api-001-wp_validate_boolean",
+      "kind": "api",
+      "symbol": "wp_validate_boolean",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 7829,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_validate_boolean",
+        "path": "crates/recastpress-wp/src/lib.rs",
+        "tests": [
+          "boolean_validation_keeps_wordpress_string_rules"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "NaN boolean casting emits a PHP 8.5 warning; this input explicitly returns UnsupportedValue until diagnostics are modeled.",
+        "Objects, resources, references, and custom internal cast behavior are not modeled.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-002-wp_is_numeric_array",
+      "kind": "api",
+      "symbol": "wp_is_numeric_array",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5383,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_is_numeric_array",
+        "path": "crates/recastpress-wp/src/lib.rs",
+        "tests": [
+          "numeric_array_allows_holes_and_negative_keys_but_not_string_keys",
+          "array_keys_coerce_only_canonical_in_range_integer_strings"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "The ordered-array model targets signed 64-bit PHP integer keys.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-003-sanitize_key",
+      "kind": "api",
+      "symbol": "sanitize_key",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2191,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_key",
+        "path": "crates/recastpress-wp/src/filtered.rs",
+        "tests": [
+          "named_filters_keep_raw_arguments_and_typed_returns",
+          "unregistered_filters_keep_defaults_and_request_counters",
+          "callback_errors_restore_dispatcher_context"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input is implemented; other scalar string conversions are pending.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending.",
+        "Request-local native Dispatcher callbacks preserve typed filter returns; Wasm callback transport and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-004-wp_parse_list",
+      "kind": "api",
+      "symbol": "wp_parse_list",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5041,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_parse_list",
+        "path": "crates/recastpress-wp/src/lib.rs",
+        "tests": [
+          "parse_list_splits_bytes_and_filters_arrays_without_reindexing",
+          "parse_list_root_booleans_and_signed_integers_use_php_string_values",
+          "parse_list_null_diagnostic_and_root_float_formatting_remain_unsupported"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte strings, arrays and root booleans/signed integers are modeled; root false becomes an empty list while root integer zero becomes a one-item byte-string list.",
+        "Root Null causes preg_split E_DEPRECATED on pinned PHP 8.5 and remains UnsupportedValue instead of silently dropping its diagnostic.",
+        "Root float formatting, object/resource/reference coercion and other PHP diagnostics remain pending. Array scalar entries retain their original types and keys."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-005-wp_array_slice_assoc",
+      "kind": "api",
+      "symbol": "wp_array_slice_assoc",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5109,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_array_slice_assoc",
+        "path": "crates/recastpress-wp/src/lib.rs",
+        "tests": [
+          "associative_slice_uses_requested_order_isset_and_canonical_keys"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only integer and byte-string selector keys are supported; boolean/float/object/resource key coercions are pending.",
+        "Null values are omitted as in PHP isset; PHP references and object identity are not modeled.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-006-wp_parse_args",
+      "kind": "api",
+      "symbol": "wp_parse_args",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5012,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_parse_args",
+        "path": "crates/recastpress-wp/src/filtered.rs",
+        "tests": [
+          "parse_args_only_filters_strings_and_preserves_the_filtered_result_type",
+          "unsupported_query_refusals_never_invoke_filters_on_a_partial_result",
+          "balanced_arrays_keep_negative_append_keys_literal_inner_names_and_order",
+          "scalar_and_array_collisions_replace_the_type_without_merging_old_values",
+          "unsupported_array_paths_depth_and_append_overflow_return_no_partial_result"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte queries with balanced array paths up to 64 bracket levels; malformed brackets, whitespace inside bracket keys, NUL keys, append overflow, scalar coercions and parser diagnostics remain pending.",
+        "The parser fixture verifies ampersand separators, max_input_vars=1000 and max_input_nesting_level=64; native accepts at most 1000 nonempty components and returns no partial result for unsupported input.",
+        "Native typed filters replace the PHP output-reference convention; general PHP references, object behavior and Wasm transport remain pending.",
+        "Array args/defaults also supported; non-array filtered results with nonempty defaults explicitly remain unsupported."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-007-wp_slash",
+      "kind": "api",
+      "symbol": "wp_slash",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5864,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_slash",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "slash_transforms_bytes_values_and_retains_array_keys",
+          "recursive_string_transforms_reject_unsupported_values_and_excess_depth"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only modeled scalars and arrays are implemented; PHP object/resource/reference behavior is pending.",
+        "Array depth is limited to 64 by host policy; RecursionLimit is not a PHP equivalence claim.",
+        "The byte transform is not HTML/JSON/URL/SQL escaping and does not establish output safety.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-008-wp_unslash",
+      "kind": "api",
+      "symbol": "wp_unslash",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5895,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_unslash",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "slash_transforms_bytes_values_and_retains_array_keys",
+          "recursive_string_transforms_reject_unsupported_values_and_excess_depth"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only modeled scalars and arrays are implemented; PHP object/resource/reference behavior is pending.",
+        "Array depth is limited to 64 by host policy; RecursionLimit is not a PHP equivalence claim.",
+        "The byte transform is not HTML/JSON/URL/SQL escaping and does not establish output safety.",
+        "Comparison covers the supported subset on PHP 8.5.12; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-009-wp_list_pluck",
+      "kind": "api",
+      "symbol": "wp_list_pluck",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5483,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_list_pluck",
+        "path": "crates/recastpress-wp/src/lists.rs",
+        "tests": [
+          "pluck_preserves_original_keys_and_selected_null_with_falsey_index_selector",
+          "pluck_indexed_keys_overwrite_in_place_and_append_after_negative_maximum",
+          "pluck_rejects_unmodeled_warnings_key_coercions_and_append_overflow"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Array entries with present fields and modeled values only; objects, references, missing-field warnings and invalid-row diagnostics remain unsupported.",
+        "Index selectors accept integer/byte-string keys; index values accept integers, byte strings and booleans. Null/missing indices append. Float coercion and append overflow explicitly return UnsupportedValue.",
+        "Append behavior targets 64-bit PHP 8.3+; full WordPress execution and additional domains remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-010-trailingslashit",
+      "kind": "api",
+      "symbol": "trailingslashit",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2825,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "trailingslashit_bytes",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "trailing_slash_transforms_keep_nul_whitespace_and_byte_values"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string inputs only; PHP scalar/object coercion is not modeled.",
+        "The transformation does not resolve dot components, validate a filesystem path or authorize file access.",
+        "Comparison covers supported byte inputs on PHP 8.5.12; full WordPress execution remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-011-untrailingslashit",
+      "kind": "api",
+      "symbol": "untrailingslashit",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2840,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "untrailingslashit_bytes",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "trailing_slash_transforms_keep_nul_whitespace_and_byte_values"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string inputs only; PHP scalar/object coercion is not modeled.",
+        "The transformation does not resolve dot components, validate a filesystem path or authorize file access.",
+        "Comparison covers supported byte inputs on PHP 8.5.12; full WordPress execution remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-012-wp_normalize_path",
+      "kind": "api",
+      "symbol": "wp_normalize_path",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 2194,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_normalize_path_bytes",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "normalize_path_retains_network_prefix_lf_and_unresolved_components",
+          "normalize_path_requires_explicit_future_stream_registry_support"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string inputs only; PHP scalar/object coercion is not modeled.",
+        "The transformation does not resolve dot components, validate a filesystem path or authorize file access.",
+        "Comparison covers supported byte inputs on PHP 8.5.12; full WordPress execution remains pending.",
+        "Inputs containing :// require a stream-wrapper registry and explicitly return UnsupportedValue. PHP static-cache/global-registry behavior is not implemented."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-013-wp_checkdate",
+      "kind": "api",
+      "symbol": "wp_checkdate",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 7527,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_checkdate",
+        "path": "crates/recastpress-wp/src/filtered.rs",
+        "tests": [
+          "named_filters_keep_raw_arguments_and_typed_returns",
+          "unregistered_filters_keep_defaults_and_request_counters",
+          "callback_errors_restore_dispatcher_context"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Integer month/day/year and byte-string source_date only; PHP is_numeric/string/float coercion and related diagnostics remain pending.",
+        "Gregorian validation uses the PHP year range 1..32767; this does not parse source_date, timestamps or timezones.",
+        "Request-local native Dispatcher callbacks preserve typed filter returns; Wasm callback transport and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-014-is_serialized",
+      "kind": "api",
+      "symbol": "is_serialized",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 674,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "is_serialized",
+        "path": "crates/recastpress-wp/src/serialization.rs",
+        "tests": [
+          "serialized_recognizers_preserve_wordpress_shallow_false_positives",
+          "serialized_strict_loose_and_php_trim_boundaries_are_distinct",
+          "serialized_nonstring_values_are_false_and_unknown_values_stay_explicit"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "These reproduce WordPress shallow shape recognition, including false positives; serialized lengths, payloads, classes and scalar semantics are not validated.",
+        "No deserialization, PHP object/reference behavior, callbacks or automatic DB transformation is performed. Unsupported values explicitly return UnsupportedValue.",
+        "The strict argument is a Rust boolean; PHP strict-argument coercion and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-015-is_serialized_string",
+      "kind": "api",
+      "symbol": "is_serialized_string",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 741,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "is_serialized_string",
+        "path": "crates/recastpress-wp/src/serialization.rs",
+        "tests": [
+          "serialized_recognizers_preserve_wordpress_shallow_false_positives",
+          "serialized_strict_loose_and_php_trim_boundaries_are_distinct",
+          "serialized_nonstring_values_are_false_and_unknown_values_stay_explicit"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "These reproduce WordPress shallow shape recognition, including false positives; serialized lengths, payloads, classes and scalar semantics are not validated.",
+        "No deserialization, PHP object/reference behavior, callbacks or automatic DB transformation is performed. Unsupported values explicitly return UnsupportedValue.",
+        "The strict argument is a Rust boolean; PHP strict-argument coercion and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-016-absint",
+      "kind": "api",
+      "symbol": "absint",
+      "wordpress_source": {
+        "path": "wp-includes/load.php",
+        "line": 1468,
+        "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+      },
+      "rust_target": {
+        "symbol": "absint",
+        "path": "crates/recastpress-wp/src/numbers.rs",
+        "tests": [
+          "absint_keeps_minimum_integer_as_float_without_wrapping_or_clamping",
+          "absint_supported_coercions_do_not_guess_fraction_exponent_or_overflow_strings",
+          "representable_float_casts_truncate_but_do_not_saturate_overflow_or_hide_diagnostics"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Integer, decimal-integer byte strings, null/bool/arrays and finite floats in [-2^63,2^63) are modeled.",
+        "NaN/infinity/out-of-range floats emit PHP 8.5 cast diagnostics; they remain UnsupportedValue instead of silently saturating or wrapping.",
+        "Fraction/exponent/prefix-junk/overflow strings, object/reference behavior and diagnostics remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-017-wp_parse_id_list",
+      "kind": "api",
+      "symbol": "wp_parse_id_list",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 5065,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_parse_id_list",
+        "path": "crates/recastpress-wp/src/lists.rs",
+        "tests": [
+          "id_list_preserves_first_keys_holes_and_distinct_boundary_magnitudes",
+          "string_id_list_keeps_duplicate_holes_and_integer_boundaries",
+          "float_id_values_deduplicate_after_truncation_and_keep_the_first_key",
+          "id_list_root_booleans_and_signed_integers_keep_list_cast_before_absint"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "String/array/bool/signed-integer input with supported absint casts, including representable finite float array values; numeric fraction/exponent strings and other unsupported casts remain pending.",
+        "Root Null inherits preg_split E_DEPRECATED and remains UnsupportedValue; root floats and object/resource/reference coercions remain pending.",
+        "PHP array_unique outside the supported resulting integer/2^63-float domain and PHP diagnostics remain pending; the integer-only array helper keeps its original restricted domain."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-018-maybe_serialize",
+      "kind": "api",
+      "symbol": "maybe_serialize",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 628,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "maybe_serialize",
+        "path": "crates/recastpress-wp/src/serialization.rs",
+        "tests": [
+          "maybe_serialize_preserves_original_bytes_when_double_encoding_shallow_matches",
+          "maybe_serialize_array_keeps_key_order_raw_string_lengths_and_scalar_types",
+          "maybe_serialize_rejects_unmodeled_nested_values_and_host_depth_excess"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Modeled arrays without float/object/reference entries are serialized; recognized string values are double-encoded with original bytes and whitespace. Other supported non-array values are returned unchanged.",
+        "Array nesting is capped at 64 by host policy, not PHP equivalence. Float serialization and serialize_precision-dependent spelling remain unimplemented; nested floats return UnsupportedValue.",
+        "No unserialization, class activation, PHP references or automatic DB value transformation is performed. Full WordPress execution remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-019-maybe_unserialize",
+      "kind": "api",
+      "symbol": "maybe_unserialize",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 653,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "maybe_unserialize",
+        "path": "crates/recastpress-wp/src/serialization.rs",
+        "tests": [
+          "maybe_unserialize_canonical_arrays_roundtrip_keys_types_and_binary_lengths",
+          "maybe_unserialize_trims_only_the_outer_frame_and_decodes_one_layer",
+          "maybe_unserialize_rejects_noncanonical_malformed_and_active_encodings",
+          "maybe_unserialize_bounds_array_depth_before_allocating_from_counts",
+          "maybe_unserialize_byte_mutations_do_not_panic_or_trust_declared_lengths"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only canonical serialized null/boolean/signed-64-bit integer/byte-string/array values are decoded. Recognized malformed/noncanonical/trailing/float/object/reference encodings explicitly return UnsupportedValue instead of emulating PHP unserialize failure or warnings.",
+        "Decoded arrays are limited to 64 nested levels by host policy. Counts and lengths are checked against input; declared counts do not reserve memory. Resource budgets and general PHP serialization semantics remain incomplete.",
+        "Nonserialized modeled inputs remain unchanged. No PHP class activation, references or automatic DB import conversion is performed. Full WordPress execution remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-020-wp_basename",
+      "kind": "api",
+      "symbol": "wp_basename",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5758,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_basename_bytes",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "basename_keeps_bytes_and_both_separator_spellings",
+          "suffix_matches_encoded_spelling_without_removing_the_entire_basename"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string path and suffix only; PHP scalar coercion and diagnostics remain pending.",
+        "This transforms path spelling without accessing or authorizing any filesystem path.",
+        "Comparison uses PHP 8.5.12 on Windows; native Linux execution and full WordPress bootstrap remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-021-wp_is_valid_utf8",
+      "kind": "api",
+      "symbol": "wp_is_valid_utf8",
+      "wordpress_source": {
+        "path": "wp-includes/utf8.php",
+        "line": 51,
+        "sha256": "6115a3ffac15321e08fcb3ebe39ba0bd83121e0fecc226911f4a801fd896ec77"
+      },
+      "rust_target": {
+        "symbol": "wp_is_valid_utf8_bytes",
+        "path": "crates/recastpress-wp/src/utf8.rs",
+        "tests": [
+          "well_formed_boundaries_bom_nul_and_noncharacters_are_valid"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string input only; PHP scalar coercion, references and diagnostics remain pending.",
+        "Compared against the pinned PHP 8.5.12 no-mbstring fallback path; the mbstring-enabled implementation is not executed by this fixture.",
+        "These are explicit transforms/predicates, not automatic DB normalization or HTML/XML output validation."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-022-wp_scrub_utf8",
+      "kind": "api",
+      "symbol": "wp_scrub_utf8",
+      "wordpress_source": {
+        "path": "wp-includes/utf8.php",
+        "line": 132,
+        "sha256": "6115a3ffac15321e08fcb3ebe39ba0bd83121e0fecc226911f4a801fd896ec77"
+      },
+      "rust_target": {
+        "symbol": "wp_scrub_utf8_bytes",
+        "path": "crates/recastpress-wp/src/utf8.rs",
+        "tests": [
+          "scrub_replaces_maximal_subparts_without_merging_adjacent_errors"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string input only; PHP scalar coercion, references and diagnostics remain pending.",
+        "Compared against the pinned PHP 8.5.12 no-mbstring fallback path; the mbstring-enabled implementation is not executed by this fixture.",
+        "These are explicit transforms/predicates, not automatic DB normalization or HTML/XML output validation."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-023-wp_has_noncharacters",
+      "kind": "api",
+      "symbol": "wp_has_noncharacters",
+      "wordpress_source": {
+        "path": "wp-includes/utf8.php",
+        "line": 158,
+        "sha256": "6115a3ffac15321e08fcb3ebe39ba0bd83121e0fecc226911f4a801fd896ec77"
+      },
+      "rust_target": {
+        "symbol": "wp_has_noncharacters_bytes",
+        "path": "crates/recastpress-wp/src/utf8.rs",
+        "tests": [
+          "noncharacter_matching_is_independent_of_surrounding_invalid_bytes"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte-string input only; PHP scalar coercion, references and diagnostics remain pending.",
+        "Compared against the pinned PHP 8.5.12 no-mbstring fallback path; the mbstring-enabled implementation is not executed by this fixture.",
+        "These are explicit transforms/predicates, not automatic DB normalization or HTML/XML output validation."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-024-wp_parse_str",
+      "kind": "api",
+      "symbol": "wp_parse_str",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5240,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_parse_str",
+        "path": "crates/recastpress-wp/src/filtered.rs",
+        "tests": [
+          "flat_queries_keep_php_key_normalization_order_and_arbitrary_value_bytes",
+          "unsupported_query_refusals_never_invoke_filters_on_a_partial_result",
+          "parse_string_callback_failure_propagates_and_restores_context",
+          "balanced_arrays_keep_negative_append_keys_literal_inner_names_and_order",
+          "scalar_and_array_collisions_replace_the_type_without_merging_old_values",
+          "unsupported_array_paths_depth_and_append_overflow_return_no_partial_result"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte queries with balanced array paths up to 64 bracket levels; malformed brackets, whitespace inside bracket keys, NUL keys, append overflow, scalar coercions and parser diagnostics remain pending.",
+        "The parser fixture verifies ampersand separators, max_input_vars=1000 and max_input_nesting_level=64; native accepts at most 1000 nonempty components and returns no partial result for unsupported input.",
+        "Native typed filters replace the PHP output-reference convention; general PHP references, object behavior and Wasm transport remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-025-wp_is_uuid",
+      "kind": "api",
+      "symbol": "wp_is_uuid",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 8124,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_is_uuid",
+        "path": "crates/recastpress-wp/src/uuid.rs",
+        "tests": [
+          "uuid_default_is_a_lowercase_shape_check_and_v4_adds_version_and_variant",
+          "uuid_keeps_the_source_final_newline_anchor_behavior",
+          "uuid_nonstring_short_circuit_does_not_enter_unsupported_version_diagnostics"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Version null or integer 4 only for string UUIDs; PHP numeric-string/float/bool version coercion and _doing_it_wrong diagnostics remain pending.",
+        "Non-string UUID inputs return false before numeric-version validation; object/reference value modeling remains pending.",
+        "This reproduces the lowercase format regex including its final-LF anchor behavior; it is not UUID generation, uniqueness, source identity or authentication."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-026-wp_check_jsonp_callback",
+      "kind": "api",
+      "symbol": "wp_check_jsonp_callback",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 4699,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_check_jsonp_callback",
+        "path": "crates/recastpress-wp/src/jsonp.rs",
+        "tests": [
+          "jsonp_callback_preserves_the_permissive_byte_pattern_not_js_identifier_rules",
+          "jsonp_callback_rejects_every_other_byte_including_control_and_nonascii_bytes",
+          "jsonp_callback_nonstring_values_return_false_without_casting"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte strings are compared under the C LC_CTYPE locale, verified by the PHP oracle; non-C locale character classification remains pending.",
+        "Modeled non-string scalars and arrays return false before regex evaluation; object/reference value modeling remains pending.",
+        "The permissive WordPress byte pattern accepts empty strings, dots and leading digits; this is not JavaScript syntax validation, output escaping, endpoint enablement or authorization."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-027-normalize_whitespace",
+      "kind": "api",
+      "symbol": "normalize_whitespace",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5580,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "normalize_whitespace_bytes",
+        "path": "crates/recastpress-wp/src/strings.rs",
+        "tests": [
+          "trims_exactly_php_default_bytes_at_both_edges",
+          "replaces_cr_before_collapsing_newlines_and_retains_line_spaces",
+          "preserves_interior_controls_non_utf8_and_literal_output_bytes"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input is implemented; scalar coercion, object/reference domains and PHP diagnostics remain pending.",
+        "PHP default trim and byte patterns are preserved; this is not Unicode normalization, HTML parsing or output escaping.",
+        "Comparison covers supported subsets on PHP 8.5.12, without full WordPress bootstrap."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-028-wp_html_split",
+      "kind": "api",
+      "symbol": "wp_html_split",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 615,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_html_split_bytes",
+        "path": "crates/recastpress-wp/src/html.rs",
+        "tests": [
+          "html_split_retains_captured_delimiters_and_empty_text_entries",
+          "html_split_uses_exact_comment_and_cdata_prefixes_and_first_terminators",
+          "html_split_consumes_unclosed_delimiters_through_end_of_input",
+          "html_split_is_a_byte_regex_split_rather_than_an_html_parser",
+          "html_split_preserves_every_byte_and_alternation_across_all_byte_values"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input is implemented; PHP coercions and diagnostics remain pending.",
+        "The fixed get_html_split_regex delimiter behavior is reproduced, including malformed markup and empty captures; this is not an HTML parser, sanitizer or output escaping.",
+        "PCRE resource-limit failures, general HTML semantics and full WordPress bootstrap are not modeled."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-029-wp_replace_in_html_tags",
+      "kind": "api",
+      "symbol": "wp_replace_in_html_tags",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 757,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_replace_in_html_tags_bytes",
+        "path": "crates/recastpress-wp/src/html_replacement.rs",
+        "tests": [
+          "html_replacement_single_is_nonoverlapping_and_does_not_rescan_output",
+          "html_replacement_multi_prefers_longest_independent_of_insertion_order",
+          "html_replacement_empty_map_single_empty_key_and_empty_values_are_explicit",
+          "html_replacement_rejects_the_whole_unsupported_map_even_without_a_hit",
+          "html_replacement_follows_byte_split_boundaries_including_malformed_markup"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte haystack and byte-key/byte-value replacement maps are implemented; canonical integer keys, nonbyte values and multiple maps containing empty keys return UnsupportedValue even when PHP would not evaluate an unmatched value.",
+        "An empty map and a single empty byte key are supported as identity transformations; broader PHP coercions, lazy diagnostic behavior and references remain pending.",
+        "Replacement follows captured delimiter boundaries, with longest nonrecursive matches for multiple pairs; this is not HTML sanitization, parsing, output escaping or authorization."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-030-wp_make_link_relative",
+      "kind": "api",
+      "symbol": "wp_make_link_relative",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 4905,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_make_link_relative_bytes",
+        "path": "crates/recastpress-wp/src/url.rs",
+        "tests": [
+          "link_relative_strips_only_optional_http_schemes_and_nonempty_authorities",
+          "link_relative_keeps_the_regex_authority_rule_instead_of_url_parsing",
+          "link_relative_preserves_newline_suffixes_and_does_not_reapply_the_pattern",
+          "link_relative_keeps_arbitrary_tail_bytes_and_does_not_mutate_input"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string subjects are implemented; PHP array/scalar coercion, diagnostics, PCRE resource failures and other locale profiles remain pending.",
+        "The source regex removes a nonempty authority-like byte run, including query/fragment/control bytes; it does not parse or validate URLs, escape output or authorize a destination.",
+        "LF stops the matched dot run but the unmatched suffix is retained; arbitrary tail bytes are preserved."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-031-url_shorten",
+      "kind": "api",
+      "symbol": "url_shorten",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 6318,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "url_shorten_bytes",
+        "path": "crates/recastpress-wp/src/url_shorten.rs",
+        "tests": [
+          "replacements_are_ordered_case_sensitive_everywhere_and_nonrecursive",
+          "cutoff_uses_bytes_and_the_literal_entity_at_exact_boundaries",
+          "short_and_negative_lengths_preserve_php_substring_rules",
+          "bottom_integer_subtraction_does_not_overflow_or_invent_a_warning"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte URLs and signed 64-bit integer lengths are implemented; noninteger lengths, other scalar coercions and diagnostics remain pending. Negative substring lengths and the bottom-three subtraction behavior follow the pinned 64-bit PHP 8.5.12 oracle.",
+        "The default PHP length 35 is explicitly supplied in fixture inputs; shortening counts bytes and can split UTF-8.",
+        "Source substrings are removed everywhere in the original case-sensitive pass order; this is not URL validation, parsing or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-032-sanitize_hex_color",
+      "kind": "api",
+      "symbol": "sanitize_hex_color",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 6339,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_hex_color_bytes",
+        "path": "crates/recastpress-wp/src/colors.rs",
+        "tests": [
+          "hex_color_keeps_php_null_distinct_from_empty_and_preserves_case",
+          "hex_color_accepts_one_final_lf_without_trimming_any_other_bytes",
+          "no_hash_strips_all_leading_hashes_but_maybe_hash_keeps_false_or_invalid_inputs",
+          "hex_color_checks_all_byte_values_at_each_digit_position_without_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input is implemented; nonstring PHP coercions, diagnostic behavior, objects and references remain pending.",
+        "The fixed 3-or-6-digit byte regex accepts a single final LF and returns its original bytes; PHP null and empty bytes remain distinct.",
+        "Leading hashes, truthiness and unchanged invalid inputs follow the specific helper; this is not a general CSS parser, sanitizer or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-033-sanitize_hex_color_no_hash",
+      "kind": "api",
+      "symbol": "sanitize_hex_color_no_hash",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 6366,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_hex_color_no_hash_bytes",
+        "path": "crates/recastpress-wp/src/colors.rs",
+        "tests": [
+          "hex_color_keeps_php_null_distinct_from_empty_and_preserves_case",
+          "hex_color_accepts_one_final_lf_without_trimming_any_other_bytes",
+          "no_hash_strips_all_leading_hashes_but_maybe_hash_keeps_false_or_invalid_inputs",
+          "hex_color_checks_all_byte_values_at_each_digit_position_without_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input is implemented; nonstring PHP coercions, diagnostic behavior, objects and references remain pending.",
+        "The fixed 3-or-6-digit byte regex accepts a single final LF and returns its original bytes; PHP null and empty bytes remain distinct.",
+        "Leading hashes, truthiness and unchanged invalid inputs follow the specific helper; this is not a general CSS parser, sanitizer or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-034-maybe_hash_hex_color",
+      "kind": "api",
+      "symbol": "maybe_hash_hex_color",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 6388,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "maybe_hash_hex_color_bytes",
+        "path": "crates/recastpress-wp/src/colors.rs",
+        "tests": [
+          "hex_color_keeps_php_null_distinct_from_empty_and_preserves_case",
+          "hex_color_accepts_one_final_lf_without_trimming_any_other_bytes",
+          "no_hash_strips_all_leading_hashes_but_maybe_hash_keeps_false_or_invalid_inputs",
+          "hex_color_checks_all_byte_values_at_each_digit_position_without_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input is implemented; nonstring PHP coercions, diagnostic behavior, objects and references remain pending.",
+        "The fixed 3-or-6-digit byte regex accepts a single final LF and returns its original bytes; PHP null and empty bytes remain distinct.",
+        "Leading hashes, truthiness and unchanged invalid inputs follow the specific helper; this is not a general CSS parser, sanitizer or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-035-sanitize_html_class",
+      "kind": "api",
+      "symbol": "sanitize_html_class",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2438,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_html_class",
+        "path": "crates/recastpress-wp/src/html_class.rs",
+        "tests": [
+          "html_class_percent_removal_is_single_pass_and_preserves_ascii_case",
+          "html_class_fallback_truthiness_distinguishes_zero_from_empty_clean_result",
+          "html_class_terminal_filter_receives_exact_raw_and_fallback_arguments_once",
+          "html_class_filter_returns_keep_null_and_array_types",
+          "html_class_callback_errors_restore_dispatcher_context_and_allow_reuse"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte classname and fallback inputs are implemented; nonstring PHP coercions, diagnostics, references and objects remain pending.",
+        "Fallback uses PHP byte truthiness and replaces the outer call; the single terminal native named filter receives the exact clean/raw/fallback arguments and preserves modeled typed returns.",
+        "Wasm callback transport and full WordPress execution remain pending; a filtered result need not be a valid class string and is not output escaping or authorization."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-036-checked",
+      "kind": "api",
+      "symbol": "checked",
+      "wordpress_source": {
+        "path": "wp-includes/general-template.php",
+        "line": 5515,
+        "sha256": "3fa163fdd315e122ec721a66cfffbb64863d479d4edbabfac8f1dc4bdda1f845"
+      },
+      "rust_target": {
+        "symbol": "checked_return",
+        "path": "crates/recastpress-wp/src/form_attributes.rs",
+        "tests": [
+          "form_attributes_compare_explicit_string_casts_with_exact_fixed_output",
+          "form_attributes_integer_casts_preserve_signed_boundaries_and_no_numeric_comparison",
+          "form_attributes_keep_binary_bytes_exact_and_leave_inputs_unchanged",
+          "form_attributes_refuse_unsupported_values_on_either_side_even_when_equal"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only the display=false return-only subset is implemented; the default display=true echo behavior and a Wasm/output ABI remain pending.",
+        "Null, booleans, signed 64-bit integers and bytes use explicit PHP string casts and strict byte equality; floats, arrays, objects, resources, references and warning behavior remain unsupported on either side.",
+        "The attribute kind is fixed by the four entrypoints; this is not general attribute interpolation or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-037-selected",
+      "kind": "api",
+      "symbol": "selected",
+      "wordpress_source": {
+        "path": "wp-includes/general-template.php",
+        "line": 5533,
+        "sha256": "3fa163fdd315e122ec721a66cfffbb64863d479d4edbabfac8f1dc4bdda1f845"
+      },
+      "rust_target": {
+        "symbol": "selected_return",
+        "path": "crates/recastpress-wp/src/form_attributes.rs",
+        "tests": [
+          "form_attributes_compare_explicit_string_casts_with_exact_fixed_output",
+          "form_attributes_integer_casts_preserve_signed_boundaries_and_no_numeric_comparison",
+          "form_attributes_keep_binary_bytes_exact_and_leave_inputs_unchanged",
+          "form_attributes_refuse_unsupported_values_on_either_side_even_when_equal"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only the display=false return-only subset is implemented; the default display=true echo behavior and a Wasm/output ABI remain pending.",
+        "Null, booleans, signed 64-bit integers and bytes use explicit PHP string casts and strict byte equality; floats, arrays, objects, resources, references and warning behavior remain unsupported on either side.",
+        "The attribute kind is fixed by the four entrypoints; this is not general attribute interpolation or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-038-disabled",
+      "kind": "api",
+      "symbol": "disabled",
+      "wordpress_source": {
+        "path": "wp-includes/general-template.php",
+        "line": 5551,
+        "sha256": "3fa163fdd315e122ec721a66cfffbb64863d479d4edbabfac8f1dc4bdda1f845"
+      },
+      "rust_target": {
+        "symbol": "disabled_return",
+        "path": "crates/recastpress-wp/src/form_attributes.rs",
+        "tests": [
+          "form_attributes_compare_explicit_string_casts_with_exact_fixed_output",
+          "form_attributes_integer_casts_preserve_signed_boundaries_and_no_numeric_comparison",
+          "form_attributes_keep_binary_bytes_exact_and_leave_inputs_unchanged",
+          "form_attributes_refuse_unsupported_values_on_either_side_even_when_equal"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only the display=false return-only subset is implemented; the default display=true echo behavior and a Wasm/output ABI remain pending.",
+        "Null, booleans, signed 64-bit integers and bytes use explicit PHP string casts and strict byte equality; floats, arrays, objects, resources, references and warning behavior remain unsupported on either side.",
+        "The attribute kind is fixed by the four entrypoints; this is not general attribute interpolation or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-039-wp_readonly",
+      "kind": "api",
+      "symbol": "wp_readonly",
+      "wordpress_source": {
+        "path": "wp-includes/general-template.php",
+        "line": 5569,
+        "sha256": "3fa163fdd315e122ec721a66cfffbb64863d479d4edbabfac8f1dc4bdda1f845"
+      },
+      "rust_target": {
+        "symbol": "wp_readonly_return",
+        "path": "crates/recastpress-wp/src/form_attributes.rs",
+        "tests": [
+          "form_attributes_compare_explicit_string_casts_with_exact_fixed_output",
+          "form_attributes_integer_casts_preserve_signed_boundaries_and_no_numeric_comparison",
+          "form_attributes_keep_binary_bytes_exact_and_leave_inputs_unchanged",
+          "form_attributes_refuse_unsupported_values_on_either_side_even_when_equal"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only the display=false return-only subset is implemented; the default display=true echo behavior and a Wasm/output ABI remain pending.",
+        "Null, booleans, signed 64-bit integers and bytes use explicit PHP string casts and strict byte equality; floats, arrays, objects, resources, references and warning behavior remain unsupported on either side.",
+        "The attribute kind is fixed by the four entrypoints; this is not general attribute interpolation or output escaping."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-040-sanitize_locale_name",
+      "kind": "api",
+      "symbol": "sanitize_locale_name",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2468,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_locale_name",
+        "path": "crates/recastpress-wp/src/locale_mime.rs",
+        "tests": [
+          "locale_and_mime_preserve_only_their_exact_bytes_for_all_256_values",
+          "whitelist_examples_keep_case_wildcards_and_malformed_shapes_without_validating_them",
+          "locale_and_mime_filters_receive_original_bytes_and_keep_typed_null_or_array_results",
+          "locale_and_mime_callback_failures_restore_context_and_allow_dispatcher_reuse"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input is implemented; nonstring PHP coercions, diagnostics, objects and references remain pending.",
+        "The fixed ASCII character whitelist preserves case; this does not validate an operating-system locale, MIME syntax or an HTTP header.",
+        "The request-local native named filter receives clean and original bytes and preserves modeled typed returns; Wasm callback transport and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-041-sanitize_mime_type",
+      "kind": "api",
+      "symbol": "sanitize_mime_type",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5800,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_mime_type",
+        "path": "crates/recastpress-wp/src/locale_mime.rs",
+        "tests": [
+          "locale_and_mime_preserve_only_their_exact_bytes_for_all_256_values",
+          "whitelist_examples_keep_case_wildcards_and_malformed_shapes_without_validating_them",
+          "locale_and_mime_filters_receive_original_bytes_and_keep_typed_null_or_array_results",
+          "locale_and_mime_callback_failures_restore_context_and_allow_dispatcher_reuse"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input is implemented; nonstring PHP coercions, diagnostics, objects and references remain pending.",
+        "The fixed ASCII character whitelist preserves case; this does not validate an operating-system locale, MIME syntax or an HTTP header.",
+        "The request-local native named filter receives clean and original bytes and preserves modeled typed returns; Wasm callback transport and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-042-is_email",
+      "kind": "api",
+      "symbol": "is_email",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 3613,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "is_email",
+        "path": "crates/recastpress-wp/src/email.rs",
+        "tests": [
+          "email_reports_all_eight_rejections_in_source_order_and_null_on_success",
+          "email_keeps_wordpress_local_part_quirks_and_exact_php_trim_byte_rules",
+          "email_checks_every_byte_in_local_and_domain_positions",
+          "email_filter_keeps_typed_null_and_array_results_even_on_rejection",
+          "email_callback_failure_restores_context_and_allows_reuse"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte input with the default deprecated=false argument is implemented; nonstring coercions, diagnostics, objects and references remain pending.",
+        "Validation order, eight rejection contexts and success PHP null follow the fixed WordPress helper, including a single final LF in the local part; this is not RFC-complete validation, DNS lookup, deliverability, output escaping or authorization.",
+        "The terminal native named filter receives result/raw/context and preserves modeled typed returns; Wasm callback transport and full WordPress execution remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-043-wp_unique_id",
+      "kind": "api",
+      "symbol": "wp_unique_id",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 8156,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_unique_id",
+        "path": "crates/recastpress-wp/src/unique_ids.rs",
+        "tests": [
+          "explicit_unique_id_contexts_start_independently_and_have_no_shared_global_counter",
+          "global_and_per_prefix_counters_are_independent_under_interleaved_calls",
+          "per_prefix_map_preserves_numeric_case_empty_and_binary_prefix_identity",
+          "concatenated_prefix_ids_can_collide_and_are_not_universal_identifiers"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte prefixes and signed 64-bit integer counter states are implemented; nonstring coercions, PHP diagnostics and floating-point counter overflow are unsupported.",
+        "The host explicitly owns one UniqueIds context per request/execution; comparisons preserve one context and PHP function statics per input batch. Full request lifecycle and Wasm integration remain pending.",
+        "Global and per-prefix counters are independent; concatenated IDs may collide across prefixes or contexts and are not security tokens or universally unique identifiers. Host budget integration remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-044-wp_unique_prefixed_id",
+      "kind": "api",
+      "symbol": "wp_unique_prefixed_id",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 8175,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_unique_prefixed_id",
+        "path": "crates/recastpress-wp/src/unique_ids.rs",
+        "tests": [
+          "explicit_unique_id_contexts_start_independently_and_have_no_shared_global_counter",
+          "global_and_per_prefix_counters_are_independent_under_interleaved_calls",
+          "per_prefix_map_preserves_numeric_case_empty_and_binary_prefix_identity",
+          "concatenated_prefix_ids_can_collide_and_are_not_universal_identifiers"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte prefixes and signed 64-bit integer counter states are implemented; nonstring coercions, PHP diagnostics and floating-point counter overflow are unsupported.",
+        "The host explicitly owns one UniqueIds context per request/execution; comparisons preserve one context and PHP function statics per input batch. Full request lifecycle and Wasm integration remain pending.",
+        "Global and per-prefix counters are independent; concatenated IDs may collide across prefixes or contexts and are not security tokens or universally unique identifiers. Host budget integration remains pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-045-wp_json_encode",
+      "kind": "api",
+      "symbol": "wp_json_encode",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 4443,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "wp_json_encode_utf8_no_mbstring",
+        "path": "crates/recastpress-wp/src/json_encode.rs",
+        "tests": [
+          "default_json_preserves_del_and_html_bytes_but_escapes_all_controls_slashes_and_quotes",
+          "unicode_is_lowercase_utf16_without_normalizing_noncharacters_or_line_separators",
+          "list_detection_uses_integer_key_order_and_objects_keep_canonicalized_keys_and_order",
+          "complete_output_cap_is_exact_and_unsupported_values_or_keys_never_return_partial_json",
+          "host_depth_counts_root_and_empty_arrays_at_64_and_validation_precedes_output_cap",
+          "selected_flag_bits_admit_exactly_the_supported_mask_and_preserve_error_traits",
+          "hex_flag_combinations_keep_php_uppercase_tag_digits_and_independent_other_escapes",
+          "unicode_and_line_terminator_flags_interact_without_changing_slash_policy",
+          "force_object_applies_to_empty_and_nested_lists_without_reordering_keys",
+          "every_selected_combination_uses_same_flags_in_keys_and_values_and_retains_controls",
+          "flags_zero_wrapper_parity_does_not_expand_domains_or_host_depth",
+          "pretty_empty_containers_and_scalars_stay_compact_while_nested_nonempty_lists_indent",
+          "pretty_all_flags_preserve_key_order_hex_unicode_line_and_nested_forced_objects",
+          "pretty_pairs_with_every_existing_combination_and_caps_include_escaping_and_indent",
+          "native_pretty_host_64_containers_have_checked_indentation_and_do_not_expand_domains",
+          "opt_in_profile_replaces_maximal_subparts_without_changing_existing_api_rejection",
+          "scrubbed_key_collisions_keep_first_position_last_value_and_numeric_normalization",
+          "nested_sanity_and_all_selected_flags_match_a_static_clean_graph_and_valid_fast_path",
+          "original_graph_domains_are_validated_before_collisions_can_discard_unsupported_values",
+          "host_depth_is_checked_on_original_graph_and_scalar_leaves_cost_no_extra_level"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "The default and selected-flags wrappers accept only the successful first json_encode path for null, booleans, signed 64-bit integers, valid UTF-8 byte strings and ordered arrays. The separate wp_json_encode_utf8_no_mbstring API explicitly models UTF-8 blog_charset and absence of mb_convert_encoding, including whole-array sanitation, key collisions and last-value replacement in original key order. Other charset/mbstring profiles, floats, diagnostics, objects, references and resources remain unsupported.",
+        "The selected flags are JSON_HEX_TAG, JSON_HEX_AMP, JSON_HEX_APOS, JSON_HEX_QUOT, JSON_FORCE_OBJECT, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE and JSON_UNESCAPED_LINE_TERMINATORS (allowed mask 2527). All 512 combinations are compared, with LINE effective only alongside UNICODE. Unselected flags and nondefault PHP depth remain unsupported.",
+        "The default wrapper preserves flags=0 and rejects invalid UTF-8. Every API limits the entire original graph to 64 array containers and rejects all unsupported values even if a sanitized key collision would erase them. Output is complete and capped after measurement; fallback sanitation clones before that measurement and is not bounded by the output cap. These host errors differ from PHP false; RSS, shared budgets and Wasm remain unimplemented.",
+        "PHP-specific uppercase HEX_TAG and lowercase general Unicode escapes, raw DEL, forced object order and string-key escaping are preserved. These options are not an HTML/script security guarantee or full WordPress execution.",
+        "PRETTY_PRINT uses PHP four-space indentation, LF line breaks and object colon spacing; empty arrays/objects remain compact. Measurement includes formatting bytes before the host output cap."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-046-is_utf8_charset",
+      "kind": "api",
+      "symbol": "is_utf8_charset",
+      "wordpress_source": {
+        "path": "wp-includes/functions.php",
+        "line": 7715,
+        "sha256": "cac8a17e293df99f0683a88debd3ba5e5cce274183a4e9fd3c9f18375747f41c"
+      },
+      "rust_target": {
+        "symbol": "is_utf8_charset_bytes",
+        "path": "crates/recastpress-wp/src/charset.rs",
+        "tests": [
+          "both_aliases_accept_every_ascii_case_variant_without_changing_input",
+          "aliases_are_exact_byte_strings_without_trim_unicode_or_nul_shortcuts"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only an explicit byte-string argument is modeled. The two aliases UTF-8 and UTF8 match by ASCII case, with exact byte lengths and no trimming, Unicode normalization or NUL termination.",
+        "Null/default blog_charset option lookup and nonstring input behavior are outside this kernel and comparison. Existing JSON UTF-8 fallback profile metadata is a separate fixture contract.",
+        "This identifies the fixed WordPress aliases; it does not validate text UTF-8, decode content, select a product charset policy or execute full WordPress."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-047-wp_check_invalid_utf8",
+      "kind": "api",
+      "symbol": "wp_check_invalid_utf8",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 1127,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_check_invalid_utf8_utf8_no_mbstring_bytes",
+        "path": "crates/recastpress-wp/src/utf8.rs",
+        "tests": [
+          "empty_and_valid_utf8_preserve_all_bytes_for_both_strip_values",
+          "invalid_utf8_is_empty_or_maximal_subpart_replacement_without_input_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input and an explicit boolean strip argument under a UTF-8 blog_charset/no-mbstring profile are modeled. Empty/valid input is preserved; invalid input returns empty with strip=false or maximal-subpart U+FFFD replacements with strip=true.",
+        "Null and other PHP string casts, nonboolean strip coercion, non-UTF-8 site charsets, mbstring-specific runtime paths, dynamic option changes and full WordPress execution remain outside this subset.",
+        "The existing development oracle fixes get_option(blog_charset) to UTF-8 and verifies the exact no-mbstring profile. This does not choose a production charset policy or introduce PHP into HTTP."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-048-wp_is_json_media_type",
+      "kind": "api",
+      "symbol": "wp_is_json_media_type",
+      "wordpress_source": {
+        "path": "wp-includes/load.php",
+        "line": 1964,
+        "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+      },
+      "rust_target": {
+        "symbol": "wp_is_json_media_type_c_bytes",
+        "path": "crates/recastpress-wp/src/media_type.rs",
+        "tests": [
+          "unanchored_ascii_boundaries_do_not_require_a_whole_header_match",
+          "source_range_accepts_non_mime_punctuation_and_requires_nonempty_prefix",
+          "case_oembed_nul_and_invalid_utf8_use_exact_byte_boundaries",
+          "repeated_prefix_candidates_preserve_earliest_viable_content_start"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only explicit byte-string input and the successful boolean result of the pinned PCRE pattern under LC_CTYPE=C are modeled. The oracle verifies this locale, rejects nonstrings and fails on PCRE errors rather than accepting them as false results.",
+        "The expression searches unanchored input with ASCII whitespace/comma boundaries, ASCII case matching and an optional +oembed suffix. Its subtype character class includes the source range & through ^, which accepts punctuation beyond MIME token syntax; this is not an RFC media-type parser or security validator.",
+        "WordPress static memoization effects, nonstring array-key behavior and coercion, non-C locales, PCRE resource failures and full WordPress/HTTP content negotiation remain unmodeled. Native execution is a stateless boolean predicate."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-049-wp_is_json_request",
+      "kind": "api",
+      "symbol": "wp_is_json_request",
+      "wordpress_source": {
+        "path": "wp-includes/load.php",
+        "line": 1917,
+        "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+      },
+      "rust_target": {
+        "symbol": "wp_is_json_request_c_bytes",
+        "path": "crates/recastpress-wp/src/request_media.rs",
+        "tests": [
+          "absent_and_present_empty_headers_produce_no_hint",
+          "json_uses_accept_then_content_type_with_the_source_media_boundaries",
+          "xml_accept_substrings_and_content_type_exact_membership_are_distinct",
+          "mixed_hints_and_invalid_bytes_preserve_input_without_utf8_or_nul_rules"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only a null input sentinel and optional explicit byte-string/null Accept and Content-Type fields are compared. Missing and null both model PHP isset=false; other input/header types are rejected before either header is inspected.",
+        "The real zero-argument function reads only the two fixture $_SERVER fields, which are saved and restored including absence/null after every case. Native APIs receive Option byte slices and do not read process globals or HTTP requests.",
+        "Request hints do not parse bodies, honor quality values, establish content negotiation or authorize requests. Other $_SERVER fields, nonstring coercion, live HTTP integration and full WordPress execution remain outside this subset.",
+        "JSON uses the fixed C-locale media-type predicate in Accept-then-Content-Type short-circuit order. The oracle prechecks the same order for PCRE errors before the actual function; internal memoization and PCRE resource failures are not equivalence claims."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-050-wp_is_xml_request",
+      "kind": "api",
+      "symbol": "wp_is_xml_request",
+      "wordpress_source": {
+        "path": "wp-includes/load.php",
+        "line": 1982,
+        "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+      },
+      "rust_target": {
+        "symbol": "wp_is_xml_request_bytes",
+        "path": "crates/recastpress-wp/src/request_media.rs",
+        "tests": [
+          "absent_and_present_empty_headers_produce_no_hint",
+          "json_uses_accept_then_content_type_with_the_source_media_boundaries",
+          "xml_accept_substrings_and_content_type_exact_membership_are_distinct",
+          "mixed_hints_and_invalid_bytes_preserve_input_without_utf8_or_nul_rules"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only a null input sentinel and optional explicit byte-string/null Accept and Content-Type fields are compared. Missing and null both model PHP isset=false; other input/header types are rejected before either header is inspected.",
+        "The real zero-argument function reads only the two fixture $_SERVER fields, which are saved and restored including absence/null after every case. Native APIs receive Option byte slices and do not read process globals or HTTP requests.",
+        "Request hints do not parse bodies, honor quality values, establish content negotiation or authorize requests. Other $_SERVER fields, nonstring coercion, live HTTP integration and full WordPress execution remain outside this subset.",
+        "XML Accept uses case-sensitive byte substring matching against six fixed literals, whereas Content-Type requires exact membership. application/xml alone is not accepted; parameters, NUL and extra bytes may therefore differ between these fields."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-051-zeroise",
+      "kind": "api",
+      "symbol": "zeroise",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2792,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "zeroise",
+        "path": "crates/recastpress-wp/src/zeroise.rs",
+        "tests": [
+          "signed_decimals_pad_before_sign_and_preserve_integer_extremes",
+          "raw_bytes_use_byte_length_without_parsing_truncation_or_input_changes",
+          "width_bound_and_complete_output_cap_are_separate_host_limits",
+          "unsupported_types_are_rejected_before_host_width_or_cap_checks"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only signed 64-bit integer and byte-string inputs with an explicit integer width from 0 through 4096 are compared. PHP %s semantics pad with zeros before the entire string including a negative sign; byte strings are not parsed or truncated.",
+        "Native width and complete-output limits are internal host safety policies, not PHP behavior or product user settings. The formal fixture uses a 65536-byte output allowance and rejects out-of-domain types and widths in both oracle and native probe.",
+        "Noninteger width coercion or format-string injection, negative or larger widths, PHP float formatting, null/boolean/array/object/resource/reference conversion, diagnostics, full sprintf semantics and full WordPress execution remain unmodeled."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-052-wp_convert_hr_to_bytes",
+      "kind": "api",
+      "symbol": "wp_convert_hr_to_bytes",
+      "wordpress_source": {
+        "path": "wp-includes/load.php",
+        "line": 1687,
+        "sha256": "3efd0934bd8a454a8d7076fbbd21504ea097a753125a48e64b8a1dad380d357a"
+      },
+      "rust_target": {
+        "symbol": "wp_convert_hr_to_bytes_default_units_bytes",
+        "path": "crates/recastpress-wp/src/hr_bytes.rs",
+        "tests": [
+          "decimal_digits_leading_zeros_and_default_unit_cases_are_exact",
+          "positive_integer_and_float_product_boundaries_saturate_to_integer_max",
+          "complete_grammar_validation_rejects_cast_trim_and_contains_domains_before_saturation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only nonempty ASCII decimal digits, allowing leading zeros, and an optional single K/M/G suffix in either case are supported, with at most 256 significant digits (all-zero input counts as zero). This compatibility subset is recorded in metadata; it is not a PHP limit, product capacity limit or memory allowance. The default-unit profile uses integer KB=1024, MB=1048576, GB=1073741824, verified in every PHP batch.",
+        "The fixed PHP 8.5.12 64-bit source returns min($bytes, PHP_INT_MAX) in that order. Tested positive overflow products including float 2^63 ties return integer MAX; native integer parsing and multiplication saturate to i64::MAX within this grammar. Other PHP versions, negative/float overflow and broader min/cast behavior are not claimed. The initial unlimited-digit saturation hypothesis failed: 4096 nines return int 0 in PHP. Those seven suffix variants are retained as out-of-domain protocol refusals rather than silently counted as equivalent. General numeric-string/infinity conversion is not implemented.",
+        "Empty input, signs, whitespace, decimals, exponents, arbitrary suffixes or internal unit letters, nonstring coercion and diagnostics are rejected outside this subset. wp_initial_constants is not called; no ini value, unlimited interpretation, memory formula or product capacity setting is read or selected."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-053-valid_unicode",
+      "kind": "api",
+      "symbol": "valid_unicode",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2346,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "valid_unicode_i64",
+        "path": "crates/recastpress-wp/src/unicode.rs",
+        "tests": [
+          "fixed_character_ranges_and_control_exceptions_keep_their_exact_boundaries",
+          "source_noncharacter_acceptance_differs_from_a_general_noncharacter_filter"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only signed 64-bit integer input is supported. Native and PHP probes reject other decoded types instead of adopting the source's broader integer casts or diagnostics. The oracle extracts only the real predicate and does not bootstrap KSES or initialize its entity globals.",
+        "The exact source accepts HT, LF, CR and three inclusive character ranges. BMP FFFE/FFFF and surrogates are rejected, but FDD0..FDEF and supplementary-plane ending noncharacters including U+10FFFF remain accepted. It is not a general Unicode noncharacter exclusion rule.",
+        "The native predicate is stateless and allocation-free. UTF-8 parsing, text normalization, entity processing, HTML/XML sanitization, output safety, public HTTP integration and raw database transformations are outside this subset."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-054-wp_kses_normalize_entities",
+      "kind": "api",
+      "symbol": "wp_kses_normalize_entities",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2169,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_normalize_entities_default_html_bytes",
+        "path": "crates/recastpress-wp/src/entities.rs",
+        "tests": [
+          "named_entities_use_case_sensitive_fixed_membership_without_recursive_decoding",
+          "numeric_matches_preserve_callback_order_case_and_unmatched_forms",
+          "final_cap_counts_escaping_and_leading_zero_compression_exactly",
+          "numeric_character_boundaries_keep_the_fixed_unicode_predicate",
+          "checked_default_table_and_all_source_names_remain_borrowed_membership_data"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input, explicit HTML context and the fixed 253 default names from the pinned KSES data literal are modeled. The strict data-only generator checks source SHA-256, unique name count and ordered-name SHA-256, and checks both the JSON artifact and generated borrowed Rust table. No PHP or KSES bootstrap is executed by this generator.",
+        "The oracle extracts only the real normalizer and its numeric/named helpers. It temporarily supplies the verified name global for a call and restores prior presence/value afterward; no CUSTOM_TAGS or tag globals are initialized. Its HTML/source/count/ordered-name metadata is checked for exact types and values, and PCRE errors are rejected.",
+        "Native processing scans original ampersands without recursive entity decoding, measures with the same scanner, checks the final output byte cap, reserves output and emits complete bytes. The cap and allocation failure are host policies, not PHP behavior or shared RAM/RSS accounting; no intermediate entity-output buffers are allocated.",
+        "XML context, mutable/custom allowlists, scalar coercions and diagnostics, PCRE resource failures, PHP HTML5 decoding tables, _wp_specialchars, esc_html, general HTML sanitization or escaping, output safety and product charset/HTTP/DB integration remain outside this subset. Raw invalid UTF-8 and NUL bytes are preserved except for the explicit ASCII entity transformations.",
+        "Separate explicit XML/UTF-8 profile preserves the five XML names and maps only the other 248 fixed HTML names using pinned PHP 8.5.12 ENT_HTML5 observations. The independent mapping generator uses selected real functions, never KSES bootstrap; its frozen 253 ordered name/output pairs, source and executable identities are checked. Both globals and default_charset are saved and restored including absence and NULL. No site charset, general HTML5 decoder, recursive output decoding, XML validity or safety is selected. The HTML kernel is unchanged."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-055-wp_kses_decode_entities",
+      "kind": "api",
+      "symbol": "wp_kses_decode_entities",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2376,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_decode_entities_byte_values",
+        "path": "crates/recastpress-wp/src/entity_decode.rs",
+        "tests": [
+          "complete_decimal_and_hex_references_decode_every_byte_including_zero",
+          "decimal_generation_feeds_one_hex_pass_without_repeating_either_pass",
+          "recognized_out_of_byte_values_are_rejected_even_when_generated_between_passes",
+          "final_cap_applies_after_both_shrinking_passes_and_leading_zeros_never_overflow",
+          "named_unfinished_and_raw_binary_input_are_preserved_without_mutation",
+          "whole_input_host_bound_is_distinct_from_the_final_output_cap"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only Bytes input whose complete recognized numeric references have values 0 through 255 in both the decimal pass and the following hex pass is supported. This includes hex references created by decimal decoding. Names and unfinished/malformed references remain unchanged. Result values are raw bytes including NUL and invalid UTF-8, not Unicode characters or general HTML decoding.",
+        "The whole-input bound is 1048576 bytes, independent of the caller final-output cap. Decimal validation/measurement precedes an intermediate Vec of at most input length; generated-hex validation/measurement then precedes the final cap/reservation. This intermediate allocation occurs before that cap and is unpooled. OutputLimit includes intermediate/output allocation failure; no partial result is returned. These are prototype host policies, not PHP/product capacity/RSS guarantees. The formal fixture uses a 65536-byte final allowance.",
+        "The oracle preflights the same decimal-then-hex patterns using real source callbacks and strict byte-value admission, then compares the actual public function result. PHP diagnostics and PCRE errors are never counted as successful string results; the byte-value/input-bound/pass-order profile is checked for exact fields, types and values.",
+        "Scalar coercions, array inputs, out-of-byte chr deprecations/modulo behavior, huge numeric-string or float conversions, PCRE resource failures, recursive decoding, UTF-8 sanitization, output safety, HTML authorization and public HTTP/DB integration are outside this subset. KSES bootstrap, mutable entity tables, site charset and mbstring settings are not invoked."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-056-wp_kses_no_null",
+      "kind": "api",
+      "symbol": "wp_kses_no_null",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2020,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_no_null_bytes",
+        "path": "crates/recastpress-wp/src/no_null.rs",
+        "tests": [
+          "exact_control_set_is_removed_for_all_bytes_while_tab_lf_cr_del_and_high_bytes_survive",
+          "control_filtering_creates_slash_zero_runs_before_the_optional_removal_pass",
+          "slash_zero_runs_use_source_single_pass_semantics_and_do_not_decode_other_escapes",
+          "final_cap_is_checked_after_removal_and_large_runs_need_no_intermediate_output",
+          "raw_binary_input_is_immutable_and_default_mode_is_remove"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only byte-string input with explicit source option remove or keep is compared. Native SlashZeroMode defaults to Remove; the formal probes reject absent, nonstring or other option values rather than adopting PHP's isset/coercion/strict-comparison behavior. The oracle passes the explicit slash_zero array option to the extracted real source function, requires PCRE error zero and a string result, and never bootstraps KSES.",
+        "The exact control set 00..08/0B/0C/0E..1F is removed first. TAB/LF/CR, DEL and high bytes remain. Remove then deletes runs of one or more literal backslashes followed by one or more ASCII zeros in the filtered stream, including runs formed by prior control deletion. This is not stripslashes, Unicode filtering, entity decoding or a recursive escape parser.",
+        "The same borrowed filtered-byte traversal measures and emits complete output without an intermediate Vec. Final byte cap checking precedes reservation and accounts for shrinking exactly; OutputLimit includes overflow and allocation failure. This host allowance is not PHP behavior, a product capacity setting or shared RAM/RSS accounting.",
+        "Non-byte scalar/array/object inputs, unsupported option coercions and diagnostics, PCRE resource failures, HTML sanitization/escaping, output safety, site charset policy and public HTTP/DB integration remain unmodeled. Inputs are not modified and no existing byte API is automatically filtered."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-057-wp_kses_stripslashes",
+      "kind": "api",
+      "symbol": "wp_kses_stripslashes",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2044,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_stripslashes_bytes",
+        "path": "crates/recastpress-wp/src/kses_slashes.rs",
+        "tests": [
+          "only_literal_slash_quote_pairs_are_removed_once_without_recursive_run_processing",
+          "all_bytes_are_preserved_except_the_exact_two_byte_pair",
+          "final_cap_counts_actual_shrinking_and_long_runs_without_intermediate_allocation",
+          "raw_binary_and_entity_text_are_not_decoded_and_input_is_immutable"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only explicit byte-string input and the successful string result of the fixed two-byte regex replacement are modeled. PHP and native probes reject other decoded types. The oracle extracts the real source function, resets PCRE state and requires error zero plus a string result without bootstrapping KSES.",
+        "A literal backslash followed by a double quote becomes a double quote in one nonrecursive pass; a run of n backslashes before a quote retains n-1 backslashes. Single quotes, other escapes, a trailing backslash, entity text, raw NUL and invalid UTF-8 are preserved. This differs from the existing wp_unslash/stripslashes behavior.",
+        "The same traversal counts and emits output, checks the final byte cap before try_reserve_exact and returns no partial result. There is no intermediate Vec or added whole-input bound. OutputLimit includes checked overflow and allocation failure, not PHP semantics, product capacity policy or shared RAM/RSS accounting. The formal fixture uses a 65536-byte output allowance.",
+        "Non-byte coercions, arrays, objects and diagnostics, PCRE resource failures, recursive escape parsing, HTML sanitization/output safety, site charset policy and public HTTP/DB integration remain outside this subset. Inputs and existing primitive behavior are unchanged."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-058-wp_kses_bad_protocol_once2",
+      "kind": "api",
+      "symbol": "wp_kses_bad_protocol_once2",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2137,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_bad_protocol_once2_c_bytes",
+        "path": "crates/recastpress-wp/src/bad_protocol.rs",
+        "tests": [
+          "normalization_order_decodes_then_removes_whitespace_before_slash_zero_runs",
+          "allowed_protocols_are_only_ascii_case_compared_not_decoded_trimmed_or_filtered",
+          "empty_zero_colon_and_non_url_schemes_are_not_given_extra_grammar_rules",
+          "every_protocol_value_and_scheme_entity_domain_is_validated_even_for_nonmatches",
+          "final_cap_includes_colon_only_after_match_and_never_limits_shrinking_work_buffers",
+          "all_bytes_preserve_c_whitespace_and_ascii_case_behavior_without_utf8_sanitizing"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only a byte scheme and an explicit PhpArray with all values Bytes under the C locale are supported. Every value is validated even if the source array_any would short-circuit before a non-byte value; scalar casts, array casts and diagnostic ordering outside this subset are unmodeled. Array keys are ignored, and no default product allowlist is selected.",
+        "The exact order is the byte-domain entity decoder, C whitespace removal, default no_null Remove, scheme ASCII lowercase, then allowlist comparison with ASCII lowercase only. Allowlist values are not entity-decoded, trimmed or control-filtered. No URL grammar is imposed: empty, zero, existing colons, punctuation and invalid UTF-8 can match and receive a colon.",
+        "The decoder's both-pass recognized-value range 0..255 and 1048576-byte scheme-input bound are inherited and required in fixture metadata; an empty allowlist does not bypass decode. The oracle validates this admission domain before calling the actual source helper, enforces C locale and requires PCRE error zero plus a string result.",
+        "Intermediate/input/allowlist storage is unpooled and outside the caller final-byte cap. Internal shrinking passes use their input sizes as working allowances; only a matching normalized scheme plus colon is checked against the final cap. Nonmatches return empty with cap zero, while working allocation failures can still fail. The formal fixture uses a 65536-byte final allowance.",
+        "PCRE resource failures, other locales, coercions, dynamic/default protocol policies, URL authorization, HTML sanitization, output safety, shared RAM/RSS guarantees and public HTTP/DB integration are outside this subset. Inputs and existing helpers are not modified."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-059-wp_kses_bad_protocol_once",
+      "kind": "api",
+      "symbol": "wp_kses_bad_protocol_once",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 2100,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_bad_protocol_once_c_bytes",
+        "path": "crates/recastpress-wp/src/bad_protocol_once.rs",
+        "tests": [
+          "delimiter_repair_preserves_case_and_lookahead_boundaries_then_splits_only_once",
+          "raw_question_guard_and_noncalled_body_preserve_out_of_domain_entity_text",
+          "suffix_trim_has_php_six_byte_semantics_and_does_not_change_unsplit_input",
+          "default_feed_depth_and_php_empty_zero_preserve_source_prefix_rules",
+          "only_called_prefixes_validate_byte_entity_domain_even_in_the_third_frame",
+          "top_input_bound_is_not_reapplied_to_expanded_repair_or_recursive_tails",
+          "top_final_cap_is_checked_after_feed_collapse_and_prefix_working_results"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only Bytes content, an explicit array whose all values are Bytes, C locale and the source default count=1 are supported. Native/probes prevalidate all protocol values and reject any explicit count field; non-byte casts, unused-value diagnostic short circuits and arbitrary count arguments remain unmodeled. No product default allowlist is selected.",
+        "The top raw-input 1048576-byte host bound is new and applies only at entry. Semicolon repair can expand working data and recursive tails beyond this size; the bound is not reapplied there. The existing decoder's 0..255/both-pass and 1MiB bounds are applied only to prefixes actually sent to once2, never to the entire body, skipped raw /? prefixes or untouched suffixes.",
+        "Preserve whole-content incomplete colon-entity repair, the first case-insensitive delimiter split, the raw /? guard, PHP suffix trim of 00/09/0A/0B/0D/20 (not FF), once2, then feed recursion. once2 runs before the third-frame depth refusal. PHP empty string behavior includes exactly '0', whose raw value propagates without a feed prefix. Returned bytes are not independently validated as a URL.",
+        "Repair/normalization/recursive result Vecs are unpooled working allocations before the top final-output cap, with checked lengths and fallible reservations. once2 uses prefix length plus one as a separate working allowance; only the completed top result is checked against the caller cap. No partial result is returned; this is not RSS/shared-budget or product capacity accounting. The formal final allowance is 65536 bytes.",
+        "The oracle preflights exactly the conditional prefix/recursion path for domain admission, then compares the actual public function result, requires PCRE error zero and string type, and verifies strict top-bound/default-count/C/max-frame metadata plus the inherited decoder profile. PCRE resource failures, other locales, general coercions, outer wp_kses_bad_protocol multi-iteration behavior, authorization, HTML sanitization/output safety and public HTTP/DB integration are outside this subset."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-060-wp_kses_bad_protocol",
+      "kind": "api",
+      "symbol": "wp_kses_bad_protocol",
+      "wordpress_source": {
+        "path": "wp-includes/kses.php",
+        "line": 1984,
+        "sha256": "ead6be7192295b9e7417c2146704c1935748f92b9ef4f6adca193a0e4118469d"
+      },
+      "rust_target": {
+        "symbol": "wp_kses_bad_protocol_c_bytes",
+        "path": "crates/recastpress-wp/src/bad_protocol_outer.rs",
+        "tests": [
+          "global_no_null_precedes_fastpath_and_filters_the_whole_body_once",
+          "fastpath_is_literal_lowercase_prefix_and_strict_lowercase_protocol_value",
+          "six_pass_cutoff_compares_strict_bytes_and_requires_stability_on_the_last_pass",
+          "entity_domain_is_conditional_on_the_exact_visited_prefixes_and_loop_cutoff",
+          "each_once_resets_feed_count_and_preserves_php_empty_zero_results",
+          "expanded_working_inputs_bypass_public_once_top_guard_during_internal_iteration",
+          "top_input_and_final_caps_are_separate_from_all_working_allocations",
+          "global_control_filter_does_not_remove_whitespace_or_sanitize_high_bytes"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only Bytes content, an explicit all-Bytes protocol array and C locale are supported. All values are prevalidated; non-byte coercions and unused-value diagnostic short circuits are outside the profile. No product protocol policy is selected.",
+        "Apply global no-null Remove once, then the exact lowercase http(s):// prefix and strict lowercase allowlist-value fastpath. Otherwise invoke default-count once at most six times with strict byte equality; a changed sixth result is discarded, while a stable sixth result is returned. Each invocation resets the feed count.",
+        "The top raw-input 1048576-byte host bound applies only at entry, never to expanded repair/recursive/outer working data. Inherited decimal-then-hex 0..255 and 1MiB decoder bounds apply only to actually called prefixes; skipped bodies, fastpaths and unvisited seventh-pass references are not decoded.",
+        "Only the completed output is checked against the final caller cap (formal allowance 65536). Working Vecs and allowlists are unpooled before that check. Allocation failure and output cap are typed failures with no partial return; no RSS or shared-budget accounting is claimed.",
+        "The oracle admits only the visited prefix path, then compares the actual public outer function with PCRE error zero and string result. Other locales, PCRE resource failures, URL grammar/authorization, HTML sanitization, output safety and public HTTP/DB integration remain outside this subset."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-061-_wp_specialchars",
+      "kind": "api",
+      "symbol": "_wp_specialchars",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 945,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_specialchars_utf8_bytes",
+        "path": "crates/recastpress-wp/src/specialchars.rs",
+        "tests": [
+          "selected_quote_styles_escape_only_their_selected_quotes_and_share_double_encoding",
+          "original_special_guard_controls_invalid_utf8_before_any_normalization_or_final_cap",
+          "html401_excludes_apos_while_xml_preserves_xml5_and_converts_other_names",
+          "numeric_references_and_generated_ampersands_preserve_source_order_without_recursive_decode",
+          "final_cap_is_exact_after_normalizer_shrink_and_never_caps_intermediate_bytes",
+          "valid_nul_controls_noncharacters_and_unicode_are_not_scrubbed_or_mutated"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Only Bytes, explicit UTF-8, six typed quote arguments (0/2/3/literal16/single/double) and explicit boolean double_encode are modeled. Raw ENT bitmasks, coercions, other charsets, default-site policy and filters are unsupported. Literal16 selects XML; raw19 would instead normalize to HTML Quotes in WP.",
+        "The original five-special-byte guard precedes UTF-8 rejection: invalid input without those bytes passes through, while invalid input with any returns empty. This is not unconditional wp_check_invalid_utf8 and does not claim esc_html or esc_attr integration. Valid NUL/control/noncharacters are retained, without XML validity or sanitization guarantees.",
+        "False double_encode uses existing fixed HTML/XML normalizers and then selected HTML401/XML1 reference recognition. HTML401 excludes apos; XML preserves XML5 and converts the other 248 names using fixed PHP8.5.12 UTF-8 observations. Numeric references remain references, and generated ampersands are not recursively decoded. Single emits raw apostrophes as &#039; after the no-quotes stage.",
+        "The normalizer intermediate Vec precedes the final cap and is unpooled. Count and emit share one downstream traversal with checked exact output length and fallible reservation. OutputLimit covers intermediate/output allocation failure; no partial output is returned. Vec capacities, temporaries, allocator/node overhead, RSS, peak and shared budgets are not accounted. The formal fixture final allowance is 65536 bytes.",
+        "The development oracle invokes the real selected function with explicit UTF-8, temporarily supplies default entity globals and UTF-8 default_charset for XML conversion, then restores absence/NULL/value and INI in finally. Exact typed profile/hash metadata and all twelve style/boolean matrix cells are required. PCRE failures, general htmlspecialchars/HTML5 semantics, user-defined allowlists, site policy and public HTTP/DB integration are not claimed."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-062-esc_html",
+      "kind": "api",
+      "symbol": "esc_html",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 4751,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "esc_html_utf8_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/empty_filter_escaping.rs",
+        "tests": [
+          "whole_input_invalid_utf8_becomes_empty_before_the_special_character_guard_or_cap",
+          "quotes_html401_and_numeric_normalization_share_the_empty_filter_byte_result",
+          "final_cap_applies_after_normalizer_shrink_with_empty_exact_minus_one_and_max_boundaries",
+          "valid_unicode_controls_and_noncharacters_are_preserved_without_input_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Bytes only, explicit UTF-8 site profile, no-mbstring validity and an empty filter registry. The native pure kernel models returned bytes only: no site options, filter counts, arbitrary callbacks, Dispatcher or non-Bytes filter results. HTML uses hook esc_html; attribute escaping uses attribute_escape.",
+        "Whole-input UTF-8 validation with strip=false precedes the existing _wp_specialchars Quotes/false helper. Invalid bytes return empty even without ASCII special characters. Valid NUL/controls/noncharacters are retained, without XML validity or context-independent safety guarantees. Fixed HTML253 plus HTML401 recognition exclude apos and do not recursively decode output.",
+        "Only final output is capped (formal allowance65536). Valid input is borrowed during the whole-input check; the helper normalizer intermediate Vec is unpooled and precedes the final cap. Checked measurement and fallible reservation return complete bytes or error. Vec capacity, intermediates, allocator/peak/RSS/shared pool budgets are unaccounted.",
+        "The PHP oracle calls the actual public functions with all three hook globals temporarily empty and checks exactly one expected filter call, including empty/invalid output, with no active callback/stack. Two entity globals and INI are restored along with hook-global absence/NULL/value in finally; wp_actions remains unchanged. The fixed get_option UTF-8 profile is immutable for the process because wp_check_invalid_utf8 caches its first nonempty charset decision.",
+        "Other charsets, scalar coercions, custom allowlists, PHP diagnostics/PCRE resource failure, live settings, filters, arbitrary hook effects, public HTTP/DB integration and automatic raw database encoding are outside the subset. A future filtered Dispatcher API requires separate return-type, callback failure, bookkeeping and final-cap ordering contracts."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-063-esc_attr",
+      "kind": "api",
+      "symbol": "esc_attr",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 4776,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "esc_attr_utf8_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/empty_filter_escaping.rs",
+        "tests": [
+          "whole_input_invalid_utf8_becomes_empty_before_the_special_character_guard_or_cap",
+          "quotes_html401_and_numeric_normalization_share_the_empty_filter_byte_result",
+          "final_cap_applies_after_normalizer_shrink_with_empty_exact_minus_one_and_max_boundaries",
+          "valid_unicode_controls_and_noncharacters_are_preserved_without_input_mutation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Bytes only, explicit UTF-8 site profile, no-mbstring validity and an empty filter registry. The native pure kernel models returned bytes only: no site options, filter counts, arbitrary callbacks, Dispatcher or non-Bytes filter results. HTML uses hook esc_html; attribute escaping uses attribute_escape.",
+        "Whole-input UTF-8 validation with strip=false precedes the existing _wp_specialchars Quotes/false helper. Invalid bytes return empty even without ASCII special characters. Valid NUL/controls/noncharacters are retained, without XML validity or context-independent safety guarantees. Fixed HTML253 plus HTML401 recognition exclude apos and do not recursively decode output.",
+        "Only final output is capped (formal allowance65536). Valid input is borrowed during the whole-input check; the helper normalizer intermediate Vec is unpooled and precedes the final cap. Checked measurement and fallible reservation return complete bytes or error. Vec capacity, intermediates, allocator/peak/RSS/shared pool budgets are unaccounted.",
+        "The PHP oracle calls the actual public functions with all three hook globals temporarily empty and checks exactly one expected filter call, including empty/invalid output, with no active callback/stack. Two entity globals and INI are restored along with hook-global absence/NULL/value in finally; wp_actions remains unchanged. The fixed get_option UTF-8 profile is immutable for the process because wp_check_invalid_utf8 caches its first nonempty charset decision.",
+        "Other charsets, scalar coercions, custom allowlists, PHP diagnostics/PCRE resource failure, live settings, filters, arbitrary hook effects, public HTTP/DB integration and automatic raw database encoding are outside the subset. A future filtered Dispatcher API requires separate return-type, callback failure, bookkeeping and final-cap ordering contracts."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-064-wp_check_password",
+      "kind": "api",
+      "symbol": "wp_check_password",
+      "wordpress_source": {
+        "path": "wp-includes/pluggable.php",
+        "line": 2843,
+        "sha256": "3a2482a65b50d62ebae75a728be98b78985d3a3f5a3e007cb2d0c1338bf05777"
+      },
+      "rust_target": {
+        "symbol": "wp_check_password_wp_bcrypt_bytes",
+        "path": "crates/recastpress-wp/src/password_verify.rs",
+        "tests": [
+          "fixed_php_vectors_verify_raw_bytes_without_trimming_or_nul_and_utf8_coercion",
+          "length_boundary_and_explicit_host_cost_preserve_false_versus_refusal",
+          "unsupported_algorithms_and_malformed_noncanonical_hashes_are_not_password_mismatches"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Raw Bytes password/hash and only the63ASCII WP-prefixed2y envelope are supported. Empty customhasher, empty filterregistry and user_id0 are the explicit oracle profile. UnsupportedHash/CostLimit/ProviderFailure remain distinct from boolean mismatch. LegacyMD5/phpass/rawbcrypt/Argon, arbitrary callbacks, PHP casts, generation/rehash, login/session and HTTPauth are unsupported.",
+        "Required HostMaxBcryptCost4..31 has no default or product manual setting. The4096-byte source guard precedes cost/provider work after envelope admission. Withinlimit, bounded format/canonicalbase64 parsing and hostcost checks precede HMAC/bcrypt. Highcost refusal is not ordinary mismatch, and async timeout is not CPU cancellation.",
+        "HMAC-SHA384 over every raw password byte with fixed wp-sha384 key produces48bytes, standard Base64 produces64ASCII stackbytes, and bcrypt verifies the raw60byte suffix. No trimming or C-string/72-byte legacybcrypt behavior is applied. Providers are pinned bcrypt0.19.3/hmac0.12.1/sha2.10.9/base64.22.1; no cryptographic primitive is reimplemented.",
+        "zeroize guards the derived48/64-byte owners and bcrypt its internal passwordbuffer; caller input, HMACinternalstate, compiler temporaries and allocator memory are not guaranteed erased. Only provider digest equality is constant-time, not format/cost branches or unknown-user login paths. Errors carry no password/hash/provider text.",
+        "The actual PHP wp_check_password runs in a saved/restored four-global scope and checks one check_password filter call with actions unchanged, even for overlengthfalse. Fixed public dummy hashes cost4 plus fewcost12 cases constrain typed profile/source/vectorhash and cost/hostmax/length coverage. Dummy observations are not live credential handling or legal/provider audit approval."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-065-wp_password_needs_rehash",
+      "kind": "api",
+      "symbol": "wp_password_needs_rehash",
+      "wordpress_source": {
+        "path": "wp-includes/pluggable.php",
+        "line": 2911,
+        "sha256": "3a2482a65b50d62ebae75a728be98b78985d3a3f5a3e007cb2d0c1338bf05777"
+      },
+      "rust_target": {
+        "symbol": "wp_password_needs_rehash_default_bcrypt_bytes",
+        "path": "crates/recastpress-wp/src/password_rehash.rs",
+        "tests": [
+          "nonprefixed_bytes_are_true_without_trimming_or_hash_recognition",
+          "every_canonical_cost_is_metadata_only_and_twelve_alone_is_false",
+          "prefixed_loose_php_recognition_is_not_silently_admitted"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Explicit Bytes, empty custom hasher and an empty registry for all three filters, user_id=0, pinned PHP8.5.12 default PASSWORD_BCRYPT/options/cost12 only. Native hook bookkeeping and arbitrary callbacks are not modeled.",
+        "Non-$wp input is arbitrary Bytes and always true, including empty/MD5/phpass/raw bcrypt/NUL/nonUTF8/long bytes. The prefix is literal case-sensitive and no trim or UTF8 conversion is performed.",
+        "Prefixed input is restricted to exact canonical ASCII $wp$2y$63 bytes with cost4..31, using the same pinned bcrypt HashParts parser as verify. The result is cost!=12; other prefixed inputs are UnsupportedValue. PHP builtin metadata recognition is looser and can return false for malformed cost/body/noncanonical bytes; those observations are not claimed as supported.",
+        "Metadata parsing only: no password, KDF, RNG, 4096 password guard, host work allowance, secret comparison, rehash write, login/session policy, HTTP/DB integration or Wasm boundary. Bounded parser allocations are not shared-pool/RSS accounting. A true/false hint does not establish password match or hash safety.",
+        "The actual selected wp_password_needs_rehash executes once per admitted case, with algorithm/options/password_needs_rehash filter counters each exactly1, four globals saved/restored in finally and actions unchanged. Profile/defaultcost/runtime/source identity and conditional-domain/all28cost coverage are strict evidence metadata. Target49 exploratory builtin observations remain separate from formal corpus."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-066-remove_accents",
+      "kind": "api",
+      "symbol": "remove_accents",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 1611,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "remove_accents_utf8_explicit_locale_bytes",
+        "path": "crates/recastpress-wp/src/remove_accents.rs",
+        "tests": [
+          "locale_specific_literal_mappings_are_exact_and_german_matches_every_lowercase_de_prefix",
+          "catalan_uses_longest_original_key_without_recursion_or_unicode_normalization",
+          "only_final_output_bytes_are_capped_with_deletion_expansion_and_empty_zero_boundaries",
+          "invalid_utf8_and_php_empty_locale_domain_are_rejected_before_output_limits"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Valid UTF8 Bytes text and explicit PHP-truthy Bytes locale only; empty/ASCII0 locale is UnsupportedValue even if an ASCII input would return before get_locale. Locale bytes may contain invalid UTF8/NUL and are compared literally. Pinned noIntl (extension and both normalizer functions absent) and noMbstring profile; no ambient get_locale/site charset/default locale choice.",
+        "Pinned base311 literal pairs plus German8/Danish6/Catalan1/SerbianBosnian2 overrides are generated data-only with whole source SHA, exact count/order pair hashes and deterministic artifact/Rust --check. All keys <=4 bytes and values ASCII0..2 bytes. German starts_with lowercase de (including devil/de+NUL), da_DK/ca/sr_RS/bs_BA exact; other locale bytes select base.",
+        "Nonrecursive longest original-byte strtr is preserved, including Catalan l-middle-dot-l overlap. No NFC normalization without Intl, so decomposed combining sequences and unmapped letters/BOM/noncharacters remain. ASCII case and NUL/controls remain, GBP maps to empty. Invalid UTF8 text Latin1 fallback, scalar/locale coercion, diagnostics/PCRE resource failures and Intl normalization are outside the subset.",
+        "Final-output-only host cap is checked after domain validation and exact measurement, before fallible allocation; complete output or typed error only. Deletions can succeed at cap0 when input is nonempty. Logical output cap is not input/RSS/shared-pool allocation accounting, CPU cancellation or product policy.",
+        "Actual selected remove_accents is called once with both arguments, with PCRE diagnostics rejected and get_locale trap counter required0. Synthetic wrapper tests and target observations are separate from formal comparison counts. This is not sanitize_user/HTML tag stripping/HTML sanitation/Unicode casefold/URL policy/credential lookup, auth, HTTP/DB integration or a Wasm boundary."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-067-wp_strip_all_tags",
+      "kind": "api",
+      "symbol": "wp_strip_all_tags",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5600,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wp_strip_all_tags_no_open_angle_bytes",
+        "path": "crates/recastpress-wp/src/strip_all_tags.rs",
+        "tests": [
+          "no_open_angle_preserves_greater_entities_invalid_utf8_and_deletes_every_nul",
+          "optional_breaks_only_collapse_four_bytes_before_exact_php_trim_six",
+          "final_cap_allows_empty_from_arbitrarily_larger_input_and_rejects_no_partial_output"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Raw Bytes NoLiteral< and exact bool remove_breaks only. NUL deletion, optional CR/LF/TAB/SPACE collapse, then PHP trim6; invalid UTF8, greater-than/entities/quotes are preserved. No general PHP strip_tags HTML parser, scalar casts, diagnostics or script/style removal claim.",
+        "Final-output cap after exact measurement and fallible allocation; typed UnsupportedValue/OutputLimit/AllocationFailed, no partial output. Large deletions may succeed at cap0. Input/capacity/intermediates/RSS/shared budget/CPU and product policy are not accounted.",
+        "Actual selected wp_strip_all_tags is called once with both args; PCRE diagnostic and nonstring output are rejected. No HTML safety, auth, HTTP/DB or Wasm integration."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-068-sanitize_user",
+      "kind": "api",
+      "symbol": "sanitize_user",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2149,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_user_utf8_no_open_angle_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/sanitize_user.rs",
+        "tests": [
+          "percent_and_shortest_entity_passes_are_ordered_nonrecursive_and_do_not_cross_lf",
+          "strip_precedes_utf8_admission_and_can_repair_split_sequences_without_latin1_fallback",
+          "strict_ascii_preserves_case_and_non_strict_retains_combining_and_unmapped_unicode",
+          "trim_precedes_c_six_whitespace_collapse_so_formfeed_can_generate_edge_spaces",
+          "only_final_output_is_capped_after_unpooled_intermediates_and_all_removal_stages"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "NoLiteral< raw Bytes, exact bool strict, validUTF8 after default wp_strip_all_tags, explicit PHP-truthy resolved locale Bytes, noIntl/both normalizers absent/noMbstring/C/empty filters only. NUL deletion may repair raw invalid UTF8. Remaining Latin1 fallback, tags, coercions, arbitrary callbacks, Intl and diagnostics are unsupported.",
+        "Source order is strip, accent conversion, one-pass percentHH deletion, shortest entity removal excluding LF, optional case-preserving ASCII whitelist, PHP trim6, then C six-whitespace collapse. FF may generate edge spaces. This is not generally idempotent, and prepared output must not silently run S twice.",
+        "Actual sanitize_user is called once; actual pinned get_locale first isset branch is supplied scoped resolved locale. Five globals (three filter globals/locale/wp_local_package) restore in finally including package null creation, actions/hasher unchanged. Locale hook zero/one follows post-strip high bytes, sanitize_user hook one; DB/other locale branches are trapped.",
+        "Only final bytes are capped; unpooled intermediate Vecs/input/locale/capacity/peak/RSS/shared budget and product policy are not accounted. Not a full sanitizer/HTML parser/credential lookup/standardlogin/authentication/write/session/HTTP/DB/Wasm claim. Owned prepared prefix is not another WP API."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-069-utf8_uri_encode",
+      "kind": "api",
+      "symbol": "utf8_uri_encode",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 1160,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "utf8_uri_encode_utf8_bytes",
+        "path": "crates/recastpress-wp/src/utf8_uri_encode.rs",
+        "tests": [
+          "all_ascii_is_raw_or_rawurlencode_uppercase_with_the_exact_unreserved_set",
+          "unicode_scalars_encode_each_utf8_byte_in_lowercase_independently_of_ascii_mode",
+          "source_length_uses_whole_tokens_and_stops_instead_of_filling_with_later_characters",
+          "source_budget_and_host_final_cap_are_distinct_with_empty_and_nul_boundaries",
+          "whole_utf8_validation_rejects_even_invalid_trailing_bytes_beyond_the_source_budget",
+          "long_prefix_and_usize_max_limits_preserve_source_break_and_fixed_private_diagnostics"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Whole valid UTF8 Bytes, nonnegative integer length within PHP signed64 and native usize, exact bool encode_ascii, noMbstring/functions absent only. Full input is validated even if a source length would stop earlier. Invalid UTF8/coercions/negative lengths/mbstring overload diagnostics are unsupported.",
+        "Source length0 means unlimited; otherwise complete encoded scalar must fit or traversal stops. ASCII false preserves all bytes including NUL/reserved characters, true follows rawurlencode uppercase hex/unreserved; nonASCII encodes UTF8 bytes in lowercase hex. No normalization/casefold/URL parsing/escaping safety is claimed.",
+        "Source encoded-length limit is distinct from checked final host cap; count then reserve then emit with complete result or fixed UnsupportedValue/OutputLimit/AllocationFailed. Input/allocator/RSS/shared budget/CPU/product route policy/Wasm are not covered. Actual selected function and actual binary-safe encoding/reset helpers are used with no MB state changes.",
+        "Comparison fixture explicitly fixes final host cap at65536 bytes in profile metadata; title source URI200 cap is a separate earlier limit. Other native caller caps are covered by Rust contracts, not these PHP success cases."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-070-sanitize_title_with_dashes",
+      "kind": "api",
+      "symbol": "sanitize_title_with_dashes",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2282,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_title_with_dashes_utf8_no_open_angle_no_mbstring_bytes",
+        "path": "crates/recastpress-wp/src/title_with_dashes.rs",
+        "tests": [
+          "percent_protection_and_literal_sentinels_follow_two_nonrecursive_regexp_passes",
+          "save_replacements_differ_from_display_and_do_not_remove_accents_or_lower_unicode",
+          "entity_shortest_non_lf_pass_precedes_whitelist_and_only_space_can_become_a_dash",
+          "no_open_angle_and_post_nul_utf8_admission_are_explicit_without_latin1_fallback",
+          "fixed_200_byte_uri_limit_runs_before_cleanup_without_initial_trim_or_octet_safety",
+          "only_final_bytes_are_capped_and_errors_never_retain_private_input"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Bytes without literal less-than, validUTF8 after NUL-only strip_tags, explicit Display/Save and explicitly empty Bytes raw_title only, noMbstring/functions absent/C profile. Domain is checked before percent processing; invalid input repair by percent deletion is outside this subset. No general HTML parser, scalar casts, invalidUTF8 fallback or arbitrary context is claimed.",
+        "Exact protect %HH to triple-dash sentinels, remove other percent, restore including preexisting literal sentinel collisions; no Unicode lowercase or remove_accents. URI200-byte limit precedes source ordered Save replacements, shortest entity deletion excluding LF, dot/ASCII whitelist/space collapse/dash trim. Existing octets can be truncated; final bytes need not be valid percent-encoded URI.",
+        "Direct selected helper, not outer sanitize_title/filter/default slug or fallback/locale/publishing policy. Whole input and unpooled intermediates are outside final cap; native counts final output before fallible allocation and returns no partial result. No HTML/URL safety/unique slug/status/date/hooks/authentication/DB/HTTP/Wasm or shared-budget integration.",
+        "Comparison fixture explicitly fixes final host cap at65536 bytes in profile metadata; title source URI200 cap is a separate earlier limit. Other native caller caps are covered by Rust contracts, not these PHP success cases."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-071-sanitize_title",
+      "kind": "api",
+      "symbol": "sanitize_title",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 2228,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_title_utf8_default_callback_explicit_locale_bytes",
+        "path": "crates/recastpress-wp/src/sanitize_title.rs",
+        "tests": [
+          "save_removes_accents_with_explicit_locale_before_the_default_callback",
+          "accent_deletion_precedes_the_200_byte_uri_prefix_in_save_only",
+          "only_empty_callback_output_selects_unmodified_arbitrary_fallback_bytes",
+          "raw_whole_utf8_no_angle_and_truthy_locale_are_uniform_admission_guards",
+          "final_cap_applies_after_cleanup_and_fallback_selection_without_error_fallback",
+          "source_value_semantics_preserve_inputs_and_closed_errors_reveal_no_payload"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Whole validUTF8 raw Bytes without literal less-than, arbitrary fallback Bytes, explicit Save/Display/Query and PHP-truthy locale Bytes in every context, noIntl/both normalizers absent/noMbstring/C only. No Latin1 fallback, tags/parser, coercions, arbitrary callbacks, site locale inference or mutable default filters.",
+        "Default-filters.php309 exact pinned data-only callback tuple sanitize_title_with_dashes priority10/accepted_args3 is checked without executing the full file; actual add_filter registers exactly that one callback with no all hook. Save runs source remove_accents before callback/URI200; Display/Query do not. Empty string selects unchanged fallback; zero does not. Arbitrary fallback can be invalidUTF8/NUL/markup and is not a URL safety policy.",
+        "Actual selected sanitize_title is called once with source raw_title capture; observer filters are not added. Seven source globals are finally restored by presence/value, actual title filter count1 and Save highbyte conditional locale hook0/1 are checked, DB locale branch forbidden. Native preserves returnvalue semantics without hook bookkeeping.",
+        "Fixture final host cap65536 is metadata-bound; native final cap applies only after complete cleanup/fallback selection. Input/intermediates/allocator/RSS/shared budget, uniqueness/reserved slug/save status/date/publishing/authentication/DB/HTTP/Wasm policy are not covered. Callback error/domain refusal is not fallback success."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-072-_truncate_post_slug",
+      "kind": "api",
+      "symbol": "_truncate_post_slug",
+      "wordpress_source": {
+        "path": "wp-includes/post.php",
+        "line": 5745,
+        "sha256": "34678856a4326b7e76ef120ba80a9e46c6903193e058b988555ec5c1f5cb8f26"
+      },
+      "rust_target": {
+        "symbol": "truncate_post_slug_conditional_decoded_utf8_bytes",
+        "path": "crates/recastpress-wp/src/post_slug_truncate.rs",
+        "tests": [
+          "three_branches_and_zero_length_keep_their_distinct_source_behavior",
+          "unguarded_raw_branches_preserve_invalid_bytes_and_byte_cut_utf8",
+          "url_decode_is_nonrecursive_and_reencoding_preserves_source_hex_case_rules",
+          "final_hyphen_trim_is_after_branch_processing_and_before_host_cap",
+          "changed_decoding_requires_whole_utf8_even_beyond_the_source_budget",
+          "input_is_immutable_and_errors_never_capture_private_payloads"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Raw Bytes and explicit nonnegative signed64 length fitting native usize, noMbstring/functions absent only. If strlen<=length leave raw; otherwise PHP urldecode once (+ to space and valid percentHH), strict unchanged selects byte substring and changed selects utf8_uri_encode(decoded,length,true). Always trim trailing literal dash after branch processing.",
+        "Only changed decoded branch requires whole decoded UTF8, including bytes beyond a source length. Other branches admit arbitrary invalidUTF8/NUL and may cut validUTF8 into invalid byte output. Rejected changed-invalid values are outside this explicit domain, not PHP false/mismatch claims. Length0 is unlimited URI output when decode changed, but empty raw substring when unchanged.",
+        "Final host cap65536 is metadata-bound in the comparison fixture; native caps after final rtrim and uses closed UnsupportedValue/OutputLimit/AllocationFailed without partial output. Input/decoded/URI/intermediates/capacity/RSS/shared budget/CPU are outside the final cap. Actual top-level call and branch counts exclude inner URI calls from API69 counter.",
+        "No locale/HTML/normalizer/title/unique slug/reserved name/save status/date/hooks/authentication/DB/HTTP/Wasm or product source policy. Full wp_unique_post_slug and default arbitrary type/coercion domains remain unsupported."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-073-get_post_meta",
+      "kind": "api",
+      "symbol": "get_post_meta",
+      "wordpress_source": {
+        "path": "wp-includes/post.php",
+        "line": 2750,
+        "sha256": "34678856a4326b7e76ef120ba80a9e46c6903193e058b988555ec5c1f5cb8f26"
+      },
+      "rust_target": {
+        "symbol": "get_post_meta_single_cached_no_filters",
+        "path": "crates/recastpress-wp/src/post_meta_cached.rs",
+        "tests": [
+          "attachment_alt_single_raw_value_and_null_default_paths_preserve_false_and_empty_distinctions",
+          "positive_id_nonempty_complete_cache_and_truthy_key_are_explicit_profile_boundaries",
+          "borrowed_lookup_preserves_php_numeric_key_aliases_integer_extremes_and_binary_keys",
+          "selected_list_requires_dense_raw_values_but_only_first_bytes_are_decoded_and_charged",
+          "per_selected_value_four_limits_remain_typed_and_null_mapping_does_not_bypass_decode",
+          "returned_values_are_owned_and_view_and_errors_never_debug_private_keys_or_values"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Typed positive signed64 object ID, single=true, PHP-truthy byte key, caller-prepared complete nonempty post_meta cache and no relevant get/default/all filters only. Borrowed lookup retains PHP integer-string key normalization and exact binary keys; it does not trim or normalize names. General ID coercion, falsey keys, whole-cache/multiple-value requests and cache miss/update are outside this profile.",
+        "Missing key, outer null, selected SQL NULL and decoded serialized Null take the source default empty byte string; serialized false stays false. Only index0 of the selected nonempty dense raw Null/Bytes list is decoded. Other keys and later raw serialized object strings remain opaque. Registered metadata defaults and arbitrary filters are unsupported.",
+        "The caller explicitly supplies input-byte, cumulative-pair, owned-string/key-byte and array-depth allowances for the selected value. Fixture allowances are not product defaults. Existing cache allocation, lookup work, node/capacity overhead, RSS, concurrency and shared-pool accounting are outside these allowances. Completeness is a caller contract, not a DB snapshot or publication-authorization proof.",
+        "The PHP oracle admits recognized canonical serialized values using a modeled typed witness and PHP serialize equality before calling the real cached get_post_meta/get_metadata/get_metadata_raw/default chain; raw data is never pre-unserialized to build that witness. Actual hook/cache/trap/restoration counts are bound to the evidence. This covers the getter used for attachment alt metadata, not strip_tags/trim, image generation, attachment selection, DB serving, authentication or Wasm transport."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-074-wptexturize",
+      "kind": "api",
+      "symbol": "wptexturize",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 37,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "wptexturize_default_english_no_html_bytes",
+        "path": "crates/recastpress-wp/src/texturize.rs",
+        "tests": [
+          "fixed_english_static_and_cockney_replacements_are_case_sensitive_and_ordered",
+          "apostrophe_year_and_decimal_quote_rules_run_before_prime_resolution",
+          "source_whitespace_nbsp_entities_and_ascii_word_boundaries_remain_distinct",
+          "dashes_punycode_and_conditional_numeric_times_follow_the_ordered_ascii_patterns",
+          "ampersand_guard_is_the_source_shallow_pattern_not_entity_name_validation",
+          "explicit_input_intermediate_and_final_caps_have_separate_failure_boundaries",
+          "whole_utf8_no_literal_angle_admission_and_errors_keep_input_private_and_unchanged"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Whole valid UTF-8 bytes without literal less-than, empty shortcode registry, unset custom Cockney map, explicit default English translations and no relevant or all filters only. Reset=true and run_texturize=true are explicit reference fixture conditions; HTML/shortcode parsing, translation services and arbitrary filters are outside this profile.",
+        "Ordered static replacements, apostrophe/year/number rules, prime ambiguity, quote rules, dashes, ASCII numeric multiplication and the source shallow ampersand guard are modeled. Source CR/LF/TAB/space, NBSP and literal &nbsp; semantics and final-LF end anchors are retained; this is not general Unicode whitespace or entity-name validation.",
+        "Caller supplies separate input, per-owned-buffer intermediate work and final output logical-byte allowances. Intermediate checked writes may refuse before final output. Cumulative memory, simultaneously live buffers, capacity overhead, RSS, CPU and concurrency are not measured. Allocation failure and native cap refusals are not PHP equality claims.",
+        "Actual source results use a scoped whitelist English _x identity stub and real plugin/WP_Hook dispatch with exact call/cache/restoration counters. The pure native function does not reproduce filter bookkeeping. Entity-bearing results are not connected to literal PreparedPosts titles; the complete default title filter pipeline, context-safe HTML, public serving, authentication and Wasm transport remain pending."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-075-get_the_title",
+      "kind": "api",
+      "symbol": "get_the_title",
+      "wordpress_source": {
+        "path": "wp-includes/post-template.php",
+        "line": 118,
+        "sha256": "9cb15c0f7fc9bb52bd6d0211e544f84dd3b05e150b2a046c7cbdb3350e1eec70"
+      },
+      "rust_target": {
+        "symbol": "get_the_title_prepared_frontend_default_english_no_html_bytes",
+        "path": "crates/recastpress-wp/src/title.rs",
+        "tests": [
+          "standard_title_callback_order_composes_quotes_entities_trim_and_title_context_capital_p",
+          "php_trim_six_byte_set_preserves_form_feed_nbsp_entities_and_title_zero",
+          "constructor_requires_positive_publish_unprotected_profile_and_defers_title_admission",
+          "output_cap_is_after_trim_and_later_convert_expansion_obeys_the_work_cap",
+          "raw_input_is_unchanged_and_result_remains_wp_bytes_rather_than_escaped_html_or_literal_title",
+          "view_and_errors_are_redacted_and_successful_output_outlives_the_borrowed_post"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Caller-prepared raw post with positive signed64 ID, exact publish status and PHP-empty byte password (empty or ASCII zero), frontend, whole valid UTF8 title without literal less-than only. ID/status/password are domain witnesses, not retained identity, public selection, authorization or visibility proofs. The getter does not query a database or resolve a global post.",
+        "Fixed English default the_title callbacks only: wptexturize, convert_chars and PHP trim6 at priority10 followed by title-context capital_P_dangit at11; each accepts one argument. No extra/all callbacks, registered shortcodes or custom Cockney translations. HTML, arbitrary language/filters, protected/private prefixes, PHP scalar coercion and other contexts are outside this profile.",
+        "Input/per-owned-buffer intermediate/final logical-byte allowances are mandatory. Final output is checked after all filters; work refusal may precede trim or final cap. Simultaneously retained buffers, cumulative allocation, capacity/RSS, CPU and concurrency are not measured. Allocation/cap refusals are native host policy, not PHP equality claims.",
+        "The reference uses actual WP_Post raw filter, get_post, is_admin and get_the_title with exact registered default callbacks and separate fixed nonempty texturize priming. Actual outer/hook/translation/DB/cache/restoration observations are distinguished from uninstrumented internal call counts. Native return composition does not reproduce hook bookkeeping.",
+        "Returned bytes contain entities and are not SafeHtml or literal PreparedPosts titles. A separate fixed development fixture escapes these bytes before HTML assembly and sealed HTTP; this does not add authenticated publication, DB selection, a theme SDK, Wasm ABI or native Linux validation."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-076-wp_generate_auth_cookie",
+      "kind": "api",
+      "symbol": "wp_generate_auth_cookie",
+      "wordpress_source": {
+        "path": "wp-includes/pluggable.php",
+        "line": 951,
+        "sha256": "3a2482a65b50d62ebae75a728be98b78985d3a3f5a3e007cb2d0c1338bf05777"
+      },
+      "rust_target": {
+        "symbol": "wp_generate_auth_cookie_prepared_resolved_salt_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/auth_cookie.rs",
+        "tests": [
+          "default_two_hmac_pipeline_uses_lowercase_md5_hex_ascii_key_and_raw_storage_framing",
+          "hash_prefix_fragment_selection_is_byte_based_even_for_short_or_malformed_hashes",
+          "signed_expiration_extremes_and_binary_login_token_salt_are_preserved_without_trim_or_header_rules",
+          "mandatory_total_input_and_complete_output_caps_are_exact_and_charge_the_full_hash",
+          "positive_user_and_nonempty_salt_php_truthy_token_are_profile_guards_before_caps",
+          "cookie_owner_is_independent_and_debug_and_errors_never_expose_user_or_cookie_secrets"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Prepared existing user with positive signed64 ID and arbitrary byte login/full password hash only. There is no database lookup, password verification, principal or authorization. Hash fragment selection uses literal $P$/$2y$ offset8 length4, otherwise the last4 bytes including current $wp$2y$ hashes; malformed and short hashes are not parsed as credentials.",
+        "Caller-resolved nonempty byte salt and explicit PHP-truthy byte token (empty and ASCII zero excluded). Auth/secure_auth/logged_in are PHP salt-fixture scheme witnesses only; native does not resolve configuration. Signed64 expiration is decimal framing, not a future-time/expiry/session policy. Binary and pipe bytes are preserved without cookie-header validation.",
+        "Fixed wp_hash default MD5-HMAC lowercase hexadecimal ASCII key followed by SHA256-HMAC and lowercase hexadecimal output. No KDF/RNG or cryptographic primitive is implemented locally. Provider implementation and its transient allocations are outside the output-byte cap.",
+        "Mandatory host allowances cap the sum of four full raw byte fields (login, full hash, salt, token) and complete final cookie bytes. The ID and signed expiration metadata are outside that raw input sum. These limits do not account for total RSS, concurrency, allocator capacity or all provider/caller memory. Domain, cap, allocation and provider failures return no partial cookie.",
+        "The PHP reference calls actual wp_generate_auth_cookie and wp_hash with scoped get_userdata/wp_salt fixtures and one empty actual WP_Hook for auth_cookie. Source five-argument shape is pinned without an observer callback. Actual salt-fixture entry counts witness the wp_hash source relationship, not instrumentation of builtin HMAC calculations. Session/cache/DB attempts are closed tripwires; salt resolution is outside the fixture.",
+        "Native return values do not reproduce filter bookkeeping or arbitrary callbacks. Cookie owners have redacted Debug and no Clone/Display, but the development probe serializes public dummy bytes and does not define a production secret transport or whole-memory zeroization guarantee. Verification, login, sessions, cookie headers, principal/roles, automatic expiry and publication are not connected."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-077-wp_parse_auth_cookie",
+      "kind": "api",
+      "symbol": "wp_parse_auth_cookie",
+      "wordpress_source": {
+        "path": "wp-includes/pluggable.php",
+        "line": 1013,
+        "sha256": "3a2482a65b50d62ebae75a728be98b78985d3a3f5a3e007cb2d0c1338bf05777"
+      },
+      "rust_target": {
+        "symbol": "wp_parse_auth_cookie_explicit_bytes",
+        "path": "crates/recastpress-wp/src/auth_cookie_parse.rs",
+        "tests": [
+          "exact_three_pipes_accept_four_raw_fields_including_all_empty_or_unvalidated_values",
+          "any_other_field_count_is_source_false_including_an_extra_trailing_delimiter",
+          "explicit_branch_refusals_precede_caps_and_cap_counts_the_complete_scheme_label",
+          "binary_unicode_and_arbitrary_scheme_labels_are_borrowed_without_normalization",
+          "parsed_view_and_errors_never_debug_raw_client_fields_or_scheme",
+          "generated_cookie_relation_requires_delimiter_free_login_and_token_without_claiming_validation"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Explicit PHP-truthy cookie bytes only: empty and ASCII zero are refused before the checked cookie-plus-raw-scheme input allowance. Scalar coercion, omitted cookie input, SSL detection, environment cookie/constants selection and automatic scheme resolution are outside this profile. The caller supplies any byte scheme label, including empty, unknown, pipe and nonUTF8 bytes.",
+        "Exactly three literal pipe bytes returns five raw fields in fixed source order: username, expiration, token, hmac, scheme. All other field counts return source false. Empty username/expiration/token/hmac and nonnumeric expiration or malformed HMAC remain accepted raw fields. No trimming, decoding, HMAC/session/password validation, clock comparison, principal, role or cookie-header policy is added.",
+        "The native view borrows cookie and scheme slices without allocation, Clone or Display; Debug/errors are redacted. The 65536-byte development fixture limit is a host logical input bound, not a WordPress product limit, work/RSS measurement or a new session policy. Development typed-array serialization copies public fixture fields and is not a production secret transport ABI.",
+        "The oracle calls actual pinned wp_parse_auth_cookie with scoped SSL and environment-cookie tripwires, checks parsed/false outcomes and restores nine globals. These observations do not implement the excluded ambient-cookie branch. Generated-cookie roundtrip is conditional on delimiter-free login and token; pipe-bearing generated contents may legitimately parse false. Parsing a generated or attacker-provided cookie is not authentication.",
+        "The parser is available without the optional auth providers. Its native generated-cookie relation contract is compiled only with auth; the complete WordPress API domain, scalar diagnostics, Wasm ABI, login/session/HTTP adoption and expiry policy are not claimed."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-078-sanitize_text_field",
+      "kind": "api",
+      "symbol": "sanitize_text_field",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5656,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_text_field_utf8_site_no_open_angle_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/sanitize_text.rs",
+        "tests": [
+          "field_and_textarea_differ_only_in_source_initial_cr_lf_tab_space_collapse",
+          "trim_six_removes_only_edge_nul_and_vertical_tab_and_retains_form_feed_nbsp",
+          "percent_round_is_global_exact_case_not_match_count_or_case_folded_replacement",
+          "deletion_cascades_are_seen_only_on_later_rounds_of_the_original_read_cursor",
+          "final_ascii_space_collapse_occurs_only_if_percent_removal_happened",
+          "input_cap_is_first_and_final_output_cap_follows_all_shrinking_passes",
+          "invalid_utf8_yields_empty_but_raw_open_angle_is_outside_the_profile_even_if_invalid",
+          "valid_unicode_raw_entities_and_inputs_are_preserved_without_url_decoding_or_html_claims"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte input without literal less-than only, immutable UTF-8 site/no mbstring/C locale, no own/all filter callbacks. Whole invalid UTF8 returns empty before any percent deletion, rather than repairing bytes after deletion. Raw NUL inside valid UTF8 is preserved except at PHP trim6 edges. Scalars, objects/arrays, other site charset, tag processing and arbitrary callbacks are outside this profile.",
+        "The public text-field API collapses CR/LF/TAB/SPACE runs before trim6; textarea retains internal newlines and whitespace. Both choose the first case-insensitive percent-hex match and globally delete only that exact original-case three-byte token nonrecursively, then search again. Successful percent deletion triggers a final ASCII SPACE-only collapse and trim6; no URL decoding, accent removal, Unicode whitespace normalization or generic HTML safety is added.",
+        "Mandatory input/output/successful-percent-round host allowances have no defaults. Final output cap follows all shrinking passes; input cap precedes domain processing. The fixture input4096 and round1365 allowance covers every accepted input because each successful pass removes at least three bytes; this is not CPU time, allocation sum/RSS or concurrency accounting. Native cap/allocation refusals are not PHP-success comparisons.",
+        "The actual oracle calls pinned public and internal source helpers with one empty own WP_Hook and no all handler. Two filter payload arguments are a source witness without observer callbacks. UTF8 static cache is guarded by Reflection before/after as null/true with no priming, reset or option-read counter. Cached false is refused; empty input leaves cache state unchanged. No UTF8 helper call count or zero HTML-tag runtime calls are claimed; NoLiteralLt makes the tag branch source-unreachable.",
+        "Only raw-byte return values are ported. Native filter bookkeeping, option/charset resolution policy, form admission, principal/authentication, SQL/URL/header escaping, theme rendering and public HTTP application are not connected. Development fixture serialization is not a production secret ABI."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "api-079-sanitize_textarea_field",
+      "kind": "api",
+      "symbol": "sanitize_textarea_field",
+      "wordpress_source": {
+        "path": "wp-includes/formatting.php",
+        "line": 5684,
+        "sha256": "350f6b32303915df970bb0e3ea360fcd54bb0b8a7ecc3d504c3d860ab9468d32"
+      },
+      "rust_target": {
+        "symbol": "sanitize_textarea_field_utf8_site_no_open_angle_empty_filters_bytes",
+        "path": "crates/recastpress-wp/src/sanitize_text.rs",
+        "tests": [
+          "field_and_textarea_differ_only_in_source_initial_cr_lf_tab_space_collapse",
+          "trim_six_removes_only_edge_nul_and_vertical_tab_and_retains_form_feed_nbsp",
+          "percent_round_is_global_exact_case_not_match_count_or_case_folded_replacement",
+          "deletion_cascades_are_seen_only_on_later_rounds_of_the_original_read_cursor",
+          "final_ascii_space_collapse_occurs_only_if_percent_removal_happened",
+          "input_cap_is_first_and_final_output_cap_follows_all_shrinking_passes",
+          "invalid_utf8_yields_empty_but_raw_open_angle_is_outside_the_profile_even_if_invalid",
+          "valid_unicode_raw_entities_and_inputs_are_preserved_without_url_decoding_or_html_claims"
+        ]
+      },
+      "php_surface": null,
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Byte input without literal less-than only, immutable UTF-8 site/no mbstring/C locale, no own/all filter callbacks. Whole invalid UTF8 returns empty before any percent deletion, rather than repairing bytes after deletion. Raw NUL inside valid UTF8 is preserved except at PHP trim6 edges. Scalars, objects/arrays, other site charset, tag processing and arbitrary callbacks are outside this profile.",
+        "The public text-field API collapses CR/LF/TAB/SPACE runs before trim6; textarea retains internal newlines and whitespace. Both choose the first case-insensitive percent-hex match and globally delete only that exact original-case three-byte token nonrecursively, then search again. Successful percent deletion triggers a final ASCII SPACE-only collapse and trim6; no URL decoding, accent removal, Unicode whitespace normalization or generic HTML safety is added.",
+        "Mandatory input/output/successful-percent-round host allowances have no defaults. Final output cap follows all shrinking passes; input cap precedes domain processing. The fixture input4096 and round1365 allowance covers every accepted input because each successful pass removes at least three bytes; this is not CPU time, allocation sum/RSS or concurrency accounting. Native cap/allocation refusals are not PHP-success comparisons.",
+        "The actual oracle calls pinned public and internal source helpers with one empty own WP_Hook and no all handler. Two filter payload arguments are a source witness without observer callbacks. UTF8 static cache is guarded by Reflection before/after as null/true with no priming, reset or option-read counter. Cached false is refused; empty input leaves cache state unchanged. No UTF8 helper call count or zero HTML-tag runtime calls are claimed; NoLiteralLt makes the tag branch source-unreachable.",
+        "Only raw-byte return values are ported. Native filter bookkeeping, option/charset resolution policy, form admission, principal/authentication, SQL/URL/header escaping, theme rendering and public HTTP application are not connected. Development fixture serialization is not a production secret ABI."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/primitives.json"
+    },
+    {
+      "id": "component-01-wp_hook",
+      "kind": "component",
+      "symbol": "WP_Hook",
+      "wordpress_source": {
+        "path": "wp-includes/class-wp-hook.php",
+        "line": 27,
+        "sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+      },
+      "rust_target": {
+        "symbol": "Hook",
+        "path": "crates/recastpress-wp/src/hooks.rs",
+        "tests": [
+          "id",
+          "value",
+          "suffix",
+          "ordering_replacement_zero_priority_and_removal",
+          "accepted_arguments_support_zero_negative_and_oversize_counts",
+          "current_bucket_snapshot_and_future_priority_changes",
+          "actions_ignore_return_values_when_passing_original_arguments",
+          "recursive_filter_restores_outer_priority_and_cleans_up_callback_errors",
+          "recursion_limit_is_bounded_and_restores_request_state",
+          "filters_pass_null_false_and_array_results_without_string_conversion",
+          "action_array_return_does_not_replace_original_callback_arguments"
+        ]
+      },
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Named dispatcher support is tracked separately; PHP references and object domains remain pending.",
+        "Native modeled scalar/byte-string/array callbacks were compared; Wasm transport, object callback identity and PHP references are pending.",
+        "Host recursion limits and callback-failure handling are not PHP equivalence claims."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/hooks.json"
+    },
+    {
+      "id": "component-02-plugin.php-named-dispatcher",
+      "kind": "component",
+      "symbol": "plugin.php named dispatcher",
+      "wordpress_source": {
+        "path": "wp-includes/plugin.php",
+        "line": 1,
+        "sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d"
+      },
+      "rust_target": {
+        "symbol": "Dispatcher",
+        "path": "crates/recastpress-wp/src/dispatcher.rs",
+        "tests": [
+          "id",
+          "value",
+          "suffix",
+          "absent_hooks_still_increment_separate_action_and_filter_counts",
+          "all_hook_receives_unsliced_original_arguments_and_cannot_replace_value",
+          "nested_different_hooks_restore_the_call_stack",
+          "deleting_and_readding_an_active_binding_keeps_old_and_new_objects_separate",
+          "all_can_register_a_previously_absent_target_before_dispatch",
+          "recursion_limit_and_callback_failure_restore_request_stack",
+          "all_priority_mutation_reports_reference_warning_before_object_collection",
+          "typed_all_return_cannot_replace_or_mutate_named_filter_value"
+        ]
+      },
+      "implementation_kind": "RustCore",
+      "status": "inherited_subset",
+      "integration_status": "not_v06_validated",
+      "differential_status": "historical_evidence_only",
+      "retirement_status": "not_applicable_api_surface",
+      "source_registry_status": "source_derived",
+      "limitations": [
+        "Native modeled scalar/byte-string/array callbacks were compared; PHP object/reference callbacks and Wasm transport remain pending.",
+        "Reference-array entrypoints and PHP4-style object argument unwrapping are pending.",
+        "Host recursion limits, callback failures, and counter overflow are not PHP equivalence claims."
+      ],
+      "historical_differential_evidence": "compatibility/evidence/dispatcher.json"
+    }
+  ],
+  "claims": {
+    "all_wordpress_files_migrated": false,
+    "all_wordpress_apis_migrated": false,
+    "v06_core_implementation_complete": false
+  }
+}
