@@ -1,6 +1,6 @@
 use crate::{
     db::Input,
-    monitor::{Monitor, PositionMismatch},
+    monitor::{GuardedCache, LiveWatch, Monitor, PositionMismatch},
     options_cache::{GuardConfig, OptionsCache},
     source_identity::SourceIdentity,
 };
@@ -12,7 +12,8 @@ pub(crate) struct OptionsGuard {
     monitor: Monitor,
     port: u16,
     mismatch: Option<PositionMismatch>,
-    post_bypass_verified: bool,
+    watch: LiveWatch,
+    live_commit: Option<Value>,
     pub(crate) cache: Arc<OptionsCache>,
     pub(crate) identity: SourceIdentity,
 }
@@ -29,70 +30,74 @@ impl OptionsGuard {
         );
         let mut monitor = Monitor::start(config.port, &config.password, &config.nonce)?;
         let identity = monitor.source_identity()?;
+        let cache = Arc::new(OptionsCache::new());
+        let watch = monitor.live_watch(cache.clone())?;
         Ok(Self {
             monitor,
             port: input.port,
             mismatch: None,
-            post_bypass_verified: false,
-            cache: Arc::new(OptionsCache::new()),
+            watch,
+            live_commit: None,
+            cache,
             identity,
         })
     }
 
-    pub(crate) fn prepare(
-        &mut self,
-        input: &Input,
-        seq: usize,
-    ) -> Result<Option<Arc<OptionsCache>>> {
+    pub(crate) fn prepare(&mut self, input: &Input, seq: usize) -> Result<Option<GuardedCache>> {
         ensure!(
             input.port == self.port
                 && input.host == "127.0.0.1"
                 && input.database == "rp_wpdb_probe",
             "autoload_bypass_scope_changed"
         );
-        if seq < 4 {
-            self.active()?;
-            return Ok(Some(self.cache.clone()));
+        match seq {
+            2 | 3 => self.monitor.unchanged()?,
+            4 => {
+                self.monitor.live_at_start(&self.watch)?;
+                let error = self
+                    .monitor
+                    .unchanged()
+                    .err()
+                    .ok_or_else(|| anyhow!("autoload_bypass_position_unchanged"))?;
+                self.mismatch = Some(error.downcast::<PositionMismatch>()?);
+            }
+            _ => return Err(anyhow!("autoload_bypass_phase")),
         }
-        ensure!(seq == 4 && self.mismatch.is_none(), "autoload_bypass_phase");
-        let result = self.monitor.unchanged();
-        let stats = self.cache.finish()?;
-        ensure!(
-            stats["charged_bytes"] == 0,
-            "autoload_bypass_cache_not_released"
-        );
-        let error = result
-            .err()
-            .ok_or_else(|| anyhow!("autoload_bypass_position_unchanged"))?;
-        self.mismatch = Some(error.downcast::<PositionMismatch>()?);
-        Ok(None)
+        Ok(Some(self.monitor.guarded_cache(
+            &self.watch,
+            self.mismatch.as_ref(),
+            self.cache.clone(),
+        )))
     }
 
     pub(crate) fn active(&mut self) -> Result<()> {
-        let result = match &self.mismatch {
-            Some(mismatch) => self.monitor.verify_bypass(mismatch),
-            None => self.monitor.unchanged(),
-        };
-        if result.is_err() {
-            self.cache.disable();
+        if let Some(mismatch) = &self.mismatch {
+            self.monitor.verify_bypass(mismatch)?;
+            self.live_commit = Some(self.monitor.apply_live(&mut self.watch, mismatch)?);
+        } else {
+            self.monitor.unchanged()?;
+            self.monitor.live_at_start(&self.watch)?;
         }
-        result?;
-        self.post_bypass_verified = self.mismatch.is_some();
         Ok(())
     }
 
     pub(crate) fn finish(self) -> Result<Value> {
         let Self {
-            monitor,
+            mut monitor,
             cache,
             mismatch,
-            post_bypass_verified,
+            watch,
+            live_commit,
             ..
         } = self;
         let stats = cache.finish();
+        let closed = monitor.finish_live(watch);
         monitor.finish()?;
-        ensure!(post_bypass_verified, "autoload_bypass_post_fence_missing");
+        closed?;
         let mismatch = mismatch.context("autoload_bypass_position_mismatch_missing")?;
-        Ok(json!({"stats":stats?, "position_mismatch":mismatch.observation()}))
+        Ok(
+            json!({"stats":stats?, "position_mismatch":mismatch.observation(),
+            "live_commit":live_commit.context("autoload_live_commit_missing")?}),
+        )
     }
 }

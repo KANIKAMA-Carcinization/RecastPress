@@ -11,3 +11,5 @@
 source `04b4be1` のLinux CIで、同一ログの位置はMySQLで166729から167160、MariaDBで277458から277975へ進んだ。両DBとも初回のキャッシュ対象SQLは1回、共有ヒットは1回、格納した応答は87,682バイトだった。最後の404では予約を0バイトにしてから標準SELECTをDBで直接実行した。対象応答のダイジェストだけが変わり、残りのRPCと標準PHPのページ応答は一致した。Rustテスト66件、固定入力268件と生成ソース6件、所有DBの正常終了を照合した。[MySQL証跡](evidence/ci-42517825080-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42517825080-mariadb/provenance.json)
 
 source `b3bdc7b` のLinux CIでは、監視接続が既存のnonceとともに独立した識別値を読み、3件の404それぞれで実際にSQLを実行する接続から同じ値を取得した。Rustホスト内で、識別値、サーバー版、異なる接続IDを確認してからWordPressのDB要求を受け付けた。監視用nonceの参照権限は監視接続に持たせた。両DBでWordPressから見えるDBの操作列、標準PHPとのページ応答、共有ヒットと更新後のDB直読を照合した。固定入力269件、生成ソース6件、Rustテスト66件を確認した。[MySQL証跡](evidence/ci-42532767293-mysql/provenance.json)・[MariaDB証跡](evidence/ci-42532767293-mariadb/provenance.json)
+
+ライブ監視との結合試験では、最初の404の前に専用のbinlog接続を開く。DB actorが対象SELECTを実行する時点で、要求が観測した位置と監視の適用済み位置を照合する。固定更新をコミットした後、監視側の適用を最後の404まで保留する。この要求は位置の不一致により通常SQLを使う。その後、同じbinlog接続で行とXIDを検証し、共有結果の破棄と適用位置の更新を一緒に行う。比較用の要求前後の照会は維持し、通信量や応答時間の測定は後続とする。

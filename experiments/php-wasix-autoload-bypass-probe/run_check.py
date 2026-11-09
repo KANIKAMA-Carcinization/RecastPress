@@ -50,7 +50,8 @@ class Database(positive['Database']):
 def sources():
     inventory = positive['sources']()
     paths = [HERE / name for name in ('derive.py', 'run_check.py', 'Cargo.toml', 'Cargo.lock', 'src/guard.rs',
-        'src/source_identity.rs')]
+        'src/source_identity.rs', 'src/live_watch.rs')]
+    paths.append(derive.FRONTIER)
     paths.extend(derive.BASE / name for name in derive.PINS)
     paths.append(ROOT / '.github/workflows/php-wasix-autoload-bypass.yml')
     inventory.update({path.relative_to(ROOT).as_posix(): sha(path.read_bytes()) for path in paths})
@@ -83,7 +84,12 @@ def check_final(final):
         and mismatch['observed_position'] - mismatch['from_position'] <= 64 * 1024,
         'autoload_bypass_position_bounds')
     baseline.validate_final({key: value for key, value in final.items()
-        if key not in ('options_cache', 'options_guard_released', 'position_mismatch')}, 4, True)
+        if key not in ('options_cache', 'options_guard_released', 'position_mismatch', 'live_commit')}, 4, True)
+    commit = final['live_commit']
+    equal(set(commit), {'events', 'checksums', 'commits'})
+    equal(commit['commits'], 1)
+    require(type(commit['events']) is int and type(commit['checksums']) is int
+        and 1 <= commit['checksums'] <= commit['events'] <= 16, 'autoload_live_commit_counts')
 
 
 def controller():

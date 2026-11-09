@@ -8,6 +8,8 @@ import runpy
 
 HERE = Path(__file__).resolve().parent
 BASE = HERE.parent / 'php-wasix-autoload-binlog-probe'
+FRONTIER = HERE.parent / 'binlog-autoload-frontier-probe/src/live.rs'
+FRONTIER_SHA = '02811fb7e3a8333e78aa371965917e4d238e85af9aed5b1278e8f140892ed165'
 OLD = b'recastpress-php-wasix-autoload-binlog-probe'
 NAME = b'recastpress-php-wasix-autoload-bypass-probe'
 PINS = {
@@ -86,9 +88,10 @@ def outputs():
     files = runpy.run_path(str(BASE / 'derive.py'))['outputs']()
     files.update(runpy.run_path(str(BASE / 'derive_binlog.py'))['outputs']())
     files['src/monitor.rs'] = once(pinned('src/monitor.rs'), b'#[path = "monitor_impl.rs"]\nmod implementation;\npub(crate) use implementation::Monitor;',
-        b'#[allow(dead_code)]\n#[path = "monitor_impl.rs"]\nmod implementation;\npub(crate) use implementation::{Monitor, PositionMismatch};')
+        b'#[allow(dead_code)]\n#[path = "monitor_impl.rs"]\nmod implementation;\npub(crate) use implementation::{GuardedCache, LiveWatch, Monitor, PositionMismatch};')
     monitor = files['src/monitor_impl.rs'].decode()
-    monitor = once(monitor, '#[derive(Eq, PartialEq)]\nstruct Coordinate', '#[derive(Debug, Eq, PartialEq)]\nstruct Coordinate')
+    monitor = once(monitor, '#[derive(Eq, PartialEq)]\nstruct Coordinate', '#[derive(Clone, Debug, Eq, PartialEq)]\nstruct Coordinate')
+    monitor = once(monitor, 'Builder::new_current_thread()', 'Builder::new_multi_thread().worker_threads(1)')
     monitor = once(monitor, 'impl Source {', POSITION_TYPE + 'impl Source {')
     monitor = once(monitor, '''                ensure!(
                     coordinate(&mut self.control, &self.source).await? == self.checkpoint,
@@ -103,16 +106,29 @@ def outputs():
     }
 
     pub(crate) fn unchanged(&mut self)''')
-    files['src/monitor_impl.rs'] = monitor.encode()
+    frontier = FRONTIER.read_bytes()
+    if sha256(frontier).hexdigest() != FRONTIER_SHA or FRONTIER.resolve() != FRONTIER:
+        raise ValueError('autoload_live_pinned_preamble')
+    preamble = frontier.decode().split('async fn blocking_preamble(', 1)[1].split('\nimpl Monitor {', 1)[0]
+    scan = monitor.split('async fn scan(', 1)[1]
+    scan = once(scan, '    option_id: u64,', '    option_id: u64,\n    mut preamble: VecDeque<Event>,')
+    scan = once(scan, '    while let Some(event) = stream.next().await {', '''    loop {
+        let event = match preamble.pop_front() {
+            Some(event) => Ok(event),
+            None => stream.next().await.context("autoload_live_dump_ended")?,
+        };''')
+    scan = once(scan, '        events += 1;', '        events += 1;\n        if decoder.applied == 1 { break; }')
+    files['src/monitor_impl.rs'] = (monitor + '\ninclude!("live_watch.rs");\nasync fn blocking_preamble('
+        + preamble + '\nasync fn scan_live(' + scan).encode()
 
     actor = files['src/db.rs'].decode()
     actor = once(actor, '    pub operations: Vec<Value>,', '    pub operations: Vec<Value>,\n    pub direct_autoload_sql: bool,')
     actor = once(actor, '    pub direct_autoload_sql: bool,', '    pub direct_autoload_sql: bool,\n    pub source_identity_verified: bool,')
     actor = once(actor, '        cache: Option<Arc<crate::options_cache::OptionsCache>>,',
-        '        cache: Option<Arc<crate::options_cache::OptionsCache>>,\n        identity: Option<crate::source_identity::SourceIdentity>,')
-    actor = once(actor, 'sequence,cache.as_deref()))', 'sequence,cache.as_deref(),identity.as_ref()))')
+        '        cache: Option<crate::monitor::GuardedCache>,\n        identity: Option<crate::source_identity::SourceIdentity>,')
+    actor = once(actor, 'sequence,cache.as_deref()))', 'sequence,cache.as_ref(),identity.as_ref()))')
     actor = once(actor, '    cache: Option<&crate::options_cache::OptionsCache>,',
-        '    cache: Option<&crate::options_cache::OptionsCache>,\n    identity: Option<&crate::source_identity::SourceIdentity>,')
+        '    cache: Option<&crate::monitor::GuardedCache>,\n    identity: Option<&crate::source_identity::SourceIdentity>,')
     actor = once(actor, '            let c = conn.as_ref().ok_or("connection_missing")?;', '''            let c = conn.as_mut().ok_or("connection_missing")?;
             let initial_status = c.last_ok_packet().map(|packet| packet.status_flags().bits());
             if let Some(identity) = identity {
@@ -124,10 +140,33 @@ def outputs():
                 .last_ok_packet()
                 .map(|packet| packet.status_flags().bits());''', '            *status = initial_status;')
     actor = once(actor, '            query(connection, bytes, status).await', '''            let result = query(connection, bytes, status).await?;
-            if cache.is_none() && sequence == 10 && bytes == AUTOLOAD_SQL && result.0 {
+            if sequence == 10 && bytes == AUTOLOAD_SQL && result.0 {
                 observation.lock().map_err(|_| "actor_lock_failed")?.direct_autoload_sql = true;
             }
             Ok(result)''')
+    begin = actor.index('                if let Some(data) = cache.lookup(before_status)')
+    end = actor.index('            let result = query(connection, bytes, status).await?', begin)
+    actor = once(actor, actor[begin:end], '''                let choice = cache.current(|entry| {
+                    let hit = entry.lookup(before_status);
+                    if hit.is_none() { entry.record_sql(); }
+                    hit
+                });
+                match choice {
+                    Some(Some(data)) => {
+                        *status = Some(data["status"].as_u64()
+                            .and_then(|flags| u16::try_from(flags).ok())
+                            .ok_or("autoload_cached_status")?);
+                        return Ok((true, data));
+                    }
+                    Some(None) => {
+                        let (ok, data) = query(connection, bytes, status).await?;
+                        if ok { cache.current(|entry| entry.remember(before_status, &data)); }
+                        return Ok((ok, data));
+                    }
+                    None => {}
+                }
+            }
+''')
     files['src/db.rs'] = actor.encode()
 
     cache = files['src/options_cache.rs'].decode()
@@ -142,7 +181,7 @@ def outputs():
         ('owner.prepare(&input, seq)?;\n                Some(owner.cache.clone())', 'owner.prepare(&input, seq)?'),
         ('mod options_cache;', 'mod options_cache;\nmod source_identity;'),
         ('cache: Option<Arc<options_cache::OptionsCache>>, report: &mut Value)',
-         'cache: Option<Arc<options_cache::OptionsCache>>, identity: Option<source_identity::SourceIdentity>, report: &mut Value)'),
+         'cache: Option<monitor::GuardedCache>, identity: Option<source_identity::SourceIdentity>, report: &mut Value)'),
         ('db::Actor::start(input, cache)', 'db::Actor::start(input, cache, identity)'),
         ('&capture_dir,cache,&mut report)', '&capture_dir,cache,guard.as_ref().map(|owner| owner.identity.clone()),&mut report)'),
         ('        report["operations"] = json!(s.operations);', '''        report["operations"] = json!(s.operations);
@@ -154,7 +193,7 @@ def outputs():
         ('stats["stats"]["sql_reads"] == 2', 'stats["stats"]["sql_reads"] == 1'),
         ('stats["stats"]["commit_invalidations"] == 1', 'stats["stats"]["commit_invalidations"] == 0'),
         ('final_observation["binlog_fence"] = verified["fence"].clone();',
-         'final_observation["position_mismatch"] = verified["position_mismatch"].clone();'),
+         'final_observation["position_mismatch"] = verified["position_mismatch"].clone();\n        final_observation["live_commit"] = verified["live_commit"].clone();'),
     ):
         worker = once(worker, old, new)
     files['src/main.rs'] = worker.encode()
