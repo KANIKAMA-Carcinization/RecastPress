@@ -93,6 +93,14 @@ def outputs():
     monitor = once(monitor, '#[derive(Eq, PartialEq)]\nstruct Coordinate', '#[derive(Clone, Debug, Eq, PartialEq)]\nstruct Coordinate')
     monitor = once(monitor, 'Builder::new_current_thread()', 'Builder::new_multi_thread().worker_threads(1)')
     monitor = once(monitor, 'impl Source {', POSITION_TYPE + 'impl Source {')
+    monitor = once(monitor, '    pub(crate) fn start(port: u16, password: &str, nonce: &str) -> Result<Self> {',
+        '    pub(crate) fn start(port: u16, password: &str, nonce: &str) -> Result<Self> {\n'
+        '        Self::start_at_value(port, password, nonce, OLD)\n    }\n\n'
+        '    pub(crate) fn start_at_value(port: u16, password: &str, nonce: &str, expected_value: &[u8]) -> Result<Self> {\n'
+        '        ensure!(expected_value == OLD || expected_value == NEW, "dependency_monitor_expected_value");')
+    monitor = once(monitor, 'let option_id = autoload_id(&mut connection, OLD).await?;',
+        'let option_id = autoload_id(&mut connection, expected_value).await?;')
+    monitor = once(monitor, '            replayed: false,', '            replayed: expected_value == NEW,')
     monitor = once(monitor, '''                ensure!(
                     coordinate(&mut self.control, &self.source).await? == self.checkpoint,
                     "dependency_monitor_position_changed"

@@ -1,0 +1,26 @@
+{
+  "all_processes_reaped": true,
+  "backend": "mysql",
+  "binary_sha256": "fe4d503ee596d5f90c13f7efcc0f59a010ee7379d4fdc13da5539d1fe330bc39",
+  "buffered_event_before_disconnect": true,
+  "direct_read_new_value": true,
+  "elapsed_seconds": 21.56,
+  "normal_admin_shutdown": true,
+  "old_permit_revoked": true,
+  "owned_directory_removed": true,
+  "passed": true,
+  "sources": {
+    "experiments/binlog-autoload-frontier-probe/run_check.py": "c9fa8f37d606d928e9864fe6e6ddd25eb88c7f394d4e2202637eb4ea45b0ecca",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.lock": "844f7c79fd50a91094edefdbc18be2bd9b6a39f17568800fd311348c414e719f",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.toml": "506329a3890b10efe0a7c6ee3729cafec428bfa943c043ed85026d41ae375cc5",
+    "experiments/php-wasix-autoload-bypass-probe/check_disconnect_owned.py": "b20915c840296f402d78f808df72bbfa77a8e72ba5f41431702379949bbd2e3a",
+    "experiments/php-wasix-autoload-bypass-probe/src/binlog_buffer.rs": "83deca0aac19a48504f444d77b6d1215ad4899e2a1c90cba0e476f3b7225ba27",
+    "experiments/php-wasix-autoload-bypass-probe/src/live_watch.rs": "772877518dd73d999f055736e7950d3702dbba8baf410d1fe4a60f3fb59a1539",
+    "experiments/php-wasix-autoload-bypass-probe/src/main.rs": "256bd70761bfbbd59230ce204a64afa9c39d9828b138e3dcb4a970a19afb2c03",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor.rs": "ccc0212fac97fcc3bdcf73b0560edc807e3e23b941eb9467047971187202e067",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor_impl.rs": "d471915adde316c1dc38506fd2927f3ddf68e061c69301d242b59412907225c7",
+    "experiments/php-wasix-autoload-bypass-probe/src/options_cache.rs": "4c29e7a8a87fe5e45ebf57680901a01cf5cd7539b4bb12eeda63353b3320023c",
+    "experiments/wpdb-bridge-probe/owned_database.py": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c"
+  },
+  "version": "8.4.13"
+}

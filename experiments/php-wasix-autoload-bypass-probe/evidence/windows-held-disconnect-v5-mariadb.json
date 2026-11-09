@@ -1,0 +1,50 @@
+{
+  "admin_client": "verified_mysql_8.4.13",
+  "admin_client_verification": {
+    "admin_sha256": "44bda80b8adacb890c99e9f3c9a876ca33b6eda2e02f896cd747a95ad1bb15ae",
+    "archive_bytes": 281154912,
+    "archive_sha256": "e9cd98b1d23f122987b1afca26ad942efec5891481103d48ae3cde237fa3ea54",
+    "client_sha256": "4617a66bf7509891d3a7be522d78a141b1d4dc16936c5077ddf119f7dd264b88",
+    "file_count": 296,
+    "full_file_inventory_sha256": "e4f18ccf29c0c6787484f929988d9525625dc326f1795a01758f1ed15344cd72",
+    "manifest_sha256": "36b03fcac1643420f653d5e3c63e66fcdca088dfa27f0a09cad6968639b96b82",
+    "server_sha256": "7a976874ef3974d612081960b1c193c663b4434692b6257382352c587e367ad6",
+    "signature": {
+      "key_sha256": "a4bcd9f16a53cc763f87b9955dbcdced33c7aa90296b157eb6ceef0f156f4327",
+      "scope": "offline pinned key and archive detached signature",
+      "signature_sha256": "81501212b6c52222bcf86e1af1b5c73f9c157f1191405c03936bc9e89f5495ee",
+      "signer_fingerprint": "BCA43417C3B485DD128EC6D4B7B3B788A8D3785C",
+      "verified": true
+    },
+    "version": "8.4.13"
+  },
+  "admin_tls": "verify_identity",
+  "all_processes_reaped": true,
+  "backend": "mariadb",
+  "binary_sha256": "dbdeafac0bb952cbf3805d356177fdc8bf6f06dfa101ea811766ddb8633c609c",
+  "buffered_event_observed": true,
+  "case": "disconnect",
+  "direct_read_new_value": true,
+  "elapsed_seconds": 21.22,
+  "monitor_restart_resynced": true,
+  "normal_admin_shutdown": true,
+  "old_permit_revoked": true,
+  "owned_directory_removed": true,
+  "passed": true,
+  "pending_event_bypassed": true,
+  "previous_cache_not_reused": true,
+  "sources": {
+    "experiments/binlog-autoload-frontier-probe/run_check.py": "c9fa8f37d606d928e9864fe6e6ddd25eb88c7f394d4e2202637eb4ea45b0ecca",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.lock": "844f7c79fd50a91094edefdbc18be2bd9b6a39f17568800fd311348c414e719f",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.toml": "506329a3890b10efe0a7c6ee3729cafec428bfa943c043ed85026d41ae375cc5",
+    "experiments/php-wasix-autoload-bypass-probe/check_disconnect_owned.py": "cf778227b69f23608ca4145ea11e22ffdf0a6200e2981e249f222664373f67af",
+    "experiments/php-wasix-autoload-bypass-probe/src/binlog_buffer.rs": "83deca0aac19a48504f444d77b6d1215ad4899e2a1c90cba0e476f3b7225ba27",
+    "experiments/php-wasix-autoload-bypass-probe/src/live_watch.rs": "77a420c6b07436566b4ee2a8cebfd1a1a0ab0d2f1536ad965f6473dc9f34298e",
+    "experiments/php-wasix-autoload-bypass-probe/src/main.rs": "256bd70761bfbbd59230ce204a64afa9c39d9828b138e3dcb4a970a19afb2c03",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor.rs": "ccc0212fac97fcc3bdcf73b0560edc807e3e23b941eb9467047971187202e067",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor_impl.rs": "6461dc5af97c6ca0b3cce9b11d8e8538b0cdcefbe91f72eeb44bc44e42ac5223",
+    "experiments/php-wasix-autoload-bypass-probe/src/options_cache.rs": "4c29e7a8a87fe5e45ebf57680901a01cf5cd7539b4bb12eeda63353b3320023c",
+    "experiments/wpdb-bridge-probe/owned_database.py": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c"
+  },
+  "version": "11.8.9-MariaDB-log"
+}

@@ -1,0 +1,32 @@
+{
+  "admin_client": "mysql",
+  "admin_tls": "verify_identity",
+  "all_processes_reaped": true,
+  "backend": "mysql",
+  "binary_sha256": "dbdeafac0bb952cbf3805d356177fdc8bf6f06dfa101ea811766ddb8633c609c",
+  "buffered_event_observed": true,
+  "case": "disconnect",
+  "direct_read_new_value": true,
+  "elapsed_seconds": 23.59,
+  "monitor_restart_resynced": true,
+  "normal_admin_shutdown": true,
+  "old_permit_revoked": true,
+  "owned_directory_removed": true,
+  "passed": true,
+  "pending_event_bypassed": true,
+  "previous_cache_not_reused": true,
+  "sources": {
+    "experiments/binlog-autoload-frontier-probe/run_check.py": "c9fa8f37d606d928e9864fe6e6ddd25eb88c7f394d4e2202637eb4ea45b0ecca",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.lock": "844f7c79fd50a91094edefdbc18be2bd9b6a39f17568800fd311348c414e719f",
+    "experiments/php-wasix-autoload-bypass-probe/Cargo.toml": "506329a3890b10efe0a7c6ee3729cafec428bfa943c043ed85026d41ae375cc5",
+    "experiments/php-wasix-autoload-bypass-probe/check_disconnect_owned.py": "cf778227b69f23608ca4145ea11e22ffdf0a6200e2981e249f222664373f67af",
+    "experiments/php-wasix-autoload-bypass-probe/src/binlog_buffer.rs": "83deca0aac19a48504f444d77b6d1215ad4899e2a1c90cba0e476f3b7225ba27",
+    "experiments/php-wasix-autoload-bypass-probe/src/live_watch.rs": "77a420c6b07436566b4ee2a8cebfd1a1a0ab0d2f1536ad965f6473dc9f34298e",
+    "experiments/php-wasix-autoload-bypass-probe/src/main.rs": "256bd70761bfbbd59230ce204a64afa9c39d9828b138e3dcb4a970a19afb2c03",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor.rs": "ccc0212fac97fcc3bdcf73b0560edc807e3e23b941eb9467047971187202e067",
+    "experiments/php-wasix-autoload-bypass-probe/src/monitor_impl.rs": "6461dc5af97c6ca0b3cce9b11d8e8538b0cdcefbe91f72eeb44bc44e42ac5223",
+    "experiments/php-wasix-autoload-bypass-probe/src/options_cache.rs": "4c29e7a8a87fe5e45ebf57680901a01cf5cd7539b4bb12eeda63353b3320023c",
+    "experiments/wpdb-bridge-probe/owned_database.py": "c98af5c7916822b203ddecdef2793bfb0ef50ec10649a97b0673aa02c363314c"
+  },
+  "version": "8.4.13"
+}
