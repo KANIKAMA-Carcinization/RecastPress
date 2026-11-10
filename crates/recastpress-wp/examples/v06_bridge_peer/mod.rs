@@ -13,6 +13,8 @@ use serde_json::{Map, Value, json};
 use std::fmt;
 use std::io::{BufRead, Read, Write};
 
+mod publish;
+
 const REQUEST: &str = "surface-probe-1";
 const MAX_FRAME: usize = 1_048_576;
 const MAX_TOTAL: usize = 33_554_432;
@@ -694,6 +696,7 @@ pub fn run_peer<R: BufRead, W: Write>(
     match scenario {
         "surface" => run_surface(wire),
         "throwable" => run_throwable(wire),
+        "publish" => publish::run_publish(wire),
         _ => Err("unknown_bridge_scenario".into()),
     }
 }

@@ -2,18 +2,22 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-09T23:38:17+00:00",
+  "recorded_at_utc": "2026-11-10T02:32:43+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "14f0ccb1939894127c7cbed881a4c0dd79c2799c70af60bb4c75e3f94582ee54",
+    "experiments/php-compat-v06-probe/run_check.py": "e848858889885cd7ec1a50fe491c1ef4bae8c3439a184ffa43c87e0dba08713b",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
-    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "66b8edeadd30c1a93afba3a38fdd81ad42c0c79610104d3901b63164ba74b445",
-    "experiments/php-compat-v06-probe/README.ja.md": "90844ff7ca8e6180d89c9ed4b877f9a28a21905f1c13268b2c9a11ed9ce5bd7b",
+    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "c4c3f47e19599e1870e2586d0ca6b3a4eb01c91186dd144a38ec45840d542f4b",
+    "experiments/php-compat-v06-probe/README.ja.md": "96bb9e6d208a44e3f00fc28c67f7f3d434f4824eec50dc57e750a4ccf237632a",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "crates/recastpress-wp/src/lib.rs": "e63e911e9a73997773c26720594c0de04b331481e3ad75aa0b78979d9c3c2b69",
+    "crates/recastpress-wp/src/lib.rs": "893b7470c25046b8a566f949378d1ba60a9466fa10d9fe4ac03d5de943c5e3f5",
     "crates/recastpress-wp/src/continuation.rs": "0c652e4a22ed75f30c56b6608b251f92e8e85be5d77f44d4ace30015533d649a",
+    "crates/recastpress-wp/src/public_state.rs": "d0f798aa5229ab8a20a3b1da286eadcebe188a52943786d8a54fd5b7ca9c5cc5",
     "crates/recastpress-wp/tests/continuation_contract.rs": "fc1974d6228958cf2fbaf226b9cb191592ac845bd8561e3047f48dee0110de88",
+    "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
+    "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
+    "experiments/php-compat-v06-probe/fixtures/publish_driver.php": "7b7d623929a2fc2f8bd976d79e362f15e65d993f33d244783bce7b311ab8a194",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "1eebe18b532dcc0269c01e1213d05a37b6fa5a8e56f691455a8662f81fe5646f",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
@@ -22,6 +26,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
     ".reference/php-8.5.12/brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
     ".reference/php-8.5.12/brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
     ".reference/php-8.5.12/deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
@@ -118,7 +123,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "c7cd10a7763088bb94f5e18ca8586190be8f743a39878293f22e62a025ccb5d3",
+  "adapter_binary_sha256": "e988f438acc29b9cc291d25598bcb6b8104d0d4b07157ebe02b1d59bfea84227",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -155,8 +160,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 15132,
-      "rust": 27056
+      "php": 22848,
+      "rust": 38812
     },
     "returncodes": {
       "php": 0,
@@ -214,8 +219,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 8092,
-      "rust": 35600
+      "php": 12804,
+      "rust": 26152
     },
     "returncodes": {
       "php": 0,
@@ -277,6 +282,156 @@
       "rust": 4
     }
   },
+  "public_state_publish_bridge": {
+    "processes": {
+      "php": 32952,
+      "rust": 34392
+    },
+    "returncodes": {
+      "php": 0,
+      "rust": 0
+    },
+    "scenario": "publish",
+    "rust_marker": "V06_PUBLISH_OK continuation_peer=true",
+    "frames_from_php": 11,
+    "frames_from_rust": 10,
+    "relayed_bytes": 7383,
+    "all_reaped": true,
+    "observations": {
+      "rust_child": null,
+      "rust_root": null,
+      "rust_throwable_return": null,
+      "rust_abort": null,
+      "php_final": {
+        "view": {
+          "item": {
+            "count": 5,
+            "unknown": "php-outer",
+            "final_marker": 104
+          },
+          "settings": {
+            "enabled": true
+          },
+          "items": [
+            2,
+            11,
+            77
+          ],
+          "alias_same": true,
+          "property_reference_value": 5,
+          "array_reference_value": 11,
+          "copy_before": [
+            2,
+            4
+          ],
+          "global_name": "replacement"
+        },
+        "trace": [
+          "root:before-child",
+          "nested:mutated",
+          "root:after-child"
+        ],
+        "negative_publish_rejections": 3,
+        "alias_same_object": true,
+        "reference_cell_same_value": true,
+        "copy_on_write_preserved": true,
+        "global_rebound_without_alias_rebind": true
+      }
+    },
+    "expected_frame_counts": {
+      "php": 11,
+      "rust": 10
+    },
+    "publish_result": {
+      "continuation_peer": true,
+      "frames_from_php": 11,
+      "frames_from_rust": 10,
+      "observation": {
+        "alias_and_reference_values_preserved": true,
+        "atomic_batch_no_partial_write": true,
+        "atomic_rejection_observation": 7,
+        "child_and_php_edits_preserved": true,
+        "child_entry_observation": 3,
+        "child_publish_observation": 4,
+        "copy_on_write_preserved": true,
+        "final_publish_observation": 10,
+        "global_rebind_preserved": "replacement",
+        "initial_observation": 1,
+        "nested_observation": 8,
+        "outer_observation": 9,
+        "published_values": {
+          "child_array_entry": 11,
+          "child_count": 5,
+          "final_marker": 104,
+          "root_array_entry": 7,
+          "root_count": 4
+        },
+        "replay_rejected_before_write": true,
+        "replay_rejection_observation": 6,
+        "root_publish_observation": 2,
+        "stale_rejected_before_write": true,
+        "stale_rejection_observation": 5,
+        "view": {
+          "alias_same": true,
+          "array_reference_value": 11,
+          "copy_before": [
+            2,
+            4
+          ],
+          "global_name": "replacement",
+          "item": {
+            "count": 5,
+            "final_marker": 104,
+            "unknown": "php-outer"
+          },
+          "items": [
+            2,
+            11,
+            77
+          ],
+          "property_reference_value": 5,
+          "settings": {
+            "enabled": true
+          }
+        }
+      },
+      "php_observation": {
+        "alias_same_object": true,
+        "copy_on_write_preserved": true,
+        "global_rebound_without_alias_rebind": true,
+        "negative_publish_rejections": 3,
+        "reference_cell_same_value": true,
+        "trace": [
+          "root:before-child",
+          "nested:mutated",
+          "root:after-child"
+        ],
+        "view": {
+          "alias_same": true,
+          "array_reference_value": 11,
+          "copy_before": [
+            2,
+            4
+          ],
+          "global_name": "replacement",
+          "item": {
+            "count": 5,
+            "final_marker": 104,
+            "unknown": "php-outer"
+          },
+          "items": [
+            2,
+            11,
+            77
+          ],
+          "property_reference_value": 5,
+          "settings": {
+            "enabled": true
+          }
+        }
+      }
+    }
+  },
   "negative_vectors_rejected_by_rust": [
     "correlation",
     "handle",
@@ -298,76 +453,76 @@
     "escaped_duplicate_key"
   ],
   "owned_children": {
-    "spawned_and_reaped": 18,
+    "spawned_and_reaped": 20,
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 34408,
+        "pid": 20220,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 26644,
+        "pid": 24516,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 28772,
+        "pid": 20756,
         "returncode": 0,
+        "reaped": true
+      },
+      {
+        "pid": 26576,
+        "returncode": 0,
+        "reaped": true
+      },
+      {
+        "pid": 26304,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 24352,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 35548,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 36840,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 37064,
+        "returncode": 2,
         "reaped": true
       },
       {
         "pid": 24348,
-        "returncode": 0,
-        "reaped": true
-      },
-      {
-        "pid": 11924,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 6884,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 2164,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 23944,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 14592,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 17148,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 25364,
+        "pid": 12720,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 2120,
+        "pid": 18564,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 38360,
+        "pid": 34240,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 31292,
+        "pid": 19896,
         "returncode": 0,
         "reaped": true
       }
@@ -378,6 +533,10 @@
         "rust": 0
       },
       "throwable": {
+        "php": 0,
+        "rust": 0
+      },
+      "publish": {
         "php": 0,
         "rust": 0
       }

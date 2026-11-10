@@ -48,9 +48,9 @@ This source-bound profile uses a one-file read-only map containing `trap_recover
 
 The CPU-loop mode runs separately without metering. Its owned host emits a validated callback-loop checkpoint and stays live through a short grace interval. The supervisor confirms positive Linux process CPU ticks, sends SIGKILL to the owned host process group, and waits for it to be reaped. Only after that process exits does a new host process compile the fixed module and run a fresh surface request. The evidence covers disposal of this probe process and a fresh request in a new host. Product CPU-time, host-call budgets and worker reuse require separate acceptance. The default bridge's six-file map is unchanged.
 
-The [final WSL receipt](evidence/trap-20261110T013832.731514Z-success.json) and [origin receipt](evidence/wsl-trap-origin-20261110T013838.266160Z.json) passed with 86 source-bound inputs matching the repository snapshot. All four owned processes were reaped. The metered host compiled the module in 245,692 ms, observed 99,999,963 points after PHP startup and then the exhausted `i32` global with flag 1. It captured `UnreachableCodeReached` and WASIX exit 45, joined both guest and stderr threads with empty stderr, and passed the normal surface scenarios before and after the trap on the same compiled module. The separate CPU-loop host accumulated 21 Linux CPU ticks over 201 ms, remained alive through the grace interval, then exited from SIGKILL 9 with return code -9 and was reaped. A new host process subsequently compiled the module and passed surface recovery. These are development-host observations.
+The current [WSL receipt](evidence/trap-20261110T024052.263185Z-success.json) and [origin receipt](evidence/wsl-trap-origin-20261110T024057.412669Z.json) passed with 90 source-bound inputs matching the repository snapshot. The run took 2026-11-10 02:35:56–02:40:52 UTC (11:35–11:40 JST). Four owned processes were reaped. The metered host compiled the module in 142,071 ms, observed 99,999,963 points after PHP startup and then the exhausted `i32` global with flag 1. It captured `UnreachableCodeReached` and WASIX exit 45, joined both guest and stderr threads with empty stderr, and passed the normal surface scenarios before and after the trap on the same compiled module. The separate CPU-loop host accumulated 20 Linux CPU ticks over 201 ms, remained alive through the grace interval, then exited from SIGKILL 9 with return code -9 and was reaped. A new host process subsequently compiled the module and passed surface recovery. These are development-host observations.
 
-After adding the trap host instrumentation, the [continuation regression receipt](evidence/bridge-20261110T014049.507540Z-success.json) passed surface, throwable, PHP exit 23, partial-frame exit 24 and pipe-close exit 26 cases, including all three fresh-guest surface recoveries. Its [origin receipt](evidence/wsl-bridge-origin-20261110T014055.894534Z.json) binds 85 inputs to the repository snapshot. The validator, native regression, and DB/manifest checks were also rerun against the current sources.
+The current [continuation regression receipt](evidence/bridge-20261110T023546.926762Z-success.json) passed surface, throwable, PHP exit 23, partial-frame exit 24 and pipe-close exit 26 cases, including all three fresh-guest surface recoveries. Its [origin receipt](evidence/wsl-bridge-origin-20261110T023550.888549Z.json) binds 89 inputs to the repository snapshot. Module compilation was 74,494 ms and scenario execution 939 ms.
 
 ## Fixed inputs
 
@@ -71,6 +71,26 @@ The [Linux x86_64 Cranelift no-opt run](evidence/run-20261109T175143Z-success.js
 
 After adding the shared peer dependency, the [one-shot regression run](evidence/run-20261109T233548Z-success.json) again passed 15 + 11 checks. Its input set now also binds the root Cargo files and all local WP crate sources, totaling 80 files; the [new origin receipt](evidence/wsl-language-origin-20261109T233551.142657Z.json) verifies the repository/snapshot correspondence. This verifies the updated package configuration separately from the interactive bridge.
 
+The current [one-shot regression receipt](evidence/run-20261110T021634Z-success.json) passed the 15 surface assertions and 11 strict JSON assertions. Its [origin receipt](evidence/wsl-language-origin-20261110T021635.800920Z.json) binds 81 inputs to the current repository snapshot. Module compilation was 71,727 ms and fixture execution was 254 ms.
+
 To repeat on Linux, prepare Rust 1.94.0 on `PATH`, the fixed artifact above, the C/C++ build dependencies used by the existing host profile, and the locked Cargo cache (or equivalent Cargo-vendored sources), then run `python3 -B experiments/php-compat-v06-probe/wasm/run.py` from the repository root. The runner remains offline and locked. Local WSL build caches are retained for subsequent probes.
 
 LLVM execution remains unverified for these v0.6 fixtures. WordPress bootstrap, Rust Query and full v0.6 acceptance remain outside these probes.
+
+## Rust public-state publish
+
+The [Wasm publish receipt](evidence/publish-20261110T023418.872656Z-success.json) and its [WSL origin receipt](evidence/wsl-publish-origin-20261110T023422.856281Z.json) passed on the fixed PHP module. The origin binds 89 inputs, including the readonly fixture map, to the current repository snapshot. The guest returned successfully, reported completion, and its thread was joined. Both owned build and host children were reaped. Module compilation was 69,008 ms and fixture execution was 161 ms in this development profile.
+
+Run these commands from the repository root to repeat or validate publication.
+
+```sh
+python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --publish --self-test
+python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --publish
+python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --publish --verify-only
+```
+
+The publish guest uses a seven-file read-only map comprising the default six files and `publish_driver.php`.
+
+The scenario exchanged 11 PHP frames and 10 Rust frames, using PHP-issued observations 1 through 10. Root publish updated count and array entry to 4 and 7. Child publish updated them to 5 and 11 before the nested callback. The root callback rebound the global before its child call. The nested callback set the array tail to 77, and the outer callback changed the unknown property to `php-outer`. Rust computed marker 104 from the latest heap values and PHP verified it. Same-object aliasing, property and array-entry references, copy-on-write preservation and nested state were observed. PHP rejected stale publish, replay and a full batch containing an invalid target before assignments. The verified write contract covers this closed fixture's inert object and integer assignments. Broader assignment semantics for userland magic methods and destructors remain unverified.
+
+The Rust tracker covers PHP-issued observation metadata and publish ordering. Production heap registry, handle authority, automatic dirty tracking and WordPress Query integration remain future work.

@@ -40,6 +40,14 @@ HOST_FIXTURE_ORDER = (
 )
 RECOVERY_FIXTURE = ROOT / "experiments" / "php-compat-v06-probe" / "fixtures" / "recovery.php"
 PEER = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_peer" / "mod.rs"
+PUBLISH_PEER_DIR = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_peer"
+PUBLISH_FIXTURE = WASM_DIR.parent / "fixtures" / "publish_driver.php"
+PUBLISH_SCHEMA = "recastpress.php-compat-v06-wasm-publish.v1"
+PUBLISH_HOST_NAME = HOST_NAME
+PUBLISH_FILES = HOST_FIXTURE_ORDER + ("publish_driver.php",)
+
+sys.path.insert(0, str(WASM_DIR.parent))
+from publish_contract import self_check as publish_self_check, validate_publish_result
 
 
 def sha_bytes(data: bytes) -> str:
@@ -71,7 +79,7 @@ def selected_target() -> Path:
     return target
 
 
-def source_paths() -> list[Path]:
+def source_paths(publish: bool = False) -> list[Path]:
     paths = [
         ROOT / "Cargo.toml", ROOT / "Cargo.lock",
         ROOT / "crates" / "recastpress-wp" / "Cargo.toml",
@@ -79,6 +87,9 @@ def source_paths() -> list[Path]:
         ROOT / "scripts" / "owned_probe.py", ARTIFACT, PEER,
     ]
     paths.extend(sorted((ROOT / "crates" / "recastpress-wp" / "src").rglob("*.rs")))
+    paths.extend(sorted(PUBLISH_PEER_DIR.rglob("*.rs")))
+    paths.append(PUBLISH_FIXTURE)
+    paths.append(WASM_DIR.parent / "publish_contract.py")
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
     paths.append(RECOVERY_FIXTURE)
     paths.append(WASM_DIR.parent / "fixtures" / "trap_recovery.php")
@@ -87,7 +98,7 @@ def source_paths() -> list[Path]:
     return sorted(set(path.resolve() for path in paths), key=relative)
 
 
-def fixed_inputs() -> dict:
+def fixed_inputs(publish: bool = False) -> dict:
     if not ARTIFACT.is_file():
         raise FileNotFoundError("fixed PHP-WASIX artifact is missing")
     artifact_size = ARTIFACT.stat().st_size
@@ -96,7 +107,7 @@ def fixed_inputs() -> dict:
         raise ValueError("fixed PHP-WASIX artifact identity differs")
     return {
         relative(path): {"bytes": path.stat().st_size, "sha256": sha_file(path)}
-        for path in source_paths()
+        for path in source_paths(publish)
     }
 
 
@@ -453,13 +464,14 @@ def self_check() -> None:
         raise AssertionError("changed host binary receipt was accepted")
 
 
-def _receipt_name(status: str, ended: datetime, failure: str | None) -> str:
+def _receipt_name(status: str, ended: datetime, failure: str | None, publish: bool = False) -> str:
     stamp = ended.strftime("%Y%m%dT%H%M%S.%fZ")
     suffix = "success" if status == "passed" else (failure or "failed")
-    path = EVIDENCE / f"bridge-{stamp}-{suffix}.json"
+    prefix = "publish" if publish else "bridge"
+    path = EVIDENCE / f"{prefix}-{stamp}-{suffix}.json"
     index = 1
     while path.exists():
-        path = EVIDENCE / f"bridge-{stamp}-{suffix}-{index}.json"
+        path = EVIDENCE / f"{prefix}-{stamp}-{suffix}-{index}.json"
         index += 1
     return path.name
 
@@ -511,15 +523,17 @@ def _save_private_capture(run_dir: Path, label: str, item) -> dict | None:
     return captures
 
 
-def verify_latest() -> int:
-    receipts = sorted(EVIDENCE.glob("bridge-*.json"), key=lambda item: item.name)
+def verify_latest(publish: bool = False) -> int:
+    prefix = "publish" if publish else "bridge"
+    receipts = sorted(EVIDENCE.glob(f"{prefix}-*.json"), key=lambda item: item.name)
     if not receipts:
         raise ValueError("no bridge receipt exists")
     entries = [(path, json.loads(path.read_text(encoding="utf-8"))) for path in receipts]
     receipt_path, report = _latest_by_observation(entries)
-    if report.get("status") != "passed" or report.get("schema") != "recastpress.php-compat-v06-wasm-bridge-run.v1":
-        raise ValueError("latest bridge receipt is not a successful run")
-    current = fixed_inputs()
+    run_schema = "recastpress.php-compat-v06-wasm-publish-run.v1" if publish else "recastpress.php-compat-v06-wasm-bridge-run.v1"
+    if report.get("status") != "passed" or report.get("schema") != run_schema:
+        raise ValueError(f"latest {prefix} receipt is not a successful run")
+    current = fixed_inputs(publish)
     if report.get("source_bound_inputs_before") != current or report.get("source_bound_inputs_after") != current:
         raise ValueError("latest bridge receipt has stale source inputs")
     _validate_owned_processes(report)
@@ -528,13 +542,39 @@ def verify_latest() -> int:
         target.relative_to((ROOT / "target").resolve())
     except ValueError as error:
         raise ValueError("latest bridge receipt target is outside repository target/") from error
-    binary_path = target / "debug" / HOST_NAME
+    host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
+    binary_path = target / "debug" / host_name
     if not binary_path.is_file():
         raise ValueError("latest bridge receipt host binary is missing or stale")
     _validate_binary_receipt(report, sha_file(binary_path), relative(binary_path))
-    validate_host_result(report.get("host_result"))
-    print(f"bridge receipt verified: {relative(receipt_path)}")
+    if publish:
+        validate_publish_host_result(report.get("host_result"))
+    else:
+        validate_host_result(report.get("host_result"))
+    print(f"{prefix} receipt verified: {relative(receipt_path)}")
     return 0
+
+
+def validate_publish_host_result(value: dict) -> None:
+    result = _mapping(value)
+    if (result.get("schema") != PUBLISH_SCHEMA or result.get("execution") != "passed"
+            or result.get("compiler_profile") != COMPILER_PROFILE):
+        raise ValueError("publish host header mismatch")
+    artifact = _mapping(result.get("artifact"))
+    if artifact.get("bytes") != ARTIFACT_BYTES or artifact.get("sha256") != ARTIFACT_SHA256:
+        raise ValueError("publish host did not report the fixed PHP-WASIX module")
+    fixtures = result.get("fixtures")
+    fixture_dir = WASM_DIR.parent / "fixtures"
+    expected = [[name, (fixture_dir / name).stat().st_size, sha_file(fixture_dir / name)]
+        for name in PUBLISH_FILES]
+    if fixtures != expected:
+        raise ValueError("publish fixture identities differ from the fixed files")
+    case = _mapping(result.get("case"))
+    if (case.get("status") != "passed" or not _int_is(case.get("php_exit_code"), 0)
+            or case.get("guest_completed") is not True or case.get("thread_joined") is not True
+            or type(case.get("peer_elapsed_ms")) is not int or case.get("peer_elapsed_ms") < 0):
+        raise ValueError("publish guest execution did not complete successfully")
+    validate_publish_result(case.get("peer"))
 
 
 def _isolated_env(target: Path) -> dict:
@@ -546,14 +586,23 @@ def _isolated_env(target: Path) -> dict:
 
 
 def main() -> int:
-    if sys.argv[1:] == ["--self-test"]:
+    args = sys.argv[1:]
+    publish = "--publish" in args
+    args = [arg for arg in args if arg != "--publish"]
+    if args == ["--self-test"] and publish:
+        publish_self_check()
+        print("publish result validator self-test passed")
+        return 0
+    if args == ["--self-test"]:
         self_check()
         print("bridge result validator self-test passed")
         return 0
-    if sys.argv[1:] == ["--verify-only"]:
+    if args == ["--verify-only"] and publish:
+        return verify_latest(True)
+    if args == ["--verify-only"]:
         return verify_latest()
-    if sys.argv[1:]:
-        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only]", file=sys.stderr)
+    if args:
+        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish]", file=sys.stderr)
         return 2
     if platform.system() != "Linux":
         print("bridge execution is Linux-only", file=sys.stderr)
@@ -572,14 +621,15 @@ def main() -> int:
     try:
         target = selected_target()
         capture_dir = target / ".bridge-runs" / f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')}-{uuid.uuid4().hex}"
-        before = fixed_inputs()
+        before = fixed_inputs(publish)
         env = _isolated_env(target)
         target.mkdir(parents=True, exist_ok=True)
+        host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
         build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path",
-            relative(MANIFEST), "--bin", HOST_NAME, "--target-dir", relative(target)]
+            relative(MANIFEST), "--bin", host_name, "--target-dir", relative(target)]
         phase = "build"
         build = run_bounded(build_command, env, BUILD_TIMEOUT, "build")
-        binary_path = target / "debug" / HOST_NAME
+        binary_path = target / "debug" / host_name
         if build["returncode"] != 0 or build["failure"]:
             failure = build["failure"] or "cargo_build_failed"
         elif not binary_path.is_file():
@@ -587,7 +637,7 @@ def main() -> int:
         else:
             phase = "host"
             binary_before = sha_file(binary_path)
-            host = run_bounded([str(binary_path)], env, HOST_TIMEOUT, "host")
+            host = run_bounded([str(binary_path)] + (["--publish"] if publish else []), env, HOST_TIMEOUT, "host")
             binary_after = sha_file(binary_path)
             if host["returncode"] != 0 or host["failure"]:
                 failure = host["failure"] or "host_failed"
@@ -597,10 +647,10 @@ def main() -> int:
                 if not wire.endswith("\n") or "\n" in wire[:-1] or "\r" in wire:
                     raise ValueError("host must emit exactly one newline terminated JSON record")
                 host_receipt = json.loads(wire)
-                validate_host_result(host_receipt)
+                (validate_publish_host_result if publish else validate_host_result)(host_receipt)
                 if binary_before != binary_after:
                     raise ValueError("host binary changed during execution")
-        after = fixed_inputs()
+        after = fixed_inputs(publish)
         if before != after:
             failure = "source_bound_inputs_changed"
             phase = "source_bound_verification"
@@ -608,7 +658,7 @@ def main() -> int:
         failure = failure or f"{type(error).__name__}"
         if not after:
             try:
-                after = fixed_inputs()
+                after = fixed_inputs(publish)
             except BaseException:
                 after = {}
 
@@ -618,7 +668,8 @@ def main() -> int:
 
     ended = datetime.now(timezone.utc)
     status = "passed" if failure is None else "failed"
-    binary = (target / "debug" / HOST_NAME) if target else (DEFAULT_TARGET / "debug" / HOST_NAME)
+    host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
+    binary = (target / "debug" / host_name) if target else (DEFAULT_TARGET / "debug" / host_name)
     binary_hash = sha_file(binary) if binary.is_file() else None
     captures = {}
     if capture_dir is not None:
@@ -630,7 +681,7 @@ def main() -> int:
             return None
         return {key: item[key] for key in ("pid", "returncode", "timed_out", "output_limited", "reaped", "failure")}
     report = {
-        "schema": "recastpress.php-compat-v06-wasm-bridge-run.v1",
+        "schema": "recastpress.php-compat-v06-wasm-publish-run.v1" if publish else "recastpress.php-compat-v06-wasm-bridge-run.v1",
         "status": status,
         "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
         "compiler_profile": COMPILER_PROFILE,
@@ -659,10 +710,11 @@ def main() -> int:
         "host_result": host_receipt,
         "build_timeout_seconds": BUILD_TIMEOUT,
         "host_timeout_seconds": HOST_TIMEOUT,
-        "scope": "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close",
+        "scope": ("fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation"
+            if publish else "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close"),
     }
     EVIDENCE.mkdir(parents=True, exist_ok=True)
-    name = _receipt_name(status, ended, failure)
+    name = _receipt_name(status, ended, failure, publish)
     path = EVIDENCE / name
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{status}: {relative(path)}")

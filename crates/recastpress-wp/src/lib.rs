@@ -51,6 +51,7 @@ pub mod password_rehash;
 pub mod password_verify;
 pub mod post_meta_cached;
 pub mod post_slug_truncate;
+pub mod public_state;
 pub mod query;
 pub mod remove_accents;
 mod remove_accents_table;
