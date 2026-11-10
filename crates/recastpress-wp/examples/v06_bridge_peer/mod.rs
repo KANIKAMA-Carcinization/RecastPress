@@ -13,6 +13,7 @@ use serde_json::{Map, Value, json};
 use std::fmt;
 use std::io::{BufRead, Read, Write};
 
+mod handles;
 mod publish;
 
 const REQUEST: &str = "surface-probe-1";
@@ -697,6 +698,8 @@ pub fn run_peer<R: BufRead, W: Write>(
         "surface" => run_surface(wire),
         "throwable" => run_throwable(wire),
         "publish" => publish::run_publish(wire),
+        "handles" => handles::run_handles_peer(wire, false),
+        "handles_abort" => handles::run_handles_peer(wire, true),
         _ => Err("unknown_bridge_scenario".into()),
     }
 }

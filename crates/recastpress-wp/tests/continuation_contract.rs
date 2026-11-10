@@ -203,6 +203,9 @@ fn registered_handle_requires_the_exact_token_slot_generation_and_kind() {
     let mut c = machine(LimitsProfile::default());
     let request = RequestGeneration::new(7);
     let actual = PhpHandle::new(request, PhpHandleKind::Object, 2, 3, 99);
+    assert_eq!(actual.slot(), 2);
+    assert_eq!(actual.generation(), 3);
+    assert_eq!(actual.token(), 99);
     c.register_handle(actual).unwrap();
     for invalid in [
         PhpHandle::new(request, PhpHandleKind::Object, 2, 3, 100),
@@ -227,4 +230,100 @@ fn abort_after_root_return_revokes_handles_and_prevents_request_finish() {
     assert_eq!(c.validate_handle(handle), Err(E::RequestClosed));
     assert_eq!(c.finish_request(root), Err(E::RequestClosed));
     assert_eq!(c.depth(), 0);
+}
+
+#[test]
+fn unregister_revokes_only_the_exact_handle_and_preserves_state_on_failure() {
+    let request = RequestGeneration::new(7);
+    let mut c = machine(LimitsProfile {
+        max_depth: 2,
+        max_operations: 2,
+        max_handles: 2,
+    });
+    let handle = PhpHandle::new(request, PhpHandleKind::Object, 4, 8, 31);
+    let other = PhpHandle::new(request, PhpHandleKind::Object, 5, 1, 32);
+    c.register_handle(handle).unwrap();
+    c.register_handle(other).unwrap();
+    let root = c.start_root().unwrap();
+    let effect = c.invoke_php(root).unwrap();
+
+    assert_eq!(
+        c.unregister_handle(PhpHandle::new(request, PhpHandleKind::Object, 4, 8, 99)),
+        Err(E::InvalidHandle)
+    );
+    assert_eq!(
+        c.unregister_handle(PhpHandle::new(
+            RequestGeneration::new(8),
+            PhpHandleKind::Object,
+            4,
+            8,
+            31
+        )),
+        Err(E::WrongRequest)
+    );
+    assert_eq!(c.validate_handle(handle), Ok(()));
+    assert_eq!(c.validate_handle(other), Ok(()));
+    assert_eq!(
+        c.resume(effect, Completion::Value("still pending")),
+        Ok(Completion::Value("still pending"))
+    );
+
+    c.unregister_handle(handle).unwrap();
+    assert_eq!(c.validate_handle(handle), Err(E::InvalidHandle));
+    assert_eq!(c.validate_handle(other), Ok(()));
+    assert_eq!(c.unregister_handle(handle), Err(E::InvalidHandle));
+    c.finish_operation(root).unwrap();
+    c.finish_request(root).unwrap();
+    assert_eq!(c.unregister_handle(other), Err(E::RequestClosed));
+}
+
+#[test]
+fn stale_throwable_rejection_keeps_effect_pending_for_a_valid_handle() {
+    let request = RequestGeneration::new(7);
+    let mut c = machine(LimitsProfile::default());
+    let stale = PhpHandle::new(request, PhpHandleKind::Throwable, 6, 2, 41);
+    let valid = PhpHandle::new(request, PhpHandleKind::Throwable, 6, 3, 42);
+    c.register_handle(stale).unwrap();
+    c.register_handle(valid).unwrap();
+    let root = c.start_root().unwrap();
+    let effect = c.invoke_php(root).unwrap();
+    c.unregister_handle(stale).unwrap();
+
+    assert_eq!(
+        c.resume(effect, Completion::PhpThrowable(stale)),
+        Err(E::InvalidHandle)
+    );
+    assert_eq!(
+        c.resume(effect, Completion::PhpThrowable(valid)),
+        Ok(Completion::PhpThrowable(valid))
+    );
+    c.finish_operation(root).unwrap();
+    c.finish_request(root).unwrap();
+}
+
+#[test]
+fn slot_reuse_with_new_generation_and_token_does_not_revive_unregistered_handle() {
+    let request = RequestGeneration::new(7);
+    let mut c = machine(LimitsProfile::default());
+    let old = PhpHandle::new(request, PhpHandleKind::Object, 11, 4, 50);
+    let replacement = PhpHandle::new(request, PhpHandleKind::Object, 11, 5, 51);
+    c.register_handle(old).unwrap();
+    c.unregister_handle(old).unwrap();
+    c.register_handle(replacement).unwrap();
+
+    assert_eq!(c.validate_handle(old), Err(E::InvalidHandle));
+    assert_eq!(c.validate_handle(replacement), Ok(()));
+}
+
+#[test]
+fn root_returned_handles_remain_live_until_request_finish() {
+    let mut c = machine(LimitsProfile::default());
+    let handle = PhpHandle::new(RequestGeneration::new(7), PhpHandleKind::Object, 9, 2, 71);
+    c.register_handle(handle).unwrap();
+    let root = c.start_root().unwrap();
+    c.finish_operation(root).unwrap();
+    assert_eq!(c.validate_handle(handle), Ok(()));
+    c.finish_request(root).unwrap();
+    assert_eq!(c.validate_handle(handle), Err(E::RequestClosed));
+    assert_eq!(c.unregister_handle(handle), Err(E::RequestClosed));
 }

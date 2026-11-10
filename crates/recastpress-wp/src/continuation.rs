@@ -92,6 +92,21 @@ impl PhpHandle {
     pub fn kind(self) -> PhpHandleKind {
         self.kind
     }
+
+    /// Opaque wire-correlation metadata; these fields do not authenticate a handle.
+    pub fn slot(self) -> u32 {
+        self.slot
+    }
+
+    /// Opaque wire-correlation metadata; these fields do not authenticate a handle.
+    pub fn generation(self) -> u32 {
+        self.generation
+    }
+
+    /// Opaque wire-correlation metadata; these fields do not authenticate a handle.
+    pub fn token(self) -> u64 {
+        self.token
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -474,6 +489,22 @@ impl<T> Continuation<T> {
             return Err(ContinuationError::HandleLimit);
         }
         self.handles.push(handle);
+        Ok(())
+    }
+    /// Invalidate the exact registered mirror after the PHP registry confirms
+    /// the PHP value's final release. PHP itself remains responsible for
+    /// releasing the PHP value; this only removes Rust-side request metadata.
+    pub fn unregister_handle(&mut self, handle: PhpHandle) -> Result<(), ContinuationError> {
+        self.ensure_running()?;
+        if handle.request != self.request {
+            return Err(ContinuationError::WrongRequest);
+        }
+        let index = self
+            .handles
+            .iter()
+            .position(|registered| *registered == handle)
+            .ok_or(ContinuationError::InvalidHandle)?;
+        self.handles.remove(index);
         Ok(())
     }
     pub fn validate_handle(&self, handle: PhpHandle) -> Result<(), ContinuationError> {

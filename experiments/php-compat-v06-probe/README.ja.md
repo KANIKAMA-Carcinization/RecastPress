@@ -12,7 +12,15 @@ python experiments/php-compat-v06-probe/run_check.py --record
 python experiments/php-compat-v06-probe/run_check.py --verify-only
 ```
 
-`--self-test` は PHP one-shot oracle、strict JSON oracle、対話 bridge、publish scenario、相関・handle field・sequence・snapshot・重複 JSON key・depth超過の拒否に加え、実 PHP `RuntimeException` の nested callback経由の伝播とabort後のresume拒否を確認します。PHP と Rust の両側で重複decoded key、UTF-8、depth、frame上限を検査します。`--record` はpublish scenarioも実行し、stale観測・replay・batch全体の事前検査を含むnegative caseを照合します。native receipt [native-continuation-v1.json](evidence/native-continuation-v1.json) には実装・fixture・固定 PHP distribution manifest 全files・実行ファイルの SHA-256 が入り、実行前後にsourceとRust artifact hashを照合します。`--verify-only` は保存済みreceiptと現在のsource hash、成功・throwable・publish観測値、negative inventory、process reap件数を照合します。runner は PHP と Rust adapter の両プロセスを直接起動し、pipeを上限付きで中継し、成功・失敗のどちらでも所有したchildをkill/waitして回収します。
+`--self-test` は PHP one-shot oracle、strict JSON oracle、対話 bridge、publish scenario、handle registry／lifetime scenario、相関・handle field・sequence・snapshot・重複 JSON key・depth超過の拒否に加え、実 PHP `RuntimeException` の nested callback経由の伝播とabort後のresume拒否を確認します。PHP と Rust の両側で重複decoded key、UTF-8、depth、frame上限を検査します。`--record` はpublishとhandle registry scenarioも実行し、stale観測・replay・batch全体の事前検査を含むnegative case、およびrelease／close後の失効を照合します。native receipt [native-continuation-v1.json](evidence/native-continuation-v1.json) には実装・fixture・固定 PHP distribution manifest 全files・実行ファイルの SHA-256 が入り、実行前後にsourceとRust artifact hashを照合します。`--verify-only` は保存済みreceiptと現在のsource hash、成功・throwable・publish・handle観測値、negative inventory、process reap件数を照合します。runner は PHP と Rust adapter の両プロセスを直接起動し、pipeを上限付きで中継し、成功・失敗のどちらでも所有したchildをkill/waitして回収します。
+
+## PHP handle registry milestone
+
+`fixtures/handle_registry.php` はPHP値を強参照し、`WeakMap` をobject identityのdedupeに使ってretain countを管理します。actual reference cell、PHPのcopy-on-write array、Closure、Throwable、resourceを扱い、registry自身のclone・serializeを拒否し、所有状態の複製を防ぎます。slotは世代番号と8-byte `random_bytes` tokenで再利用します。live handle数と累積issued数には上限があります。slot・generation・tokenはregistry内の相関と照合に使います。wire認証とproduction capability securityには別途受入が必要です。
+
+releaseはfinal-release metadataを失効してからPHP自身の値解放へ進み、closeは全handleを先に失効します。fixtureはdestructorからのregistry再入、release／closeでdestructorが例外を投げた後も状態が一貫すること、明示的な `gc_collect_cycles`、close後に外部alias／resourceが残る場合を確認します。native `handles` と `handles_abort` は各PHP 5／Rust 4 frame（3,566／3,568 bytes）でroot→child→nested→rootを通り、`Finished`／`Aborted`を確認します。実行は全owned childを回収し、現行105 source identitiesとowned child 24件をsource-bound receiptに記録しました。Rustの `PhpHandle` getterは相関metadataを返し、`unregister_handle` はPHP側がfinal releaseを確認した後にRust mirrorを失効します。PHP値の実解放はPHPが担います。
+
+独立driverがこのregistryを利用して契約を検証します。production dispatcherへの接続、GC scheduling、製品権限・capability security、全WordPress runtimeの受入が今後の作業です。
 
 ## 証拠の範囲
 

@@ -56,6 +56,8 @@ const ARTIFACT_BYTES: u64 = 39_727_549;
 const ARTIFACT_SHA256: &str = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4";
 const BRIDGE_DRIVER: &[u8] = include_bytes!("../../../fixtures/bridge_driver.php");
 const PUBLISH_DRIVER: &[u8] = include_bytes!("../../../fixtures/publish_driver.php");
+const HANDLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/handle_driver.php");
+const HANDLE_REGISTRY: &[u8] = include_bytes!("../../../fixtures/handle_registry.php");
 const STRICT_JSON: &[u8] = include_bytes!("../../../fixtures/strict_json.php");
 const SURFACE: &[u8] = include_bytes!("../../../fixtures/surface_oracle.php");
 const DISPATCHER: &[u8] = include_bytes!("../../../fixtures/dispatcher.php");
@@ -88,6 +90,16 @@ const PUBLISH_FILES: [(&str, &[u8]); 7] = [
     FILES[4],
     FILES[5],
     ("publish_driver.php", PUBLISH_DRIVER),
+];
+const HANDLE_FILES: [(&str, &[u8]); 8] = [
+    FILES[0],
+    FILES[1],
+    FILES[2],
+    FILES[3],
+    FILES[4],
+    FILES[5],
+    ("handle_registry.php", HANDLE_REGISTRY),
+    ("handle_driver.php", HANDLE_DRIVER),
 ];
 const TRAP_POINTS: u64 = 100_000_000;
 
@@ -307,7 +319,12 @@ fn run() -> Result<()> {
     ensure!(
         matches!(
             mode,
-            "default" | "--metered-trap" | "--cpu-loop" | "--surface-recovery" | "--publish"
+            "default"
+                | "--metered-trap"
+                | "--cpu-loop"
+                | "--surface-recovery"
+                | "--publish"
+                | "--handles"
         ),
         "unsupported fixed bridge mode"
     );
@@ -359,6 +376,33 @@ fn run() -> Result<()> {
     runtime.shutdown_timeout(Duration::from_secs(2));
 
     let execution_started = Instant::now();
+    if mode == "--handles" {
+        let normal = run_scenario(&module, module_hash, "handles")?;
+        let aborted = run_scenario(&module, module_hash, "handles_abort")?;
+        let fixtures: Vec<_> = HANDLE_FILES
+            .iter()
+            .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+            .collect();
+        println!(
+            "{}",
+            json!({
+                "schema": "recastpress.php-compat-v06-wasm-handles.v1",
+                "execution": "passed",
+                "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+                "compiler_profile": COMPILER_PROFILE,
+                "artifact": {
+                    "path": ARTIFACT_RELATIVE,
+                    "bytes": ARTIFACT_BYTES,
+                    "sha256": artifact_hash
+                },
+                "fixtures": fixtures,
+                "cases": [normal, aborted],
+                "compile_elapsed_ms": compile_ms,
+                "execution_elapsed_ms": execution_started.elapsed().as_millis()
+            })
+        );
+        return Ok(());
+    }
     if mode == "--publish" {
         let case = run_scenario(&module, module_hash, "publish")?;
         let fixtures: Vec<_> = PUBLISH_FILES
@@ -1070,7 +1114,9 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let guest_args = if scenario == "publish" {
+    let guest_args = if matches!(scenario, "handles" | "handles_abort") {
+        vec!["-n", "/fixture/handle_driver.php", scenario]
+    } else if scenario == "publish" {
         vec!["-n", "/fixture/publish_driver.php", "publish"]
     } else if scenario.starts_with("trap_") || scenario == "cpu_loop" {
         vec![
@@ -1099,7 +1145,9 @@ fn run_guest(
         .with_mount(
             "/fixture".to_owned(),
             Arc::new(FixedFilesFs {
-                files: if scenario == "publish" {
+                files: if matches!(scenario, "handles" | "handles_abort") {
+                    &HANDLE_FILES
+                } else if scenario == "publish" {
                     &PUBLISH_FILES
                 } else if scenario.starts_with("trap_") || scenario == "cpu_loop" {
                     &TRAP_FILES
