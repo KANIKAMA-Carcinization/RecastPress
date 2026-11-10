@@ -36,8 +36,9 @@ FIXTURE_NAMES = (
 )
 HOST_FIXTURE_ORDER = (
     "surface_oracle.php", "dispatcher.php", "strict_json.php",
-    "strict_json_oracle.php", "bridge_driver.php",
+    "strict_json_oracle.php", "bridge_driver.php", "recovery.php",
 )
+RECOVERY_FIXTURE = ROOT / "experiments" / "php-compat-v06-probe" / "fixtures" / "recovery.php"
 PEER = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_peer" / "mod.rs"
 
 
@@ -79,6 +80,7 @@ def source_paths() -> list[Path]:
     ]
     paths.extend(sorted((ROOT / "crates" / "recastpress-wp" / "src").rglob("*.rs")))
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
+    paths.append(RECOVERY_FIXTURE)
     # The common adapter and the selected binary live below this source tree.
     paths.extend(sorted((WASM_DIR / "src").rglob("*.rs")))
     return sorted(set(path.resolve() for path in paths), key=relative)
@@ -178,6 +180,59 @@ def _int_is(value, expected: int) -> bool:
     return type(value) is int and value == expected
 
 
+def _validate_recovery(result: dict, surface_peer: dict) -> None:
+    expected_fixture = {"path": "fixtures/recovery.php", "bytes": RECOVERY_FIXTURE.stat().st_size,
+        "sha256": sha_file(RECOVERY_FIXTURE)}
+    if result.get("recovery_fixtures") != expected_fixture:
+        raise ValueError("recovery fixture identity differs from the fixed file")
+    recovery = result.get("recovery")
+    if not isinstance(recovery, list) or len(recovery) != 3:
+        raise ValueError("bridge recovery scenarios are incomplete")
+    expected = (("recovery_root_exit_23", 23, "wasi_exit", False,
+            "guest_exit_while_root_effect_pending"),
+        ("recovery_partial_frame_exit_24", 24, "wasi_exit", False,
+            "guest_exit_while_root_effect_pending"),
+        ("recovery_host_cancel", 26, "cancelled_after_pipe_close", True,
+            "stdin_closed_while_guest_waited_for_response"))
+    partial = b'{"v":1,"request":"recovery-probe-1","seq":2,"kind":"call_core","payload":{"operation":"pending"'
+    for record, (mode, exit_code, exit_kind, cancelled, peer_failure) in zip(recovery, expected):
+        case = _mapping(record)
+        exit_matches = _int_is(case.get("observed_guest_exit"), exit_code)
+        if (case.get("mode") != mode or not exit_matches
+                or case.get("guest_exit_kind") != exit_kind
+                or case.get("host_cancelled") is not cancelled
+                or case.get("guest_thread_joined") is not True):
+            raise ValueError(f"{mode} recovery outcome or guest thread join differs")
+        wanted_partial = len(partial) if mode == "recovery_partial_frame_exit_24" else 0
+        if not _int_is(case.get("partial_frame_bytes"), wanted_partial):
+            raise ValueError(f"{mode} partial frame observation differs")
+        if case.get("effect_started_checkpoint") is not True:
+            raise ValueError(f"{mode} did not validate the effect-started checkpoint")
+        if (case.get("first_frame_validated") is not True
+                or case.get("peer_eof_observed") is not True
+                or case.get("stderr_thread_joined") is not True):
+            raise ValueError(f"{mode} start frame, peer EOF, or stderr join was not confirmed")
+        continuation = _mapping(case.get("continuation"))
+        if (continuation.get("pending_before_abort") is not True
+                or not _int_is(continuation.get("depth_after_abort"), 0)
+                or continuation.get("resume_after_abort_rejected") is not True
+                or continuation.get("finish_pending_rejected") is not True):
+            raise ValueError(f"{mode} pending finish/abort/late resume checks differ")
+        failure = case.get("peer_failure")
+        if failure != peer_failure or len(failure.encode("utf-8")) > 4096:
+            raise ValueError(f"{mode} peer failure outcome is missing or unexpected")
+        stderr = case.get("stderr")
+        if stderr != "" or case.get("stderr_overflow") is not False:
+            raise ValueError(f"{mode} stderr must be empty without capture overflow")
+        fresh = _mapping(case.get("fresh_surface"))
+        fresh_peer = _mapping(fresh.get("peer"))
+        if (fresh.get("status") != "passed" or not _int_is(fresh.get("php_exit_code"), 0)
+                or fresh.get("guest_completed") is not True or fresh.get("thread_joined") is not True
+                or type(fresh.get("peer_elapsed_ms")) is not int or fresh.get("peer_elapsed_ms") < 0
+                or fresh_peer != surface_peer):
+            raise ValueError(f"{mode} fresh guest surface observations differ")
+
+
 def validate_host_result(value: dict) -> None:
     """Validate actual guest observations and both continuation scenarios."""
     result = _mapping(value)
@@ -251,6 +306,7 @@ def validate_host_result(value: dict) -> None:
             or throwable.get("resume_after_abort_rejected") is not True
             or throwable.get("double_resume_rejected") is not True):
         raise ValueError("throwable continuation safety summary differs")
+    _validate_recovery(result, surface)
 
 
 def self_check() -> None:
@@ -289,7 +345,41 @@ def self_check() -> None:
                     "child_recovered_before_abort": True,
                     "resume_after_abort_rejected": True, "double_resume_rejected": True}},
         },
+        "recovery_fixtures": {"path": "fixtures/recovery.php",
+            "bytes": (WASM_DIR.parent / "fixtures" / "recovery.php").stat().st_size,
+            "sha256": sha_file(WASM_DIR.parent / "fixtures" / "recovery.php")},
+        "recovery": [
+            {"mode": "recovery_root_exit_23", "observed_guest_exit": 23, "guest_exit_kind": "wasi_exit",
+                "peer_failure": "guest_exit_while_root_effect_pending", "partial_frame_bytes": 0,
+                "effect_started_checkpoint": True,
+                "first_frame_validated": True, "peer_eof_observed": True, "stderr_thread_joined": True,
+                "continuation": {"pending_before_abort": True, "depth_after_abort": 0,
+                    "resume_after_abort_rejected": True, "finish_pending_rejected": True},
+                "host_cancelled": False, "guest_thread_joined": True, "stderr": "", "stderr_overflow": False,
+                "fresh_surface": {}},
+            {"mode": "recovery_partial_frame_exit_24", "observed_guest_exit": 24, "guest_exit_kind": "wasi_exit",
+                "peer_failure": "guest_exit_while_root_effect_pending", "partial_frame_bytes": len(b'{"v":1,"request":"recovery-probe-1","seq":2,"kind":"call_core","payload":{"operation":"pending"'),
+                "effect_started_checkpoint": True,
+                "first_frame_validated": True, "peer_eof_observed": True, "stderr_thread_joined": True,
+                "continuation": {"pending_before_abort": True, "depth_after_abort": 0,
+                    "resume_after_abort_rejected": True, "finish_pending_rejected": True},
+                "host_cancelled": False, "guest_thread_joined": True, "stderr": "", "stderr_overflow": False,
+                "fresh_surface": {}},
+            {"mode": "recovery_host_cancel", "observed_guest_exit": 26, "guest_exit_kind": "cancelled_after_pipe_close",
+                "peer_failure": "stdin_closed_while_guest_waited_for_response", "partial_frame_bytes": 0,
+                "effect_started_checkpoint": True,
+                "first_frame_validated": True, "peer_eof_observed": True, "stderr_thread_joined": True,
+                "continuation": {"pending_before_abort": True, "depth_after_abort": 0,
+                    "resume_after_abort_rejected": True, "finish_pending_rejected": True},
+                "host_cancelled": True, "guest_thread_joined": True, "stderr": "", "stderr_overflow": False,
+                "fresh_surface": {}},
+        ],
     }
+    fresh_surface = {"status": "passed", "php_exit_code": 0, "guest_completed": True,
+        "thread_joined": True, "peer_elapsed_ms": 1,
+        "peer": base["cases"]["surface"]["peer"]}
+    for recovery_case in base["recovery"]:
+        recovery_case["fresh_surface"] = fresh_surface
     validate_host_result(base)
     mutations = [
         lambda x: x["cases"].pop("throwable"),
@@ -301,6 +391,23 @@ def self_check() -> None:
         lambda x: x["cases"]["surface"]["peer"]["child_observation"].update(name_growth_bytes=8),
         lambda x: x["cases"]["surface"]["peer"]["root_observation"].update(name_growth_bytes=6),
         lambda x: x["cases"]["surface"].update(guest_completed=False),
+        lambda x: x["recovery"].pop(),
+        lambda x: x["recovery"][0].update(observed_guest_exit=0),
+        lambda x: x["recovery"][1].update(observed_guest_exit=23),
+        lambda x: x["recovery"][0].update(guest_thread_joined=False),
+        lambda x: x["recovery"][1].update(fresh_surface={}),
+        lambda x: x["recovery"][2].update(host_cancelled=False),
+        lambda x: x["recovery"][2].update(guest_exit_kind="wasi_exit"),
+        lambda x: x["recovery"][2].update(guest_thread_joined=False),
+        lambda x: x["recovery"][0].update(peer_failure="success"),
+        lambda x: x["recovery"][1].update(stderr_overflow=True),
+        lambda x: x["recovery"][0].update(stderr="PHP Warning: fixture diagnostic"),
+        lambda x: x["recovery"][1].update(partial_frame_bytes=0),
+        lambda x: x["recovery"][0]["continuation"].update(finish_pending_rejected=False),
+        lambda x: x["recovery"][2].update(effect_started_checkpoint=False),
+        lambda x: x["recovery"][1].update(stderr_thread_joined=False),
+        lambda x: x["recovery"][0].update(peer_eof_observed=False),
+        lambda x: x["recovery"][2]["fresh_surface"].update(status="failed"),
     ]
     for mutate in mutations:
         candidate = json.loads(json.dumps(base))
@@ -551,7 +658,7 @@ def main() -> int:
         "host_result": host_receipt,
         "build_timeout_seconds": BUILD_TIMEOUT,
         "host_timeout_seconds": HOST_TIMEOUT,
-        "scope": "fixed PHP-WASIX callback bridge surface and throwable continuation only; no WordPress bootstrap, database, or product PHP runtime claim",
+        "scope": "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close",
     }
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     name = _receipt_name(status, ended, failure)
