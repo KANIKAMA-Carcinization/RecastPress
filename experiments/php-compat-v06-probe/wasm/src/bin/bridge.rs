@@ -6,6 +6,7 @@
 #[path = "../../../../../crates/recastpress-wp/examples/v06_bridge_peer/mod.rs"]
 mod peer;
 
+use std::fmt;
 use std::fs::File;
 use std::future::Future;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -22,18 +23,32 @@ use recastpress_wp::continuation::{
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+use wasmer::sys::CompilerConfig;
+use wasmer::wasmparser::Operator;
+use wasmer::{AsStoreMut, Global, GlobalType, Instance, Mutability, StoreMut, Type};
 #[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
 use wasmer_compiler_cranelift::{Cranelift, CraneliftOptLevel};
-use wasmer_types::ModuleHash;
+use wasmer_middlewares::Metering;
+use wasmer_types::{ModuleHash, TrapCode};
+use wasmer_wasix::VirtualTaskManager;
+use wasmer_wasix::WasiThreadError;
+use wasmer_wasix::http::DynHttpClient;
+use wasmer_wasix::os::TtyBridge;
 use wasmer_wasix::runtime::module_cache::HashedModuleData;
+use wasmer_wasix::runtime::module_cache::ModuleCache;
+use wasmer_wasix::runtime::package_loader::PackageLoader;
+use wasmer_wasix::runtime::resolver::Source;
 use wasmer_wasix::runtime::task_manager::tokio::TokioTaskManager;
+use wasmer_wasix::runtime::task_manager::{SpawnType, TaskWasm, TaskWasmRecycleProperties};
 use wasmer_wasix::virtual_fs::{
     DirEntry, FileOpener, FileSystem, FileType, Metadata, OpenOptions, OpenOptionsConfig, PipeRx,
     PipeTx, ReadDir, StaticFile,
 };
+use wasmer_wasix::virtual_net::DynVirtualNetworking;
 use wasmer_wasix::{
     FsError, Pipe, PluggableRuntime, Runtime, UnsupportedVirtualNetworking, VirtualFile,
     runners::wasi::{RuntimeOrEngine, WasiRunner},
+    runtime::TaintReason,
 };
 
 const ARTIFACT_RELATIVE: &str = ".reference/php-wasix-8.5.12/php.wasm";
@@ -45,6 +60,7 @@ const SURFACE: &[u8] = include_bytes!("../../../fixtures/surface_oracle.php");
 const DISPATCHER: &[u8] = include_bytes!("../../../fixtures/dispatcher.php");
 const STRICT_ORACLE: &[u8] = include_bytes!("../../../fixtures/strict_json_oracle.php");
 const RECOVERY: &[u8] = include_bytes!("../../../fixtures/recovery.php");
+const TRAP_RECOVERY: &[u8] = include_bytes!("../../../fixtures/trap_recovery.php");
 const OUTPUT_LIMIT: usize = 64 * 1024;
 const SCENARIO_TIMEOUT: Duration = Duration::from_secs(120);
 const GUEST_JOIN_TIMEOUT: Duration = Duration::from_secs(5);
@@ -62,6 +78,204 @@ const FILES: [(&str, &[u8]); 6] = [
     ("bridge_driver.php", BRIDGE_DRIVER),
     ("recovery.php", RECOVERY),
 ];
+const TRAP_FILES: [(&str, &[u8]); 1] = [("trap_recovery.php", TRAP_RECOVERY)];
+const TRAP_POINTS: u64 = 100_000_000;
+
+#[derive(Debug, Default)]
+struct TrapObservation {
+    runtime_traps: Vec<Option<TrapCode>>,
+    post_start: Option<Value>,
+    final_points: Option<Value>,
+    observation_error: Option<String>,
+    globals: Option<(Global, Global)>,
+    setup_count: usize,
+    recycle_count: usize,
+}
+
+type MeterState = Arc<std::sync::Mutex<TrapObservation>>;
+
+fn capture_meter_globals(store: &mut StoreMut, instance: &Instance) -> Result<(Global, Global)> {
+    let remaining = instance
+        .exports
+        .get_global("wasmer_metering_remaining_points")?
+        .clone();
+    let exhausted = instance
+        .exports
+        .get_global("wasmer_metering_points_exhausted")?
+        .clone();
+    ensure!(
+        remaining.ty(store) == GlobalType::new(Type::I64, Mutability::Var),
+        "meter remaining global type"
+    );
+    ensure!(
+        exhausted.ty(store) == GlobalType::new(Type::I32, Mutability::Var),
+        "meter exhausted global type"
+    );
+    Ok((remaining, exhausted))
+}
+
+fn read_meter_globals(store: &mut impl AsStoreMut, globals: &(Global, Global)) -> Result<Value> {
+    ensure!(
+        globals.0.is_from_store(store) && globals.1.is_from_store(store),
+        "meter globals belong to another store"
+    );
+    let exhausted = match globals.1.get(store) {
+        wasmer::Value::I32(value) => value,
+        _ => anyhow::bail!("exhausted global type changed"),
+    };
+    ensure!(
+        exhausted == 0 || exhausted == 1,
+        "noncanonical exhausted flag"
+    );
+    if exhausted == 1 {
+        return Ok(json!({"kind":"exhausted","type":"i32","flag":1}));
+    }
+    let remaining = match globals.0.get(store) {
+        wasmer::Value::I64(value) => value as u64,
+        _ => anyhow::bail!("remaining global type changed"),
+    };
+    Ok(json!({"kind":"remaining","type":"i64","points":remaining,"exhausted_flag":0}))
+}
+
+fn observe_meter_setup(
+    state: &MeterState,
+    store: &mut StoreMut,
+    instance: &Instance,
+) -> Result<()> {
+    let globals = capture_meter_globals(store, instance)?;
+    let points = read_meter_globals(store, &globals)?;
+    let mut state = state
+        .lock()
+        .map_err(|_| anyhow::anyhow!("meter observation mutex poisoned"))?;
+    state.setup_count += 1;
+    ensure!(
+        state.setup_count == 1 && state.globals.is_none(),
+        "meter setup observed more than once"
+    );
+    state.post_start = Some(points);
+    state.globals = Some(globals);
+    Ok(())
+}
+
+fn observe_meter_recycle(state: &MeterState, props: &mut TaskWasmRecycleProperties) {
+    let globals = state.lock().ok().and_then(|mut state| {
+        state.recycle_count += 1;
+        state.globals.take()
+    });
+    let observed = globals
+        .map(|globals| read_meter_globals(&mut props.store, &globals))
+        .unwrap_or_else(|| Err(anyhow::anyhow!("recycle lacked captured meter globals")));
+    if let Ok(mut state) = state.lock() {
+        match observed {
+            Ok(points) => state.final_points = Some(points),
+            Err(error) => state.observation_error = Some(format!("{error:#}")),
+        }
+    }
+}
+
+type SharedTask =
+    Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send + 'static>> + Send + 'static>;
+
+struct TrapTaskManager {
+    inner: TokioTaskManager,
+    observed: MeterState,
+}
+impl fmt::Debug for TrapTaskManager {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TrapTaskManager").finish_non_exhaustive()
+    }
+}
+impl VirtualTaskManager for TrapTaskManager {
+    fn build_memory(
+        &self,
+        store: &mut StoreMut,
+        spawn: SpawnType,
+    ) -> Result<Option<wasmer::Memory>, WasiThreadError> {
+        self.inner.build_memory(store, spawn)
+    }
+    fn sleep_now(
+        &self,
+        time: Duration,
+    ) -> Pin<Box<dyn Future<Output = ()> + Send + Sync + 'static>> {
+        self.inner.sleep_now(time)
+    }
+    fn task_shared(&self, task: SharedTask) -> Result<(), WasiThreadError> {
+        self.inner.task_shared(task)
+    }
+    fn task_wasm(&self, mut task: TaskWasm) -> Result<(), WasiThreadError> {
+        if task.globals.is_some() || task.callbacks.trigger.is_some() {
+            return Err(WasiThreadError::Unsupported);
+        }
+        let previous = task.callbacks.recycle.take();
+        let observed = self.observed.clone();
+        task.callbacks.recycle = Some(Box::new(move |mut props| {
+            observe_meter_recycle(&observed, &mut props);
+            if let Some(previous) = previous {
+                previous(props);
+            }
+        }));
+        self.inner.task_wasm(task)
+    }
+    fn task_dedicated(
+        &self,
+        task: Box<dyn FnOnce() + Send + 'static>,
+    ) -> Result<(), WasiThreadError> {
+        self.inner.task_dedicated(task)
+    }
+    fn thread_parallelism(&self) -> Result<usize, WasiThreadError> {
+        self.inner.thread_parallelism()
+    }
+}
+
+#[derive(Debug)]
+struct TrapRuntime {
+    inner: PluggableRuntime,
+    observed: Arc<std::sync::Mutex<TrapObservation>>,
+}
+
+impl Runtime for TrapRuntime {
+    fn networking(&self) -> &DynVirtualNetworking {
+        &self.inner.networking
+    }
+    fn task_manager(&self) -> &Arc<dyn VirtualTaskManager> {
+        &self.inner.rt
+    }
+    fn source(&self) -> Arc<dyn Source + Send + Sync> {
+        self.inner.source.clone()
+    }
+    fn engine(&self) -> wasmer::Engine {
+        self.inner.engine.clone()
+    }
+    fn module_cache(&self) -> Arc<dyn ModuleCache + Send + Sync> {
+        self.inner.module_cache.clone()
+    }
+    fn package_loader(&self) -> Arc<dyn PackageLoader + Send + Sync> {
+        self.inner.package_loader.clone()
+    }
+    fn http_client(&self) -> Option<&DynHttpClient> {
+        self.inner.http_client.as_ref()
+    }
+    fn tty(&self) -> Option<&(dyn TtyBridge + Send + Sync)> {
+        self.inner.tty.as_deref()
+    }
+    fn configure_new_instance(
+        &self,
+        module: &wasmer::Module,
+        store: &mut StoreMut,
+        instance: &Instance,
+        memory: Option<&wasmer::Memory>,
+    ) -> Result<()> {
+        self.inner
+            .configure_new_instance(module, store, instance, memory)
+    }
+    fn on_taint(&self, reason: TaintReason) {
+        if let TaintReason::RuntimeError(error) = reason
+            && let Ok(mut observed) = self.observed.lock()
+        {
+            observed.runtime_traps.push(error.clone().to_trap());
+        }
+    }
+}
 
 fn main() {
     if let Err(error) = run() {
@@ -71,9 +285,21 @@ fn main() {
 }
 
 fn run() -> Result<()> {
+    let args: Vec<_> = std::env::args_os().collect();
     ensure!(
-        std::env::args_os().len() == 1,
-        "fixed bridge accepts no CLI arguments"
+        args.len() <= 2,
+        "fixed bridge accepts at most one mode argument"
+    );
+    let mode = args
+        .get(1)
+        .and_then(|arg| arg.to_str())
+        .unwrap_or("default");
+    ensure!(
+        matches!(
+            mode,
+            "default" | "--metered-trap" | "--cpu-loop" | "--surface-recovery"
+        ),
+        "unsupported fixed bridge mode"
     );
     let hashes: Vec<_> = FILES
         .iter()
@@ -105,7 +331,11 @@ fn run() -> Result<()> {
     let guard = runtime.enter();
     let tasks = TokioTaskManager::new(runtime.handle().clone());
     let mut wasix = PluggableRuntime::new(Arc::new(tasks));
-    wasix.set_engine(configured_engine());
+    wasix.set_engine(if mode == "--metered-trap" {
+        metered_engine()
+    } else {
+        configured_engine()
+    });
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let data = HashedModuleData::new(bytes);
@@ -119,6 +349,33 @@ fn run() -> Result<()> {
     runtime.shutdown_timeout(Duration::from_secs(2));
 
     let execution_started = Instant::now();
+    if mode == "--cpu-loop" {
+        return run_cpu_loop(&module, module_hash, &artifact_hash, compile_ms);
+    }
+    if mode == "--surface-recovery" {
+        let surface = run_scenario(&module, module_hash, "surface")?;
+        println!(
+            "{}",
+            json!({
+                "schema": "recastpress.php-compat-v06-wasm-surface-recovery.v1",
+                "execution": "passed",
+                "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+                "compiler_profile": COMPILER_PROFILE,
+                "artifact": {
+                    "path": ARTIFACT_RELATIVE,
+                    "bytes": ARTIFACT_BYTES,
+                    "sha256": artifact_hash
+                },
+                "fixtures": hashes,
+                "surface": surface,
+                "module_compile_count": 1
+            })
+        );
+        return Ok(());
+    }
+    if mode == "--metered-trap" {
+        return run_metered_trap(&module, module_hash, &artifact_hash, &hashes, compile_ms);
+    }
     let surface = run_scenario(&module, module_hash, "surface")?;
     let throwable = run_scenario(&module, module_hash, "throwable")?;
     let recovery = run_recovery_suite(&module, module_hash)?;
@@ -417,6 +674,330 @@ fn run_recovery_suite(module: &wasmer::Module, module_hash: ModuleHash) -> Resul
     Ok(json!(records))
 }
 
+fn run_metered_trap(
+    module: &wasmer::Module,
+    module_hash: ModuleHash,
+    artifact_hash: &str,
+    hashes: &[(&str, usize, String)],
+    compile_ms: u128,
+) -> Result<()> {
+    let normal = run_scenario(module, module_hash, "surface")?;
+    let (host_wire, guest_wire) = Pipe::channel();
+    let (mut host_stdin, host_stdout) = host_wire.split();
+    let (mut host_stderr, guest_stderr) = Pipe::channel();
+    let (stderr_tx, stderr_rx) = mpsc::channel();
+    let stderr_thread = thread::spawn(move || {
+        let result = drain_stderr(&mut host_stderr);
+        let _ = stderr_tx.send(result);
+    });
+    let (done_tx, done_rx) = mpsc::channel();
+    let module_for_guest = module.clone();
+    let trap_observation = Arc::new(std::sync::Mutex::new(TrapObservation::default()));
+    let trap_observation_thread = trap_observation.clone();
+    let guest_thread = thread::spawn(move || {
+        let result = run_metered_guest(
+            &module_for_guest,
+            module_hash,
+            guest_wire.clone(),
+            guest_wire,
+            guest_stderr,
+            trap_observation_thread,
+        );
+        let _ = done_tx.send(result);
+    });
+    let mut reader = BufReader::new(DeadlinePipeReader {
+        pipe: host_stdout,
+        deadline: Instant::now() + SCENARIO_TIMEOUT,
+    });
+    let mut first = Vec::new();
+    let first_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut first)?;
+    ensure!(
+        first_read > 0 && first_read <= OUTPUT_LIMIT,
+        "metered start frame missing or oversized"
+    );
+    ensure!(first == b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":0,\"kind\":\"start_root\",\"payload\":{\"operation\":\"metered_callback_loop\"}}\n", "metered fixture start frame mismatch");
+    let request = RequestGeneration::new(801);
+    let mut continuation = Continuation::<Value>::new(request, LimitsProfile::default())?;
+    let root = continuation.start_root()?;
+    let effect = continuation.invoke_php(root)?;
+    host_stdin.write_all(b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":0,\"kind\":\"invoke_php\",\"payload\":{\"callback\":\"metered_callback_loop\",\"effect_id\":\"pending-trap\"}}\n")?;
+    host_stdin.flush()?;
+    let mut checkpoint = Vec::new();
+    let checkpoint_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut checkpoint)?;
+    ensure!(
+        checkpoint_read > 0 && checkpoint_read <= OUTPUT_LIMIT,
+        "metered callback checkpoint missing or oversized"
+    );
+    ensure!(checkpoint == b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":1,\"kind\":\"effect_started\",\"payload\":{\"effect_id\":\"pending-trap\"}}\n", "metered callback checkpoint mismatch");
+    let guest_error = done_rx
+        .recv_timeout(SCENARIO_TIMEOUT)
+        .context("metered guest did not exhaust its operator budget")?;
+    guest_thread
+        .join()
+        .map_err(|_| anyhow::anyhow!("metered guest thread panicked"))?;
+    host_stdin.close();
+    let mut trailing = Vec::new();
+    let trailing_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_to_end(&mut trailing)?;
+    ensure!(
+        trailing_read <= OUTPUT_LIMIT && trailing.is_empty(),
+        "metered guest emitted unexpected trailing stdout"
+    );
+    let runner_exit_code = guest_error.as_ref().err().and_then(|error| {
+        error.chain().find_map(|cause| {
+            cause
+                .downcast_ref::<wasmer_wasix::WasiRuntimeError>()
+                .and_then(|runtime_error| runtime_error.as_exit_code())
+                .map(|code| code.raw())
+        })
+    });
+    ensure!(
+        runner_exit_code == Some(45),
+        "meter exhaustion did not surface expected Wasix process exit code 45: {runner_exit_code:?}"
+    );
+    let runner_error = guest_error
+        .err()
+        .map(|error| format!("{error:#}"))
+        .unwrap_or_default();
+    let observed_traps = trap_observation
+        .lock()
+        .map_err(|_| anyhow::anyhow!("trap observation poisoned"))?
+        .runtime_traps
+        .clone();
+    let typed_trap =
+        observed_traps.len() == 1 && observed_traps[0] == Some(TrapCode::UnreachableCodeReached);
+    ensure!(
+        typed_trap,
+        "metered callback lacked Wasmer UnreachableCodeReached Runtime trap: {observed_traps:?}; runner={runner_error}"
+    );
+    let observed_trap_names: Vec<_> = observed_traps
+        .iter()
+        .map(|trap| format!("{trap:?}"))
+        .collect();
+    let (post_start_points, final_points, setup_count, recycle_count, observation_error) = {
+        let observation = trap_observation
+            .lock()
+            .map_err(|_| anyhow::anyhow!("meter observation poisoned"))?;
+        (
+            observation.post_start.clone(),
+            observation.final_points.clone(),
+            observation.setup_count,
+            observation.recycle_count,
+            observation.observation_error.clone(),
+        )
+    };
+    ensure!(
+        setup_count == 1 && recycle_count == 1 && observation_error.is_none(),
+        "meter global observation lifecycle failed: {observation_error:?}"
+    );
+    ensure!(
+        post_start_points
+            .as_ref()
+            .is_some_and(|points| points["kind"] == "remaining"
+                && points["points"]
+                    .as_u64()
+                    .is_some_and(|value| value > 0 && value < TRAP_POINTS)),
+        "metered PHP startup did not leave a positive observed budget: {post_start_points:?}"
+    );
+    ensure!(
+        final_points
+            .as_ref()
+            .is_some_and(|points| points["kind"] == "exhausted"
+                && points["type"] == "i32"
+                && points["flag"] == 1),
+        "meter exhausted global was not independently observed: {final_points:?}"
+    );
+    let finish_rejected =
+        continuation.finish_operation(root) == Err(ContinuationError::PendingEffect);
+    continuation.abort();
+    let depth_after_abort = continuation.depth();
+    let late_resume_rejected = continuation.resume(effect, Completion::Value(json!(null)))
+        == Err(ContinuationError::RequestClosed);
+    ensure!(
+        finish_rejected && depth_after_abort == 0 && late_resume_rejected,
+        "trap continuation was not aborted and closed"
+    );
+    let (stderr, overflow) = stderr_rx
+        .recv_timeout(GUEST_JOIN_TIMEOUT)
+        .context("metered stderr drainer join deadline")??;
+    stderr_thread
+        .join()
+        .map_err(|_| anyhow::anyhow!("metered stderr thread panicked"))?;
+    ensure!(
+        !overflow && stderr.is_empty(),
+        "metered guest wrote stderr or exceeded capture bound"
+    );
+    let recovery = run_scenario(module, module_hash, "surface")?;
+    let traps = ["normal", "trap", "recovery"];
+    let trap_fixture_hashes: Vec<_> = TRAP_FILES
+        .iter()
+        .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+        .collect();
+    println!(
+        "{}",
+        json!({
+            "schema": "recastpress.php-compat-v06-wasm-trap.v1",
+            "execution": "passed",
+            "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+            "compiler_profile": COMPILER_PROFILE,
+            "artifact": {
+                "path": ARTIFACT_RELATIVE,
+                "bytes": ARTIFACT_BYTES,
+                "sha256": artifact_hash
+            },
+            "fixtures": hashes,
+            "trap_fixtures": trap_fixture_hashes,
+            "compile_count": 1,
+            "compile_elapsed_ms": compile_ms,
+            "configured_initial_points": {"type": "i64", "points": TRAP_POINTS},
+            "post_start_points": post_start_points,
+            "final_points": final_points,
+            "metering_setup_count": setup_count,
+            "metering_recycle_count": recycle_count,
+            "metering_observation_error": observation_error,
+            "budget_exhausted": true,
+            "cost_policy": "one-point-per-original-Wasm-operator",
+            "budget_reset_count": 0,
+            "cases": {
+                "normal": normal,
+                "trap": {
+                    "status": "passed",
+                    "callback_checkpoint": true,
+                    "typed_wasmer_trap": "UnreachableCodeReached",
+                    "captured_runtime_traps": observed_trap_names,
+                    "runner_exit_code": runner_exit_code,
+                    "runner_error": runner_error,
+                    "post_start_points": post_start_points,
+                    "final_points": final_points,
+                    "metering_setup_count": setup_count,
+                    "metering_recycle_count": recycle_count,
+                    "budget_exhausted": true,
+                    "guest_thread_joined": true,
+                    "stderr_thread_joined": true,
+                    "stderr": "",
+                    "continuation": {
+                        "finish_pending_rejected": finish_rejected,
+                        "depth_after_abort": depth_after_abort,
+                        "late_resume_rejected": late_resume_rejected
+                    }
+                },
+                "recovery": recovery
+            },
+            "case_order": traps,
+            "scope": "fixed PHP callback metering trap and fresh guest recovery; not a product CPU-time limit"
+        })
+    );
+    Ok(())
+}
+
+fn run_cpu_loop(
+    module: &wasmer::Module,
+    module_hash: ModuleHash,
+    artifact_hash: &str,
+    compile_ms: u128,
+) -> Result<()> {
+    let (host_wire, guest_wire) = Pipe::channel();
+    let (mut host_stdin, host_stdout) = host_wire.split();
+    let (mut host_stderr, guest_stderr) = Pipe::channel();
+    let (stderr_tx, stderr_rx) = mpsc::channel();
+    let _stderr_thread = thread::spawn(move || {
+        let result = drain_stderr(&mut host_stderr);
+        let _ = stderr_tx.send(result);
+    });
+    let (done_tx, done_rx) = mpsc::channel();
+    let module = module.clone();
+    let _guest_thread = thread::spawn(move || {
+        let result = run_guest(
+            &module,
+            module_hash,
+            "cpu_loop",
+            guest_wire.clone(),
+            guest_wire,
+            guest_stderr,
+        );
+        let _ = done_tx.send(result);
+    });
+    let mut reader = BufReader::new(DeadlinePipeReader {
+        pipe: host_stdout,
+        deadline: Instant::now() + SCENARIO_TIMEOUT,
+    });
+    let mut start = Vec::new();
+    let start_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut start)?;
+    ensure!(start_read == b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":0,\"kind\":\"start_root\",\"payload\":{\"operation\":\"metered_callback_loop\"}}\n".len(), "CPU loop start frame missing or oversized");
+    ensure!(
+        start == b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":0,\"kind\":\"start_root\",\"payload\":{\"operation\":\"metered_callback_loop\"}}\n",
+        "CPU loop did not emit fixed start frame"
+    );
+    host_stdin.write_all(b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":0,\"kind\":\"invoke_php\",\"payload\":{\"callback\":\"metered_callback_loop\",\"effect_id\":\"pending-trap\"}}\n")?;
+    host_stdin.flush()?;
+    let mut checkpoint = Vec::new();
+    let checkpoint_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut checkpoint)?;
+    ensure!(
+        checkpoint_read > 0 && checkpoint_read <= OUTPUT_LIMIT,
+        "CPU loop callback checkpoint missing or oversized"
+    );
+    ensure!(checkpoint == b"{\"v\":1,\"request\":\"trap-probe-1\",\"seq\":1,\"kind\":\"effect_started\",\"payload\":{\"effect_id\":\"pending-trap\"}}\n", "CPU loop callback checkpoint mismatch");
+    println!(
+        "{}",
+        json!({
+            "schema": "recastpress.php-compat-v06-wasm-cpu-loop.v1",
+            "status": "ready",
+            "host_pid": std::process::id(),
+            "callback_loop_entered": true,
+            "artifact": {
+                "path": ARTIFACT_RELATIVE,
+                "bytes": ARTIFACT_BYTES,
+                "sha256": artifact_hash
+            },
+            "fixtures": TRAP_FILES
+                .iter()
+                .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+                .collect::<Vec<_>>(),
+            "compile_count": 1,
+            "compile_elapsed_ms": compile_ms,
+            "scope": "fixed unmetered PHP callback loop; external owned-process supervisor must kill and reap; no CPU-time limit claim"
+        })
+    );
+    loop {
+        match done_rx.try_recv() {
+            Ok(result) => anyhow::bail!("CPU-bound guest ended after ready checkpoint: {result:?}"),
+            Err(mpsc::TryRecvError::Disconnected) => {
+                anyhow::bail!("CPU-bound guest supervisor disconnected")
+            }
+            Err(mpsc::TryRecvError::Empty) => {}
+        }
+        match stderr_rx.try_recv() {
+            Ok(result) => {
+                let (bytes, overflow) = result?;
+                ensure!(
+                    bytes.is_empty() && !overflow,
+                    "CPU-bound guest stderr was nonempty or exceeded bound"
+                );
+                anyhow::bail!("CPU-bound guest stderr closed before external cancellation");
+            }
+            Err(mpsc::TryRecvError::Disconnected) => {
+                anyhow::bail!("CPU-bound stderr drainer disconnected")
+            }
+            Err(mpsc::TryRecvError::Empty) => {}
+        }
+        thread::sleep(Duration::from_millis(1));
+    }
+}
+
 fn drain_stderr(pipe: &mut Pipe) -> Result<(Vec<u8>, bool)> {
     let mut captured = Vec::new();
     let mut overflow = false;
@@ -453,7 +1034,17 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let guest_args = if scenario.starts_with("recovery_") {
+    let guest_args = if scenario.starts_with("trap_") || scenario == "cpu_loop" {
+        vec![
+            "-n",
+            "/fixture/trap_recovery.php",
+            if scenario == "cpu_loop" {
+                "cpu_loop"
+            } else {
+                "metered_trap"
+            },
+        ]
+    } else if scenario.starts_with("recovery_") {
         vec!["-n", "/fixture/recovery.php", scenario]
     } else {
         vec!["-n", "/fixture/bridge_driver.php", scenario]
@@ -467,7 +1058,16 @@ fn run_guest(
         .with_stderr(Box::new(stderr))
         .with_args(guest_args)
         .with_current_dir("/fixture")
-        .with_mount("/fixture".to_owned(), Arc::new(FixedFilesFs))
+        .with_mount(
+            "/fixture".to_owned(),
+            Arc::new(FixedFilesFs {
+                files: if scenario.starts_with("trap_") || scenario == "cpu_loop" {
+                    &TRAP_FILES
+                } else {
+                    &FILES
+                },
+            }),
+        )
         .capabilities_mut()
         .insecure_allow_all = false;
     runner.capabilities_mut().threading.max_threads = Some(1);
@@ -484,6 +1084,62 @@ fn run_guest(
     drop(_guard);
     runtime.shutdown_timeout(Duration::from_secs(2));
     guest_result
+}
+
+fn run_metered_guest(
+    module: &wasmer::Module,
+    module_hash: ModuleHash,
+    stdin: Pipe,
+    stdout: Pipe,
+    stderr: Pipe,
+    observed: Arc<std::sync::Mutex<TrapObservation>>,
+) -> Result<()> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    let _guard = runtime.enter();
+    let tasks = TokioTaskManager::new(runtime.handle().clone());
+    let mut inner = PluggableRuntime::new(Arc::new(TrapTaskManager {
+        inner: tasks,
+        observed: observed.clone(),
+    }));
+    inner.set_engine(metered_engine());
+    inner.set_networking_implementation(UnsupportedVirtualNetworking::default());
+    inner.http_client = None;
+    let setup_observed = observed.clone();
+    inner.with_instance_setup(move |_, store, instance, _| {
+        observe_meter_setup(&setup_observed, store, instance)
+    });
+    let wasix = TrapRuntime { inner, observed };
+    let mut runner = WasiRunner::new();
+    runner
+        .with_forward_host_env(false)
+        .with_home_mapped(false)
+        .with_asynchronous_threading(false)
+        .with_stdin(Box::new(stdin))
+        .with_stdout(Box::new(stdout))
+        .with_stderr(Box::new(stderr))
+        .with_args(["-n", "/fixture/trap_recovery.php", "metered_trap"])
+        .with_current_dir("/fixture")
+        .with_mount(
+            "/fixture".to_owned(),
+            Arc::new(FixedFilesFs { files: &TRAP_FILES }),
+        );
+    runner.capabilities_mut().insecure_allow_all = false;
+    runner.capabilities_mut().threading.max_threads = Some(1);
+    runner.capabilities_mut().threading.enable_deep_sleep = false;
+    let result = runner
+        .run_wasm(
+            RuntimeOrEngine::Runtime(Arc::new(wasix)),
+            "php",
+            module.clone(),
+            module_hash,
+        )
+        .context("run fixed metered PHP callback fixture");
+    drop(runner);
+    drop(_guard);
+    runtime.shutdown_timeout(Duration::from_secs(2));
+    result
 }
 
 struct DeadlinePipeReader {
@@ -520,8 +1176,13 @@ impl Write for DeadlinePipeWriter<'_> {
 }
 
 #[derive(Debug)]
-struct FixedFilesFs;
-fn lookup(path: &Path) -> std::result::Result<Option<(&'static str, &'static [u8])>, FsError> {
+struct FixedFilesFs {
+    files: &'static [(&'static str, &'static [u8])],
+}
+fn lookup(
+    path: &Path,
+    files: &'static [(&'static str, &'static [u8])],
+) -> std::result::Result<Option<(&'static str, &'static [u8])>, FsError> {
     let mut name = None;
     for part in path.components() {
         match part {
@@ -532,7 +1193,7 @@ fn lookup(path: &Path) -> std::result::Result<Option<(&'static str, &'static [u8
     }
     match name {
         None => Ok(None),
-        Some(name) => FILES
+        Some(name) => files
             .iter()
             .find(|(allowed, _)| name == *allowed)
             .copied()
@@ -562,7 +1223,7 @@ impl FileOpener for FixedFilesFs {
         if options.would_mutate() {
             return Err(FsError::PermissionDenied);
         }
-        let Some((_, bytes)) = lookup(path)? else {
+        let Some((_, bytes)) = lookup(path, self.files)? else {
             return Err(FsError::NotAFile);
         };
         Ok(Box::new(StaticFile::new(bytes.to_vec())))
@@ -570,15 +1231,15 @@ impl FileOpener for FixedFilesFs {
 }
 impl FileSystem for FixedFilesFs {
     fn readlink(&self, path: &Path) -> std::result::Result<PathBuf, FsError> {
-        lookup(path)?;
+        lookup(path, self.files)?;
         Err(FsError::InvalidInput)
     }
     fn read_dir(&self, path: &Path) -> std::result::Result<ReadDir, FsError> {
-        if lookup(path)?.is_some() {
+        if lookup(path, self.files)?.is_some() {
             return Err(FsError::BaseNotDirectory);
         }
         Ok(ReadDir::new(
-            FILES
+            self.files
                 .iter()
                 .map(|(name, bytes)| DirEntry {
                     path: PathBuf::from(format!("/{name}")),
@@ -588,7 +1249,7 @@ impl FileSystem for FixedFilesFs {
         ))
     }
     fn metadata(&self, path: &Path) -> std::result::Result<Metadata, FsError> {
-        Ok(match lookup(path)? {
+        Ok(match lookup(path, self.files)? {
             Some((_, bytes)) => metadata(true, bytes.len()),
             None => metadata(false, 0),
         })
@@ -626,6 +1287,20 @@ impl FileSystem for FixedFilesFs {
 #[cfg(feature = "llvm")]
 fn configured_engine() -> wasmer::Engine {
     wasmer_compiler_llvm::LLVM::default().into()
+}
+
+fn metered_engine() -> wasmer::Engine {
+    let middleware = Arc::new(Metering::new(TRAP_POINTS, |_operator: &Operator| 1));
+    #[cfg(feature = "llvm")]
+    let mut compiler = wasmer_compiler_llvm::LLVM::default();
+    #[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
+    let mut compiler = {
+        let mut compiler = Cranelift::default();
+        compiler.opt_level(CraneliftOptLevel::None);
+        compiler
+    };
+    compiler.push_middleware(middleware);
+    compiler.into()
 }
 #[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
 fn configured_engine() -> wasmer::Engine {

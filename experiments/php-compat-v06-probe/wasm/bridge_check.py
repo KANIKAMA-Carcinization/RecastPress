@@ -81,6 +81,7 @@ def source_paths() -> list[Path]:
     paths.extend(sorted((ROOT / "crates" / "recastpress-wp" / "src").rglob("*.rs")))
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
     paths.append(RECOVERY_FIXTURE)
+    paths.append(WASM_DIR.parent / "fixtures" / "trap_recovery.php")
     # The common adapter and the selected binary live below this source tree.
     paths.extend(sorted((WASM_DIR / "src").rglob("*.rs")))
     return sorted(set(path.resolve() for path in paths), key=relative)
