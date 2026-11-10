@@ -13,7 +13,7 @@ import wordpress_reference as reference
 VERSION = "8.5.12"
 FILENAME = "php-8.5.12-nts-Win32-vs17-x64.zip"
 SHA256 = "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477"
-URL = "https://downloads.php.net/~windows/releases/" + FILENAME
+URL = "https://downloads.php.net/~windows/releases/archives/" + FILENAME
 MAX_BYTES = 64 * 1024 * 1024
 
 
