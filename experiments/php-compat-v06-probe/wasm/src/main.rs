@@ -36,21 +36,25 @@ const PHP_FIXTURE: &[u8] = include_bytes!("../../fixtures/surface_oracle.php");
 const DISPATCHER: &[u8] = include_bytes!("../../fixtures/dispatcher.php");
 const STRICT_JSON: &[u8] = include_bytes!("../../fixtures/strict_json.php");
 const STRICT_JSON_ORACLE: &[u8] = include_bytes!("../../fixtures/strict_json_oracle.php");
+const HANDLE_REGISTRY: &[u8] = include_bytes!("../../fixtures/handle_registry.php");
 const FIXTURE_SHA256: &str = "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8";
 const STRICT_ORACLE_SHA256: &str =
     "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8";
-const DISPATCHER_SHA256: &str = "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6";
+const DISPATCHER_SHA256: &str = "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1";
 const STRICT_JSON_SHA256: &str = "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565";
+const HANDLE_REGISTRY_SHA256: &str =
+    "280e0244eea5c3cf078acea392b2e6854af16f2bc6acd1af3e42c180b20e3bff";
 const OUTPUT_LIMIT: usize = 64 * 1024;
 #[cfg(feature = "llvm")]
 const COMPILER_PROFILE: &str = "wasmer-7.2.0/llvm-default";
 #[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
 const COMPILER_PROFILE: &str = "wasmer-7.2.0/cranelift-noopt";
-const FILES: [(&str, &[u8]); 4] = [
+const FILES: [(&str, &[u8]); 5] = [
     ("surface_oracle.php", PHP_FIXTURE),
     ("dispatcher.php", DISPATCHER),
     ("strict_json.php", STRICT_JSON),
     ("strict_json_oracle.php", STRICT_JSON_ORACLE),
+    ("handle_registry.php", HANDLE_REGISTRY),
 ];
 
 fn main() {
@@ -78,6 +82,10 @@ fn run() -> Result<()> {
     ensure!(
         format!("{:x}", Sha256::digest(DISPATCHER)) == DISPATCHER_SHA256,
         "dispatcher source hash mismatch"
+    );
+    ensure!(
+        format!("{:x}", Sha256::digest(HANDLE_REGISTRY)) == HANDLE_REGISTRY_SHA256,
+        "handle registry source hash mismatch"
     );
     ensure!(
         format!("{:x}", Sha256::digest(STRICT_JSON)) == STRICT_JSON_SHA256,
@@ -227,7 +235,7 @@ fn execute(module: &wasmer::Module, module_hash: ModuleHash, guest_path: &str) -
         "PHP fixture wrote stderr: {}",
         String::from_utf8_lossy(&stderr)
     );
-    Ok(serde_json::from_slice(&stdout).context("decode PHP fixture oracle output")?)
+    serde_json::from_slice(&stdout).context("decode PHP fixture oracle output")
 }
 
 #[derive(Debug)]

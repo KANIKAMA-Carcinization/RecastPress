@@ -27,7 +27,7 @@ except ValueError as error:
 EVIDENCE = WASM_DIR / "evidence"
 ARTIFACT = ROOT / ".reference" / "php-wasix-8.5.12" / "php.wasm"
 FIXTURE_DIR = WASM_DIR.parent / "fixtures"
-SOURCES = ["surface_oracle.php", "dispatcher.php", "strict_json.php", "strict_json_oracle.php"]
+SOURCES = ["surface_oracle.php", "dispatcher.php", "strict_json.php", "strict_json_oracle.php", "handle_registry.php"]
 BOUND_INPUTS = [MANIFEST, WASM_DIR / "Cargo.lock", MAIN_RS, Path(__file__).resolve(), ROOT / "scripts" / "owned_probe.py", ARTIFACT] + [FIXTURE_DIR / name for name in SOURCES]
 # The independent package now also builds a bridge against the local WP crate.
 # Bind local path inputs as well as registry versions, even for this one-shot bin.

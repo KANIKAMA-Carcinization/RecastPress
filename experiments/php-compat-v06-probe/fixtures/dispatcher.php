@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/strict_json.php';
+require_once __DIR__ . '/handle_registry.php';
+use RecastPress\V06\Handles\HandleRegistry;
+use RecastPress\V06\Handles\RegistryError;
 use function RecastPress\V06\StrictJson\rp_decode_unique_json;
 
 /**
@@ -45,63 +48,16 @@ final class ChildProbe extends ParentProbe {
     public function inherited(): string { return parent::dispatch(); }
 }
 
-/** Request-local registry; object and PHP reference-cell entries are distinct kinds. */
-final class RequestRegistry {
-    private string $requestId;
-    private int $generation = 7;
-    private int $next = 1;
-    /** @var array<int,array{kind:string,generation:int,value:mixed}> */
-    private array $slots = [];
-
-    public function __construct() { $this->requestId = bin2hex(random_bytes(16)); }
-
-    public function object(object $value): string {
-        foreach ($this->slots as $slot => $entry) {
-            if ($entry['kind'] === 'object' && $entry['value'] === $value) return $this->token($slot, 'object');
-        }
-        $slot = $this->next++;
-        $this->slots[$slot] = ['kind' => 'object', 'generation' => $this->generation, 'value' => $value];
-        return $this->token($slot, 'object');
-    }
-
-    public function reference(mixed &$value): string {
-        $slot = $this->next++;
-        $this->slots[$slot] = ['kind' => 'reference', 'generation' => $this->generation, 'value' => &$value];
-        return $this->token($slot, 'reference');
-    }
-
-    public function read(string $token, string $kind): mixed {
-        [$slot, $actualKind] = $this->parse($token);
-        if ($actualKind !== $kind || !isset($this->slots[$slot]) || $this->slots[$slot]['generation'] !== $this->generation) {
-            throw new LogicException('invalid_or_expired_handle');
-        }
-        return $this->slots[$slot]['value'];
-    }
-
-    public function endRequest(): void { $this->slots = []; $this->generation++; }
-
-    private function token(int $slot, string $kind): string {
-        return 'rp1.' . $this->requestId . '.' . $this->generation . '.' . $slot . '.' . $kind . '.' . hash('sha256', "{$this->requestId}|{$this->generation}|{$slot}|{$kind}");
-    }
-
-    private function parse(string $token): array {
-        if (!preg_match('/^rp1\.([a-f0-9]{32})\.(\d+)\.(\d+)\.(object|reference)\.([a-f0-9]{64})$/D', $token, $m)) throw new LogicException('malformed_handle');
-        $slot = (int)$m[3]; $kind = $m[4];
-        if (!hash_equals($this->requestId, $m[1]) || (int)$m[2] !== $this->generation || !hash_equals($this->token($slot, $kind), $token)) throw new LogicException('forged_or_expired_handle');
-        return [$slot, $kind];
-    }
-}
-
 function rp_surface(): array {
     $state = new PublicState();
     $alias = $state->item;
     $GLOBALS['rp_public'] = $state->item;
     $initial = $state->item;
     $refCell = ['value' => 'old'];
-    $registry = new RequestRegistry();
-    $objectHandle = $registry->object($state->item);
-    $aliasHandle = $registry->object($alias);
-    $refHandle = $registry->reference($refCell['value']);
+    $registry = new HandleRegistry('1');
+    $objectHandle = $registry->retainObject($state->item);
+    $aliasHandle = $registry->retainObject($alias);
+    $refHandle = $registry->retainReference($refCell['value']);
 
     // The callback changes PHP public state and synchronously calls a child core API.
     $trace = ['root:before'];
@@ -124,19 +80,19 @@ function rp_surface(): array {
     $trace[] = 'root:after-callback';
 
     $sameObject = $alias === $initial && $state->item === $initial;
-    $sameHandle = hash_equals($objectHandle, $aliasHandle);
+    $sameHandle = $objectHandle === $aliasHandle;
     $oldAliasName = $alias->name;
     $globalReplaced = $GLOBALS['rp_public'] !== $initial && $GLOBALS['rp_public']->name === 'replacement';
     $fieldObservedAfterChild = $state->item->name;
-    $arrayReferenceObserved = $registry->read($refHandle, 'reference');
+    $arrayReferenceObserved = $registry->resolve($refHandle, 'reference_cell');
     $objectTypeCheck = false;
-    try { $registry->read($objectHandle, 'reference'); } catch (LogicException) { $objectTypeCheck = true; }
+    try { $registry->resolve($objectHandle, 'reference_cell'); } catch (RegistryError) { $objectTypeCheck = true; }
     $bytes = $state->settings['bytes'];
     $parentOverride = (new ChildProbe())->inherited();
 
-    $registry->endRequest();
+    $registry->close();
     $expiredHandleRejected = false;
-    try { $registry->read($objectHandle, 'object'); } catch (LogicException) { $expiredHandleRejected = true; }
+    try { $registry->resolve($objectHandle, 'object'); } catch (RegistryError) { $expiredHandleRejected = true; }
 
     // User-level Throwable is catchable; it is a result, not a process crash.
     $throwableCaught = false;

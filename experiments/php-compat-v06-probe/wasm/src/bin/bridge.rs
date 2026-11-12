@@ -73,22 +73,24 @@ const COMPILER_PROFILE: &str = "wasmer-7.2.0/llvm-default";
 #[cfg(all(not(feature = "llvm"), feature = "cranelift"))]
 const COMPILER_PROFILE: &str = "wasmer-7.2.0/cranelift-noopt";
 
-const FILES: [(&str, &[u8]); 6] = [
+const FILES: [(&str, &[u8]); 7] = [
     ("surface_oracle.php", SURFACE),
     ("dispatcher.php", DISPATCHER),
     ("strict_json.php", STRICT_JSON),
     ("strict_json_oracle.php", STRICT_ORACLE),
     ("bridge_driver.php", BRIDGE_DRIVER),
     ("recovery.php", RECOVERY),
+    ("handle_registry.php", HANDLE_REGISTRY),
 ];
 const TRAP_FILES: [(&str, &[u8]); 1] = [("trap_recovery.php", TRAP_RECOVERY)];
-const PUBLISH_FILES: [(&str, &[u8]); 7] = [
+const PUBLISH_FILES: [(&str, &[u8]); 8] = [
     FILES[0],
     FILES[1],
     FILES[2],
     FILES[3],
     FILES[4],
     FILES[5],
+    FILES[6],
     ("publish_driver.php", PUBLISH_DRIVER),
 ];
 const HANDLE_FILES: [(&str, &[u8]); 8] = [
@@ -98,7 +100,7 @@ const HANDLE_FILES: [(&str, &[u8]); 8] = [
     FILES[3],
     FILES[4],
     FILES[5],
-    ("handle_registry.php", HANDLE_REGISTRY),
+    FILES[6],
     ("handle_driver.php", HANDLE_DRIVER),
 ];
 const TRAP_POINTS: u64 = 100_000_000;

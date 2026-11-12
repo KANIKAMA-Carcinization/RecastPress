@@ -20,7 +20,9 @@ python experiments/php-compat-v06-probe/run_check.py --verify-only
 
 releaseはfinal-release metadataを失効してからPHP自身の値解放へ進み、closeは全handleを先に失効します。fixtureはdestructorからのregistry再入、release／closeでdestructorが例外を投げた後も状態が一貫すること、明示的な `gc_collect_cycles`、close後に外部alias／resourceが残る場合を確認します。native `handles` と `handles_abort` は各PHP 5／Rust 4 frame（3,566／3,568 bytes）でroot→child→nested→rootを通り、`Finished`／`Aborted`を確認します。実行は全owned childを回収し、現行105 source identitiesとowned child 24件をsource-bound receiptに記録しました。Rustの `PhpHandle` getterは相関metadataを返し、`unregister_handle` はPHP側がfinal releaseを確認した後にRust mirrorを失効します。PHP値の実解放はPHPが担います。
 
-独立driverがこのregistryを利用して契約を検証します。production dispatcherへの接続、GC scheduling、製品権限・capability security、全WordPress runtimeの受入が今後の作業です。
+one-shot の `dispatcher.php` は旧 `RequestRegistry` を除去し、この `HandleRegistry` を `retainObject`／`retainReference`／`resolve`／`close` で直接使用します。object aliasの同一handleは配列の `===` で確認し、reference cellのkindは `reference_cell`、wrong-kindとclose後の失効は `RegistryError` で検査します。既存15件のsurface oracle結果は維持しています。interactive surface／throwable bridgeもshared registryへ接続し、同じ `Throwable` をresolveして再throwし、`RequestFinished` の前にregistryをclose、close後の利用を拒否します。nativeの5 bridgeは `--record` と `--verify-only` を通過し、105 source identitiesとowned child 24件を記録しました。
+
+独立 `handle_driver.php` はregistryのlifetime edge caseを検証します。ここで確認したのはfixtureへの統合です。production WordPress dispatcher、hook／Query、GC scheduling、製品権限・capability security、全WordPress runtimeの受入は今後の作業です。
 
 ## 証拠の範囲
 

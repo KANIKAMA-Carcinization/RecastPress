@@ -2,7 +2,10 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/strict_json.php';
+require_once __DIR__ . '/handle_registry.php';
 use function RecastPress\V06\StrictJson\rp_decode_unique_json;
+use RecastPress\V06\Handles\HandleRegistry;
+use RecastPress\V06\Handles\RegistryError;
 
 /** Interactive JSONL PHP side of the v0.6 continuation probe. */
 const RP_MAX_FRAME = 1_048_576;
@@ -81,10 +84,21 @@ function expect_parent_effect(array $frame, ?string $expected): void {
     }
 }
 
+function expect_registry_closed(HandleRegistry $registry, array $descriptor, string $kind, string $label): void {
+    try {
+        $registry->resolve($descriptor, $kind);
+    } catch (RegistryError $error) {
+        if ($error->getMessage() === 'request_closed') return;
+        throw new RuntimeException($label . '_wrong_registry_error');
+    }
+    throw new RuntimeException($label . '_read_after_close_succeeded');
+}
+
 function run_throwable_probe(): void {
     $wire = new BridgeProtocol();
+    $registry = new HandleRegistry('43');
     $throwableId = 'php-throwable-1';
-    $throwables = [];
+    $throwableDescriptor = null;
     $originalThrowable = null;
     $caughtThrowable = null;
     $nestedCalls = 0;
@@ -99,7 +113,7 @@ function run_throwable_probe(): void {
         throw new RuntimeException('throwable_root_callback_not_allowlisted');
     }
 
-    $rootCallback = static function () use ($wire, $throwableId, &$throwables, &$originalThrowable, &$nestedCalls, &$trace): never {
+    $rootCallback = static function () use ($wire, $registry, $throwableId, &$throwableDescriptor, &$originalThrowable, &$nestedCalls, &$trace): never {
         $trace[] = 'root:enter';
         $wire->send('call_core', ['operation' => 'raise_nested'], 'e-root');
         while (true) {
@@ -117,7 +131,7 @@ function run_throwable_probe(): void {
                     throw $originalThrowable;
                 } catch (Throwable $error) {
                     if ($error !== $originalThrowable) throw new RuntimeException('throwable_identity_changed_in_nested_callback');
-                    $throwables[$throwableId] = $error;
+                    $throwableDescriptor = $registry->retainObject($error);
                     $trace[] = 'nested:transport_catch';
                     $wire->send('resume', ['effect_id' => 'e-nested', 'completion' => [
                         'kind' => 'php_throwable', 'handle' => $throwableId,
@@ -141,13 +155,15 @@ function run_throwable_probe(): void {
                     || ($completion['handle'] ?? null) !== $throwableId
                     || ($completion['class'] ?? null) !== RuntimeException::class
                     || ($completion['message'] ?? null) !== 'nested fixture throwable'
-                    || !isset($throwables[$throwableId])) {
+                    || !is_array($throwableDescriptor)) {
                     throw new RuntimeException('throwable_child_return_handle_mismatch');
                 }
                 $trace[] = 'child:rethrow';
-                // Re-throw the original PHP object held in this request-local table.
-                // Rust returned only its opaque fixture handle; it did not construct it.
-                throw $throwables[$throwableId];
+                // Rust returns only the fixed fixture ID; the request-local registry
+                // resolves its descriptor back to the original PHP throwable object.
+                $resolved = $registry->resolve($throwableDescriptor, 'throwable');
+                if ($resolved !== $originalThrowable) throw new RuntimeException('throwable_identity_changed_in_registry');
+                throw $resolved;
             }
             throw new RuntimeException('unexpected_throwable_child_frame');
         }
@@ -179,6 +195,14 @@ function run_throwable_probe(): void {
         || $abortPayload['finish_request_after_abort_rejected'] !== true) {
         throw new RuntimeException('throwable_abort_state_mismatch');
     }
+    $registry->close();
+    if (!$registry->isClosed() || $registry->liveCount() !== 0 || !is_array($throwableDescriptor)) {
+        throw new RuntimeException('throwable_registry_close_state');
+    }
+    expect_registry_closed($registry, $throwableDescriptor, 'throwable', 'throwable');
+    if ($caughtThrowable !== $originalThrowable || $caughtThrowable->getMessage() !== 'nested fixture throwable') {
+        throw new RuntimeException('throwable_identity_lost_after_registry_close');
+    }
     $expectedTrace = ['root:enter', 'nested:enter', 'nested:transport_catch', 'nested:finally', 'child:rethrow', 'root:catch', 'root:finally'];
     if ($trace !== $expectedTrace || $nestedCalls !== 1) throw new RuntimeException('throwable_replay_or_order_mismatch');
 
@@ -202,8 +226,11 @@ if (($argv[1] ?? 'surface') === 'throwable') {
     try { run_throwable_probe(); } catch (Throwable $e) { fail_bridge($e); }
 } elseif (($argv[1] ?? 'surface') === 'surface') try {
     $wire = new BridgeProtocol();
+    $registry = new HandleRegistry('44');
     $state = new BridgeState();
     $alias = $state->item;
+    $itemDescriptor = $registry->retainObject($state->item);
+    $aliasDescriptor = $registry->retainObject($alias);
     $GLOBALS['rp_bridge_item'] = $state->item;
     $wire->send('start_root', ['operation' => 'surface_probe']);
     $rootEffect = $wire->receive();
@@ -214,8 +241,10 @@ if (($argv[1] ?? 'surface') === 'throwable') {
     $effect = $rootEffect['payload']['effect_id'];
 
     // This is an ordinary registered PHP callback. It mutates the live object before calling Rust.
-    $state->item->name = 'changed-before-child';
-    $beforeChildName = $state->item->name;
+    $liveItem = $registry->resolve($itemDescriptor, 'object');
+    if ($liveItem !== $state->item || $registry->resolve($aliasDescriptor, 'object') !== $liveItem) throw new RuntimeException('surface_registry_identity_before_child');
+    $liveItem->name = 'changed-before-child';
+    $beforeChildName = $liveItem->name;
     $state->settings['flag'] = true;
     $GLOBALS['rp_bridge_item'] = (object)['name' => 'global-replacement'];
 
@@ -236,10 +265,12 @@ if (($argv[1] ?? 'surface') === 'throwable') {
             $nestedEffect = $frame['payload']['effect_id'] ?? null;
             if (($frame['payload']['callback'] ?? null) !== 'nested_probe_callback' || $nestedEffect !== 'e-nested') throw new RuntimeException('nested_callback_not_allowlisted');
             // Model a nested PHP hook with its own live read; no arbitrary source execution is supported.
-            $state->item->name .= ':nested';
+            $nestedItem = $registry->resolve($itemDescriptor, 'object');
+            if ($nestedItem !== $state->item || $registry->resolve($aliasDescriptor, 'object') !== $nestedItem) throw new RuntimeException('surface_registry_identity_in_nested_callback');
+            $nestedItem->name .= ':nested';
             $wire->send('resume', ['effect_id' => $nestedEffect, 'result' => [
-                'public_name' => $state->item->name,
-                'alias_same_object' => $alias === $state->item,
+                'public_name' => $nestedItem->name,
+                'alias_same_object' => $alias === $nestedItem,
             ]], $effect);
             continue;
         }
@@ -256,7 +287,9 @@ if (($argv[1] ?? 'surface') === 'throwable') {
     }
 
     // Re-read after the child finished; outer callback resumes with the same PHP heap.
-    $afterChild = ['public_name' => $state->item->name, 'setting_flag' => $state->settings['flag'], 'alias_same_object' => $alias === $state->item];
+    $afterItem = $registry->resolve($itemDescriptor, 'object');
+    if ($afterItem !== $state->item || $registry->resolve($aliasDescriptor, 'object') !== $afterItem) throw new RuntimeException('surface_registry_identity_after_child');
+    $afterChild = ['public_name' => $afterItem->name, 'setting_flag' => $state->settings['flag'], 'alias_same_object' => $alias === $afterItem];
     $nameGrowthBytes = strlen($afterChild['public_name']) - strlen($beforeChildName);
     $childObservation = $childReturn['observation'] ?? null;
     if (!is_array($childObservation)
@@ -300,6 +333,10 @@ if (($argv[1] ?? 'surface') === 'throwable') {
         || ($rootObservation['global_name'] ?? null) !== $phpRootObservation['global_name']) {
         throw new RuntimeException('rust_root_observation_did_not_match_live_php_heap');
     }
+    $registry->close();
+    if (!$registry->isClosed() || $registry->liveCount() !== 0) throw new RuntimeException('surface_registry_close_state');
+    expect_registry_closed($registry, $itemDescriptor, 'object', 'surface_item');
+    expect_registry_closed($registry, $aliasDescriptor, 'object', 'surface_alias');
     $wire->send('request_finished', ['status' => 'ok', 'php_observation' => [
         'same_object_alias' => $alias === $state->item,
         'public_name_after_resume' => $state->item->name,

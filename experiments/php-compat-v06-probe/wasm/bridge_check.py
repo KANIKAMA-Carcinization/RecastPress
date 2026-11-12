@@ -31,12 +31,12 @@ HOST_TIMEOUT = 300
 MAX_STDOUT = 1_048_576
 MAX_STDERR = 1_048_576
 FIXTURE_NAMES = (
-    "bridge_driver.php", "surface_oracle.php", "strict_json.php",
+    "bridge_driver.php", "surface_oracle.php", "strict_json.php", "handle_registry.php",
     "strict_json_oracle.php", "dispatcher.php",
 )
 HOST_FIXTURE_ORDER = (
     "surface_oracle.php", "dispatcher.php", "strict_json.php",
-    "strict_json_oracle.php", "bridge_driver.php", "recovery.php",
+    "strict_json_oracle.php", "bridge_driver.php", "recovery.php", "handle_registry.php",
 )
 RECOVERY_FIXTURE = ROOT / "experiments" / "php-compat-v06-probe" / "fixtures" / "recovery.php"
 PEER = ROOT / "crates" / "recastpress-wp" / "examples" / "v06_bridge_peer" / "mod.rs"
@@ -46,7 +46,7 @@ PUBLISH_SCHEMA = "recastpress.php-compat-v06-wasm-publish.v1"
 PUBLISH_HOST_NAME = HOST_NAME
 PUBLISH_FILES = HOST_FIXTURE_ORDER + ("publish_driver.php",)
 HANDLE_SCHEMA = "recastpress.php-compat-v06-wasm-handles.v1"
-HANDLE_FILES = HOST_FIXTURE_ORDER + ("handle_registry.php", "handle_driver.php")
+HANDLE_FILES = HOST_FIXTURE_ORDER + ("handle_driver.php",)
 
 sys.path.insert(0, str(WASM_DIR.parent))
 from publish_contract import self_check as publish_self_check, validate_publish_result

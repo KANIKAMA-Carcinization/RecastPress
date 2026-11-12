@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-10T06:41:14+00:00",
+  "recorded_at_utc": "2026-11-12T15:43:39+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "9d1ef6ab14b2b75bfe52f117a073a5b68a90308b2e7b19a1e542a389b1ddff9e",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "15319ab562f70ad84ce27767cf42a59deddda015d766068dfb6b31e61cd5c043",
-    "experiments/php-compat-v06-probe/README.ja.md": "a52ffb6809de115314e2bc604b2bd3c6f422e45d28b43d88e33172d939bf8456",
+    "experiments/php-compat-v06-probe/README.ja.md": "4716e6e90ad4b875fc73c60bc99a2055907a0e446c6bb94fb690ec9dd5a7ca98",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -22,8 +22,8 @@
     "experiments/php-compat-v06-probe/fixtures/handle_registry.php": "280e0244eea5c3cf078acea392b2e6854af16f2bc6acd1af3e42c180b20e3bff",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
-    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "1eebe18b532dcc0269c01e1213d05a37b6fa5a8e56f691455a8662f81fe5646f",
-    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "829a2d9dcfe47b3e4799642046cd539f3601ab678656aee6b2e02de1115118d6",
+    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "3e3c478c43354bfa38be8f64a0cc853eac430ce89493e7946257083403f9840a",
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "67c752b158434b9fafc0c1a573457358114b52d87adbc7f9448903d955ad9601",
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
@@ -164,8 +164,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 7824,
-      "rust": 14628
+      "php": 30032,
+      "rust": 29424
     },
     "returncodes": {
       "php": 0,
@@ -223,8 +223,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 35688,
-      "rust": 11268
+      "php": 27332,
+      "rust": 17836
     },
     "returncodes": {
       "php": 0,
@@ -288,8 +288,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 36600,
-      "rust": 29288
+      "php": 25100,
+      "rust": 23792
     },
     "returncodes": {
       "php": 0,
@@ -439,8 +439,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 22532,
-        "rust": 12872
+        "php": 21468,
+        "rust": 30260
       },
       "returncodes": {
         "php": 0,
@@ -516,8 +516,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 5376,
-        "rust": 4684
+        "php": 14764,
+        "rust": 27632
       },
       "returncodes": {
         "php": 0,
@@ -620,72 +620,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 21140,
+        "pid": 24880,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 31348,
+        "pid": 27364,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 16356,
+        "pid": 24804,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 27236,
+        "pid": 3688,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 11836,
+        "pid": 12944,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27352,
+        "pid": 14428,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 740,
+        "pid": 26656,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 38332,
+        "pid": 20408,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 18120,
+        "pid": 26116,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 31600,
+        "pid": 30248,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 29692,
+        "pid": 29608,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 34296,
+        "pid": 26524,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 34124,
+        "pid": 28476,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 21744,
+        "pid": 23896,
         "returncode": 0,
         "reaped": true
       }
