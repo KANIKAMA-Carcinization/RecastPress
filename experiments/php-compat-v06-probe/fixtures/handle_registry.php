@@ -125,6 +125,16 @@ final class HandleRegistry
         return $handle;
     }
 
+    public function retainArgument(mixed $value): array
+    {
+        $this->assertOpen();
+        $handle = $this->prepareIssue('argument');
+        $slot = $handle['slot'];
+        $this->storeValue($slot, $handle, 'argument', $value);
+
+        return $handle;
+    }
+
     public function retainResource(mixed $value): array
     {
         $this->assertOpen();

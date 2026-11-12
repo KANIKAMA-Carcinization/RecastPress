@@ -7,14 +7,15 @@ use recastpress_wp::{
         RequestGeneration, RequestState,
     },
     dispatcher::{
-        ControlOperation, ControlResult, ControlStep, DispatchStep, DispatchTicket, Dispatcher,
+        ControlOperation, ControlResult, ControlStep, DispatchBoundary, DispatchStep,
+        DispatchTicket, Dispatcher, HookBindingLookupResult,
     },
-    hooks::{CallbackId, ContextCallback, PhpCallMode},
+    hooks::{CallbackId, ContextCallback, HookArgument, HookPriority, HookScalar, PhpCallMode},
     value::{PhpArray, PhpKey, PhpValue},
 };
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
 
-const REQUEST_GENERATION: u64 = 61;
+const REQUEST_GENERATION: u64 = 71;
 const SCRIPT_EFFECT: &str = "e-script";
 const API_NAMES: [&str; 7] = [
     "add_filter",
@@ -182,6 +183,71 @@ fn pod(value: &PhpValue, label: &str) -> Result<Value, String> {
     })
 }
 
+fn hook_scalar_from_value(value: PhpValue, label: &str) -> Result<HookScalar, String> {
+    match value {
+        PhpValue::Null => Ok(HookScalar::Null),
+        PhpValue::Bool(value) => Ok(HookScalar::Bool(value)),
+        PhpValue::Integer(value) => Ok(HookScalar::Integer(value)),
+        PhpValue::Float(value) => Ok(HookScalar::Float(value)),
+        PhpValue::Bytes(value) => Ok(HookScalar::Bytes(value)),
+        PhpValue::Array(_) | PhpValue::Unsupported => Err(format!("{label}_not_scalar")),
+    }
+}
+
+fn parse_php_key(value: &Value, label: &str) -> Result<PhpKey, String> {
+    exact_keys(value, &["type", "hex"], label)?;
+    let bytes = decode_hex(string(value, "hex")?, label)?;
+    match string(value, "type")? {
+        "int" => {
+            let text = std::str::from_utf8(&bytes).map_err(|_| format!("{label}_int_utf8"))?;
+            let number = text
+                .parse::<i64>()
+                .map_err(|_| format!("{label}_int_schema"))?;
+            if number.to_string() != text {
+                return Err(format!("{label}_int_canonical"));
+            }
+            Ok(PhpKey::Integer(number))
+        }
+        "string" => match PhpKey::from_bytes(&bytes) {
+            PhpKey::Bytes(normalized) if normalized == bytes => Ok(PhpKey::Bytes(bytes)),
+            PhpKey::Integer(_) => Err(format!("{label}_string_key_not_normalized")),
+            PhpKey::Bytes(_) => unreachable!(),
+        },
+        _ => Err(format!("{label}_type")),
+    }
+}
+
+fn php_key_json(key: &PhpKey) -> Value {
+    match key {
+        PhpKey::Integer(value) => {
+            json!({"type":"int","hex":encode_hex(value.to_string().as_bytes())})
+        }
+        PhpKey::Bytes(value) => json!({"type":"string","hex":encode_hex(value)}),
+    }
+}
+
+fn php_key_value(key: &PhpKey) -> PhpValue {
+    match key {
+        PhpKey::Integer(value) => PhpValue::Integer(*value),
+        PhpKey::Bytes(value) => PhpValue::Bytes(value.clone()),
+    }
+}
+
+fn scalar_pod(value: &HookScalar, label: &str) -> Result<Value, String> {
+    pod(&value.as_php_value(), label)
+}
+
+fn same_scalar_representation(left: &HookScalar, right: &HookScalar) -> bool {
+    match (left, right) {
+        (HookScalar::Null, HookScalar::Null) => true,
+        (HookScalar::Bool(left), HookScalar::Bool(right)) => left == right,
+        (HookScalar::Integer(left), HookScalar::Integer(right)) => left == right,
+        (HookScalar::Float(left), HookScalar::Float(right)) => left.to_bits() == right.to_bits(),
+        (HookScalar::Bytes(left), HookScalar::Bytes(right)) => left == right,
+        _ => false,
+    }
+}
+
 fn callback_key(value: &Value, label: &str) -> Result<Option<CallbackId>, String> {
     if value.is_null() {
         return Ok(None);
@@ -214,24 +280,6 @@ fn callback_key(value: &Value, label: &str) -> Result<Option<CallbackId>, String
     }))
 }
 
-fn internal_hook(raw: &[u8]) -> String {
-    if raw == b"all" {
-        "all".into()
-    } else {
-        format!("b:{}", encode_hex(raw))
-    }
-}
-
-fn raw_hook(internal: &str, label: &str) -> Result<Vec<u8>, String> {
-    if internal == "all" {
-        return Ok(b"all".to_vec());
-    }
-    let hex = internal
-        .strip_prefix("b:")
-        .ok_or_else(|| format!("{label}_internal_hook"))?;
-    decode_hex(hex, label)
-}
-
 fn parse_handle(
     value: &Value,
     request: RequestGeneration,
@@ -252,6 +300,7 @@ fn parse_handle(
     }
     let kind = match string(value, "kind")? {
         "callable" => PhpHandleKind::Callable,
+        "argument" => PhpHandleKind::Argument,
         "throwable" => PhpHandleKind::Throwable,
         _ => return Err(format!("{label}_kind")),
     };
@@ -284,6 +333,7 @@ fn parse_handle(
 fn descriptor(handle: PhpHandle) -> Value {
     let kind = match handle.kind() {
         PhpHandleKind::Callable => "callable",
+        PhpHandleKind::Argument => "argument",
         PhpHandleKind::Throwable => "throwable",
         _ => unreachable!("peer only emits callable and throwable handles"),
     };
@@ -315,18 +365,33 @@ enum EffectValueMode {
     RegistryObservation,
 }
 
+enum BoundaryCompletion {
+    Value(Value),
+    PhpThrowable(PhpHandle),
+}
+
+#[derive(Clone, Copy)]
+enum BoundaryEffectCount {
+    Regular,
+    ArgumentRelease,
+}
+
 struct CallablePeer<'a, R, W> {
     wire: &'a mut Wire<R, W>,
     continuation: &'a mut Continuation<Value>,
     dispatcher: &'a mut Dispatcher,
     request: RequestGeneration,
     handles: HashMap<PhpHandle, HandleState>,
+    slot_generation_high_water: HashMap<u32, u32>,
     throwable_diagnostics: HashMap<PhpHandle, (String, String)>,
     effect_ids: HashMap<String, EffectId>,
-    hook_names: HashSet<String>,
+    api_arguments: Vec<HashMap<String, PhpHandle>>,
+    hook_names: Vec<HookArgument>,
     api_counts: BTreeMap<String, u64>,
     callback_invocations: u64,
     release_effects: u64,
+    boundary_effects: u64,
+    argument_release_effects: u64,
     next_effect: u64,
     registration_epoch: u64,
 }
@@ -346,7 +411,9 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<PhpHandle, String> {
         let handle = parse_handle(value, self.request, kind, label)?;
         match self.handles.get(&handle) {
-            Some(HandleState::Active) if kind == PhpHandleKind::Callable => {
+            Some(HandleState::Active)
+                if matches!(kind, PhpHandleKind::Callable | PhpHandleKind::Argument) =>
+            {
                 return Err(format!("{label}_handle_reused"));
             }
             Some(HandleState::ReleasePending) => {
@@ -355,6 +422,27 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             Some(HandleState::Throwable) if kind == PhpHandleKind::Throwable => return Ok(handle),
             Some(_) => return Err(format!("{label}_handle_state")),
             None => {}
+        }
+        for (existing, state) in &self.handles {
+            if *existing == handle || existing.slot() != handle.slot() {
+                continue;
+            }
+            match state {
+                HandleState::ReleasePending if handle.generation() > existing.generation() => {}
+                HandleState::ReleasePending => {
+                    return Err(format!("{label}_slot_generation"));
+                }
+                HandleState::Active | HandleState::Throwable => {
+                    return Err(format!("{label}_slot_collision"));
+                }
+            }
+        }
+        if self
+            .slot_generation_high_water
+            .get(&handle.slot())
+            .is_some_and(|generation| handle.generation() <= *generation)
+        {
+            return Err(format!("{label}_slot_generation"));
         }
         self.continuation
             .register_handle(handle)
@@ -367,7 +455,119 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 HandleState::Active
             },
         );
+        self.slot_generation_high_water
+            .insert(handle.slot(), handle.generation());
         Ok(handle)
+    }
+
+    fn register_argument(&mut self, value: &Value, label: &str) -> Result<PhpHandle, String> {
+        let handle = self.register_handle(value, PhpHandleKind::Argument, label)?;
+        if self.handles.get(&handle) != Some(&HandleState::Active) {
+            return Err(format!("{label}_argument_not_active"));
+        }
+        Ok(handle)
+    }
+
+    fn current_argument(&self, name: &str) -> Result<PhpHandle, String> {
+        self.api_arguments
+            .last()
+            .and_then(|arguments| arguments.get(name))
+            .copied()
+            .ok_or_else(|| format!("argument_handle_{name}_missing"))
+    }
+
+    fn remember_hook(&mut self, hook: HookArgument) {
+        if !self
+            .hook_names
+            .iter()
+            .any(|existing| existing.array_key == hook.array_key)
+        {
+            self.hook_names.push(hook);
+        }
+    }
+
+    fn register_api_arguments(
+        &mut self,
+        payload: &Value,
+        api: &str,
+    ) -> Result<Vec<(String, PhpHandle)>, String> {
+        let names: &[&str] = match api {
+            "add_filter" => &["hook", "callback", "priority", "accepted_args"],
+            "remove_filter" => &["hook", "callback", "priority"],
+            "has_filter" => &["hook", "callback"],
+            "apply_filters" | "doing_filter" | "did_filter" => &["hook"],
+            "current_filter" => &[],
+            _ => return Err("unknown_api_arguments".into()),
+        };
+        if names.is_empty() {
+            if payload.get("arguments").is_some() {
+                return Err("unexpected_api_arguments".into());
+            }
+            return Ok(Vec::new());
+        }
+        let values = payload.get("arguments").ok_or("api_arguments_missing")?;
+        exact_keys(values, names, "api_arguments")?;
+        names
+            .iter()
+            .map(|name| {
+                let descriptor = values
+                    .get(*name)
+                    .ok_or_else(|| format!("api_argument_{name}_missing"))?;
+                self.register_argument(descriptor, &format!("api_argument_{name}"))
+                    .map(|handle| ((*name).to_owned(), handle))
+            })
+            .collect()
+    }
+
+    fn release_arguments(
+        &mut self,
+        arguments: &[(String, PhpHandle)],
+        operation: OperationId,
+        caller_wire: &str,
+    ) -> Result<Option<PhpHandle>, String> {
+        if arguments.is_empty() {
+            return Ok(None);
+        }
+        for (_, handle) in arguments {
+            if handle.kind() != PhpHandleKind::Argument
+                || self.handles.get(handle) != Some(&HandleState::Active)
+            {
+                return Err("release_arguments_handle_not_active".into());
+            }
+            self.continuation
+                .validate_handle(*handle)
+                .map_err(|error| format!("release_arguments_mirror:{error:?}"))?;
+        }
+        for (_, handle) in arguments {
+            self.handles.insert(*handle, HandleState::ReleasePending);
+        }
+        let handles = arguments
+            .iter()
+            .map(|(_, handle)| descriptor(*handle))
+            .collect::<Vec<_>>();
+        let result = self.drive_boundary(
+            "release_arguments",
+            json!({"handles":handles}),
+            operation,
+            caller_wire,
+            BoundaryEffectCount::ArgumentRelease,
+        )?;
+        match result {
+            BoundaryCompletion::Value(value) => {
+                exact_keys(&value, &["released"], "release_arguments_result")?;
+                if value.get("released") != Some(&Value::Bool(true)) {
+                    return Err("release_arguments_ack".into());
+                }
+                for (_, handle) in arguments {
+                    self.continuation
+                        .unregister_handle(*handle)
+                        .map_err(|error| format!("unregister_argument:{error:?}"))?;
+                    self.handles.remove(handle);
+                }
+                Ok(None)
+            }
+            BoundaryCompletion::PhpThrowable(handle) => Ok(Some(handle)),
+        }
     }
 
     fn check_invocable(&self, handle: PhpHandle, label: &str) -> Result<(), String> {
@@ -540,6 +740,124 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         }
     }
 
+    fn drive_boundary(
+        &mut self,
+        action: &str,
+        arguments: Value,
+        operation: OperationId,
+        caller_wire: &str,
+        count_as: BoundaryEffectCount,
+    ) -> Result<BoundaryCompletion, String> {
+        let effect = self
+            .continuation
+            .invoke_php(operation)
+            .map_err(|error| format!("invoke_boundary:{error:?}"))?;
+        let effect_wire = self.fresh_effect("boundary");
+        if self
+            .effect_ids
+            .insert(effect_wire.clone(), effect)
+            .is_some()
+        {
+            return Err("boundary_effect_wire_id_reused".into());
+        }
+        match count_as {
+            BoundaryEffectCount::Regular => {
+                self.boundary_effects = self
+                    .boundary_effects
+                    .checked_add(1)
+                    .ok_or("boundary_effect_count_overflow")?;
+            }
+            BoundaryEffectCount::ArgumentRelease => {
+                self.argument_release_effects = self
+                    .argument_release_effects
+                    .checked_add(1)
+                    .ok_or("argument_release_effect_count_overflow")?;
+            }
+        }
+        self.wire.send(
+            "invoke_php",
+            Some(caller_wire),
+            json!({
+                "operation":"boundary",
+                "effect_id":effect_wire,
+                "action":action,
+                "arguments":arguments,
+            }),
+        )?;
+        loop {
+            let (kind, payload) = self.wire.receive_one_of(&[
+                FrameExpectation {
+                    kind: "call_core",
+                    parent_effect: Some(&effect_wire),
+                },
+                FrameExpectation {
+                    kind: "resume",
+                    parent_effect: Some(caller_wire),
+                },
+            ])?;
+            if kind == "call_core" {
+                let completion = self.process_call_core(&payload, &effect_wire)?;
+                let api_name = string(&payload, "api")?;
+                let completion = self.completion_json(&completion, "boundary_call_core_return")?;
+                self.wire.send(
+                    "return",
+                    Some(&effect_wire),
+                    json!({"api":api_name,"completion":completion}),
+                )?;
+                continue;
+            }
+            exact_keys(&payload, &["effect_id", "completion"], "boundary_resume")?;
+            if string(&payload, "effect_id")? != effect_wire {
+                return Err("boundary_effect_resume_id_mismatch".into());
+            }
+            let completion = payload
+                .get("completion")
+                .ok_or("boundary_completion_missing")?;
+            let (continuation_completion, result) = match string(completion, "kind")? {
+                "value" => {
+                    exact_keys(completion, &["kind", "value"], "boundary_value_completion")?;
+                    let result = completion
+                        .get("value")
+                        .ok_or("boundary_value_missing")?
+                        .clone();
+                    (
+                        Completion::Value(result.clone()),
+                        BoundaryCompletion::Value(result),
+                    )
+                }
+                "php_throwable" => {
+                    let parsed = self.process_completion(
+                        completion,
+                        "boundary_throwable_completion",
+                        EffectValueMode::Pod,
+                    )?;
+                    let Completion::PhpThrowable(handle) = parsed else {
+                        return Err("boundary_throwable_completion_kind".into());
+                    };
+                    (
+                        Completion::PhpThrowable(handle),
+                        BoundaryCompletion::PhpThrowable(handle),
+                    )
+                }
+                _ => return Err("boundary_completion_kind".into()),
+            };
+            let resumed = self
+                .continuation
+                .resume(effect, continuation_completion)
+                .map_err(|error| format!("boundary_resume:{error:?}"))?;
+            self.effect_ids.remove(&effect_wire);
+            return match (resumed, result) {
+                (Completion::Value(_), value @ BoundaryCompletion::Value(_)) => Ok(value),
+                (Completion::PhpThrowable(resumed), BoundaryCompletion::PhpThrowable(expected))
+                    if resumed == expected =>
+                {
+                    Ok(BoundaryCompletion::PhpThrowable(resumed))
+                }
+                _ => Err("boundary_resume_changed_completion".into()),
+            };
+        }
+    }
+
     fn process_call_core(
         &mut self,
         payload: &Value,
@@ -557,16 +875,25 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .continuation
             .begin_child(parent)
             .map_err(|error| format!("begin_api_child:{error:?}"))?;
+        let arguments = self.register_api_arguments(payload, &api_name)?;
+        self.api_arguments.push(arguments.iter().cloned().collect());
         let completion = match api_name.as_str() {
             "add_filter" => self.api_add(payload, operation, parent_wire),
             "remove_filter" => self.api_remove(payload, operation, parent_wire),
-            "has_filter" => self.api_has(payload),
+            "has_filter" => self.api_has(payload, operation, parent_wire),
             "apply_filters" => self.api_apply(payload, operation, parent_wire),
             "current_filter" => self.api_current(payload),
-            "doing_filter" => self.api_doing(payload),
-            "did_filter" => self.api_did(payload),
+            "doing_filter" => self.api_doing(payload, operation, parent_wire),
+            "did_filter" => self.api_did(payload, operation, parent_wire),
             _ => Err("call_core_unknown_api".into()),
         }?;
+        let release_throwable = self.release_arguments(&arguments, operation, parent_wire)?;
+        self.api_arguments
+            .pop()
+            .ok_or("api_argument_stack_underflow")?;
+        let completion = release_throwable
+            .map(Completion::PhpThrowable)
+            .unwrap_or(completion);
         let returned_parent = self
             .continuation
             .finish_operation(operation)
@@ -578,16 +905,201 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         Ok(completion)
     }
 
-    fn parse_hook(payload: &Value, key: &str, nullable: bool) -> Result<(Vec<u8>, String), String> {
-        let value = payload.get(key).ok_or_else(|| format!("{key}_missing"))?;
-        if value.is_null() && nullable {
-            return Ok((Vec::new(), String::new()));
+    fn boundary_scalar_from_argument(
+        &mut self,
+        handle: PhpHandle,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<Option<HookScalar>, PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let result = self.drive_boundary(
+            "hook_scalar",
+            json!({"handle":descriptor(handle)}),
+            operation,
+            parent_wire,
+            BoundaryEffectCount::Regular,
+        )?;
+        match result {
+            BoundaryCompletion::PhpThrowable(handle) => Ok(Err(handle)),
+            BoundaryCompletion::Value(value) => {
+                exact_keys(&value, &["supported", "value"], label)?;
+                if value.get("supported") == Some(&Value::Bool(false)) {
+                    if value.get("value") != Some(&Value::Null) {
+                        return Err(format!("{label}_unsupported_scalar_value"));
+                    }
+                    return Ok(Ok(None));
+                }
+                if value.get("supported") != Some(&Value::Bool(true)) {
+                    return Err(format!("{label}_supported"));
+                }
+                let scalar = parse_pod(
+                    value.get("value").ok_or("hook_scalar_value_missing")?,
+                    label,
+                )?;
+                let scalar = hook_scalar_from_value(scalar, label)?;
+                Ok(Ok(Some(scalar)))
+            }
         }
-        let hex = value
-            .as_str()
-            .ok_or_else(|| format!("{key}_must_be_hex_string"))?;
-        let raw = decode_hex(hex, key)?;
-        Ok((raw.clone(), internal_hook(&raw)))
+    }
+
+    fn check_argument(&self, handle: PhpHandle, label: &str) -> Result<(), String> {
+        if handle.kind() != PhpHandleKind::Argument
+            || self.handles.get(&handle) != Some(&HandleState::Active)
+        {
+            return Err(format!("{label}_argument_not_active"));
+        }
+        self.continuation
+            .validate_handle(handle)
+            .map_err(|error| format!("{label}_argument_mirror:{error:?}"))
+    }
+
+    fn boundary_value(
+        &mut self,
+        action: &str,
+        arguments: Value,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<Value, PhpHandle>, String> {
+        let result: Result<Result<Value, PhpHandle>, String> = match self.drive_boundary(
+            action,
+            arguments,
+            operation,
+            parent_wire,
+            BoundaryEffectCount::Regular,
+        )? {
+            BoundaryCompletion::Value(value) => Ok(Ok(value)),
+            BoundaryCompletion::PhpThrowable(handle) => Ok(Err(handle)),
+        };
+        result.map_err(|error| format!("{label}:{error}"))
+    }
+
+    fn boundary_array_key(
+        &mut self,
+        handle: PhpHandle,
+        access: &str,
+        null_to_zero: bool,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<(HookScalar, PhpKey), PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let result = self.boundary_value(
+            "array_key",
+            json!({"handle":descriptor(handle),"access":access,"null_to_zero":null_to_zero}),
+            operation,
+            parent_wire,
+            label,
+        )?;
+        match result {
+            Err(handle) => Ok(Err(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["original", "key"], label)?;
+                let original = parse_pod(
+                    value
+                        .get("original")
+                        .ok_or_else(|| format!("{label}_original_missing"))?,
+                    label,
+                )?;
+                let original = hook_scalar_from_value(original, label)?;
+                let key = parse_php_key(
+                    value
+                        .get("key")
+                        .ok_or_else(|| format!("{label}_key_missing"))?,
+                    label,
+                )?;
+                Ok(Ok((original, key)))
+            }
+        }
+    }
+
+    fn boundary_callback_id(
+        &mut self,
+        handle: PhpHandle,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<Option<CallbackId>, PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let result = self.boundary_value(
+            "callback_id",
+            json!({"handle":descriptor(handle)}),
+            operation,
+            parent_wire,
+            label,
+        )?;
+        match result {
+            Err(handle) => Ok(Err(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["key"], label)?;
+                let key = callback_key(
+                    value
+                        .get("key")
+                        .ok_or_else(|| format!("{label}_key_missing"))?,
+                    label,
+                )?;
+                Ok(Ok(key))
+            }
+        }
+    }
+
+    fn boundary_accepted_args(
+        &mut self,
+        handle: PhpHandle,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<i64, PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let result = self.boundary_value(
+            "accepted_args",
+            json!({"handle":descriptor(handle)}),
+            operation,
+            parent_wire,
+            label,
+        )?;
+        match result {
+            Err(handle) => Ok(Err(handle)),
+            Ok(value) => {
+                let cast = parse_pod(&value, label)?;
+                match cast {
+                    PhpValue::Integer(value) => Ok(Ok(value)),
+                    _ => Err(format!("{label}_result_not_integer")),
+                }
+            }
+        }
+    }
+
+    fn boundary_retain_callable(
+        &mut self,
+        handle: PhpHandle,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<PhpHandle, PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let result = self.boundary_value(
+            "retain_callable",
+            json!({"handle":descriptor(handle)}),
+            operation,
+            parent_wire,
+            label,
+        )?;
+        match result {
+            Err(handle) => Ok(Err(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["handle"], label)?;
+                let handle = self.register_handle(
+                    value
+                        .get("handle")
+                        .ok_or_else(|| format!("{label}_handle_missing"))?,
+                    PhpHandleKind::Callable,
+                    label,
+                )?;
+                Ok(Ok(handle))
+            }
+        }
     }
 
     fn api_add(
@@ -596,54 +1108,136 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         operation: OperationId,
         parent_wire: &str,
     ) -> Result<Completion<PhpValue>, String> {
-        exact_keys(
-            payload,
-            &[
-                "api",
-                "hook_hex",
-                "key",
-                "priority",
-                "accepted_args",
-                "handle",
-            ],
-            "add_filter_call",
-        )?;
-        let (raw, hook) = Self::parse_hook(payload, "hook_hex", false)?;
-        let key = callback_key(payload.get("key").ok_or("add_key_missing")?, "add_key")?;
-        let priority = payload
-            .get("priority")
-            .and_then(Value::as_i64)
-            .ok_or("add_priority")?;
-        self.hook_names.insert(hook.clone());
-        if let Some(id) = key {
-            let accepted = payload
-                .get("accepted_args")
-                .and_then(Value::as_i64)
-                .ok_or("add_accepted_args")?;
-            let handle = self.register_handle(
-                payload.get("handle").ok_or("add_handle_missing")?,
-                PhpHandleKind::Callable,
-                "add_handle",
-            )?;
-            let callback = ContextCallback::php_callable(id, accepted, handle)
-                .map_err(|error| format!("add_callback:{error:?}"))?;
-            let mut control = self
-                .dispatcher
-                .begin_add(&hook, priority, callback)
-                .map_err(|error| format!("begin_add:{error:?}"))?;
-            self.registration_epoch += 1;
-            match self.run_control(&mut control, operation, parent_wire, "add_filter")? {
-                ControlOutcome::Result(ControlResult::Added(true)) => {}
-                ControlOutcome::Throwable(handle) => return Ok(Completion::PhpThrowable(handle)),
-                _ => return Err("add_result_mismatch".into()),
+        exact_keys(payload, &["api", "arguments"], "add_filter_call")?;
+        let argument = self.current_argument("hook")?;
+        let (_hook, target) = match self.hook_target_for_api(
+            argument,
+            "add_filter",
+            true,
+            operation,
+            parent_wire,
+            "add_filter",
+        )? {
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(Some(target)) => target,
+            Ok(None) => return Err("add_filter_missing_target".into()),
+        };
+
+        let callback_handle = self.current_argument("callback")?;
+        let completion = match self.boundary_callback_id(
+            callback_handle,
+            operation,
+            parent_wire,
+            "add_callback_id",
+        )? {
+            Err(handle) => Completion::PhpThrowable(handle),
+            Ok(None) => Completion::Value(PhpValue::Bool(true)),
+            Ok(Some(id)) => {
+                let priority_handle = self.current_argument("priority")?;
+                let (priority_original, priority_key) = match self.boundary_array_key(
+                    priority_handle,
+                    "isset",
+                    true,
+                    operation,
+                    parent_wire,
+                    "add_priority_isset",
+                )? {
+                    Err(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    Ok(priority) => priority,
+                };
+                let priority = HookPriority::new(priority_original, priority_key);
+                let snapshot = self
+                    .dispatcher
+                    .capture_priority_snapshot(target, &priority)
+                    .map_err(|error| format!("add_priority_snapshot:{error:?}"))?;
+                match self.boundary_array_key(
+                    priority_handle,
+                    "write",
+                    true,
+                    operation,
+                    parent_wire,
+                    "add_priority_write",
+                )? {
+                    Err(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    Ok((write_original, write_key)) => {
+                        if !same_scalar_representation(&write_original, &priority.original)
+                            || write_key != *priority.key()
+                        {
+                            return Err("add_priority_write_changed".into());
+                        }
+                    }
+                }
+                let accepted_handle = self.current_argument("accepted_args")?;
+                let accepted = match self.boundary_accepted_args(
+                    accepted_handle,
+                    operation,
+                    parent_wire,
+                    "add_accepted_args",
+                )? {
+                    Err(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    Ok(accepted) => accepted,
+                };
+                let handle = match self.boundary_retain_callable(
+                    callback_handle,
+                    operation,
+                    parent_wire,
+                    "add_retain_callable",
+                )? {
+                    Err(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    Ok(handle) => handle,
+                };
+                let callback = ContextCallback::php_callable(id, accepted, handle)
+                    .map_err(|error| format!("add_callback:{error:?}"))?;
+                let mut control = self
+                    .dispatcher
+                    .begin_add_target_with_snapshot(target, priority, snapshot, callback)
+                    .map_err(|error| format!("begin_add_target:{error:?}"))?;
+                self.registration_epoch = self
+                    .registration_epoch
+                    .checked_add(1)
+                    .ok_or("registration_epoch_overflow")?;
+                match self.run_control(&mut control, operation, parent_wire, "add_filter")? {
+                    ControlOutcome::Result(ControlResult::Added(true)) => {
+                        Completion::Value(PhpValue::Bool(true))
+                    }
+                    ControlOutcome::Throwable(handle) => Completion::PhpThrowable(handle),
+                    _ => return Err("add_result_mismatch".into()),
+                }
             }
-        } else if !payload.get("handle").is_some_and(Value::is_null)
-            || !payload.get("accepted_args").is_some_and(Value::is_null)
-        {
-            return Err("add_null_key_sentinels_must_be_null".into());
-        }
-        let _ = raw;
-        Ok(Completion::Value(PhpValue::Bool(true)))
+        };
+        self.finish_target(target, completion, operation, parent_wire, "add_filter")
     }
 
     fn api_remove(
@@ -652,116 +1246,389 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         operation: OperationId,
         parent_wire: &str,
     ) -> Result<Completion<PhpValue>, String> {
-        exact_keys(
-            payload,
-            &["api", "hook_hex", "key", "priority"],
-            "remove_filter_call",
-        )?;
-        let (_, hook) = Self::parse_hook(payload, "hook_hex", false)?;
-        let key = callback_key(
-            payload.get("key").ok_or("remove_key_missing")?,
-            "remove_key",
-        )?;
-        let priority = payload
-            .get("priority")
-            .and_then(Value::as_i64)
-            .ok_or("remove_priority")?;
-        let removed = if let Some(id) = key {
-            let mut control = self
-                .dispatcher
-                .begin_remove(&hook, priority, &id)
-                .map_err(|error| format!("begin_remove:{error:?}"))?;
-            match self.run_control(&mut control, operation, parent_wire, "remove_filter")? {
-                ControlOutcome::Result(ControlResult::Removed(result)) => result,
-                ControlOutcome::Throwable(handle) => return Ok(Completion::PhpThrowable(handle)),
-                _ => return Err("remove_result_mismatch".into()),
-            }
-        } else {
-            if !payload.get("key").is_some_and(Value::is_null) {
-                return Err("remove_key_schema".into());
-            }
-            false
+        exact_keys(payload, &["api", "arguments"], "remove_filter_call")?;
+        let hook_handle = self.current_argument("hook")?;
+        let (hook, target) = match self.hook_target_for_api(
+            hook_handle,
+            "remove_filter",
+            false,
+            operation,
+            parent_wire,
+            "remove_filter",
+        )? {
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(None) => return Ok(Completion::Value(PhpValue::Bool(false))),
+            Ok(Some(target)) => target,
         };
-        Ok(Completion::Value(PhpValue::Bool(removed)))
+        let callback_handle = self.current_argument("callback")?;
+        let id = match self.boundary_callback_id(
+            callback_handle,
+            operation,
+            parent_wire,
+            "remove_callback_id",
+        )? {
+            Err(handle) => {
+                return self.finish_target(
+                    target,
+                    Completion::PhpThrowable(handle),
+                    operation,
+                    parent_wire,
+                    "remove_filter",
+                );
+            }
+            Ok(None) => None,
+            Ok(Some(id)) => Some(id),
+        };
+        let priority_handle = self.current_argument("priority")?;
+        let (priority_original, priority_key) = match self.boundary_array_key(
+            priority_handle,
+            "nested_isset",
+            true,
+            operation,
+            parent_wire,
+            "remove_priority_isset",
+        )? {
+            Err(handle) => {
+                return self.finish_target(
+                    target,
+                    Completion::PhpThrowable(handle),
+                    operation,
+                    parent_wire,
+                    "remove_filter",
+                );
+            }
+            Ok(priority) => priority,
+        };
+        let priority = HookPriority::new(priority_original, priority_key);
+        let mut inner_removed = false;
+        if let Some(id) = id {
+            let snapshot = self
+                .dispatcher
+                .capture_callback_snapshot(target, &priority, &id)
+                .map_err(|error| format!("remove_callback_snapshot:{error:?}"))?;
+            if snapshot.exists() {
+                match self.boundary_array_key(
+                    priority_handle,
+                    "unset",
+                    true,
+                    operation,
+                    parent_wire,
+                    "remove_priority_unset",
+                )? {
+                    Err(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "remove_filter",
+                        );
+                    }
+                    Ok((unset_original, unset_key)) => {
+                        if !same_scalar_representation(&unset_original, &priority.original)
+                            || unset_key != *priority.key()
+                        {
+                            return Err("remove_priority_unset_changed".into());
+                        }
+                    }
+                }
+                let mut control = self
+                    .dispatcher
+                    .begin_remove_target_with_snapshot(target, priority, &id, snapshot)
+                    .map_err(|error| format!("remove_begin_target:{error:?}"))?;
+                inner_removed = match self.run_control(
+                    &mut control,
+                    operation,
+                    parent_wire,
+                    "remove_filter",
+                )? {
+                    ControlOutcome::Result(ControlResult::Removed(result)) => result,
+                    ControlOutcome::Throwable(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "remove_filter",
+                        );
+                    }
+                    _ => return Err("remove_result_mismatch".into()),
+                };
+                if !inner_removed {
+                    return Err("remove_snapshot_result_changed".into());
+                }
+            }
+        }
+        match self.release_hook_target(target, operation, parent_wire, "remove_target")? {
+            ControlOutcome::Result(ControlResult::TargetReleased) => {}
+            ControlOutcome::Throwable(handle) => return Ok(Completion::PhpThrowable(handle)),
+            _ => return Err("remove_target_release_result".into()),
+        }
+        let (read_hook, read_result) = match self.hook_binding_lookup(
+            hook_handle,
+            "read",
+            operation,
+            parent_wire,
+            "remove_outer_callbacks_read",
+        )? {
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(result) => result,
+        };
+        if !same_scalar_representation(&read_hook.original, &hook.original)
+            || read_hook.array_key != hook.array_key
+        {
+            return Err("remove_outer_hook_read_changed".into());
+        }
+        let empty = match read_result {
+            HookBindingLookupResult::Found(read_target) => {
+                let empty = self
+                    .dispatcher
+                    .target_callbacks_empty(read_target)
+                    .map_err(|error| format!("remove_outer_target_empty:{error:?}"))?;
+                match self.release_hook_target(
+                    read_target,
+                    operation,
+                    parent_wire,
+                    "remove_outer_read_target_release",
+                )? {
+                    ControlOutcome::Result(ControlResult::TargetReleased) => {}
+                    ControlOutcome::Throwable(handle) => {
+                        return Ok(Completion::PhpThrowable(handle));
+                    }
+                    _ => return Err("remove_outer_read_target_release_result".into()),
+                }
+                empty
+            }
+            HookBindingLookupResult::Missing => {
+                if let Some(handle) = self.boundary_missing_offset(
+                    &hook.array_key,
+                    operation,
+                    parent_wire,
+                    "remove_outer_missing_offset",
+                )? {
+                    return Ok(Completion::PhpThrowable(handle));
+                }
+                if let Some(handle) = self.boundary_null_property(
+                    "callbacks",
+                    operation,
+                    parent_wire,
+                    "remove_outer_null_callbacks",
+                )? {
+                    return Ok(Completion::PhpThrowable(handle));
+                }
+                true
+            }
+            HookBindingLookupResult::NullOperand => {
+                if let Some(handle) = self.boundary_null_property(
+                    "callbacks",
+                    operation,
+                    parent_wire,
+                    "remove_outer_null_callbacks",
+                )? {
+                    return Ok(Completion::PhpThrowable(handle));
+                }
+                true
+            }
+        };
+        if empty {
+            match self.boundary_array_key(
+                hook_handle,
+                "unset",
+                false,
+                operation,
+                parent_wire,
+                "remove_outer_hook_unset",
+            )? {
+                Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+                Ok((unset_original, unset_key)) => {
+                    if !same_scalar_representation(&unset_original, &hook.original)
+                        || unset_key != hook.array_key
+                    {
+                        return Err("remove_outer_hook_unset_changed".into());
+                    }
+                }
+            }
+            let mut unbind = self
+                .dispatcher
+                .begin_unbind_hook(&hook)
+                .map_err(|error| format!("remove_begin_unbind_hook:{error:?}"))?;
+            match self.run_control(&mut unbind, operation, parent_wire, "remove_unbind")? {
+                ControlOutcome::Result(ControlResult::HookUnbound) => {}
+                ControlOutcome::Throwable(handle) => return Ok(Completion::PhpThrowable(handle)),
+                _ => return Err("remove_unbind_result".into()),
+            }
+        }
+        Ok(Completion::Value(PhpValue::Bool(inner_removed)))
     }
 
-    fn api_has(&self, payload: &Value) -> Result<Completion<PhpValue>, String> {
+    fn api_has(
+        &mut self,
+        payload: &Value,
+        operation: OperationId,
+        parent_wire: &str,
+    ) -> Result<Completion<PhpValue>, String> {
         exact_keys(
             payload,
-            &["api", "hook_hex", "key", "any", "priority"],
+            &["api", "arguments", "any", "priority"],
             "has_filter_call",
         )?;
-        let (_, hook) = Self::parse_hook(payload, "hook_hex", false)?;
-        let key = callback_key(payload.get("key").ok_or("has_key_missing")?, "has_key")?;
         let any = payload
             .get("any")
             .and_then(Value::as_bool)
             .ok_or("has_any")?;
-        let priority = payload.get("priority");
-        if !matches!(priority, Some(Value::Null))
-            && priority.is_none_or(|value| value.as_i64().is_none())
-        {
-            return Err("has_priority_schema".into());
-        }
-        let result = if any {
-            if key.is_some() {
-                return Err("has_any_key_must_be_null".into());
-            }
-            PhpValue::Bool(self.dispatcher.has_callbacks(&hook))
-        } else if let Some(id) = key {
-            if id.callback == "i:0" || id.callback == "s:" {
-                PhpValue::Bool(false)
-            } else {
-                match priority {
-                    Some(Value::Number(value)) => PhpValue::Bool(self.dispatcher.has_at(
-                        &hook,
-                        value.as_i64().ok_or("has_priority_schema")?,
-                        &id,
-                    )),
-                    Some(Value::Null) => self
-                        .dispatcher
-                        .priority_of(&hook, &id)
-                        .map(PhpValue::Integer)
-                        .unwrap_or(PhpValue::Bool(false)),
-                    _ => unreachable!("priority schema checked above"),
-                }
-            }
-        } else {
-            if !payload.get("key").is_some_and(Value::is_null) {
-                return Err("has_key_schema".into());
-            }
-            PhpValue::Bool(false)
+        let priority = match payload.get("priority") {
+            Some(Value::Null) => None,
+            Some(value) => Some(parse_pod(value, "has_priority")?),
+            None => return Err("has_priority_missing".into()),
         };
-        Ok(Completion::Value(result))
+        let priority = match priority {
+            None => None,
+            Some(PhpValue::Integer(value)) => Some(value),
+            Some(_) => return Err("has_priority_must_be_int_or_null".into()),
+        };
+        let hook_handle = self.current_argument("hook")?;
+        let (_hook, target) = match self.hook_target_for_api(
+            hook_handle,
+            "has_filter",
+            false,
+            operation,
+            parent_wire,
+            "has_filter",
+        )? {
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(None) => return Ok(Completion::Value(PhpValue::Bool(false))),
+            Ok(Some(target)) => target,
+        };
+        let result = if any {
+            PhpValue::Bool(
+                self.dispatcher
+                    .has_callbacks_target(target)
+                    .map_err(|error| format!("has_callbacks_target:{error:?}"))?,
+            )
+        } else {
+            let callback_handle = self.current_argument("callback")?;
+            match self.boundary_callback_id(
+                callback_handle,
+                operation,
+                parent_wire,
+                "has_callback_id",
+            )? {
+                Err(handle) => {
+                    return self.finish_target(
+                        target,
+                        Completion::PhpThrowable(handle),
+                        operation,
+                        parent_wire,
+                        "has_filter",
+                    );
+                }
+                Ok(None) => PhpValue::Bool(false),
+                Ok(Some(id)) if id.callback == "i:0" || id.callback == "s:" => {
+                    PhpValue::Bool(false)
+                }
+                Ok(Some(id)) => match priority {
+                    Some(priority) => PhpValue::Bool(
+                        self.dispatcher
+                            .has_at_target(target, &HookPriority::integer(priority), &id)
+                            .map_err(|error| format!("has_at_target:{error:?}"))?,
+                    ),
+                    None => self
+                        .dispatcher
+                        .priority_of_target(target, &id)
+                        .map_err(|error| format!("priority_of_target:{error:?}"))?
+                        .map(|key| php_key_value(&key))
+                        .unwrap_or(PhpValue::Bool(false)),
+                },
+            }
+        };
+        let completion = Completion::Value(result);
+        self.finish_target(target, completion, operation, parent_wire, "has_filter")
     }
 
     fn api_current(&self, payload: &Value) -> Result<Completion<PhpValue>, String> {
         exact_keys(payload, &["api"], "current_filter_call")?;
-        let result = match self.dispatcher.current_hook() {
-            Some(name) => PhpValue::Bytes(raw_hook(name, "current_filter")?),
+        let result = match self.dispatcher.current_hook_typed() {
+            Some(name) => name.as_php_value(),
             None => PhpValue::Bool(false),
         };
         Ok(Completion::Value(result))
     }
 
-    fn api_doing(&self, payload: &Value) -> Result<Completion<PhpValue>, String> {
-        exact_keys(payload, &["api", "hook_hex"], "doing_filter_call")?;
-        let (raw, hook) = Self::parse_hook(payload, "hook_hex", true)?;
-        let name = if payload.get("hook_hex").is_some_and(Value::is_null) {
-            None
-        } else {
-            Some(hook.as_str())
+    fn api_doing(
+        &mut self,
+        payload: &Value,
+        operation: OperationId,
+        parent_wire: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        exact_keys(payload, &["api", "arguments", "any"], "doing_filter_call")?;
+        let any = payload
+            .get("any")
+            .and_then(Value::as_bool)
+            .ok_or("doing_any_schema")?;
+        let handle = self.current_argument("hook")?;
+        let scalar = match self.boundary_scalar_from_argument(
+            handle,
+            operation,
+            parent_wire,
+            "doing_hook_scalar",
+        )? {
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(scalar) => scalar,
         };
-        let _ = raw;
+        let name = match scalar {
+            Some(HookScalar::Null) if any => None,
+            Some(HookScalar::Null) => return Err("doing_any_null_mismatch".into()),
+            Some(name) if !any => Some(name),
+            Some(_) => return Err("doing_any_nonnull_mismatch".into()),
+            None if !any => return Ok(Completion::Value(PhpValue::Bool(false))),
+            None => return Err("doing_any_unsupported_mismatch".into()),
+        };
         Ok(Completion::Value(PhpValue::Bool(
-            self.dispatcher.doing_hook(name),
+            self.dispatcher.doing_hook_typed(name.as_ref()),
         )))
     }
 
-    fn api_did(&self, payload: &Value) -> Result<Completion<PhpValue>, String> {
-        exact_keys(payload, &["api", "hook_hex"], "did_filter_call")?;
-        let (_, hook) = Self::parse_hook(payload, "hook_hex", false)?;
-        let count = self.dispatcher.did_filter(&hook);
+    fn api_did(
+        &mut self,
+        payload: &Value,
+        operation: OperationId,
+        parent_wire: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        exact_keys(payload, &["api", "arguments"], "did_filter_call")?;
+        let handle = self.current_argument("hook")?;
+        let (original, array_key) = match self.boundary_array_key(
+            handle,
+            "isset",
+            false,
+            operation,
+            parent_wire,
+            "did_filter_hook_key",
+        )? {
+            Ok(parts) => parts,
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+        };
+        let hook = HookArgument::new(original, array_key);
+        self.remember_hook(hook.clone());
+        if self.dispatcher.did_filter_typed(&hook) != 0 {
+            match self.boundary_array_key(
+                handle,
+                "read",
+                false,
+                operation,
+                parent_wire,
+                "did_filter_hook_read",
+            )? {
+                Ok((read_original, read_key)) => {
+                    if read_key != hook.array_key
+                        || !same_scalar_representation(&read_original, &hook.original)
+                    {
+                        return Err("did_filter_hook_key_changed".into());
+                    }
+                }
+                Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            }
+        }
+        let count = self.dispatcher.did_filter_typed(&hook);
         let count = i64::try_from(count).map_err(|_| "did_filter_count_overflow")?;
         Ok(Completion::Value(PhpValue::Integer(count)))
     }
@@ -774,10 +1641,23 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<Completion<PhpValue>, String> {
         exact_keys(
             payload,
-            &["api", "hook_hex", "value", "args"],
+            &["api", "arguments", "value", "args"],
             "apply_filters_call",
         )?;
-        let (_, hook) = Self::parse_hook(payload, "hook_hex", false)?;
+        let hook_handle = self.current_argument("hook")?;
+        let (original, array_key) = match self.boundary_array_key(
+            hook_handle,
+            "isset",
+            false,
+            operation,
+            parent_wire,
+            "apply_counter_isset",
+        )? {
+            Ok(hook) => hook,
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+        };
+        let hook = HookArgument::new(original, array_key);
+        self.remember_hook(hook.clone());
         let value = parse_pod(
             payload.get("value").ok_or("apply_value_missing")?,
             "apply_value",
@@ -792,14 +1672,15 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .collect::<Result<Vec<_>, _>>()?;
         let ticket = self
             .dispatcher
-            .begin_filter(&hook, value, &extra)
+            .begin_filter_effectful_typed(&hook, value, &extra)
             .map_err(|error| format!("begin_filter:{error:?}"))?;
-        self.drive_dispatch(ticket, operation, parent_wire)
+        self.drive_dispatch(ticket, &hook, operation, parent_wire)
     }
 
     fn drive_dispatch(
         &mut self,
         ticket: DispatchTicket,
+        hook: &HookArgument,
         operation: OperationId,
         caller_wire: &str,
     ) -> Result<Completion<PhpValue>, String> {
@@ -820,15 +1701,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .invoke_php(operation)
                         .map_err(|error| format!("invoke_callback:{error:?}"))?;
                     let effect_wire = self.fresh_effect("callback");
-                    let hook = raw_hook(&invocation.hook, "callback_hook")?;
-                    let mut args = invocation.args.clone();
-                    if invocation.call_mode == PhpCallMode::All {
-                        let first = args
-                            .first_mut()
-                            .ok_or("all_callback_missing_hook_argument")?;
-                        *first = PhpValue::Bytes(hook.clone());
-                    }
-                    let args = args
+                    let args = invocation
+                        .args
                         .iter()
                         .enumerate()
                         .map(|(i, value)| pod(value, &format!("callback_arg_{i}")))
@@ -840,7 +1714,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     };
                     self.wire.send("invoke_php", Some(caller_wire), json!({
                         "operation":"callable","effect_id":effect_wire,"handle":descriptor(invocation.handle),
-                        "hook_hex":encode_hex(&hook),"priority":invocation.priority,"call_mode":call_mode,"args":args,
+                        "hook":scalar_pod(&invocation.hook,"callback_hook")?,
+                        "priority":php_key_json(&invocation.priority),"call_mode":call_mode,"args":args,
                     }))?;
                     let completion = self.drive_effect(
                         &effect_wire,
@@ -857,6 +1732,120 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     self.dispatcher
                         .resume_php_release_completion(ticket, handle, completion)
                         .map_err(|error| format!("resume_filter_release:{error:?}"))?;
+                }
+                DispatchStep::Boundary(boundary) => {
+                    let completion = match boundary {
+                        DispatchBoundary::FilterCounterWrite
+                        | DispatchBoundary::FilterCounterIncrement => {
+                            let access = if boundary == DispatchBoundary::FilterCounterWrite {
+                                "write"
+                            } else {
+                                "increment"
+                            };
+                            match self.boundary_array_key(
+                                self.current_argument("hook")?,
+                                access,
+                                false,
+                                operation,
+                                caller_wire,
+                                "apply_counter_write",
+                            )? {
+                                Ok((original, key)) => {
+                                    if !same_scalar_representation(&original, &hook.original)
+                                        || key != hook.array_key
+                                    {
+                                        return Err("apply_counter_key_changed".into());
+                                    }
+                                    Completion::Value(PhpValue::Null)
+                                }
+                                Err(handle) => Completion::PhpThrowable(handle),
+                            }
+                        }
+                        DispatchBoundary::NamedHookIsset => {
+                            match self.boundary_array_key(
+                                self.current_argument("hook")?,
+                                "isset",
+                                false,
+                                operation,
+                                caller_wire,
+                                "apply_named_isset",
+                            )? {
+                                Ok((original, key)) => {
+                                    if !same_scalar_representation(&original, &hook.original)
+                                        || key != hook.array_key
+                                    {
+                                        return Err("apply_named_isset_key_changed".into());
+                                    }
+                                    Completion::Value(PhpValue::Null)
+                                }
+                                Err(handle) => Completion::PhpThrowable(handle),
+                            }
+                        }
+                        DispatchBoundary::NamedHookRead => {
+                            match self.boundary_array_key(
+                                self.current_argument("hook")?,
+                                "read",
+                                false,
+                                operation,
+                                caller_wire,
+                                "apply_named_read",
+                            )? {
+                                Ok((original, key)) => {
+                                    if !same_scalar_representation(&original, &hook.original)
+                                        || key != hook.array_key
+                                    {
+                                        return Err("apply_named_read_key_changed".into());
+                                    }
+                                    Completion::Value(PhpValue::Null)
+                                }
+                                Err(handle) => Completion::PhpThrowable(handle),
+                            }
+                        }
+                        DispatchBoundary::MissingOffsetAll => {
+                            match self.boundary_missing_offset(
+                                &PhpKey::Integer(0),
+                                operation,
+                                caller_wire,
+                                "apply_all_missing_offset",
+                            )? {
+                                Some(handle) => Completion::PhpThrowable(handle),
+                                None => Completion::Value(PhpValue::Null),
+                            }
+                        }
+                        DispatchBoundary::NullForeachAll => {
+                            match self.boundary_null_foreach(
+                                operation,
+                                caller_wire,
+                                "apply_all_null_foreach",
+                            )? {
+                                Some(handle) => Completion::PhpThrowable(handle),
+                                None => Completion::Value(PhpValue::Null),
+                            }
+                        }
+                        DispatchBoundary::MissingOffset => {
+                            match self.boundary_missing_offset(
+                                &hook.array_key,
+                                operation,
+                                caller_wire,
+                                "apply_named_missing_offset",
+                            )? {
+                                Some(handle) => Completion::PhpThrowable(handle),
+                                None => Completion::Value(PhpValue::Null),
+                            }
+                        }
+                        DispatchBoundary::NullMethodApplyFilters => {
+                            let handle = self.boundary_null_method(
+                                "apply_filters",
+                                operation,
+                                caller_wire,
+                                "apply_named_null_method",
+                            )?;
+                            Completion::PhpThrowable(handle)
+                        }
+                    };
+                    self.dispatcher
+                        .resume_boundary(ticket, completion)
+                        .map_err(|error| format!("resume_filter_boundary:{error:?}"))?;
                 }
                 DispatchStep::Complete(value) => return Ok(Completion::Value(value)),
                 DispatchStep::PhpThrowable(handle) => return Ok(Completion::PhpThrowable(handle)),
@@ -883,9 +1872,353 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .resume_control_release_completion(operation_cursor, handle, completion)
                         .map_err(|error| format!("{label}_resume_release:{error:?}"))?;
                 }
+                ControlStep::PriorityRead {
+                    priority,
+                    missing: _,
+                } => {
+                    let handle = self.current_argument("priority")?;
+                    let completion = match self.boundary_array_key(
+                        handle,
+                        "read",
+                        true,
+                        operation,
+                        caller_wire,
+                        &format!("{label}_priority_read"),
+                    )? {
+                        Ok((original, key)) => {
+                            if !same_scalar_representation(&original, &priority.original)
+                                || key != *priority.key()
+                            {
+                                return Err(format!("{label}_priority_read_changed"));
+                            }
+                            Completion::Value(PhpValue::Null)
+                        }
+                        Err(handle) => Completion::PhpThrowable(handle),
+                    };
+                    self.dispatcher
+                        .resume_control_priority_read(operation_cursor, completion)
+                        .map_err(|error| format!("{label}_resume_priority_read:{error:?}"))?;
+                }
+                ControlStep::PriorityMissingOffset(priority) => {
+                    let completion = match self.boundary_missing_offset(
+                        priority.key(),
+                        operation,
+                        caller_wire,
+                        &format!("{label}_priority_missing_offset"),
+                    )? {
+                        Some(handle) => Completion::PhpThrowable(handle),
+                        None => Completion::Value(PhpValue::Null),
+                    };
+                    self.dispatcher
+                        .resume_control_priority_missing_offset(operation_cursor, completion)
+                        .map_err(|error| {
+                            format!("{label}_resume_priority_missing_offset:{error:?}")
+                        })?;
+                }
+                ControlStep::PriorityUnset(priority) => {
+                    let handle = self.current_argument("priority")?;
+                    let completion = match self.boundary_array_key(
+                        handle,
+                        "unset",
+                        true,
+                        operation,
+                        caller_wire,
+                        &format!("{label}_priority_unset"),
+                    )? {
+                        Ok((original, key)) => {
+                            if !same_scalar_representation(&original, &priority.original)
+                                || key != *priority.key()
+                            {
+                                return Err(format!("{label}_priority_unset_changed"));
+                            }
+                            Completion::Value(PhpValue::Null)
+                        }
+                        Err(handle) => Completion::PhpThrowable(handle),
+                    };
+                    self.dispatcher
+                        .resume_control_priority_unset(operation_cursor, completion)
+                        .map_err(|error| format!("{label}_resume_priority_unset:{error:?}"))?;
+                }
                 ControlStep::Complete(result) => return Ok(ControlOutcome::Result(result)),
                 ControlStep::PhpThrowable(handle) => return Ok(ControlOutcome::Throwable(handle)),
             }
+        }
+    }
+
+    fn release_hook_target(
+        &mut self,
+        target: recastpress_wp::dispatcher::HookTarget,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<ControlOutcome, String> {
+        let mut cursor = self
+            .dispatcher
+            .begin_release_target(target)
+            .map_err(|error| format!("{label}_begin_release_target:{error:?}"))?;
+        self.run_control(&mut cursor, operation, caller_wire, label)
+    }
+
+    fn finish_target(
+        &mut self,
+        target: recastpress_wp::dispatcher::HookTarget,
+        completion: Completion<PhpValue>,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        match self.release_hook_target(target, operation, caller_wire, label)? {
+            ControlOutcome::Result(ControlResult::TargetReleased) => Ok(completion),
+            ControlOutcome::Throwable(handle) => Ok(Completion::PhpThrowable(handle)),
+            _ => Err(format!("{label}_target_release_result")),
+        }
+    }
+
+    fn boundary_null_method(
+        &mut self,
+        method: &str,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<PhpHandle, String> {
+        match self.boundary_value(
+            "null_method",
+            json!({"method":method}),
+            operation,
+            caller_wire,
+            label,
+        )? {
+            Err(handle) => Ok(handle),
+            Ok(_) => Err(format!("{label}_null_method_returned_value")),
+        }
+    }
+
+    fn boundary_null_property(
+        &mut self,
+        property: &str,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Option<PhpHandle>, String> {
+        match self.boundary_value(
+            "null_property",
+            json!({"property":property}),
+            operation,
+            caller_wire,
+            label,
+        )? {
+            Err(handle) => Ok(Some(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["missing"], label)?;
+                if value.get("missing") != Some(&Value::Bool(true)) {
+                    return Err(format!("{label}_null_property_ack"));
+                }
+                Ok(None)
+            }
+        }
+    }
+
+    fn boundary_null_foreach(
+        &mut self,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Option<PhpHandle>, String> {
+        match self.boundary_value("null_foreach", json!({}), operation, caller_wire, label)? {
+            Err(handle) => Ok(Some(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["missing"], label)?;
+                if value.get("missing") != Some(&Value::Bool(true)) {
+                    return Err(format!("{label}_null_foreach_ack"));
+                }
+                Ok(None)
+            }
+        }
+    }
+
+    fn boundary_missing_offset(
+        &mut self,
+        key: &PhpKey,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Option<PhpHandle>, String> {
+        let result = self.boundary_value(
+            "missing_offset",
+            json!({"key":php_key_json(key)}),
+            operation,
+            caller_wire,
+            label,
+        )?;
+        match result {
+            Err(handle) => Ok(Some(handle)),
+            Ok(value) => {
+                exact_keys(&value, &["missing"], label)?;
+                if value.get("missing") != Some(&Value::Bool(true)) {
+                    return Err(format!("{label}_missing_ack"));
+                }
+                Ok(None)
+            }
+        }
+    }
+
+    fn hook_target_for_api(
+        &mut self,
+        argument: PhpHandle,
+        method: &str,
+        create_if_missing: bool,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<
+        Result<Option<(HookArgument, recastpress_wp::dispatcher::HookTarget)>, PhpHandle>,
+        String,
+    > {
+        let (hook, lookup) = match self.hook_binding_lookup(
+            argument,
+            "isset",
+            operation,
+            caller_wire,
+            &format!("{label}_hook_isset"),
+        )? {
+            Ok(result) => result,
+            Err(handle) => return Ok(Err(handle)),
+        };
+        let hook_is_set = match lookup {
+            HookBindingLookupResult::Found(target) => {
+                match self.release_hook_target(
+                    target,
+                    operation,
+                    caller_wire,
+                    &format!("{label}_isset_target_release"),
+                )? {
+                    ControlOutcome::Result(ControlResult::TargetReleased) => true,
+                    ControlOutcome::Throwable(handle) => return Ok(Err(handle)),
+                    _ => return Err(format!("{label}_isset_target_release_result")),
+                }
+            }
+            HookBindingLookupResult::Missing | HookBindingLookupResult::NullOperand => false,
+        };
+        if !hook_is_set {
+            if !create_if_missing {
+                return Ok(Ok(None));
+            }
+            match self.boundary_array_key(
+                argument,
+                "write",
+                false,
+                operation,
+                caller_wire,
+                &format!("{label}_hook_write"),
+            )? {
+                Ok((write_original, write_key)) => {
+                    if write_key != hook.array_key
+                        || !same_scalar_representation(&write_original, &hook.original)
+                    {
+                        return Err(format!("{label}_hook_write_key_changed"));
+                    }
+                }
+                Err(handle) => return Ok(Err(handle)),
+            }
+            let mut write = self
+                .dispatcher
+                .begin_write_hook(&hook)
+                .map_err(|error| format!("{label}_begin_write_hook:{error:?}"))?;
+            match self.run_control(&mut write, operation, caller_wire, label)? {
+                ControlOutcome::Result(ControlResult::HookWritten) => {}
+                ControlOutcome::Throwable(handle) => return Ok(Err(handle)),
+                _ => return Err(format!("{label}_write_hook_result")),
+            }
+        }
+        match self.hook_binding_lookup(
+            argument,
+            "read",
+            operation,
+            caller_wire,
+            &format!("{label}_hook_read"),
+        )? {
+            Ok((read_hook, HookBindingLookupResult::Found(target))) => {
+                if read_hook.array_key != hook.array_key
+                    || !same_scalar_representation(&read_hook.original, &hook.original)
+                {
+                    return Err(format!("{label}_hook_read_key_changed"));
+                }
+                Ok(Ok(Some((hook, target))))
+            }
+            Ok((read_hook, HookBindingLookupResult::Missing)) => {
+                if read_hook.array_key != hook.array_key
+                    || !same_scalar_representation(&read_hook.original, &hook.original)
+                {
+                    return Err(format!("{label}_hook_read_key_changed"));
+                }
+                if let Some(handle) = self.boundary_missing_offset(
+                    &hook.array_key,
+                    operation,
+                    caller_wire,
+                    &format!("{label}_missing_offset"),
+                )? {
+                    return Ok(Err(handle));
+                }
+                let handle = self.boundary_null_method(method, operation, caller_wire, label)?;
+                Ok(Err(handle))
+            }
+            Ok((read_hook, HookBindingLookupResult::NullOperand)) => {
+                if read_hook.array_key != hook.array_key
+                    || !same_scalar_representation(&read_hook.original, &hook.original)
+                {
+                    return Err(format!("{label}_hook_read_key_changed"));
+                }
+                let handle = self.boundary_null_method(method, operation, caller_wire, label)?;
+                Ok(Err(handle))
+            }
+            Err(handle) => Ok(Err(handle)),
+        }
+    }
+
+    fn hook_binding_lookup(
+        &mut self,
+        argument: PhpHandle,
+        access: &str,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Result<(HookArgument, HookBindingLookupResult), PhpHandle>, String> {
+        let mut cursor = self
+            .dispatcher
+            .begin_hook_binding_lookup()
+            .map_err(|error| format!("{label}_begin_binding_lookup:{error:?}"))?;
+        let (original, key) = match self.boundary_array_key(
+            argument,
+            access,
+            false,
+            operation,
+            caller_wire,
+            label,
+        )? {
+            Ok(value) => value,
+            Err(handle) => {
+                self.dispatcher
+                    .cancel_hook_binding_lookup(&mut cursor, handle)
+                    .map_err(|error| format!("{label}_cancel_binding_lookup:{error:?}"))?;
+                return match self.run_control(&mut cursor, operation, caller_wire, label)? {
+                    ControlOutcome::Throwable(handle) => Ok(Err(handle)),
+                    ControlOutcome::Result(_) => {
+                        Err(format!("{label}_cancel_binding_lookup_completed"))
+                    }
+                };
+            }
+        };
+        let hook = HookArgument::new(original, key);
+        self.remember_hook(hook.clone());
+        self.dispatcher
+            .resume_hook_binding_lookup(&mut cursor, &hook)
+            .map_err(|error| format!("{label}_resume_binding_lookup:{error:?}"))?;
+        match self.run_control(&mut cursor, operation, caller_wire, label)? {
+            ControlOutcome::Result(ControlResult::HookBindingLookup(result)) => {
+                Ok(Ok((hook, result)))
+            }
+            ControlOutcome::Throwable(handle) => Ok(Err(handle)),
+            _ => Err(format!("{label}_binding_lookup_result")),
         }
     }
 
@@ -945,11 +2278,12 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     let start = wire.receive("start_root", None)?;
     exact_keys(
         &start,
-        &["operation", "request_generation"],
+        &["operation", "protocol", "request_generation"],
         "callables_start",
     )?;
     if string(&start, "operation")? != "callable_api"
-        || string(&start, "request_generation")? != "61"
+        || start.get("protocol") != Some(&json!(2))
+        || string(&start, "request_generation")? != "71"
     {
         return Err("callables_start_operation_or_generation".into());
     }
@@ -966,15 +2300,19 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         dispatcher: &mut dispatcher,
         request,
         handles: HashMap::new(),
+        slot_generation_high_water: HashMap::new(),
         throwable_diagnostics: HashMap::new(),
         effect_ids: HashMap::new(),
-        hook_names: HashSet::new(),
+        api_arguments: Vec::new(),
+        hook_names: Vec::new(),
         api_counts: API_NAMES
             .into_iter()
             .map(|name| (name.to_owned(), 0))
             .collect(),
         callback_invocations: 0,
         release_effects: 0,
+        boundary_effects: 0,
+        argument_release_effects: 0,
         next_effect: 1,
         registration_epoch: 0,
     };
@@ -1044,11 +2382,11 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     let mut cleanup_complete = false;
     for _ in 0..MAX_RELEASE_PASSES {
         let epoch_before = peer.registration_epoch;
-        let names: Vec<String> = peer.hook_names.iter().cloned().collect();
+        let names = peer.hook_names.clone();
         for name in names {
             let mut control = peer
                 .dispatcher
-                .begin_remove_all(&name, None)
+                .begin_remove_all_typed(&name, None)
                 .map_err(|error| format!("cleanup_begin_remove_all:{error:?}"))?;
             loop {
                 match peer
@@ -1067,6 +2405,11 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
                     }
                     ControlStep::PhpThrowable(_) => return Err("cleanup_control_throwable".into()),
                     ControlStep::Complete(ControlResult::RemovedAll) => break,
+                    ControlStep::PriorityRead { .. }
+                    | ControlStep::PriorityMissingOffset(_)
+                    | ControlStep::PriorityUnset(_) => {
+                        return Err("cleanup_unexpected_priority_phase".into());
+                    }
                     ControlStep::Complete(_) => return Err("cleanup_control_result".into()),
                 }
             }
@@ -1198,6 +2541,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         "frames_from_php":peer.wire.in_seq,"frames_from_rust":peer.wire.out_seq,
         "api_counts":api_counts,"callback_invocations":peer.callback_invocations,
         "release_effects":peer.release_effects,"late_resume_rejected":late_resume_rejected,
+        "boundary_effects":peer.boundary_effects,"argument_release_effects":peer.argument_release_effects,
         "late_call_rejected":late_call_rejected,"continuation_depth_after":peer.continuation.depth(),
         "state_after":format!("{:?}",peer.continuation.state()),"php_observation":observation,
         "registry_observation":registry_observation,
@@ -1208,4 +2552,143 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     eprintln!("V06_CALLABLES_RESULT {summary}");
     eprintln!("V06_CALLABLES_OK continuation_peer=true");
     Ok(summary)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Cursor;
+
+    fn make_peer<'a>(
+        wire: &'a mut Wire<Cursor<Vec<u8>>, Vec<u8>>,
+        continuation: &'a mut Continuation<Value>,
+        dispatcher: &'a mut Dispatcher,
+        request: RequestGeneration,
+    ) -> CallablePeer<'a, Cursor<Vec<u8>>, Vec<u8>> {
+        CallablePeer {
+            wire,
+            continuation,
+            dispatcher,
+            request,
+            handles: HashMap::new(),
+            slot_generation_high_water: HashMap::new(),
+            throwable_diagnostics: HashMap::new(),
+            effect_ids: HashMap::new(),
+            api_arguments: Vec::new(),
+            hook_names: Vec::new(),
+            api_counts: BTreeMap::new(),
+            callback_invocations: 0,
+            release_effects: 0,
+            boundary_effects: 0,
+            argument_release_effects: 0,
+            next_effect: 1,
+            registration_epoch: 0,
+        }
+    }
+
+    fn handle_descriptor(kind: &str, slot: u32, generation: u32, token: u64) -> Value {
+        json!({
+            "request":"71",
+            "kind":kind,
+            "slot":slot,
+            "generation":generation,
+            "token":format!("{token:016x}"),
+        })
+    }
+
+    fn start_continuation(continuation: &mut Continuation<Value>) {
+        let root = continuation.start_root().unwrap();
+        continuation.invoke_php(root).unwrap();
+    }
+
+    macro_rules! create_peer {
+        ($request:ident, $wire:ident, $continuation:ident, $dispatcher:ident, $peer:ident) => {
+            let $request = RequestGeneration::new(71);
+            let mut $wire = Wire {
+                reader: Cursor::new(Vec::new()),
+                writer: Vec::new(),
+                in_seq: 0,
+                out_seq: 0,
+                total: 0,
+            };
+            let mut $continuation =
+                Continuation::<Value>::new($request, LimitsProfile::default()).unwrap();
+            start_continuation(&mut $continuation);
+            let mut $dispatcher = Dispatcher::new();
+            let mut $peer = make_peer(&mut $wire, &mut $continuation, &mut $dispatcher, $request);
+        };
+    }
+
+    #[test]
+    fn rejects_live_slot_collision() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        peer.register_handle(
+            &handle_descriptor("callable", 5, 3, 1),
+            PhpHandleKind::Callable,
+            "first",
+        )
+        .unwrap();
+        let result = peer.register_handle(
+            &handle_descriptor("argument", 5, 4, 2),
+            PhpHandleKind::Argument,
+            "collision",
+        );
+        assert_eq!(result.unwrap_err(), "collision_slot_collision");
+    }
+
+    #[test]
+    fn rejects_retired_generation_replay() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        let handle = peer
+            .register_handle(
+                &handle_descriptor("argument", 6, 3, 1),
+                PhpHandleKind::Argument,
+                "first",
+            )
+            .unwrap();
+        peer.continuation.unregister_handle(handle).unwrap();
+        peer.handles.remove(&handle);
+        let result = peer.register_handle(
+            &handle_descriptor("callable", 6, 3, 2),
+            PhpHandleKind::Callable,
+            "replay",
+        );
+        assert_eq!(result.unwrap_err(), "replay_slot_generation");
+    }
+
+    #[test]
+    fn allows_higher_generation_while_old_slot_release_is_pending() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        let old = peer
+            .register_handle(
+                &handle_descriptor("callable", 7, 3, 1),
+                PhpHandleKind::Callable,
+                "old",
+            )
+            .unwrap();
+        peer.handles.insert(old, HandleState::ReleasePending);
+        let replacement = peer
+            .register_handle(
+                &handle_descriptor("argument", 7, 4, 2),
+                PhpHandleKind::Argument,
+                "replacement",
+            )
+            .unwrap();
+        assert_eq!(replacement.slot(), old.slot());
+        assert!(replacement.generation() > old.generation());
+        assert_eq!(replacement.kind(), PhpHandleKind::Argument);
+    }
+
+    #[test]
+    fn permits_repeat_of_same_throwable_descriptor() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        let descriptor = handle_descriptor("throwable", 8, 2, 3);
+        let handle = peer
+            .register_handle(&descriptor, PhpHandleKind::Throwable, "throwable")
+            .unwrap();
+        assert_eq!(
+            peer.register_handle(&descriptor, PhpHandleKind::Throwable, "repeat"),
+            Ok(handle)
+        );
+    }
 }

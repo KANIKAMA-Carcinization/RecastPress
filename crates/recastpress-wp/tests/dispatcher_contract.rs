@@ -1,7 +1,7 @@
 use recastpress_wp::{
     continuation::{Completion, PhpHandle, PhpHandleKind, RequestGeneration},
-    dispatcher::{DispatchStep, Dispatcher, DispatcherCallback},
-    hooks::{CallbackId, HookError},
+    dispatcher::{DispatchBoundary, DispatchStep, Dispatcher, DispatcherCallback},
+    hooks::{CallbackId, HookArgument, HookError, HookScalar},
     value::{PhpArray, PhpKey, PhpValue},
 };
 use std::sync::{Arc, Mutex};
@@ -91,10 +91,458 @@ fn drive_native_ticket(
             panic!("unexpected PHP callback: {}", invocation.callback.callback)
         }
         DispatchStep::ReleasePhp(handle) => panic!("unexpected PHP release: {handle:?}"),
+        DispatchStep::Boundary(boundary) => panic!("unexpected PHP boundary: {boundary:?}"),
         DispatchStep::PhpThrowable(handle) => {
             panic!("unexpected PHP throwable handle: {handle:?}")
         }
     }
+}
+
+#[test]
+fn effectful_filter_updates_counter_only_after_boundary_and_runs_named_phases() {
+    let mut dispatcher = Dispatcher::new();
+    let name = HookArgument::bytes("typed");
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    let callback_seen = Arc::clone(&seen);
+    dispatcher.add(
+        "typed",
+        10,
+        DispatcherCallback::new(id("named"), 1, move |context, args| {
+            callback_seen.lock().unwrap().push(args[0].clone());
+            assert_eq!(context.did_filter("typed"), 1);
+            assert_eq!(
+                context.current_hook_typed(),
+                Some(&HookScalar::Bytes(b"typed".to_vec()))
+            );
+            Ok(args[0].clone())
+        }),
+    );
+    let ticket = dispatcher
+        .begin_filter_effectful_typed(&name, value("seed"), &[])
+        .unwrap();
+    assert_eq!(dispatcher.did_filter("typed"), 0);
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::FilterCounterWrite))
+    );
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Err(HookError::PhpBoundaryPending)
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(dispatcher.did_filter("typed"), 1);
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookIsset))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookRead))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Complete(value("seed")))
+    );
+    assert_eq!(*seen.lock().unwrap(), vec![value("seed")]);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn effectful_filter_all_completion_uses_live_named_isset_and_preserves_original_hook() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "all",
+        1,
+        DispatcherCallback::new(id("all"), 2, |context, args| {
+            assert_eq!(args[0], PhpValue::Integer(7));
+            assert_eq!(context.current_hook_typed(), Some(&HookScalar::Integer(7)));
+            Ok(PhpValue::Null)
+        }),
+    );
+    dispatcher.add(
+        "7",
+        2,
+        DispatcherCallback::new(id("named"), 1, |context, args| {
+            assert_eq!(args[0], value("seed"));
+            assert_eq!(context.current_hook_typed(), Some(&HookScalar::Integer(7)));
+            Ok(value("done"))
+        }),
+    );
+    let name = HookArgument::new(HookScalar::Integer(7), PhpKey::Integer(7));
+    assert_eq!(
+        dispatcher.hook_callbacks_empty(&HookArgument::bytes("all")),
+        Some(false)
+    );
+    let ticket = dispatcher
+        .begin_filter_effectful_typed(&name, value("seed"), &[])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::FilterCounterWrite))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookIsset))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookRead))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Complete(value("done")))
+    );
+    assert_eq!(dispatcher.did_filter_typed(&name), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn active_priority_readdition_uses_original_priority_identity_not_only_array_key() {
+    fn run_case(
+        raw_priority: recastpress_wp::hooks::HookPriority,
+        base: i64,
+    ) -> (String, Vec<String>) {
+        let hook = HookArgument::bytes("active-priority");
+        let trace = Arc::new(Mutex::new(Vec::new()));
+        let mut dispatcher = Dispatcher::new();
+        let lower_trace = Arc::clone(&trace);
+        dispatcher.add_typed(
+            &hook,
+            recastpress_wp::hooks::HookPriority::integer(0),
+            DispatcherCallback::new(id("lower"), 1, move |_, args| {
+                lower_trace.lock().unwrap().push("lower".to_owned());
+                Ok(args[0].clone())
+            }),
+        );
+        let trigger_trace = Arc::clone(&trace);
+        let callback_hook = hook.clone();
+        let callback_priority = raw_priority.clone();
+        dispatcher.add_typed(
+            &hook,
+            recastpress_wp::hooks::HookPriority::integer(base),
+            DispatcherCallback::new(id("trigger"), 1, move |dispatcher, args| {
+                trigger_trace.lock().unwrap().push("trigger".to_owned());
+                assert!(dispatcher.remove_typed(
+                    &callback_hook,
+                    &recastpress_wp::hooks::HookPriority::integer(base),
+                    &id("trigger"),
+                ));
+                let replacement_trace = Arc::clone(&trigger_trace);
+                dispatcher.add_typed(
+                    &callback_hook,
+                    callback_priority.clone(),
+                    DispatcherCallback::new(id("replacement"), 1, move |_, args| {
+                        replacement_trace
+                            .lock()
+                            .unwrap()
+                            .push("replacement".to_owned());
+                        Ok(args[0].clone())
+                    }),
+                );
+                Ok(args[0].clone())
+            }),
+        );
+        let tail_trace = Arc::clone(&trace);
+        dispatcher.add_typed(
+            &hook,
+            recastpress_wp::hooks::HookPriority::integer(10),
+            DispatcherCallback::new(id("tail"), 1, move |_, args| {
+                tail_trace.lock().unwrap().push("tail".to_owned());
+                Ok(args[0].clone())
+            }),
+        );
+        let output = dispatcher
+            .apply_filters_typed(&hook, value("seed"), &[])
+            .unwrap();
+        let PhpValue::Bytes(output) = output else {
+            panic!("expected byte result")
+        };
+        let trace = trace.lock().unwrap().clone();
+        (String::from_utf8(output).unwrap(), trace)
+    }
+
+    use recastpress_wp::hooks::HookPriority;
+    let (integer_output, integer_trace) = run_case(HookPriority::integer(7), 7);
+    assert_eq!(integer_output, "seed");
+    assert_eq!(integer_trace, ["lower", "trigger", "tail"]);
+
+    let (string_output, string_trace) = run_case(
+        HookPriority::new(HookScalar::Bytes(b"7".to_vec()), PhpKey::Integer(7)),
+        7,
+    );
+    assert_eq!(string_output, "seed");
+    assert_eq!(string_trace, ["lower", "trigger"]);
+
+    let (float_output, float_trace) = run_case(
+        HookPriority::new(HookScalar::Float(7.9), PhpKey::Integer(7)),
+        7,
+    );
+    assert_eq!(float_output, "seed");
+    assert_eq!(float_trace, ["lower", "trigger"]);
+
+    let (boolean_output, boolean_trace) = run_case(
+        HookPriority::new(HookScalar::Bool(true), PhpKey::Integer(1)),
+        1,
+    );
+    assert_eq!(boolean_output, "seed");
+    assert_eq!(boolean_trace, ["lower", "trigger"]);
+}
+
+#[test]
+fn effectful_empty_all_yields_missing_offset_and_null_foreach_boundaries() {
+    let mut dispatcher = Dispatcher::new();
+    let all = HookArgument::bytes("all");
+    let mut write = dispatcher.begin_write_hook(&all).unwrap();
+    assert!(matches!(
+        dispatcher.advance_control(&mut write).unwrap(),
+        recastpress_wp::dispatcher::ControlStep::Complete(_)
+    ));
+    let hook = HookArgument::bytes("empty-all-target");
+    let ticket = dispatcher
+        .begin_filter_effectful_typed(&hook, value("seed"), &[])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::FilterCounterWrite))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::MissingOffsetAll))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NullForeachAll))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookIsset))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Complete(value("seed")))
+    );
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn nested_hook_table_operands_keep_old_receiver_until_outermost_resume() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep, HookBindingLookupResult};
+
+    let mut dispatcher = Dispatcher::new();
+    let hook = HookArgument::bytes("cow-target");
+    let callable = callable_handle(341);
+    let mut add = dispatcher
+        .begin_add(
+            "cow-target",
+            10,
+            DispatcherCallback::php_callable(id("old-cow-target"), 1, callable).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+
+    let mut outer = dispatcher.begin_hook_binding_lookup().unwrap();
+    let mut inner = dispatcher.begin_hook_binding_lookup().unwrap();
+    let mut replace = dispatcher.begin_write_hook(&hook).unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut replace).unwrap(),
+        ControlStep::Complete(ControlResult::HookWritten)
+    );
+
+    dispatcher
+        .resume_hook_binding_lookup(&mut inner, &hook)
+        .unwrap();
+    let ControlStep::Complete(ControlResult::HookBindingLookup(HookBindingLookupResult::Found(
+        old_target,
+    ))) = dispatcher.advance_control(&mut inner).unwrap()
+    else {
+        panic!("inner operand must read the still-owned old table version")
+    };
+    dispatcher.release_target(old_target).unwrap();
+
+    dispatcher
+        .resume_hook_binding_lookup(&mut outer, &hook)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    dispatcher
+        .resume_control_release(&mut outer, callable)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::Complete(ControlResult::HookBindingLookup(
+            HookBindingLookupResult::NullOperand,
+        ))
+    );
+}
+
+#[test]
+fn target_callbacks_empty_reads_the_pinned_object_after_binding_replacement() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    let hook = HookArgument::bytes("stale-target-empty-check");
+    dispatcher.add(
+        "stale-target-empty-check",
+        10,
+        DispatcherCallback::new(id("old-target-callback"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let old_target = dispatcher.capture_current_target(&hook).unwrap().unwrap();
+    let mut replace = dispatcher.begin_write_hook(&hook).unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut replace).unwrap(),
+        ControlStep::Complete(ControlResult::HookWritten)
+    );
+
+    assert_eq!(dispatcher.hook_callbacks_empty(&hook), Some(true));
+    assert_eq!(dispatcher.target_callbacks_empty(old_target), Ok(false));
+    dispatcher.release_target(old_target).unwrap();
+}
+
+#[test]
+fn cancelled_hook_table_operand_drains_old_callable_before_original_throwable() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    let hook = HookArgument::bytes("cow-cancel");
+    let callable = callable_handle(342);
+    let mut add = dispatcher
+        .begin_add(
+            "cow-cancel",
+            10,
+            DispatcherCallback::php_callable(id("cancelled-cow-target"), 1, callable).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+
+    let mut lookup = dispatcher.begin_hook_binding_lookup().unwrap();
+    let mut unbind = dispatcher.begin_unbind_hook(&hook).unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut unbind).unwrap(),
+        ControlStep::Complete(ControlResult::HookUnbound)
+    );
+    let original = throwable_handle(343);
+    dispatcher
+        .cancel_hook_binding_lookup(&mut lookup, original)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut lookup).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+
+    let destructor_throw = throwable_handle(344);
+    dispatcher
+        .resume_control_release_completion(
+            &mut lookup,
+            callable,
+            Completion::PhpThrowable(destructor_throw),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut lookup).unwrap(),
+        ControlStep::PhpThrowable(destructor_throw)
+    );
+}
+
+#[test]
+fn effectful_named_hook_cow_read_returns_null_after_reentrant_all_insert() {
+    let mut dispatcher = Dispatcher::new();
+    let hook = HookArgument::new(HookScalar::Float(1.5), PhpKey::Integer(1));
+    let all = HookArgument::bytes("all");
+    dispatcher.add_typed(
+        &hook,
+        recastpress_wp::hooks::HookPriority::integer(10),
+        DispatcherCallback::new(id("must-not-run-after-null-receiver"), 1, |_, _| {
+            panic!("COW-invalidated receiver must not invoke the named callback")
+        }),
+    );
+
+    let ticket = dispatcher
+        .begin_filter_effectful_typed(&hook, value("seed"), &[])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::FilterCounterWrite))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookIsset))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookRead))
+    );
+
+    // Models the warning handler for `$wp_filter[$hook]` creating an empty
+    // `all` object after WordPress has already decided to push this hook.
+    let mut write_all = dispatcher.begin_write_hook(&all).unwrap();
+    assert!(matches!(
+        dispatcher.advance_control(&mut write_all).unwrap(),
+        recastpress_wp::dispatcher::ControlStep::Complete(_)
+    ));
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(
+            DispatchBoundary::NullMethodApplyFilters
+        ))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::PhpThrowable(throwable_handle(321)))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::PhpThrowable(throwable_handle(321)))
+    );
+    assert_eq!(
+        dispatcher.current_hook_typed(),
+        Some(&HookScalar::Float(1.5))
+    );
+    assert_eq!(dispatcher.hook_stack_depth(), 1);
 }
 fn value(text: &str) -> PhpValue {
     PhpValue::Bytes(text.as_bytes().to_vec())
@@ -960,8 +1408,8 @@ fn recv_invocation(
     recastpress_wp::hooks::PhpInvocation {
         callback: id(callback),
         handle: closure_handle(slot),
-        hook: hook.into(),
-        priority,
+        hook: HookScalar::Bytes(hook.as_bytes().to_vec()),
+        priority: PhpKey::Integer(priority),
         call_mode: recastpress_wp::hooks::PhpCallMode::Array,
         args: vec![value(input)],
     }

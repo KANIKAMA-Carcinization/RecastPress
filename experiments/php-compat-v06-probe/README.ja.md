@@ -12,9 +12,11 @@ python experiments/php-compat-v06-probe/run_check.py --record
 python experiments/php-compat-v06-probe/run_check.py --verify-only
 ```
 
-`--self-test` はsurface／strict JSON oracle、9種類のbridge（surface、throwable、publish、handles、handles_abort、hooks、hooks_catch、hooks_abort、callable_api）と、不正な相関・handle・sequence・snapshot・重複JSON key・depth超過の拒否を確認します。`--record` は[現行receipt](evidence/native-continuation-v1.json)へ186 source identities、全32 owned childrenの終了・回収、観測結果、ローカルraw captureのhashを記録します。`--verify-only` はsource・binary・captureと観測結果を再照合します。送受信ログは`target/php-compat-v06-probe/captures/`配下に上限付きで保持し、Gitには追加しません。成功・失敗のどちらでも所有childをkill／waitして回収します。
+`--self-test` はsurface／strict JSON oracle、9種類のbridge（surface、throwable、publish、handles、handles_abort、hooks、hooks_catch、hooks_abort、callable_api）と、不正な相関・handle・sequence・snapshot・重複JSON key・depth超過の拒否を確認します。`--record` は[現行receipt](evidence/native-continuation-v1.json)へ187 source identities、全32 owned childrenの終了・回収、観測結果、ローカルraw captureのhashを記録します。`--verify-only` はsource・binary・captureと観測結果を再照合します。送受信ログは`target/php-compat-v06-probe/captures/`配下に上限付きで保持し、Gitには追加しません。成功・失敗のどちらでも所有childをkill／waitして回収します。
 
 新しいThrowable hooksのraw capture検証は、開始handleとcallback ID、CallCore、InvokePhp、seq／親effect、同一Throwable completion、PHPのRequestFinishedと実bytes数を独立に照合します。実観測ログに18種類の不正変更を加え、catchとabortの両ケースですべて拒否されることも確認します。
+
+native relayのstdout／stderrは専用のblocking readerで読み、待機中に固定間隔のpollを挟みません。異常時は所有childのkill／waitでreadを解除してからworkerをjoinします。実childを使う2試験で、小さなframeの即時転送・EOF drainと、待機中のreaderがchild回収後に終了することを検証します。通常の8 profileは40秒、数千frameを往復するcallable profileは180秒のdeadlineを持ち、1 MiB/frame・合計32 MiBの上限とcleanupは共通です。これはPoC runnerの上限であり、製品のCPU時間予算ではありません。
 
 ## PHP handle registry milestone
 
@@ -38,13 +40,17 @@ Rust APIは`begin_filter`／`advance`／`resume_php`／`resume_php_completion`�
 
 ## PHP callable API profile / native integration
 
-callable_driver.php は1つのPHP script effectの下で、固定WordPressの7 global API（add_filter、remove_filter、has_filter、apply_filters、current_filter、doing_filter、did_filter）をRust Dispatcherへ接続します。callable_program.php は実際のPHP callableを登録・呼出し、固定WordPress 7.1.3のplugin.php／WP_Hook oracleと同じ20ケースの観測を生成します。API identityは固定WPの _wp_filter_build_unique_id 規則に従い、文字列の大小文字を保ち、is_callableを登録前に呼びません。ID不能のcallbackは登録せずadd_filterはtrue、ID可能だが無効なcallbackはdispatch時にPHPの実Errorを返します。function string、static method string／array、object method、invokable object、Closureとcase違いを扱います。
+callable_driver.php は1つのPHP script effectの下で、固定WordPressの7 global API（add_filter、remove_filter、has_filter、apply_filters、current_filter、doing_filter、did_filter）をRust Dispatcherへ接続します。callable_program.php は実際のPHP callableを登録・呼出し、固定WordPress 7.1.3のplugin.php／WP_Hook oracleと従来20ケースと、型変換・優先度・警告再入の20組の観測を生成します。API identityは固定WPの _wp_filter_build_unique_id 規則に従い、文字列の大小文字を保ち、is_callableを登録前に呼びません。ID不能のcallbackは登録せずadd_filterはtrue、ID可能だが無効なcallbackはdispatch時にPHPの実Errorを返します。function string、static method string／array、object method、invokable object、Closureとcase違いを扱います。
 
-実測native bridgeはPHP 139／Rust 138 frames、7 API合計91 CallCore、17 callback invocation、27 release effectでした。20ケースはsame-ID replacementと順序、priority/accepted_args、zero-argument call mode、all listenerの未切詰め引数、raw hook nameと任意byte ID、PHP array-key変換、falsey ID、invalid callbackの遅延Errorを照合します。外部aliasを除いたobject callbackのremoveでは、registry release中のdestructorがremove完了前にhas_filter/current_filter/add_filterを再入できます。self-remove後にthrowするcaseでは、callback objectはparent catchより先にdestructされ、WP公開hook stateは別に残ります。固定WP oracleの期待値は20件すべて生成され、object IDの数値やThrowable byte列を期待JSONへ直接漏らさず、名前／messageはhexで比較します。
+c5c414e時点の履歴native bridgeはPHP 139／Rust 138 frames、7 API合計91 CallCore、17 callback invocation、27 release effectでした。従来20ケースはsame-ID replacementと順序、priority/accepted_args、zero-argument call mode、all listenerの未切詰め引数、raw hook nameと任意byte ID、PHP array-key変換、falsey ID、invalid callbackの遅延Errorを照合します。外部aliasを除いたobject callbackのremoveでは、registry release中のdestructorがremove完了前にhas_filter/current_filter/add_filterを再入できます。self-remove後にthrowするcaseでは、callback objectはparent catchより先にdestructされ、WP公開hook stateは別に残ります。固定WP oracleの期待値は20件すべて生成され、object IDの数値やThrowable byte列を期待JSONへ直接漏らさず、名前／messageはhexで比較します。
 
-独立raw checkerは登録とInvokePhpのhook／priority／call mode／引数切詰め、APIごとの結果型、effect ancestry、RequestFinishedの統計を照合し、実ログへの21種類の不正変更を拒否します。
+wire v2では、生のPHP引数を独立したargument handleとして保持し、Rustからのboundary effectごとに実際の配列アクセス・callback ID生成・整数castを実行します。警告handlerが再入・例外送出・hook再登録した場合も、その後のRust処理は該当時点の状態を読み、取得済みのreceiverを保持します。警告文の再生やPHP側のshadow dispatcherは使いません。argumentはAPI終了前に一括解放し、世代番号付きの確認後にRust mirrorを失効します。
 
-filter valueと引数はnull、bool、signed-64 int、IEEE float bit pattern、byte string、ordered arrayのmaterialized PODに限ります。PHP object、reference、resourceを含むfilter value/argumentは明示的に拒否します。hook名はstring、priorityはint／nullのみの固定profileです。その他のPHP array-key変換、ID不能callbackと非int priorityの早期return順、WordPress global変数の直接読書き、完全なPHP heap、production WP dispatcherとhook／Queryの受入はこのfixtureに含みません。registry closure前は全callback releaseを実行し、registry close後の利用を拒否します。
+wire v2のnative実測は従来20ケース＋型変換20組が固定WPと一致し、API合計884（add 192／remove 30／has 145／apply 83／current 65／doing 339／did 30）、callback 214、callable release 183、language boundary 2,777、argument release batch 819、PHP 4,881／Rust 4,880 framesを完了しました。独立raw checkerは実際の送受信記録を読み、37種類の不正変更をすべて拒否します。引数の役割、slot世代の再使用、正規化結果、呼出し引数、foreach／null methodの相関と、RequestFinishedの統計も照合します。
+
+外側のhook配列は型変換前にoperandの版を保持します。警告handler中の書き換えがcopy-on-writeを起こした場合、残る所有者に応じて旧版を参照するかnull operandとして扱い、解放とdestructor再入を処理してから続行します。キーが本当に存在しない場合のundefined-offset警告と、operandが失効して直接null methodになる場合を区別します。空のall objectでも元WPのdo-whileが実行する配列readとforeach(null)の警告を実PHPから発生させます。counter配列・priority bucket配列のcopy-on-writeと、型変換を伴う書込み／unsetの追加条件は別途の受入対象です。
+
+filter valueと引数はnull、bool、signed-64 int、IEEE float bit pattern、byte string、ordered arrayのmaterialized PODに限ります。PHP object、reference、resourceを含むfilter value/argumentは明示的に拒否します。hook名とpriorityにはnull／bool／int／float／byte stringを扱い、正規化済みの配列キーと元のscalarを分離します。current_filterとall listenerは元のscalar、doing_filterはPHPの厳密比較を使い、NaNは自分自身とも一致しません。priorityの安定したSORT_NUMERIC順と、実行中のmin／比較・厳密一致による反復位置の補正を区別します。配列／objectの不正なhook・priorityは該当するPHPアクセスから実TypeErrorを返します。成功するresource hook／priority、WordPress global変数の直接読書き、完全なPHP heap、production WP dispatcherとhook／Queryの受入はこのfixtureに含みません。registry closure前は全callback releaseを実行し、registry close後の利用を拒否します。
 
 ## 固定WordPress hook oracle
 
@@ -56,9 +62,9 @@ python -B experiments/php-compat-v06-probe/wp_hooks_oracle.py --compare-bridges
 python -B experiments/php-compat-v06-probe/wp_hooks_oracle.py --verify-only
 ```
 
-[oracle receipt](evidence/wp-hooks-throwable-v1.json)は192入力を束ね、固定archive内の3ソースと実行に使うファイルの一致を確認します。PHPの実stdoutとreceipt、native／Wasm receiptのhashと3ケースの実観測値も照合します。継続のterminal stateはRust側の観測です。PHPはRequestFinished送信前に未来のFinished状態を報告しません。
+[oracle receipt](evidence/wp-hooks-throwable-v1.json)は193入力を束ね、固定archive内の3ソースと実行に使うファイルの一致を確認します。PHPの実stdoutとreceipt、native／Wasm receiptのhashと3ケースの実観測値も照合します。継続のterminal stateはRust側の観測です。PHPはRequestFinished送信前に未来のFinished状態を報告しません。
 
-Callable用の独立oracleは同じ共有PHP programを固定WPで実行し、20ケースすべてをnative／Wasmと直接比較します。[oracle receipt](evidence/wp-callable-api-v1.json)は192入力、実stdout、両bridge receiptのhashを結び付けます。
+Callable用の独立oracleは同じ共有PHP programを固定WPで実行し、従来20ケースと20組の追加観測をnative／Wasmと直接比較します。[oracle receipt](evidence/wp-callable-api-v1.json)は193入力、実stdout、両bridge receiptのhashを結び付けます。
 
 ```powershell
 python -B experiments/php-compat-v06-probe/wp_callable_oracle.py --record

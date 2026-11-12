@@ -19,7 +19,7 @@ import threading
 import time
 import uuid
 
-from callable_contract import (validate_result as validate_callable_result, validate_transcript as validate_callable_transcript,
+from callable_v2_contract import (validate_result as validate_callable_result, validate_transcript as validate_callable_transcript,
     reject_mutated_transcripts as reject_callable_transcripts, TRANSCRIPT_NEGATIVE_INVENTORY as CALLABLE_TRANSCRIPT_NEGATIVES)
 from publish_contract import validate_publish_result
 from hook_contract import (FRAME_COUNTS as HOOK_FRAME_COUNTS, SCENARIOS as HOOK_SCENARIOS,
@@ -39,6 +39,8 @@ RECEIPT = HERE / "evidence" / "native-continuation-v1.json"
 MAX_FRAME = 1_048_576
 MAX_TOTAL = 33_554_432
 TIMEOUT = 40
+# The expanded callable profile exchanges thousands of genuine boundary effects.
+CALLABLE_TIMEOUT = 180
 MAX_STDERR = 1_048_576
 PHP_ARCHIVE_SHA256 = "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477"
 CHILD_RUNS: list[dict] = []
@@ -68,7 +70,7 @@ def source_files() -> dict[str, str]:
         HERE / "publish_contract.py", FIXTURES / "publish_driver.php",
         HERE / "handle_contract.py", FIXTURES / "handle_registry.php", FIXTURES / "handle_driver.php",
         HERE / "hook_contract.py", FIXTURES / "hooks_driver.php",
-        HERE / "callable_contract.py", HERE / "wp_callable_oracle.py",
+        HERE / "callable_contract.py", HERE / "callable_v2_contract.py", HERE / "wp_callable_oracle.py",
         *(FIXTURES / name for name in ("callable_adapter.php", "callable_driver.php", "callable_program.php", "callable_wp_oracle.php", "CALLABLE_API_CONTRACT.md")),
         HERE / "wp_hooks_oracle.py", FIXTURES / "hooks_wp_oracle.php",
         FIXTURES / "HOOKS_THROWABLE_CONTRACT.md",
@@ -366,7 +368,7 @@ def run_bridge(executable: Path, scenario: str = "surface") -> dict:
     total = 0
     sent_lines = {"php": 0, "rust": 0}
     transcript_observations = {"rust_child": None, "rust_root": None, "rust_throwable_return": None, "rust_abort": None, "php_final": None}
-    deadline = time.monotonic() + TIMEOUT
+    deadline = time.monotonic() + (CALLABLE_TIMEOUT if scenario == "callable_api" else TIMEOUT)
 
     def close_write(child):
         try:
@@ -383,7 +385,9 @@ def run_bridge(executable: Path, scenario: str = "surface") -> dict:
         procs["rust"] = rust
         for label, child in procs.items():
             for stream, stream_label in ((child.stdout, label), (child.stderr, label + "_stderr")):
-                os.set_blocking(stream.fileno(), False)
+                # Dedicated readers block until data or EOF; owned-child kill/wait
+                # below unblocks them on every failure path before joining.
+                os.set_blocking(stream.fileno(), True)
                 worker = threading.Thread(target=_reader, args=(stream, stream_label, events, cancelled), daemon=True)
                 worker.start()
                 workers.append(worker)
@@ -666,7 +670,7 @@ def make_receipt(one_shot: dict, bridge: dict, throwable_bridge: dict | None, ne
         "environment": {"python": sys.version.splitlines()[0], "platform": platform.platform(), "architecture": platform.machine(), "working_directory": "."},
         "rust": {"rustc": version.stdout.decode("utf-8", "replace").strip(), "cargo_profile": "debug", "features": "--no-default-features"},
         "adapter_binary_sha256": executable_sha256,
-        "limits": {"max_frame_bytes": MAX_FRAME, "max_total_bytes": MAX_TOTAL, "timeout_seconds": TIMEOUT, "max_captured_output_bytes_per_child": MAX_STDERR},
+        "limits": {"max_frame_bytes": MAX_FRAME, "max_total_bytes": MAX_TOTAL, "timeout_seconds": TIMEOUT, "callable_timeout_seconds": CALLABLE_TIMEOUT, "max_captured_output_bytes_per_child": MAX_STDERR},
         "one_shot": {"oracle": one_shot["oracle"], "strict_json_oracle": one_shot["strict_oracle"], "selected_independent_php_values": {"same_object_alias": one_shot["surface_result"]["same_object_alias"], "array_reference_cell_after_callback": one_shot["surface_result"]["array_reference_cell_after_callback"], "byte_value_hex": one_shot["surface_result"]["byte_value_hex"]}},
         "interactive_bridge": bridge,
         "throwable_abort_bridge": throwable_bridge,
@@ -707,6 +711,13 @@ def verify_receipt() -> None:
     receipt = json.loads(RECEIPT.read_text(encoding="utf-8"))
     if receipt.get("schema") != "recastpress.native-php-continuation-probe.v1" or receipt.get("status") != "passed":
         raise RuntimeError("receipt schema/status invalid")
+    expected_limits = {"max_frame_bytes": MAX_FRAME, "max_total_bytes": MAX_TOTAL,
+                       "timeout_seconds": TIMEOUT, "callable_timeout_seconds": CALLABLE_TIMEOUT,
+                       "max_captured_output_bytes_per_child": MAX_STDERR}
+    limits = receipt.get("limits")
+    if (not isinstance(limits, dict) or limits != expected_limits
+            or any(type(value) is not int for value in limits.values())):
+        raise RuntimeError("receipt native bridge limits differ")
     manifest = check_php_manifest()
     current = source_files()
     if receipt.get("source_sha256") != current:

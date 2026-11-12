@@ -12,10 +12,10 @@ use std::future::Future;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::pin::Pin;
-use std::sync::Arc;
 use std::sync::mpsc;
+use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result, ensure};
 use recastpress_wp::continuation::{
@@ -545,8 +545,149 @@ fn run() -> Result<()> {
     Ok(())
 }
 
+const WIRE_CAPTURE_LIMIT: usize = 33_554_432;
+
+struct WireStreamCapture {
+    file: File,
+    relative: String,
+    bytes: usize,
+    digest: Sha256,
+}
+
+struct WireCapture {
+    streams: [WireStreamCapture; 2],
+    total: usize,
+}
+
+impl WireCapture {
+    fn create() -> Result<Self> {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../..")
+            .canonicalize()?;
+        let target = root.join("target").canonicalize()?;
+        ensure!(target.starts_with(&root), "wire target escaped repository");
+        let base = target.join("php-compat-v06-wire");
+        std::fs::create_dir_all(&base)?;
+        let base = base.canonicalize()?;
+        ensure!(
+            base.starts_with(&target),
+            "wire capture base escaped target"
+        );
+        let stamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
+        let directory = base.join(format!("{}-{stamp}", std::process::id()));
+        let builder = std::fs::DirBuilder::new();
+        #[cfg(unix)]
+        let builder = {
+            use std::os::unix::fs::DirBuilderExt;
+            let mut builder = builder;
+            builder.mode(0o700);
+            builder
+        };
+        builder.create(&directory)?;
+        let stream = |name: &str| -> Result<WireStreamCapture> {
+            let path = directory.join(format!("{name}.jsonl.bin"));
+            let mut options = std::fs::OpenOptions::new();
+            options.write(true).create_new(true);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::OpenOptionsExt;
+                options.mode(0o600);
+            }
+            let file = options.open(&path)?;
+            Ok(WireStreamCapture {
+                file,
+                relative: path
+                    .strip_prefix(&root)?
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+                bytes: 0,
+                digest: Sha256::new(),
+            })
+        };
+        Ok(Self {
+            streams: [stream("php")?, stream("rust")?],
+            total: 0,
+        })
+    }
+
+    fn record(&mut self, index: usize, bytes: &[u8]) -> std::io::Result<()> {
+        let total = self.total.checked_add(bytes.len()).ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "wire capture length overflow",
+            )
+        })?;
+        if total > WIRE_CAPTURE_LIMIT {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "wire capture limit exceeded",
+            ));
+        }
+        let stream = &mut self.streams[index];
+        stream.file.write_all(bytes)?;
+        stream.digest.update(bytes);
+        stream.bytes += bytes.len();
+        self.total = total;
+        Ok(())
+    }
+
+    fn observation(&mut self) -> Result<Value> {
+        for stream in &mut self.streams {
+            stream.file.flush()?;
+        }
+        let describe = |index: usize| {
+            let stream = &self.streams[index];
+            json!({"path":stream.relative,"bytes":stream.bytes,
+                "sha256":format!("{:x}", stream.digest.clone().finalize())})
+        };
+        Ok(json!({"php":describe(0),"rust":describe(1)}))
+    }
+}
+
+struct RecordedReader<R> {
+    inner: R,
+    capture: Option<Arc<Mutex<WireCapture>>>,
+}
+impl<R: Read> Read for RecordedReader<R> {
+    fn read(&mut self, bytes: &mut [u8]) -> std::io::Result<usize> {
+        let count = self.inner.read(bytes)?;
+        if let Some(capture) = &self.capture {
+            capture
+                .lock()
+                .map_err(|_| std::io::Error::other("wire capture lock poisoned"))?
+                .record(0, &bytes[..count])?;
+        }
+        Ok(count)
+    }
+}
+
+struct RecordedWriter<W> {
+    inner: W,
+    capture: Option<Arc<Mutex<WireCapture>>>,
+}
+impl<W: Write> Write for RecordedWriter<W> {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        let count = self.inner.write(bytes)?;
+        if let Some(capture) = &self.capture {
+            capture
+                .lock()
+                .map_err(|_| std::io::Error::other("wire capture lock poisoned"))?
+                .record(1, &bytes[..count])?;
+        }
+        Ok(count)
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.inner.flush()
+    }
+}
+
 fn run_scenario(module: &wasmer::Module, module_hash: ModuleHash, scenario: &str) -> Result<Value> {
     eprintln!("PHP_WASIX_V06_BRIDGE_PHASE=guest_{scenario}");
+    let wire_capture = if scenario == "callable_api" {
+        Some(Arc::new(Mutex::new(WireCapture::create()?)))
+    } else {
+        None
+    };
     // One full duplex channel: host peer owns one end; WASIX stdin and stdout
     // share the other end, while stderr is an independent bounded observation.
     let (host_wire, guest_wire) = Pipe::channel();
@@ -580,13 +721,19 @@ fn run_scenario(module: &wasmer::Module, module_hash: ModuleHash, scenario: &str
         })?;
 
     let peer_started = Instant::now();
-    let mut reader = BufReader::new(DeadlinePipeReader {
-        pipe: host_stdout,
-        deadline: peer_started + SCENARIO_TIMEOUT,
+    let mut reader = BufReader::new(RecordedReader {
+        inner: DeadlinePipeReader {
+            pipe: host_stdout,
+            deadline: peer_started + SCENARIO_TIMEOUT,
+        },
+        capture: wire_capture.clone(),
     });
     let (peer_result, peer_elapsed) = {
-        let mut writer = DeadlinePipeWriter {
-            pipe: &mut host_stdin,
+        let mut writer = RecordedWriter {
+            inner: DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+            },
+            capture: wire_capture.clone(),
         };
         let result = peer::run_peer(&mut reader, &mut writer, scenario)
             .map_err(|e| anyhow::anyhow!("Rust peer scenario {scenario} failed: {e}"));
@@ -624,14 +771,21 @@ fn run_scenario(module: &wasmer::Module, module_hash: ModuleHash, scenario: &str
         "PHP bridge wrote stderr: {}",
         String::from_utf8_lossy(&stderr)
     );
-    Ok(json!({
+    let mut observation = json!({
         "status":"passed",
         "php_exit_code":0,
         "guest_completed":true,
         "thread_joined":true,
         "peer_elapsed_ms":peer_elapsed.as_millis(),
         "peer":peer
-    }))
+    });
+    if let Some(capture) = wire_capture {
+        observation["wire"] = capture
+            .lock()
+            .map_err(|_| anyhow::anyhow!("wire capture lock poisoned"))?
+            .observation()?;
+    }
+    Ok(observation)
 }
 
 fn run_recovery_suite(module: &wasmer::Module, module_hash: ModuleHash) -> Result<Value> {

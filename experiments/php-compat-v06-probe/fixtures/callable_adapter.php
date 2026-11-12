@@ -60,6 +60,7 @@ final class CallableApiAdapter
     private static ?self $active = null;
     private array $effects = [];
     private array $issuedHandles = [];
+    private array $argumentFrames = [];
     private array $registryObservation = [];
 
     public function __construct(
@@ -92,66 +93,53 @@ final class CallableApiAdapter
 
     public function addFilter($hookName, $callback, $priority = 10, $acceptedArgs = 1)
     {
-        $hookHex = $this->hookHex($hookName);
-        $id = _wp_filter_build_unique_id($hookName, $callback, $priority);
-        $key = CallableIdentity::arrayKey($id);
-        $handle = null;
-        $accepted = null;
-
-        if ($key !== null) {
-            $priority = $this->normalizePriority($priority);
-            $accepted = (int) $acceptedArgs;
-            $handle = $this->registry->retainCallable($callback);
-            $this->issuedHandles[] = $handle;
-        }
-
-        $this->api('add_filter', [
-            'hook_hex' => $hookHex,
-            'key' => $key,
-            'priority' => $key === null ? $this->normalizePriority($priority) : $priority,
-            'accepted_args' => $accepted,
-            'handle' => $handle,
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
+            'priority' => $priority,
+            'accepted_args' => $acceptedArgs,
         ]);
 
-        return true;
+        return $this->api('add_filter', ['arguments' => $arguments], $handles);
     }
 
     public function removeFilter($hookName, $callback, $priority = 10)
     {
-        $hookHex = $this->hookHex($hookName);
-        $key = CallableIdentity::arrayKey(_wp_filter_build_unique_id($hookName, $callback, $priority));
-        $priority = $this->normalizePriority($priority);
-
-        return $this->api('remove_filter', [
-            'hook_hex' => $hookHex,
-            'key' => $key,
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
             'priority' => $priority,
         ]);
+
+        return $this->api('remove_filter', ['arguments' => $arguments], $handles);
     }
 
     public function hasFilter($hookName, $callback = false, $priority = false)
     {
-        $hookHex = $this->hookHex($hookName);
         $any = $callback === false;
-        $key = $any ? null : CallableIdentity::arrayKey(
-            _wp_filter_build_unique_id($hookName, $callback, $priority),
-        );
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
+        ]);
 
         return $this->api('has_filter', [
-            'hook_hex' => $hookHex,
-            'key' => $key,
+            'arguments' => $arguments,
             'any' => $any,
-            'priority' => is_int($priority) ? $priority : null,
-        ]);
+            'priority' => is_int($priority) ? self::encodePod($priority) : null,
+        ], $handles);
     }
 
     public function applyFilters($hookName, $value, ...$args)
     {
+        $valueNode = self::encodePod($value);
+        $argumentNodes = array_map(self::encodePod(...), $args);
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
         return $this->api('apply_filters', [
-            'hook_hex' => $this->hookHex($hookName),
-            'value' => self::encodePod($value),
-            'args' => array_map(self::encodePod(...), $args),
-        ]);
+            'arguments' => $arguments,
+            'value' => $valueNode,
+            'args' => $argumentNodes,
+        ], $handles);
     }
 
     public function currentFilter()
@@ -161,16 +149,19 @@ final class CallableApiAdapter
 
     public function doingFilter($hookName = null)
     {
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
         return $this->api('doing_filter', [
-            'hook_hex' => $hookName === null ? null : $this->hookHex($hookName),
-        ]);
+            'arguments' => $arguments,
+            'any' => $hookName === null,
+        ], $handles);
     }
 
     public function didFilter($hookName)
     {
-        return $this->api('did_filter', [
-            'hook_hex' => $this->hookHex($hookName),
-        ]);
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
+        return $this->api('did_filter', ['arguments' => $arguments], $handles);
     }
 
     public function handleTerminalInvoke(array $frame): void
@@ -254,27 +245,353 @@ final class CallableApiAdapter
         return $this->registryObservation;
     }
 
-    private function api(string $api, array $fields)
+    private function retainArguments(array $values): array
+    {
+        $arguments = [];
+        $handles = [];
+        try {
+            foreach ($values as $name => $value) {
+                $handle = $this->registry->retainArgument($value);
+                $arguments[$name] = $handle;
+                $handles[] = $handle;
+            }
+        } catch (Throwable $error) {
+            foreach ($handles as $handle) {
+                try {
+                    $this->registry->release($handle);
+                } catch (Throwable) {
+                    // Keep the original registration failure.
+                }
+            }
+            throw $error;
+        }
+
+        return [$arguments, $handles];
+    }
+
+    private function api(string $api, array $fields, array $argumentHandles = [])
     {
         $parentEffect = $this->currentEffect();
-        $this->wire->send('call_core', ['api' => $api, ...$fields], $parentEffect);
-
-        while (true) {
-            $frame = $this->wire->receive();
-            if ($frame['kind'] === 'invoke_php') {
-                $this->handleNestedInvoke($frame, $parentEffect);
-                continue;
-            }
-
-            expect_kind($frame, 'return');
-            expect_parent_effect($frame, $parentEffect);
-            expect_payload_keys($frame, ['api', 'completion'], 'callable_api_return');
-            if ($frame['payload']['api'] !== $api) {
-                throw new RuntimeException('callable_api_return_name');
-            }
-
-            return $this->decodeCompletion($frame['payload']['completion']);
+        if ($argumentHandles !== []) {
+            $this->argumentFrames[] = $argumentHandles;
         }
+
+        try {
+            $this->wire->send('call_core', ['api' => $api, ...$fields], $parentEffect);
+
+            while (true) {
+                $frame = $this->wire->receive();
+                if ($frame['kind'] === 'invoke_php') {
+                    $this->handleNestedInvoke($frame, $parentEffect);
+                    continue;
+                }
+
+                expect_kind($frame, 'return');
+                expect_parent_effect($frame, $parentEffect);
+                expect_payload_keys($frame, ['api', 'completion'], 'callable_api_return');
+                if ($frame['payload']['api'] !== $api) {
+                    throw new RuntimeException('callable_api_return_name');
+                }
+
+                return $this->decodeCompletion($frame['payload']['completion']);
+            }
+        } finally {
+            if ($argumentHandles !== []) {
+                $releasedFrame = array_pop($this->argumentFrames);
+                if (!self::sameHandleList($releasedFrame, $argumentHandles)) {
+                    throw new RuntimeException('callable_argument_frame_stack');
+                }
+            }
+        }
+    }
+
+    private function performBoundary(string $action, array $arguments): array
+    {
+        if ($action === 'array_key') {
+            expect_payload_keys(
+                ['payload' => $arguments],
+                ['handle', 'access', 'null_to_zero'],
+                'callable_boundary_array_key',
+            );
+            if (!is_array($arguments['handle'])
+                || !is_string($arguments['access'])
+                || !in_array($arguments['access'], ['isset', 'nested_isset', 'read', 'write', 'unset', 'increment'], true)
+                || !is_bool($arguments['null_to_zero'])
+            ) {
+                throw new RuntimeException('callable_boundary_array_key_shape');
+            }
+
+            $original = $this->registry->resolve($arguments['handle'], 'argument');
+            if ($arguments['null_to_zero'] && $original === null) {
+                $original = 0;
+            }
+
+            if (is_array($original) || is_object($original)) {
+                $target = [];
+                switch ($arguments['access']) {
+                    case 'isset':
+                        isset($target[$original]);
+                        break;
+                    case 'nested_isset':
+                        isset($target[$original]['callback']);
+                        break;
+                    case 'read':
+                        $readValue = $target[$original];
+                        unset($readValue);
+                        break;
+                    case 'write':
+                        $target[$original] = true;
+                        break;
+                    case 'unset':
+                        unset($target[$original]);
+                        break;
+                    case 'increment':
+                        $target[$original]++;
+                        break;
+                }
+                throw new RuntimeException('callable_invalid_array_offset_unreachable');
+            }
+
+            try {
+                $key = self::normalizePhpArrayKey($original);
+            } catch (Throwable $normalizationError) {
+                $target = [];
+                switch ($arguments['access']) {
+                    case 'isset':
+                        isset($target[$original]);
+                        break;
+                    case 'nested_isset':
+                        isset($target[$original]['callback']);
+                        break;
+                    case 'read':
+                        $readValue = $target[$original];
+                        unset($readValue);
+                        break;
+                    case 'write':
+                        $target[$original] = true;
+                        break;
+                    case 'unset':
+                        unset($target[$original]);
+                        break;
+                    case 'increment':
+                        $target[$original]++;
+                        break;
+                }
+                throw $normalizationError;
+            }
+            $target = [];
+            if ($arguments['access'] === 'increment') {
+                $target[self::decodePhpKey($key)] = 0;
+            } elseif ($arguments['access'] === 'nested_isset') {
+                $target[self::decodePhpKey($key)] = ['callback' => true];
+            } elseif (in_array($arguments['access'], ['read', 'unset'], true)) {
+                $target[self::decodePhpKey($key)] = true;
+            }
+
+            switch ($arguments['access']) {
+                case 'isset':
+                    isset($target[$original]);
+                    break;
+                case 'nested_isset':
+                    isset($target[$original]['callback']);
+                    break;
+                case 'read':
+                    $readValue = $target[$original];
+                    unset($readValue);
+                    break;
+                case 'write':
+                    $target[$original] = true;
+                    break;
+                case 'unset':
+                    unset($target[$original]);
+                    break;
+                case 'increment':
+                    $target[$original]++;
+                    break;
+            }
+
+            return [
+                'original' => self::encodePod($original),
+                'key' => $key,
+            ];
+        }
+
+        if ($action === 'callback_id') {
+            expect_payload_keys(['payload' => $arguments], ['handle'], 'callable_boundary_callback_id');
+            if (!is_array($arguments['handle'])) {
+                throw new RuntimeException('callable_boundary_callback_handle');
+            }
+
+            $callback = $this->registry->resolve($arguments['handle'], 'argument');
+            $id = _wp_filter_build_unique_id(null, $callback, false);
+            return ['key' => CallableIdentity::arrayKey($id)];
+        }
+
+        if ($action === 'accepted_args') {
+            expect_payload_keys(['payload' => $arguments], ['handle'], 'callable_boundary_accepted_args');
+            if (!is_array($arguments['handle'])) {
+                throw new RuntimeException('callable_boundary_accepted_args_handle');
+            }
+
+            $value = $this->registry->resolve($arguments['handle'], 'argument');
+            return self::encodePod((int) $value);
+        }
+
+        if ($action === 'retain_callable') {
+            expect_payload_keys(['payload' => $arguments], ['handle'], 'callable_boundary_retain_callable');
+            if (!is_array($arguments['handle'])) {
+                throw new RuntimeException('callable_boundary_retain_callable_handle');
+            }
+
+            $value = $this->registry->resolve($arguments['handle'], 'argument');
+            $handle = $this->registry->retainCallable($value);
+            $this->issuedHandles[] = $handle;
+            return ['handle' => $handle];
+        }
+
+        if ($action === 'hook_scalar') {
+            expect_payload_keys(['payload' => $arguments], ['handle'], 'callable_boundary_hook_scalar');
+            if (!is_array($arguments['handle'])) {
+                throw new RuntimeException('callable_boundary_hook_scalar_handle');
+            }
+
+            $value = $this->registry->resolve($arguments['handle'], 'argument');
+            if (!self::isHookScalar($value)) {
+                return ['supported' => false, 'value' => null];
+            }
+
+            return ['supported' => true, 'value' => self::encodePod($value)];
+        }
+
+        if ($action === 'missing_offset') {
+            expect_payload_keys(['payload' => $arguments], ['key'], 'callable_boundary_missing_offset');
+            $key = self::decodePhpKey($arguments['key']);
+            $absent = [];
+            $value = $absent[$key];
+            unset($value);
+            return ['missing' => true];
+        }
+
+        if ($action === 'null_property') {
+            expect_payload_keys(['payload' => $arguments], ['property'], 'callable_boundary_null_property');
+            if ($arguments['property'] !== 'callbacks') {
+                throw new RuntimeException('callable_boundary_null_property_name');
+            }
+
+            $null = null;
+            $value = $null->{$arguments['property']};
+            return ['missing' => $value === null];
+        }
+
+        if ($action === 'null_foreach') {
+            expect_payload_keys(['payload' => $arguments], [], 'callable_boundary_null_foreach');
+            $null = null;
+            foreach ($null as $value) {
+                unset($value);
+            }
+            return ['missing' => true];
+        }
+
+        if ($action === 'null_method') {
+            expect_payload_keys(['payload' => $arguments], ['method'], 'callable_boundary_null_method');
+            if (!in_array($arguments['method'], ['add_filter', 'remove_filter', 'has_filter', 'apply_filters'], true)) {
+                throw new RuntimeException('callable_boundary_null_method_name');
+            }
+
+            $null = null;
+            $method = $arguments['method'];
+            $null->{$method}();
+            return ['called' => true];
+        }
+
+        if ($action === 'release_arguments') {
+            expect_payload_keys(['payload' => $arguments], ['handles'], 'callable_boundary_release_arguments');
+            if (!is_array($arguments['handles']) || !array_is_list($arguments['handles'])) {
+                throw new RuntimeException('callable_boundary_release_arguments_shape');
+            }
+
+            $activeFrame = $this->argumentFrames === []
+                ? null
+                : $this->argumentFrames[array_key_last($this->argumentFrames)];
+            if ($activeFrame === null || !self::sameHandleList($arguments['handles'], $activeFrame)) {
+                throw new RuntimeException('callable_boundary_argument_frame_mismatch');
+            }
+
+            foreach ($arguments['handles'] as $handle) {
+                if (!is_array($handle)) {
+                    throw new RuntimeException('callable_boundary_release_argument_handle');
+                }
+                $this->registry->resolve($handle, 'argument');
+            }
+
+            $firstError = null;
+            foreach ($arguments['handles'] as $handle) {
+                try {
+                    if (!$this->registry->release($handle)) {
+                        throw new RuntimeException('callable_argument_release_not_final');
+                    }
+                } catch (Throwable $error) {
+                    $firstError ??= $error;
+                }
+            }
+            if ($firstError !== null) {
+                throw $firstError;
+            }
+
+            return ['released' => true];
+        }
+
+        throw new RuntimeException('callable_boundary_action');
+    }
+
+    private static function normalizePhpArrayKey(mixed $value): array
+    {
+        $before = error_get_last();
+        $probe = [];
+        set_error_handler(static fn (): bool => true);
+        try {
+            $probe[$value] = true;
+        } finally {
+            restore_error_handler();
+        }
+
+        if (error_get_last() !== $before) {
+            error_clear_last();
+            throw new RuntimeException('callable_internal_key_error_leak');
+        }
+
+        $key = array_key_first($probe);
+        if (is_int($key)) {
+            return ['type' => 'int', 'hex' => bin2hex((string) $key)];
+        }
+        if (is_string($key)) {
+            return ['type' => 'string', 'hex' => bin2hex($key)];
+        }
+
+        throw new RuntimeException('callable_normalized_key_missing');
+    }
+
+    private static function sameHandleList(array $left, array $right): bool
+    {
+        if (count($left) !== count($right)) {
+            return false;
+        }
+
+        foreach ($left as $index => $handle) {
+            if (!is_array($handle) || !is_array($right[$index] ?? null)) {
+                return false;
+            }
+            foreach (['request', 'kind', 'slot', 'generation', 'token'] as $field) {
+                if (!array_key_exists($field, $handle)
+                    || !array_key_exists($field, $right[$index])
+                    || $handle[$field] !== $right[$index][$field]
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private function handleNestedInvoke(array $frame, string $expectedParent): void
@@ -284,10 +601,34 @@ final class CallableApiAdapter
         $payload = $frame['payload'];
         $operation = $payload['operation'] ?? null;
 
+        if ($operation === 'boundary') {
+            expect_payload_keys($frame, ['operation', 'effect_id', 'action', 'arguments'], 'callable_boundary');
+            $effectId = $payload['effect_id'];
+            if (!is_string($effectId) || !is_string($payload['action']) || !is_array($payload['arguments'])) {
+                throw new RuntimeException('callable_boundary_metadata');
+            }
+
+            $completion = null;
+            $this->withEffect($effectId, function () use ($payload, &$completion): void {
+                try {
+                    $value = $this->performBoundary($payload['action'], $payload['arguments']);
+                    $completion = ['kind' => 'value', 'value' => $value];
+                } catch (Throwable $error) {
+                    $completion = $this->throwableCompletion($error);
+                }
+            });
+
+            $this->wire->send('resume', [
+                'effect_id' => $effectId,
+                'completion' => $completion,
+            ], $expectedParent);
+            return;
+        }
+
         if ($operation === 'callable') {
             expect_payload_keys(
                 $frame,
-                ['operation', 'effect_id', 'handle', 'hook_hex', 'priority', 'call_mode', 'args'],
+                ['operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'args'],
                 'callable_invoke',
             );
             $effectId = $payload['effect_id'];
@@ -297,13 +638,17 @@ final class CallableApiAdapter
 
             $completion = null;
             $this->withEffect($effectId, function () use ($payload, &$completion): void {
-                if (!is_string($payload['hook_hex'])
-                    || !is_int($payload['priority'])
+                if (!is_array($payload['hook'])
+                    || !is_array($payload['priority'])
                     || !is_string($payload['call_mode'])
                 ) {
                     throw new RuntimeException('callable_invoke_metadata');
                 }
-                $hookName = self::decodeHexString($payload['hook_hex']);
+                $hookName = self::decodePod($payload['hook']);
+                if (!self::isHookScalar($hookName)) {
+                    throw new RuntimeException('callable_invoke_hook_scalar');
+                }
+                $priority = self::decodePhpKey($payload['priority']);
                 $callable = $this->registry->resolve($payload['handle'], 'callable');
                 $arguments = self::decodePodList($payload['args']);
                 try {
@@ -314,7 +659,7 @@ final class CallableApiAdapter
                         $value = call_user_func($callable);
                     } elseif ($payload['call_mode'] === 'array' || $payload['call_mode'] === 'all') {
                         if ($payload['call_mode'] === 'all'
-                            && ($arguments === [] || $arguments[0] !== $hookName)
+                            && ($arguments === [] || self::encodePod($arguments[0]) !== self::encodePod($hookName))
                         ) {
                             throw new RuntimeException('callable_all_hook_name_mismatch');
                         }
@@ -329,7 +674,7 @@ final class CallableApiAdapter
                 } catch (Throwable $error) {
                     $completion = $this->throwableCompletion($error);
                 } finally {
-                    unset($callable, $arguments, $hookName, $value);
+                    unset($callable, $arguments, $hookName, $priority, $value);
                 }
             });
 
@@ -427,27 +772,6 @@ final class CallableApiAdapter
         }
 
         return $this->effects[array_key_last($this->effects)];
-    }
-
-    private function hookHex($hookName): string
-    {
-        if (!is_string($hookName)) {
-            throw new RuntimeException('callable_hook_name_requires_string');
-        }
-
-        return bin2hex($hookName);
-    }
-
-    private function normalizePriority($priority): int
-    {
-        if ($priority === null) {
-            return 0;
-        }
-        if (!is_int($priority)) {
-            throw new RuntimeException('callable_priority_out_of_profile');
-        }
-
-        return $priority;
     }
 
     private static function encodePod($value): array
@@ -567,6 +891,36 @@ final class CallableApiAdapter
         }
 
         throw new RuntimeException('callable_pod_key_type');
+    }
+
+    private static function decodePhpKey($node): int|string
+    {
+        if (!is_array($node) || !isset($node['type'])) {
+            throw new RuntimeException('callable_php_key_shape');
+        }
+        expect_payload_keys(['payload' => $node], ['type', 'hex'], 'callable_php_key');
+        $encoded = self::decodeHexString($node['hex']);
+        if ($node['type'] === 'int') {
+            return self::decodeInt($encoded);
+        }
+        if ($node['type'] !== 'string') {
+            throw new RuntimeException('callable_php_key_type');
+        }
+        $key = $encoded;
+        if (is_string($key)) {
+            $probe = [];
+            $probe[$key] = true;
+            if (is_int(array_key_first($probe))) {
+                throw new RuntimeException('callable_php_key_not_normalized');
+            }
+        }
+
+        return $key;
+    }
+
+    private static function isHookScalar(mixed $value): bool
+    {
+        return $value === null || is_bool($value) || is_int($value) || is_float($value) || is_string($value);
     }
 
     private static function decodeInt($value): int

@@ -3,42 +3,230 @@
 use crate::{
     continuation::{Completion, PhpHandle, PhpHandleKind},
     hooks::{
-        self, CallbackId, Context, ContextCallback, HookDiagnostic, HookError, HookStep,
-        MAX_NESTING, Mode, PhpInvocation, PhpReleaseQueue, Storage,
+        self, CallbackId, Context, ContextCallback, HookArgument, HookDiagnostic, HookError,
+        HookPriority, HookScalar, HookStep, MAX_NESTING, Mode, PhpInvocation, PhpReleaseQueue,
+        Storage,
     },
-    value::PhpValue,
+    value::{PhpKey, PhpValue},
 };
 use std::{
-    collections::{BTreeMap, VecDeque},
-    sync::atomic::{AtomicU64, Ordering},
+    collections::VecDeque,
+    sync::{
+        Arc, Weak,
+        atomic::{AtomicU64, Ordering},
+    },
 };
 
 static NEXT_DISPATCHER_ID: AtomicU64 = AtomicU64::new(1);
+
+fn key_position<V>(entries: &[(PhpKey, V)], key: &PhpKey) -> Option<usize> {
+    entries.iter().position(|(candidate, _)| candidate == key)
+}
+
+fn key_get<'a, V>(entries: &'a [(PhpKey, V)], key: &PhpKey) -> Option<&'a V> {
+    key_position(entries, key).map(|index| &entries[index].1)
+}
+
+fn key_get_mut<'a, V>(entries: &'a mut [(PhpKey, V)], key: &PhpKey) -> Option<&'a mut V> {
+    let index = key_position(entries, key)?;
+    Some(&mut entries[index].1)
+}
+
+fn key_set<V>(entries: &mut Vec<(PhpKey, V)>, key: PhpKey, value: V) -> Option<V> {
+    if let Some(existing) = key_get_mut(entries, &key) {
+        return Some(std::mem::replace(existing, value));
+    }
+    entries.push((key, value));
+    None
+}
+
+fn key_remove<V>(entries: &mut Vec<(PhpKey, V)>, key: &PhpKey) -> Option<V> {
+    let index = key_position(entries, key)?;
+    Some(entries.remove(index).1)
+}
+
+fn increment_key_counter(entries: &mut Vec<(PhpKey, u64)>, key: PhpKey) {
+    if let Some(count) = key_get_mut(entries, &key) {
+        *count = count.saturating_add(1);
+    } else {
+        entries.push((key, 1));
+    }
+}
 
 pub type DispatcherCallback = ContextCallback<Dispatcher>;
 
 #[derive(Debug)]
 pub struct Dispatcher {
-    bindings: BTreeMap<String, usize>,
+    bindings: HookBindingTable,
     slots: Vec<Option<Storage<Dispatcher>>>,
-    current: Vec<String>,
-    actions: BTreeMap<String, u64>,
-    filters: BTreeMap<String, u64>,
+    current: Vec<HookScalar>,
+    actions: Vec<(PhpKey, u64)>,
+    filters: Vec<(PhpKey, u64)>,
     active_calls: usize,
     diagnostics: Vec<HookDiagnostic>,
     dispatcher_id: u64,
     next_ticket: u64,
     resumable: Vec<ResumableDispatch>,
     advancing: Option<DispatchTicket>,
+    next_target: u64,
+    targets: Vec<TargetPin>,
     releases: PhpReleaseQueue,
     next_control: u64,
     control_stack: Vec<ActiveControl>,
+}
+
+#[derive(Clone, Debug, Default)]
+struct HookBindingVersion {
+    entries: Vec<(PhpKey, usize)>,
+}
+
+#[derive(Debug)]
+struct HookBindingTable {
+    current: Arc<HookBindingVersion>,
+    versions: Vec<Weak<HookBindingVersion>>,
+}
+
+#[derive(Clone, Debug)]
+struct HookBindingOperand {
+    version: Arc<HookBindingVersion>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum HookBindingLookupResult {
+    Found(HookTarget),
+    Missing,
+    NullOperand,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum HookBindingRead {
+    Found(usize),
+    Missing,
+    NullOperand,
+}
+
+impl HookBindingTable {
+    fn new() -> Self {
+        let current = Arc::new(HookBindingVersion::default());
+        Self {
+            versions: vec![Arc::downgrade(&current)],
+            current,
+        }
+    }
+
+    fn set(&mut self, key: PhpKey, value: usize) -> Option<usize> {
+        self.mutate(|entries| key_set(entries, key, value))
+    }
+
+    fn remove(&mut self, key: &PhpKey) -> Option<usize> {
+        self.mutate(|entries| key_remove(entries, key))
+    }
+
+    fn capture_operand(&self) -> HookBindingOperand {
+        HookBindingOperand {
+            version: Arc::clone(&self.current),
+        }
+    }
+
+    fn read_operand(&self, operand: HookBindingOperand, key: &PhpKey) -> HookBindingRead {
+        let current_version = Arc::ptr_eq(&self.current, &operand.version);
+        let version_still_owned = Arc::strong_count(&operand.version) > 1;
+        if !current_version && !version_still_owned {
+            return HookBindingRead::NullOperand;
+        }
+        key_get(&operand.version.entries, key)
+            .copied()
+            .map_or(HookBindingRead::Missing, HookBindingRead::Found)
+    }
+
+    fn references_slot(&mut self, slot: usize) -> bool {
+        self.versions.retain(|version| version.strong_count() > 0);
+        if self.current.entries.iter().any(|(_, bound)| *bound == slot) {
+            return true;
+        }
+        self.versions.iter().any(|version| {
+            version
+                .upgrade()
+                .is_some_and(|version| version.entries.iter().any(|(_, bound)| *bound == slot))
+        })
+    }
+
+    fn mutate<R>(&mut self, mutation: impl FnOnce(&mut Vec<(PhpKey, usize)>) -> R) -> R {
+        let current_weak = Arc::downgrade(&self.current);
+        self.versions
+            .retain(|version| !version.ptr_eq(&current_weak));
+        if Arc::strong_count(&self.current) > 1 {
+            self.versions.push(current_weak);
+            let next = Arc::new((*self.current).clone());
+            self.current = next;
+        } else {
+            drop(current_weak);
+        }
+        let result = mutation(
+            &mut Arc::get_mut(&mut self.current)
+                .expect("unique hook binding table after copy-on-write")
+                .entries,
+        );
+        self.versions.push(Arc::downgrade(&self.current));
+        result
+    }
+}
+
+impl std::ops::Deref for HookBindingTable {
+    type Target = [(PhpKey, usize)];
+
+    fn deref(&self) -> &Self::Target {
+        &self.current.entries
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct DispatchTicket {
     dispatcher: u64,
     sequence: u64,
+}
+
+/// Opaque pin to the exact WP_Hook-equivalent object selected by a PHP API wrapper.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct HookTarget {
+    dispatcher: u64,
+    sequence: u64,
+}
+
+/// Captures `isset($target->callbacks[$priority])` after its PHP boundary effect.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PrioritySnapshot {
+    dispatcher: u64,
+    target_sequence: u64,
+    priority_key: PhpKey,
+    existed: bool,
+}
+
+/// Captures the callback `isset` result after its PHP boundary effect.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CallbackSnapshot {
+    dispatcher: u64,
+    target_sequence: u64,
+    priority_key: PhpKey,
+    callback: CallbackId,
+    exists: bool,
+}
+
+impl CallbackSnapshot {
+    /// Whether the callback was present at the PHP `isset` boundary.
+    ///
+    /// Later warning-handler reentry may change the live callback map, but the
+    /// outer `remove_filter` call still returns this captured result.
+    pub fn exists(&self) -> bool {
+        self.exists
+    }
+}
+
+#[derive(Debug)]
+struct TargetPin {
+    sequence: u64,
+    key: PhpKey,
+    slot: usize,
 }
 
 #[derive(Debug)]
@@ -49,6 +237,15 @@ pub struct ControlOperation {
     pending_release: Option<PhpHandle>,
     pending_releases: VecDeque<PhpHandle>,
     pending_throwable: Option<PhpHandle>,
+    priority_read_pending: bool,
+    priority_read_complete: bool,
+    priority_read_missing: bool,
+    priority_bucket_empty: Option<bool>,
+    priority_missing_offset_needed: bool,
+    priority_missing_offset_pending: bool,
+    priority_unset_pending: bool,
+    priority_unset_complete: bool,
+    priority_refresh_complete: bool,
     completed: bool,
 }
 
@@ -56,6 +253,7 @@ pub struct ControlOperation {
 struct ActiveControl {
     sequence: u64,
     waiting_release: bool,
+    waiting_boundary: bool,
     pinned_slots: Vec<usize>,
 }
 
@@ -63,18 +261,28 @@ struct ActiveControl {
 enum ControlFinish {
     Add {
         slot: usize,
-        priority: i64,
+        priority: HookPriority,
         priority_existed: bool,
     },
     Remove {
-        name: String,
+        key: PhpKey,
         slot: usize,
-        priority: i64,
+        priority: HookPriority,
         removed: bool,
+        priority_read_checkpoint: bool,
     },
     RemoveAll {
-        name: String,
+        key: PhpKey,
         slot: Option<usize>,
+    },
+    WriteHook {
+        slot: usize,
+    },
+    UnbindHook,
+    ReleaseTarget,
+    HookBindingLookup {
+        operand: Option<HookBindingOperand>,
+        result: Option<HookBindingLookupResult>,
     },
 }
 
@@ -83,11 +291,21 @@ pub enum ControlResult {
     Added(bool),
     Removed(bool),
     RemovedAll,
+    HookWritten,
+    HookUnbound,
+    TargetReleased,
+    HookBindingLookup(HookBindingLookupResult),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ControlStep {
     ReleasePhp(PhpHandle),
+    PriorityRead {
+        priority: HookPriority,
+        missing: bool,
+    },
+    PriorityMissingOffset(HookPriority),
+    PriorityUnset(HookPriority),
     Complete(ControlResult),
     PhpThrowable(PhpHandle),
 }
@@ -96,20 +314,42 @@ pub enum ControlStep {
 pub enum DispatchStep {
     InvokePhp(PhpInvocation),
     ReleasePhp(PhpHandle),
+    Boundary(DispatchBoundary),
     Complete(PhpValue),
     PhpThrowable(PhpHandle),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DispatchBoundary {
+    FilterCounterWrite,
+    FilterCounterIncrement,
+    NamedHookIsset,
+    NamedHookRead,
+    MissingOffsetAll,
+    NullForeachAll,
+    MissingOffset,
+    NullMethodApplyFilters,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum DispatchPhase {
+    CounterWrite,
+    CounterIncrement,
     All,
     Named,
+    NamedHookIsset,
+    NamedHookRead,
+    MissingOffsetAll,
+    NullForeachAll,
+    MissingOffset,
+    NullMethodApplyFilters,
+    Complete,
 }
 
 #[derive(Debug)]
 struct ResumableDispatch {
     ticket: DispatchTicket,
-    hook: String,
+    hook: HookArgument,
     value: PhpValue,
     extra: Vec<PhpValue>,
     base_depth: usize,
@@ -118,27 +358,32 @@ struct ResumableDispatch {
     slot: Option<usize>,
     frame_started: bool,
     waiting_for_php: bool,
+    waiting_for_boundary: bool,
     waiting_for_release: bool,
     pending_releases: VecDeque<PhpHandle>,
     pending_release: Option<PhpHandle>,
     pending_throwable: Option<PhpHandle>,
     throwable_abandoned: bool,
+    effectful: bool,
+    binding_operand: Option<HookBindingOperand>,
 }
 
 impl Default for Dispatcher {
     fn default() -> Self {
         Self {
-            bindings: BTreeMap::new(),
+            bindings: HookBindingTable::new(),
             slots: Vec::new(),
             current: Vec::new(),
-            actions: BTreeMap::new(),
-            filters: BTreeMap::new(),
+            actions: Vec::new(),
+            filters: Vec::new(),
             active_calls: 0,
             diagnostics: Vec::new(),
             dispatcher_id: NEXT_DISPATCHER_ID.fetch_add(1, Ordering::Relaxed),
             next_ticket: 1,
             resumable: Vec::new(),
             advancing: None,
+            next_target: 1,
+            targets: Vec::new(),
             releases: PhpReleaseQueue::default(),
             next_control: 1,
             control_stack: Vec::new(),
@@ -162,25 +407,22 @@ impl Dispatcher {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn add(&mut self, name: &str, priority: i64, mut callback: DispatcherCallback) {
+    pub fn add(&mut self, name: &str, priority: i64, callback: DispatcherCallback) {
+        self.add_typed(
+            &HookArgument::bytes(name),
+            HookPriority::integer(priority),
+            callback,
+        );
+    }
+
+    pub fn add_typed(
+        &mut self,
+        name: &HookArgument,
+        priority: HookPriority,
+        mut callback: DispatcherCallback,
+    ) {
         callback.attach_release_queue(&self.releases);
-        let slot = match self.bindings.get(name) {
-            Some(&slot) => slot,
-            None => {
-                let slot = self
-                    .slots
-                    .iter()
-                    .position(Option::is_none)
-                    .unwrap_or(self.slots.len());
-                if slot == self.slots.len() {
-                    self.slots.push(Some(Storage::default()));
-                } else {
-                    self.slots[slot] = Some(Storage::default());
-                }
-                self.bindings.insert(name.into(), slot);
-                slot
-            }
-        };
+        let slot = self.ensure_slot(name);
         self.storage(slot).add(priority, callback);
         self.capture_diagnostics(slot);
     }
@@ -190,12 +432,25 @@ impl Dispatcher {
         &mut self,
         name: &str,
         priority: i64,
+        callback: DispatcherCallback,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_add_typed(
+            &HookArgument::bytes(name),
+            HookPriority::integer(priority),
+            callback,
+        )
+    }
+
+    pub fn begin_add_typed(
+        &mut self,
+        name: &HookArgument,
+        priority: HookPriority,
         mut callback: DispatcherCallback,
     ) -> Result<ControlOperation, HookError> {
         self.begin_control_allowed()?;
         let slot = self.ensure_slot(name);
         callback.attach_release_queue(&self.releases);
-        let priority_existed = self.storage(slot).add_entry(priority, callback);
+        let priority_existed = self.storage(slot).add_entry(&priority, callback);
         self.new_control(ControlFinish::Add {
             slot,
             priority,
@@ -210,21 +465,36 @@ impl Dispatcher {
         priority: i64,
         id: &CallbackId,
     ) -> Result<ControlOperation, HookError> {
+        self.begin_remove_typed(
+            &HookArgument::bytes(name),
+            HookPriority::integer(priority),
+            id,
+        )
+    }
+
+    pub fn begin_remove_typed(
+        &mut self,
+        name: &HookArgument,
+        priority: HookPriority,
+        id: &CallbackId,
+    ) -> Result<ControlOperation, HookError> {
         self.begin_control_allowed()?;
-        let Some(&slot) = self.bindings.get(name) else {
+        let Some(&slot) = key_get(&self.bindings, &name.array_key) else {
             return self.new_control(ControlFinish::Remove {
-                name: name.into(),
+                key: name.array_key.clone(),
                 slot: usize::MAX,
                 priority,
                 removed: false,
+                priority_read_checkpoint: false,
             });
         };
-        let removed = self.storage(slot).remove_entry(priority, id);
+        let removed = self.storage(slot).remove_entry(&priority, id);
         self.new_control(ControlFinish::Remove {
-            name: name.into(),
+            key: name.array_key.clone(),
             slot,
             priority,
             removed,
+            priority_read_checkpoint: false,
         })
     }
 
@@ -234,13 +504,24 @@ impl Dispatcher {
         name: &str,
         priority: Option<i64>,
     ) -> Result<ControlOperation, HookError> {
+        self.begin_remove_all_typed(
+            &HookArgument::bytes(name),
+            priority.map(HookPriority::integer),
+        )
+    }
+
+    pub fn begin_remove_all_typed(
+        &mut self,
+        name: &HookArgument,
+        priority: Option<HookPriority>,
+    ) -> Result<ControlOperation, HookError> {
         self.begin_control_allowed()?;
-        let slot = self.bindings.get(name).copied();
+        let slot = key_get(&self.bindings, &name.array_key).copied();
         if let Some(slot) = slot {
-            self.storage(slot).remove_all_entries(priority);
+            self.storage(slot).remove_all_entries(priority.as_ref());
         }
         self.new_control(ControlFinish::RemoveAll {
-            name: name.into(),
+            key: name.array_key.clone(),
             slot,
         })
     }
@@ -252,6 +533,22 @@ impl Dispatcher {
         self.check_control_top(operation)?;
         if operation.pending_release.is_some() {
             return Err(HookError::PhpReleasePending);
+        }
+        if operation.priority_read_pending
+            || operation.priority_missing_offset_pending
+            || operation.priority_unset_pending
+        {
+            return Err(HookError::PhpPriorityAccessPending);
+        }
+        if matches!(
+            &operation.finish,
+            ControlFinish::HookBindingLookup { result: None, .. }
+        ) && self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::PhpBoundaryPending);
         }
         operation.pending_releases.extend(self.releases.drain());
         if let Some(handle) = operation.pending_releases.pop_front() {
@@ -268,38 +565,101 @@ impl Dispatcher {
             self.collect_unused();
             return Ok(ControlStep::PhpThrowable(handle));
         }
+        if !operation.priority_read_complete
+            && let ControlFinish::Remove {
+                priority,
+                slot,
+                removed: true,
+                priority_read_checkpoint: true,
+                ..
+            } = &operation.finish
+        {
+            let missing = !self.storage_ref(*slot).has_priority(priority.key());
+            operation.priority_read_missing = missing;
+            operation.priority_read_complete = true;
+            operation.priority_read_pending = true;
+            self.control_stack
+                .last_mut()
+                .expect("active control")
+                .waiting_boundary = true;
+            return Ok(ControlStep::PriorityRead {
+                priority: priority.clone(),
+                missing,
+            });
+        }
+        if operation.priority_missing_offset_needed {
+            let ControlFinish::Remove { priority, .. } = &operation.finish else {
+                unreachable!("priority missing-offset belongs to remove")
+            };
+            operation.priority_missing_offset_pending = true;
+            operation.priority_missing_offset_needed = false;
+            self.control_stack
+                .last_mut()
+                .expect("active control")
+                .waiting_boundary = true;
+            return Ok(ControlStep::PriorityMissingOffset(priority.clone()));
+        }
+        if operation.priority_bucket_empty == Some(true) && !operation.priority_unset_complete {
+            let ControlFinish::Remove { priority, .. } = &operation.finish else {
+                unreachable!("priority unset belongs to remove")
+            };
+            operation.priority_unset_pending = true;
+            self.control_stack
+                .last_mut()
+                .expect("active control")
+                .waiting_boundary = true;
+            return Ok(ControlStep::PriorityUnset(priority.clone()));
+        }
+        if operation.priority_unset_complete && !operation.priority_refresh_complete {
+            if let ControlFinish::Remove { slot, priority, .. } = &operation.finish
+                && *slot != usize::MAX
+            {
+                self.storage(*slot).finish_unset_priority(priority);
+                self.capture_diagnostics(*slot);
+                self.collect_unused();
+            }
+            operation.priority_refresh_complete = true;
+        }
         let result = match &operation.finish {
             ControlFinish::Add {
                 slot,
                 priority,
                 priority_existed,
             } => {
-                self.storage(*slot).finish_add(*priority, *priority_existed);
+                self.storage(*slot).finish_add(priority, *priority_existed);
                 self.capture_diagnostics(*slot);
                 ControlResult::Added(true)
             }
             ControlFinish::Remove {
-                name,
+                key,
                 slot,
                 priority,
                 removed,
+                priority_read_checkpoint,
+                ..
             } => {
-                if *slot != usize::MAX && *removed {
-                    self.storage(*slot).finish_remove(*priority);
+                if *slot != usize::MAX && *removed && !priority_read_checkpoint {
+                    self.storage(*slot).finish_remove(priority);
                     self.capture_diagnostics(*slot);
-                    self.unbind_empty(name, *slot);
+                    self.unbind_empty(key, *slot);
                     self.collect_unused();
                 }
                 ControlResult::Removed(*removed)
             }
-            ControlFinish::RemoveAll { name, slot } => {
+            ControlFinish::RemoveAll { key, slot } => {
                 if let Some(slot) = slot {
                     self.storage(*slot).finish_remove_all();
                     self.capture_diagnostics(*slot);
-                    self.unbind_empty(name, *slot);
+                    self.unbind_empty(key, *slot);
                     self.collect_unused();
                 }
                 ControlResult::RemovedAll
+            }
+            ControlFinish::WriteHook { .. } => ControlResult::HookWritten,
+            ControlFinish::UnbindHook => ControlResult::HookUnbound,
+            ControlFinish::ReleaseTarget => ControlResult::TargetReleased,
+            ControlFinish::HookBindingLookup { result, .. } => {
+                ControlResult::HookBindingLookup(result.ok_or(HookError::InvalidControlOperation)?)
             }
         };
         self.control_stack.pop();
@@ -340,6 +700,97 @@ impl Dispatcher {
         Ok(())
     }
 
+    /// Resume the PHP array-read checkpoint after a removed callback's release.
+    /// PHP performs the actual `$callbacks[$priority]` read, including any warning
+    /// handler reentry, before this cursor is allowed to clean up the bucket.
+    pub fn resume_control_priority_read(
+        &mut self,
+        operation: &mut ControlOperation,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !operation.priority_read_pending {
+            return Err(HookError::NoPhpPriorityAccessPending);
+        }
+        if let Completion::PhpThrowable(thrown) = completion {
+            if thrown.kind() != PhpHandleKind::Throwable {
+                return Err(HookError::InvalidPhpThrowableHandle);
+            }
+            operation.pending_throwable = Some(thrown);
+        } else if let ControlFinish::Remove { slot, priority, .. } = &operation.finish {
+            if *slot != usize::MAX {
+                match self
+                    .storage_ref(*slot)
+                    .priority_bucket_empty(priority.key())
+                {
+                    Some(empty) => operation.priority_bucket_empty = Some(empty),
+                    None => operation.priority_missing_offset_needed = true,
+                }
+            } else {
+                operation.priority_bucket_empty = Some(true);
+            }
+        }
+        operation.priority_read_pending = false;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    pub fn resume_control_priority_missing_offset(
+        &mut self,
+        operation: &mut ControlOperation,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !operation.priority_missing_offset_pending {
+            return Err(HookError::NoPhpPriorityAccessPending);
+        }
+        if let Completion::PhpThrowable(thrown) = completion {
+            if thrown.kind() != PhpHandleKind::Throwable {
+                return Err(HookError::InvalidPhpThrowableHandle);
+            }
+            operation.pending_throwable = Some(thrown);
+        } else {
+            operation.priority_bucket_empty = Some(true);
+        }
+        operation.priority_missing_offset_pending = false;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    pub fn resume_control_priority_unset(
+        &mut self,
+        operation: &mut ControlOperation,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !operation.priority_unset_pending {
+            return Err(HookError::NoPhpPriorityAccessPending);
+        }
+        if let Completion::PhpThrowable(thrown) = completion {
+            if thrown.kind() != PhpHandleKind::Throwable {
+                return Err(HookError::InvalidPhpThrowableHandle);
+            }
+            operation.pending_throwable = Some(thrown);
+        } else if let ControlFinish::Remove { slot, priority, .. } = &operation.finish {
+            if *slot != usize::MAX {
+                self.storage(*slot).unset_priority_bucket(priority);
+            }
+            operation.priority_unset_complete = true;
+        }
+        operation.priority_unset_pending = false;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
     fn begin_control_allowed(&self) -> Result<(), HookError> {
         if self.advancing.is_some() {
             return Err(HookError::ControlOperationOrder);
@@ -347,10 +798,105 @@ impl Dispatcher {
         if self
             .control_stack
             .last()
-            .is_some_and(|control| !control.waiting_release)
+            .is_some_and(|control| !control.waiting_release && !control.waiting_boundary)
         {
             return Err(HookError::ControlOperationOrder);
         }
+        Ok(())
+    }
+
+    /// Begin a `$wp_filter[$hook]` operand before PHP converts the hook key.
+    /// Nested Core calls may copy-on-write the live table while this cursor keeps
+    /// the original version and its hook objects alive.
+    pub fn begin_hook_binding_lookup(&mut self) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let operand = self.bindings.capture_operand();
+        let operation = self.new_control(ControlFinish::HookBindingLookup {
+            operand: Some(operand),
+            result: None,
+        })?;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = true;
+        Ok(operation)
+    }
+
+    /// Resume a hook-table operand after PHP has normalized the offset. A found
+    /// object is pinned before retiring the old table version, so callback releases
+    /// can be drained without losing the receiver selected by this fetch.
+    pub fn resume_hook_binding_lookup(
+        &mut self,
+        operation: &mut ControlOperation,
+        name: &HookArgument,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        let operand = match &mut operation.finish {
+            ControlFinish::HookBindingLookup { operand, result } if result.is_none() => {
+                operand.take().ok_or(HookError::InvalidControlOperation)?
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        };
+        let result = match self.bindings.read_operand(operand, &name.array_key) {
+            HookBindingRead::Found(slot) => {
+                HookBindingLookupResult::Found(self.pin_target(name.array_key.clone(), slot)?)
+            }
+            HookBindingRead::Missing => HookBindingLookupResult::Missing,
+            HookBindingRead::NullOperand => HookBindingLookupResult::NullOperand,
+        };
+        if let ControlFinish::HookBindingLookup {
+            result: stored_result,
+            ..
+        } = &mut operation.finish
+        {
+            *stored_result = Some(result);
+        }
+        self.collect_unused();
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    /// Retire a hook-table operand when PHP key conversion throws. The original
+    /// Throwable is returned only after any leases owned by its old table version
+    /// have passed through the normal release cursor.
+    pub fn cancel_hook_binding_lookup(
+        &mut self,
+        operation: &mut ControlOperation,
+        thrown: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        match &mut operation.finish {
+            ControlFinish::HookBindingLookup { operand, result } if result.is_none() => {
+                operand.take().ok_or(HookError::InvalidControlOperation)?;
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        }
+        operation.pending_throwable = Some(thrown);
+        self.collect_unused();
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
         Ok(())
     }
 
@@ -364,11 +910,16 @@ impl Dispatcher {
             ControlFinish::Add { slot, .. } => vec![*slot],
             ControlFinish::Remove { slot, .. } if *slot != usize::MAX => vec![*slot],
             ControlFinish::RemoveAll { slot, .. } => slot.iter().copied().collect(),
+            ControlFinish::WriteHook { slot } => vec![*slot],
+            ControlFinish::UnbindHook => Vec::new(),
+            ControlFinish::ReleaseTarget => Vec::new(),
+            ControlFinish::HookBindingLookup { .. } => Vec::new(),
             ControlFinish::Remove { .. } => Vec::new(),
         };
         self.control_stack.push(ActiveControl {
             sequence,
             waiting_release: false,
+            waiting_boundary: false,
             pinned_slots,
         });
         Ok(ControlOperation {
@@ -378,6 +929,15 @@ impl Dispatcher {
             pending_release: None,
             pending_releases: VecDeque::new(),
             pending_throwable: None,
+            priority_read_pending: false,
+            priority_read_complete: false,
+            priority_read_missing: false,
+            priority_bucket_empty: None,
+            priority_missing_offset_needed: false,
+            priority_missing_offset_pending: false,
+            priority_unset_pending: false,
+            priority_unset_complete: false,
+            priority_refresh_complete: false,
             completed: false,
         })
     }
@@ -392,10 +952,16 @@ impl Dispatcher {
         Ok(())
     }
 
-    fn ensure_slot(&mut self, name: &str) -> usize {
-        if let Some(&slot) = self.bindings.get(name) {
+    fn ensure_slot(&mut self, name: &HookArgument) -> usize {
+        if let Some(&slot) = key_get(&self.bindings, &name.array_key) {
             return slot;
         }
+        let slot = self.allocate_storage();
+        self.bindings.set(name.array_key.clone(), slot);
+        slot
+    }
+
+    fn allocate_storage(&mut self) -> usize {
         let slot = self
             .slots
             .iter()
@@ -406,30 +972,332 @@ impl Dispatcher {
         } else {
             self.slots[slot] = Some(Storage::default());
         }
-        self.bindings.insert(name.into(), slot);
         slot
     }
-    pub fn remove(&mut self, name: &str, priority: i64, id: &CallbackId) -> bool {
-        let Some(&slot) = self.bindings.get(name) else {
+
+    /// Test the current global hook-array binding, including an empty hook object.
+    pub fn hook_is_set(&self, name: &HookArgument) -> bool {
+        key_get(&self.bindings, &name.array_key).is_some()
+    }
+
+    /// Model `$wp_filter[$hook] = new WP_Hook()` after the PHP write-offset
+    /// boundary. The replacement becomes visible before old callbacks release.
+    pub fn begin_write_hook(&mut self, name: &HookArgument) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let slot = self.allocate_storage();
+        self.bindings.set(name.array_key.clone(), slot);
+        self.collect_unused();
+        self.new_control(ControlFinish::WriteHook { slot })
+    }
+
+    /// Remove the global binding after the PHP hook-unset boundary. This
+    /// deliberately unbinds whatever object is live after handler reentry.
+    pub fn begin_unbind_hook(
+        &mut self,
+        name: &HookArgument,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        self.bindings.remove(&name.array_key);
+        self.collect_unused();
+        self.new_control(ControlFinish::UnbindHook)
+    }
+
+    /// `None` means the global hook object is missing; otherwise reports whether
+    /// its callbacks array itself is empty (distinct from has_callbacks).
+    pub fn hook_callbacks_empty(&self, name: &HookArgument) -> Option<bool> {
+        let slot = key_get(&self.bindings, &name.array_key).copied()?;
+        Some(self.storage_ref(slot).callbacks_empty())
+    }
+
+    /// After the PHP read-offset boundary, pin whichever object is live now.
+    pub fn capture_current_target(
+        &mut self,
+        name: &HookArgument,
+    ) -> Result<Option<HookTarget>, HookError> {
+        self.capture_target(name, false)
+    }
+
+    /// plugin.php's post-remove check reads the current binding, then unsets it
+    /// only when that exact current object's callbacks array is empty.
+    pub fn unbind_current_if_callbacks_empty(&mut self, name: &HookArgument) -> bool {
+        let Some(slot) = key_get(&self.bindings, &name.array_key).copied() else {
             return false;
         };
-        let removed = self.storage(slot).remove(priority, id);
+        if !self.storage_ref(slot).callbacks_empty() {
+            return false;
+        }
+        self.bindings.remove(&name.array_key);
+        self.collect_unused();
+        true
+    }
+
+    /// Capture the object selected by a PHP hook-array lookup. `create` mirrors
+    /// add_filter's empty WP_Hook creation even when no callback ID can be built.
+    pub fn capture_target(
+        &mut self,
+        name: &HookArgument,
+        create: bool,
+    ) -> Result<Option<HookTarget>, HookError> {
+        let slot = if create {
+            Some(self.ensure_slot(name))
+        } else {
+            key_get(&self.bindings, &name.array_key).copied()
+        };
+        let Some(slot) = slot else {
+            return Ok(None);
+        };
+        Ok(Some(self.pin_target(name.array_key.clone(), slot)?))
+    }
+
+    fn pin_target(&mut self, key: PhpKey, slot: usize) -> Result<HookTarget, HookError> {
+        let sequence = self.next_target;
+        self.next_target = self
+            .next_target
+            .checked_add(1)
+            .ok_or(HookError::InvalidHookTarget)?;
+        self.targets.push(TargetPin {
+            sequence,
+            key,
+            slot,
+        });
+        Ok(HookTarget {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        })
+    }
+
+    pub fn release_target(&mut self, target: HookTarget) -> Result<(), HookError> {
+        if target.dispatcher != self.dispatcher_id {
+            return Err(HookError::InvalidHookTarget);
+        }
+        let Some(index) = self
+            .targets
+            .iter()
+            .position(|pin| pin.sequence == target.sequence)
+        else {
+            return Err(HookError::InvalidHookTarget);
+        };
+        self.targets.remove(index);
+        self.collect_unused();
+        Ok(())
+    }
+
+    pub fn begin_release_target(
+        &mut self,
+        target: HookTarget,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        if target.dispatcher != self.dispatcher_id {
+            return Err(HookError::InvalidHookTarget);
+        }
+        let Some(index) = self
+            .targets
+            .iter()
+            .position(|pin| pin.sequence == target.sequence)
+        else {
+            return Err(HookError::InvalidHookTarget);
+        };
+        self.targets.remove(index);
+        self.collect_unused();
+        self.new_control(ControlFinish::ReleaseTarget)
+    }
+
+    fn target_parts(&self, target: HookTarget) -> Result<(PhpKey, usize), HookError> {
+        if target.dispatcher != self.dispatcher_id {
+            return Err(HookError::InvalidHookTarget);
+        }
+        self.targets
+            .iter()
+            .find(|pin| pin.sequence == target.sequence)
+            .map(|pin| (pin.key.clone(), pin.slot))
+            .ok_or(HookError::InvalidHookTarget)
+    }
+
+    pub fn capture_priority_snapshot(
+        &self,
+        target: HookTarget,
+        priority: &HookPriority,
+    ) -> Result<PrioritySnapshot, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(PrioritySnapshot {
+            dispatcher: self.dispatcher_id,
+            target_sequence: target.sequence,
+            priority_key: priority.key().clone(),
+            existed: self.storage_ref(slot).has_priority(priority.key()),
+        })
+    }
+
+    /// Test the callbacks array on the pinned WP_Hook object, even if the global
+    /// hook binding has since been replaced or removed.
+    pub fn target_callbacks_empty(&self, target: HookTarget) -> Result<bool, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(self.storage_ref(slot).callbacks_empty())
+    }
+
+    pub fn add_target(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        mut callback: DispatcherCallback,
+    ) -> Result<(), HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        callback.attach_release_queue(&self.releases);
+        self.storage(slot).add(priority, callback);
         self.capture_diagnostics(slot);
-        self.unbind_empty(name, slot);
+        Ok(())
+    }
+
+    pub fn begin_add_target(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        callback: DispatcherCallback,
+    ) -> Result<ControlOperation, HookError> {
+        let snapshot = self.capture_priority_snapshot(target, &priority)?;
+        self.begin_add_target_with_snapshot(target, priority, snapshot, callback)
+    }
+
+    pub fn begin_add_target_with_snapshot(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        snapshot: PrioritySnapshot,
+        mut callback: DispatcherCallback,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (_, slot) = self.target_parts(target)?;
+        if snapshot.dispatcher != self.dispatcher_id
+            || snapshot.target_sequence != target.sequence
+            || snapshot.priority_key != *priority.key()
+        {
+            return Err(HookError::InvalidHookTarget);
+        }
+        callback.attach_release_queue(&self.releases);
+        self.storage(slot).add_entry(&priority, callback);
+        self.new_control(ControlFinish::Add {
+            slot,
+            priority,
+            priority_existed: snapshot.existed,
+        })
+    }
+
+    pub fn begin_remove_target(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        id: &CallbackId,
+    ) -> Result<ControlOperation, HookError> {
+        let snapshot = self.capture_callback_snapshot(target, &priority, id)?;
+        self.begin_remove_target_with_snapshot(target, priority, id, snapshot)
+    }
+
+    pub fn capture_callback_snapshot(
+        &self,
+        target: HookTarget,
+        priority: &HookPriority,
+        id: &CallbackId,
+    ) -> Result<CallbackSnapshot, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(CallbackSnapshot {
+            dispatcher: self.dispatcher_id,
+            target_sequence: target.sequence,
+            priority_key: priority.key().clone(),
+            callback: id.clone(),
+            exists: self.storage_ref(slot).has_at(priority, id),
+        })
+    }
+
+    pub fn begin_remove_target_with_snapshot(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        id: &CallbackId,
+        snapshot: CallbackSnapshot,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (key, slot) = self.target_parts(target)?;
+        if snapshot.dispatcher != self.dispatcher_id
+            || snapshot.target_sequence != target.sequence
+            || snapshot.priority_key != *priority.key()
+            || snapshot.callback != *id
+        {
+            return Err(HookError::InvalidHookTarget);
+        }
+        if snapshot.exists {
+            self.storage(slot).remove_entry(&priority, id);
+        }
+        self.new_control(ControlFinish::Remove {
+            key,
+            slot,
+            priority,
+            removed: snapshot.exists,
+            priority_read_checkpoint: true,
+        })
+    }
+
+    pub fn has_callbacks_target(&self, target: HookTarget) -> Result<bool, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(self.storage_ref(slot).has_callbacks())
+    }
+
+    pub fn has_at_target(
+        &self,
+        target: HookTarget,
+        priority: &HookPriority,
+        id: &CallbackId,
+    ) -> Result<bool, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(self.storage_ref(slot).has_at(priority, id))
+    }
+
+    pub fn priority_of_target(
+        &self,
+        target: HookTarget,
+        id: &CallbackId,
+    ) -> Result<Option<PhpKey>, HookError> {
+        let (_, slot) = self.target_parts(target)?;
+        Ok(self.storage_ref(slot).priority_of(id))
+    }
+
+    pub fn remove(&mut self, name: &str, priority: i64, id: &CallbackId) -> bool {
+        self.remove_typed(
+            &HookArgument::bytes(name),
+            &HookPriority::integer(priority),
+            id,
+        )
+    }
+    pub fn remove_typed(
+        &mut self,
+        name: &HookArgument,
+        priority: &HookPriority,
+        id: &CallbackId,
+    ) -> bool {
+        let Some(&slot) = key_get(&self.bindings, &name.array_key) else {
+            return false;
+        };
+        let removed = self.storage(slot).remove(priority.clone(), id);
+        self.capture_diagnostics(slot);
+        self.unbind_empty(&name.array_key, slot);
         self.collect_unused();
         removed
     }
     pub fn remove_all(&mut self, name: &str, priority: Option<i64>) {
-        if let Some(&slot) = self.bindings.get(name) {
+        self.remove_all_typed(
+            &HookArgument::bytes(name),
+            priority.map(HookPriority::integer),
+        );
+    }
+    pub fn remove_all_typed(&mut self, name: &HookArgument, priority: Option<HookPriority>) {
+        if let Some(&slot) = key_get(&self.bindings, &name.array_key) {
             self.storage(slot).remove_all(priority);
             self.capture_diagnostics(slot);
-            self.unbind_empty(name, slot);
+            self.unbind_empty(&name.array_key, slot);
             self.collect_unused();
         }
     }
-    fn unbind_empty(&mut self, name: &str, slot: usize) {
-        if self.bindings.get(name) == Some(&slot) && !self.storage(slot).has_callbacks() {
-            self.bindings.remove(name);
+    fn unbind_empty(&mut self, key: &PhpKey, slot: usize) {
+        if key_get(&self.bindings, key) == Some(&slot) && self.storage(slot).callbacks_empty() {
+            self.bindings.remove(key);
         }
     }
     fn collect_unused(&mut self) {
@@ -438,7 +1306,12 @@ impl Dispatcher {
                 self.diagnostics.extend(state.take_diagnostics());
             }
             if state.as_ref().is_some_and(|state| !state.is_active())
-                && !self.bindings.values().any(|bound| *bound == slot)
+                && !self.bindings.references_slot(slot)
+                && !self
+                    .resumable
+                    .iter()
+                    .any(|dispatch| dispatch.slot == Some(slot))
+                && !self.targets.iter().any(|pin| pin.slot == slot)
                 && !self
                     .control_stack
                     .iter()
@@ -452,43 +1325,103 @@ impl Dispatcher {
         let pending = self.storage(slot).take_diagnostics();
         self.diagnostics.extend(pending);
     }
+    fn storage_ref(&self, slot: usize) -> &Storage<Dispatcher> {
+        self.slots[slot]
+            .as_ref()
+            .expect("active or registered hook object")
+    }
     pub fn take_diagnostics(&mut self) -> Vec<HookDiagnostic> {
         std::mem::take(&mut self.diagnostics)
     }
-    fn state(&self, name: &str) -> Option<&Storage<Self>> {
-        self.bindings
-            .get(name)
-            .and_then(|&slot| self.slots[slot].as_ref())
+    fn state_typed(&self, name: &HookArgument) -> Option<&Storage<Self>> {
+        key_get(&self.bindings, &name.array_key).and_then(|&slot| self.slots[slot].as_ref())
     }
     pub fn has_callbacks(&self, name: &str) -> bool {
-        self.state(name).is_some_and(Storage::has_callbacks)
+        self.has_callbacks_typed(&HookArgument::bytes(name))
+    }
+    pub fn has_callbacks_typed(&self, name: &HookArgument) -> bool {
+        self.state_typed(name).is_some_and(Storage::has_callbacks)
     }
     pub fn has_at(&self, name: &str, priority: i64, id: &CallbackId) -> bool {
-        self.state(name)
+        self.has_at_typed(
+            &HookArgument::bytes(name),
+            &HookPriority::integer(priority),
+            id,
+        )
+    }
+    pub fn has_at_typed(
+        &self,
+        name: &HookArgument,
+        priority: &HookPriority,
+        id: &CallbackId,
+    ) -> bool {
+        self.state_typed(name)
             .is_some_and(|state| state.has_at(priority, id))
     }
     pub fn priority_of(&self, name: &str, id: &CallbackId) -> Option<i64> {
-        self.state(name).and_then(|state| state.priority_of(id))
+        self.priority_of_typed(&HookArgument::bytes(name), id)
+            .and_then(|key| match key {
+                PhpKey::Integer(value) => Some(value),
+                PhpKey::Bytes(_) => None,
+            })
+    }
+    pub fn priority_of_typed(&self, name: &HookArgument, id: &CallbackId) -> Option<PhpKey> {
+        self.state_typed(name)
+            .and_then(|state| state.priority_of(id))
     }
     pub fn current_priority(&self, name: &str) -> Option<i64> {
-        self.state(name).and_then(Storage::current_priority)
+        self.current_priority_typed(&HookArgument::bytes(name))
+            .and_then(|key| match key {
+                PhpKey::Integer(value) => Some(value),
+                PhpKey::Bytes(_) => None,
+            })
+    }
+    pub fn current_priority_typed(&self, name: &HookArgument) -> Option<PhpKey> {
+        self.state_typed(name).and_then(Storage::current_priority)
     }
     pub fn current_hook(&self) -> Option<&str> {
-        self.current.last().map(String::as_str)
+        match self.current_hook_typed()? {
+            HookScalar::Bytes(bytes) => std::str::from_utf8(bytes).ok(),
+            _ => None,
+        }
+    }
+    pub fn current_hook_typed(&self) -> Option<&HookScalar> {
+        self.current.last()
     }
     pub fn hook_stack_depth(&self) -> usize {
         self.current.len()
     }
     pub fn doing_hook(&self, name: Option<&str>) -> bool {
+        self.doing_hook_typed(
+            name.map(|name| {
+                // Keep the temporary alive for the duration of the comparison.
+                HookScalar::Bytes(name.as_bytes().to_vec())
+            })
+            .as_ref(),
+        )
+    }
+    pub fn doing_hook_typed(&self, name: Option<&HookScalar>) -> bool {
         name.map_or(!self.current.is_empty(), |name| {
-            self.current.iter().any(|current| current == name)
+            self.current
+                .iter()
+                .any(|current| current.php_strict_eq(name))
         })
     }
     pub fn did_action(&self, name: &str) -> u64 {
-        self.actions.get(name).copied().unwrap_or(0)
+        self.did_action_typed(&HookArgument::bytes(name))
+    }
+    pub fn did_action_typed(&self, name: &HookArgument) -> u64 {
+        key_get(&self.actions, &name.array_key)
+            .copied()
+            .unwrap_or(0)
     }
     pub fn did_filter(&self, name: &str) -> u64 {
-        self.filters.get(name).copied().unwrap_or(0)
+        self.did_filter_typed(&HookArgument::bytes(name))
+    }
+    pub fn did_filter_typed(&self, name: &HookArgument) -> u64 {
+        key_get(&self.filters, &name.array_key)
+            .copied()
+            .unwrap_or(0)
     }
     pub fn apply_filters(
         &mut self,
@@ -496,10 +1429,25 @@ impl Dispatcher {
         value: PhpValue,
         extra: &[PhpValue],
     ) -> Result<PhpValue, HookError> {
-        self.dispatch(name, value, extra, false)
+        self.apply_filters_typed(&HookArgument::bytes(name), value, extra)
+    }
+    pub fn apply_filters_typed(
+        &mut self,
+        name: &HookArgument,
+        value: PhpValue,
+        extra: &[PhpValue],
+    ) -> Result<PhpValue, HookError> {
+        self.dispatch_typed(name, value, extra, false)
     }
     pub fn do_action(&mut self, name: &str, args: &[PhpValue]) -> Result<(), HookError> {
-        self.dispatch(name, PhpValue::Bytes(Vec::new()), args, true)
+        self.do_action_typed(&HookArgument::bytes(name), args)
+    }
+    pub fn do_action_typed(
+        &mut self,
+        name: &HookArgument,
+        args: &[PhpValue],
+    ) -> Result<(), HookError> {
+        self.dispatch_typed(name, PhpValue::Bytes(Vec::new()), args, true)
             .map(|_| ())
     }
 
@@ -511,9 +1459,20 @@ impl Dispatcher {
         value: PhpValue,
         extra: &[PhpValue],
     ) -> Result<DispatchTicket, HookError> {
+        self.begin_filter_typed(&HookArgument::bytes(name), value, extra)
+    }
+
+    pub fn begin_filter_typed(
+        &mut self,
+        name: &HookArgument,
+        value: PhpValue,
+        extra: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
         if !self.resumable.is_empty()
             && !self.resumable.last().is_some_and(|dispatch| {
-                (dispatch.waiting_for_php || dispatch.waiting_for_release)
+                (dispatch.waiting_for_php
+                    || dispatch.waiting_for_boundary
+                    || dispatch.waiting_for_release)
                     && dispatch.pending_throwable.is_none()
             })
         {
@@ -531,17 +1490,17 @@ impl Dispatcher {
             dispatcher: self.dispatcher_id,
             sequence,
         };
-        let count = self.filters.entry(name.into()).or_default();
-        *count = count.saturating_add(1);
+        increment_key_counter(&mut self.filters, name.array_key.clone());
         self.active_calls += 1;
-        let all_slot = self.bindings.get("all").copied();
+        let all_key = PhpKey::Bytes(b"all".to_vec());
+        let all_slot = key_get(&self.bindings, &all_key).copied();
         let base_depth = self.current.len();
         if all_slot.is_some() {
-            self.current.push(name.into());
+            self.current.push(name.original.clone());
         }
         self.resumable.push(ResumableDispatch {
             ticket,
-            hook: name.into(),
+            hook: name.clone(),
             value,
             extra: extra.to_vec(),
             base_depth,
@@ -554,11 +1513,74 @@ impl Dispatcher {
             slot: all_slot,
             frame_started: false,
             waiting_for_php: false,
+            waiting_for_boundary: false,
             waiting_for_release: false,
             pending_releases: VecDeque::new(),
             pending_release: None,
             pending_throwable: None,
             throwable_abandoned: false,
+            effectful: false,
+            binding_operand: None,
+        });
+        Ok(ticket)
+    }
+
+    /// Start a filter after PHP has completed the counter-key `isset` effect.
+    /// The first yielded boundary performs the counter write or increment; the
+    /// live counter is updated only after that PHP effect completes.
+    pub fn begin_filter_effectful_typed(
+        &mut self,
+        name: &HookArgument,
+        value: PhpValue,
+        extra: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
+        if !self.resumable.is_empty()
+            && !self.resumable.last().is_some_and(|dispatch| {
+                (dispatch.waiting_for_php
+                    || dispatch.waiting_for_boundary
+                    || dispatch.waiting_for_release)
+                    && dispatch.pending_throwable.is_none()
+            })
+        {
+            return Err(HookError::DispatchParentNotPending);
+        }
+        if self.active_calls >= MAX_NESTING {
+            return Err(HookError::NestingLimit);
+        }
+        let sequence = self.next_ticket;
+        self.next_ticket = self
+            .next_ticket
+            .checked_add(1)
+            .ok_or(HookError::InvalidDispatchTicket)?;
+        let ticket = DispatchTicket {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        };
+        self.active_calls += 1;
+        let phase = if key_get(&self.filters, &name.array_key).is_some() {
+            DispatchPhase::CounterIncrement
+        } else {
+            DispatchPhase::CounterWrite
+        };
+        self.resumable.push(ResumableDispatch {
+            ticket,
+            hook: name.clone(),
+            value,
+            extra: extra.to_vec(),
+            base_depth: self.current.len(),
+            current_pushes: 0,
+            phase,
+            slot: None,
+            frame_started: false,
+            waiting_for_php: false,
+            waiting_for_boundary: false,
+            waiting_for_release: false,
+            pending_releases: VecDeque::new(),
+            pending_release: None,
+            pending_throwable: None,
+            throwable_abandoned: false,
+            effectful: true,
+            binding_operand: None,
         });
         Ok(ticket)
     }
@@ -624,12 +1646,27 @@ impl Dispatcher {
                 return Ok(DispatchStep::PhpThrowable(handle));
             }
         }
+        if let Some(dispatch) = self.resumable.last_mut() {
+            dispatch.pending_releases.extend(self.releases.drain());
+            if let Some(handle) = dispatch.pending_releases.pop_front() {
+                dispatch.waiting_for_release = true;
+                dispatch.pending_release = Some(handle);
+                return Ok(DispatchStep::ReleasePhp(handle));
+            }
+        }
         if self
             .resumable
             .last()
             .is_some_and(|dispatch| dispatch.waiting_for_php)
         {
             return Err(HookError::PhpCallbackPending);
+        }
+        if self
+            .resumable
+            .last()
+            .is_some_and(|dispatch| dispatch.waiting_for_boundary)
+        {
+            return Err(HookError::PhpBoundaryPending);
         }
         loop {
             let (phase, hook, value, extra, started, selected_slot) = {
@@ -643,12 +1680,47 @@ impl Dispatcher {
                     dispatch.slot,
                 )
             };
+            let boundary = match phase {
+                DispatchPhase::CounterWrite => Some(DispatchBoundary::FilterCounterWrite),
+                DispatchPhase::CounterIncrement => Some(DispatchBoundary::FilterCounterIncrement),
+                DispatchPhase::NamedHookIsset => Some(DispatchBoundary::NamedHookIsset),
+                DispatchPhase::NamedHookRead => Some(DispatchBoundary::NamedHookRead),
+                DispatchPhase::MissingOffsetAll => Some(DispatchBoundary::MissingOffsetAll),
+                DispatchPhase::NullForeachAll => Some(DispatchBoundary::NullForeachAll),
+                DispatchPhase::MissingOffset => Some(DispatchBoundary::MissingOffset),
+                DispatchPhase::NullMethodApplyFilters => {
+                    Some(DispatchBoundary::NullMethodApplyFilters)
+                }
+                DispatchPhase::Complete => {
+                    let result = value.clone();
+                    self.complete_top_dispatch();
+                    return Ok(DispatchStep::Complete(result));
+                }
+                DispatchPhase::All | DispatchPhase::Named => None,
+            };
+            if let Some(boundary) = boundary {
+                if matches!(
+                    phase,
+                    DispatchPhase::NamedHookIsset | DispatchPhase::NamedHookRead
+                ) {
+                    let operand = self.bindings.capture_operand();
+                    self.resumable
+                        .last_mut()
+                        .expect("active dispatch")
+                        .binding_operand = Some(operand);
+                }
+                self.resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .waiting_for_boundary = true;
+                return Ok(DispatchStep::Boundary(boundary));
+            }
             let slot = if started {
                 selected_slot
             } else if phase == DispatchPhase::All {
-                self.bindings.get("all").copied()
+                key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied()
             } else {
-                self.bindings.get(&hook).copied()
+                key_get(&self.bindings, &hook.array_key).copied()
             };
             if phase == DispatchPhase::All && !started {
                 let dispatch = self.resumable.last_mut().expect("active dispatch");
@@ -657,11 +1729,16 @@ impl Dispatcher {
             let Some(slot) = slot else {
                 if phase == DispatchPhase::All {
                     let dispatch = self.resumable.last_mut().expect("active dispatch");
-                    dispatch.phase = DispatchPhase::Named;
+                    dispatch.phase = if dispatch.effectful {
+                        DispatchPhase::NamedHookIsset
+                    } else {
+                        DispatchPhase::Named
+                    };
                     dispatch.slot = None;
                     continue;
                 }
-                if self.bindings.contains_key("all") {
+                let all_key = PhpKey::Bytes(b"all".to_vec());
+                if key_get(&self.bindings, &all_key).is_some() {
                     self.pop_dispatch_hook_if_owned();
                 }
                 let value = self
@@ -670,19 +1747,33 @@ impl Dispatcher {
                     .expect("active dispatch")
                     .value
                     .clone();
+                if self
+                    .resumable
+                    .last()
+                    .is_some_and(|dispatch| dispatch.effectful)
+                {
+                    self.pop_dispatch_hook_if_owned();
+                }
                 self.complete_top_dispatch();
                 return Ok(DispatchStep::Complete(value));
             };
             if !started {
-                if phase == DispatchPhase::Named && !self.bindings.contains_key("all") {
-                    self.current.push(hook.clone());
+                let all_key = PhpKey::Bytes(b"all".to_vec());
+                if phase == DispatchPhase::Named
+                    && !self
+                        .resumable
+                        .last()
+                        .is_some_and(|dispatch| dispatch.effectful)
+                    && key_get(&self.bindings, &all_key).is_none()
+                {
+                    self.current.push(hook.original.clone());
                     self.resumable
                         .last_mut()
                         .expect("active dispatch")
                         .current_pushes += 1;
                 }
                 let (frame_value, args, mode) = if phase == DispatchPhase::All {
-                    let mut args = vec![PhpValue::Bytes(hook.as_bytes().to_vec()), value.clone()];
+                    let mut args = vec![hook.original.as_php_value(), value.clone()];
                     args.extend(extra);
                     (PhpValue::Bytes(Vec::new()), args, Mode::All)
                 } else {
@@ -702,7 +1793,11 @@ impl Dispatcher {
                 dispatch.frame_started = frame_started;
                 if !frame_started {
                     if phase == DispatchPhase::All {
-                        dispatch.phase = DispatchPhase::Named;
+                        dispatch.phase = if dispatch.effectful {
+                            DispatchPhase::MissingOffsetAll
+                        } else {
+                            DispatchPhase::Named
+                        };
                         dispatch.slot = None;
                         continue;
                     }
@@ -718,7 +1813,7 @@ impl Dispatcher {
                 .expect("started hook frame");
             match hooks::advance(self, active_slot) {
                 Ok(HookStep::InvokePhp(mut invocation)) => {
-                    invocation.hook = hook;
+                    invocation.hook = hook.original;
                     self.resumable
                         .last_mut()
                         .expect("active dispatch")
@@ -741,7 +1836,11 @@ impl Dispatcher {
                     dispatch.frame_started = false;
                     dispatch.slot = None;
                     if phase == DispatchPhase::All {
-                        dispatch.phase = DispatchPhase::Named;
+                        dispatch.phase = if dispatch.effectful {
+                            DispatchPhase::NamedHookIsset
+                        } else {
+                            DispatchPhase::Named
+                        };
                     } else {
                         self.pop_dispatch_hook_if_owned();
                         self.complete_top_dispatch();
@@ -842,6 +1941,177 @@ impl Dispatcher {
         Ok(())
     }
 
+    /// Resume a PHP language-boundary effect for an effectful filter.
+    ///
+    /// Named hook boundaries accept a Null acknowledgment; the dispatcher resolves
+    /// its saved array operand after PHP key-conversion reentry. The empty-all
+    /// warning/foreach checkpoints also accept Null acknowledgments. A Throwable
+    /// drops any outstanding operand before forwarding it through release cleanup.
+    pub fn resume_boundary(
+        &mut self,
+        ticket: DispatchTicket,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_top_ticket(ticket)?;
+        if self.advancing == Some(ticket) {
+            return Err(HookError::DispatchTicketBusy);
+        }
+        let phase = {
+            let dispatch = self.resumable.last().expect("validated dispatch ticket");
+            if !dispatch.effectful || !dispatch.waiting_for_boundary {
+                return Err(HookError::NoPhpBoundaryPending);
+            }
+            dispatch.phase
+        };
+        let value = match completion {
+            Completion::Value(value) => value,
+            Completion::PhpThrowable(handle) => {
+                if handle.kind() != PhpHandleKind::Throwable {
+                    return Err(HookError::InvalidPhpThrowableHandle);
+                }
+                let operand = {
+                    let dispatch = self.resumable.last_mut().expect("active dispatch");
+                    dispatch.pending_throwable = Some(handle);
+                    dispatch.waiting_for_boundary = false;
+                    dispatch.binding_operand.take()
+                };
+                drop(operand);
+                self.collect_unused();
+                return Ok(());
+            }
+        };
+        match phase {
+            DispatchPhase::CounterWrite => {
+                key_set(
+                    &mut self.filters,
+                    self.resumable.last().unwrap().hook.array_key.clone(),
+                    1,
+                );
+                let all_exists = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).is_some();
+                let dispatch = self.resumable.last_mut().expect("active dispatch");
+                if all_exists {
+                    self.current.push(dispatch.hook.original.clone());
+                    dispatch.current_pushes += 1;
+                    dispatch.phase = DispatchPhase::All;
+                    dispatch.slot =
+                        key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied();
+                } else {
+                    dispatch.phase = DispatchPhase::NamedHookIsset;
+                }
+            }
+            DispatchPhase::CounterIncrement => {
+                increment_key_counter(
+                    &mut self.filters,
+                    self.resumable.last().unwrap().hook.array_key.clone(),
+                );
+                let all_slot = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied();
+                let dispatch = self.resumable.last_mut().expect("active dispatch");
+                if let Some(slot) = all_slot {
+                    self.current.push(dispatch.hook.original.clone());
+                    dispatch.current_pushes += 1;
+                    dispatch.phase = DispatchPhase::All;
+                    dispatch.slot = Some(slot);
+                } else {
+                    dispatch.phase = DispatchPhase::NamedHookIsset;
+                }
+            }
+            DispatchPhase::NamedHookIsset => {
+                if !matches!(value, PhpValue::Null) {
+                    return Err(HookError::InvalidDispatchBoundaryValue);
+                }
+                let operand = self
+                    .resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .binding_operand
+                    .take()
+                    .ok_or(HookError::InvalidDispatchTicket)?;
+                let exists = matches!(
+                    self.bindings
+                        .read_operand(operand, &self.resumable.last().unwrap().hook.array_key),
+                    HookBindingRead::Found(_)
+                );
+                self.collect_unused();
+                let dispatch = self.resumable.last_mut().expect("active dispatch");
+                if exists {
+                    // WordPress decides whether to push the named hook before
+                    // evaluating the later `$wp_filter[$hook]` read. That read
+                    // may warn and reenter PHP, changing the live `all` binding,
+                    // but it cannot change this earlier stack decision.
+                    if key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).is_none() {
+                        self.current.push(dispatch.hook.original.clone());
+                        dispatch.current_pushes += 1;
+                    }
+                    dispatch.phase = DispatchPhase::NamedHookRead;
+                } else {
+                    if key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).is_some() {
+                        self.current.pop();
+                    }
+                    dispatch.current_pushes = dispatch.current_pushes.saturating_sub(1);
+                    dispatch.phase = DispatchPhase::Complete;
+                }
+            }
+            DispatchPhase::NamedHookRead => {
+                if !matches!(value, PhpValue::Null) {
+                    return Err(HookError::InvalidDispatchBoundaryValue);
+                }
+                let hook_key = self.resumable.last().unwrap().hook.array_key.clone();
+                let operand = self
+                    .resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .binding_operand
+                    .take()
+                    .ok_or(HookError::InvalidDispatchTicket)?;
+                match self.bindings.read_operand(operand, &hook_key) {
+                    HookBindingRead::Found(slot) => {
+                        self.resumable.last_mut().expect("active dispatch").slot = Some(slot);
+                        self.resumable.last_mut().expect("active dispatch").phase =
+                            DispatchPhase::Named;
+                    }
+                    HookBindingRead::Missing => {
+                        self.resumable.last_mut().expect("active dispatch").phase =
+                            DispatchPhase::MissingOffset;
+                    }
+                    HookBindingRead::NullOperand => {
+                        self.resumable.last_mut().expect("active dispatch").phase =
+                            DispatchPhase::NullMethodApplyFilters;
+                    }
+                }
+                self.collect_unused();
+            }
+            DispatchPhase::MissingOffsetAll => {
+                if !matches!(value, PhpValue::Null) {
+                    return Err(HookError::InvalidDispatchBoundaryValue);
+                }
+                self.resumable.last_mut().expect("active dispatch").phase =
+                    DispatchPhase::NullForeachAll;
+            }
+            DispatchPhase::NullForeachAll => {
+                if !matches!(value, PhpValue::Null) {
+                    return Err(HookError::InvalidDispatchBoundaryValue);
+                }
+                self.resumable.last_mut().expect("active dispatch").phase =
+                    DispatchPhase::NamedHookIsset;
+            }
+            DispatchPhase::MissingOffset => {
+                self.resumable.last_mut().expect("active dispatch").phase =
+                    DispatchPhase::NullMethodApplyFilters;
+            }
+            DispatchPhase::NullMethodApplyFilters => {
+                return Err(HookError::ExpectedPhpThrowable);
+            }
+            DispatchPhase::All | DispatchPhase::Named | DispatchPhase::Complete => {
+                return Err(HookError::NoPhpBoundaryPending);
+            }
+        }
+        self.resumable
+            .last_mut()
+            .expect("active dispatch")
+            .waiting_for_boundary = false;
+        Ok(())
+    }
+
     /// Cancel the top resumable filter. A suspended parent remains pending and may be resumed later.
     pub fn cancel(&mut self, ticket: DispatchTicket) -> Result<(), HookError> {
         self.check_top_ticket(ticket)?;
@@ -908,9 +2178,9 @@ impl Dispatcher {
         }
     }
 
-    fn dispatch(
+    fn dispatch_typed(
         &mut self,
-        name: &str,
+        name: &HookArgument,
         value: PhpValue,
         extra: &[PhpValue],
         action: bool,
@@ -920,31 +2190,30 @@ impl Dispatcher {
         }
         self.active_calls += 1;
         let base_depth = self.current.len();
-        let counts = if action {
-            &mut self.actions
+        if action {
+            increment_key_counter(&mut self.actions, name.array_key.clone());
         } else {
-            &mut self.filters
-        };
-        let count = counts.entry(name.into()).or_default();
-        *count = count.saturating_add(1);
+            increment_key_counter(&mut self.filters, name.array_key.clone());
+        }
         let result = (|| {
-            if let Some(&all) = self.bindings.get("all") {
-                self.current.push(name.into());
-                let mut args = vec![PhpValue::Bytes(name.as_bytes().to_vec())];
+            let all_key = PhpKey::Bytes(b"all".to_vec());
+            if let Some(&all) = key_get(&self.bindings, &all_key) {
+                self.current.push(name.original.clone());
+                let mut args = vec![name.original.as_php_value()];
                 if !action {
                     args.push(value.clone());
                 }
                 args.extend_from_slice(extra);
                 hooks::invoke(self, all, PhpValue::Bytes(Vec::new()), args, Mode::All)?;
             }
-            let Some(&slot) = self.bindings.get(name) else {
-                if self.bindings.contains_key("all") {
+            let Some(&slot) = key_get(&self.bindings, &name.array_key) else {
+                if key_get(&self.bindings, &all_key).is_some() {
                     self.current.pop();
                 }
                 return Ok(value);
             };
-            if !self.bindings.contains_key("all") {
-                self.current.push(name.into());
+            if key_get(&self.bindings, &all_key).is_none() {
+                self.current.push(name.original.clone());
             }
             let mut args = if action {
                 Vec::new()

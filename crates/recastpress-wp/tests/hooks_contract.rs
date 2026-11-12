@@ -1,6 +1,6 @@
 use recastpress_wp::{
     continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
-    hooks::{Callback, CallbackId, Hook, HookError},
+    hooks::{Callback, CallbackId, Hook, HookError, HookPriority, HookScalar},
     value::{PhpArray, PhpKey, PhpValue},
 };
 use std::sync::{Arc, Mutex};
@@ -114,6 +114,253 @@ fn ordering_replacement_zero_priority_and_removal() {
     assert_eq!(hook.apply_filters(value(""), &[]), Ok(value("zero")));
     hook.remove_all(None);
     assert!(!hook.has_callbacks());
+}
+
+#[test]
+fn typed_priority_numeric_sort_matches_php_stability_and_integer_precision() {
+    fn add_trace(
+        hook: &mut Hook,
+        key: HookPriority,
+        label: &'static str,
+        trace: Arc<Mutex<Vec<&'static str>>>,
+    ) {
+        hook.add_typed(
+            key,
+            Callback::new(id(label), 1, move |_, args| {
+                trace.lock().unwrap().push(label);
+                Ok(args[0].clone())
+            }),
+        );
+    }
+
+    let trace = Arc::new(Mutex::new(Vec::new()));
+    let mut numeric_strings = Hook::new();
+    add_trace(
+        &mut numeric_strings,
+        HookPriority::new(
+            HookScalar::Bytes(b"abc".to_vec()),
+            PhpKey::Bytes(b"abc".to_vec()),
+        ),
+        "abc",
+        Arc::clone(&trace),
+    );
+    add_trace(
+        &mut numeric_strings,
+        HookPriority::integer(0),
+        "zero",
+        Arc::clone(&trace),
+    );
+    add_trace(
+        &mut numeric_strings,
+        HookPriority::new(
+            HookScalar::Bytes(b"1e2".to_vec()),
+            PhpKey::Bytes(b"1e2".to_vec()),
+        ),
+        "exp100",
+        Arc::clone(&trace),
+    );
+    add_trace(
+        &mut numeric_strings,
+        HookPriority::integer(100),
+        "int100",
+        Arc::clone(&trace),
+    );
+    numeric_strings
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(*trace.lock().unwrap(), ["abc", "zero", "exp100", "int100"]);
+
+    let mut large_tie = Hook::new();
+    let large_tie_trace = Arc::new(Mutex::new(Vec::new()));
+    add_trace(
+        &mut large_tie,
+        HookPriority::integer(9_007_199_254_740_993),
+        "int_plus_one",
+        Arc::clone(&large_tie_trace),
+    );
+    add_trace(
+        &mut large_tie,
+        HookPriority::new(
+            HookScalar::Bytes(b"+9007199254740993".to_vec()),
+            PhpKey::Bytes(b"+9007199254740993".to_vec()),
+        ),
+        "plus_string",
+        Arc::clone(&large_tie_trace),
+    );
+    large_tie
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(
+        *large_tie_trace.lock().unwrap(),
+        ["int_plus_one", "plus_string"]
+    );
+
+    let mut exact_integers = Hook::new();
+    let integer_trace = Arc::new(Mutex::new(Vec::new()));
+    add_trace(
+        &mut exact_integers,
+        HookPriority::integer(9_007_199_254_740_993),
+        "int_plus_one",
+        Arc::clone(&integer_trace),
+    );
+    add_trace(
+        &mut exact_integers,
+        HookPriority::integer(9_007_199_254_740_992),
+        "base",
+        Arc::clone(&integer_trace),
+    );
+    exact_integers
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(*integer_trace.lock().unwrap(), ["base", "int_plus_one"]);
+
+    let mut prefix = Hook::new();
+    let prefix_trace = Arc::new(Mutex::new(Vec::new()));
+    add_trace(
+        &mut prefix,
+        HookPriority::new(
+            HookScalar::Bytes(b"12foo".to_vec()),
+            PhpKey::Bytes(b"12foo".to_vec()),
+        ),
+        "prefix12",
+        Arc::clone(&prefix_trace),
+    );
+    add_trace(
+        &mut prefix,
+        HookPriority::integer(12),
+        "int12",
+        Arc::clone(&prefix_trace),
+    );
+    prefix
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(*prefix_trace.lock().unwrap(), ["prefix12", "int12"]);
+
+    let mut prefix_reverse = Hook::new();
+    let prefix_reverse_trace = Arc::new(Mutex::new(Vec::new()));
+    add_trace(
+        &mut prefix_reverse,
+        HookPriority::integer(12),
+        "int12",
+        Arc::clone(&prefix_reverse_trace),
+    );
+    add_trace(
+        &mut prefix_reverse,
+        HookPriority::new(
+            HookScalar::Bytes(b"12foo".to_vec()),
+            PhpKey::Bytes(b"12foo".to_vec()),
+        ),
+        "prefix12",
+        Arc::clone(&prefix_reverse_trace),
+    );
+    prefix_reverse
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(*prefix_reverse_trace.lock().unwrap(), ["int12", "prefix12"]);
+
+    let mut nonnumeric = Hook::new();
+    let nonnumeric_trace = Arc::new(Mutex::new(Vec::new()));
+    add_trace(
+        &mut nonnumeric,
+        HookPriority::new(
+            HookScalar::Bytes(b"INF".to_vec()),
+            PhpKey::Bytes(b"INF".to_vec()),
+        ),
+        "inf",
+        Arc::clone(&nonnumeric_trace),
+    );
+    add_trace(
+        &mut nonnumeric,
+        HookPriority::integer(0),
+        "zero",
+        Arc::clone(&nonnumeric_trace),
+    );
+    nonnumeric
+        .apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+        .unwrap();
+    assert_eq!(*nonnumeric_trace.lock().unwrap(), ["inf", "zero"]);
+}
+
+#[test]
+fn mixed_integer_float_priority_cycles_match_wordpress_sort_order() {
+    fn run(entries: Vec<(HookPriority, String)>) -> Vec<String> {
+        let mut hook = Hook::new();
+        let trace = Arc::new(Mutex::new(Vec::new()));
+        for (index, (priority, label)) in entries.into_iter().enumerate() {
+            let callback_trace = Arc::clone(&trace);
+            let callback_label = label.clone();
+            hook.add_typed(
+                priority,
+                Callback::new(id(&format!("mixed-{index}")), 1, move |_, args| {
+                    callback_trace.lock().unwrap().push(callback_label.clone());
+                    Ok(args[0].clone())
+                }),
+            );
+        }
+        hook.apply_filters(PhpValue::Bytes(b"seed".to_vec()), &[])
+            .unwrap();
+        trace.lock().unwrap().clone()
+    }
+
+    fn int_priority(priority: i64) -> HookPriority {
+        HookPriority::integer(priority)
+    }
+
+    fn string_priority(bytes: Vec<u8>) -> HookPriority {
+        HookPriority::new(HookScalar::Bytes(bytes.clone()), PhpKey::Bytes(bytes))
+    }
+
+    let base = 9_007_199_254_740_992_i64;
+    assert_eq!(
+        run(vec![
+            (int_priority(base + 1), "plus".into()),
+            (
+                string_priority(format!("{base}.0").into_bytes()),
+                "float_base".into()
+            ),
+            (int_priority(base), "base".into()),
+        ]),
+        ["plus", "float_base", "base"]
+    );
+    assert_eq!(
+        run(vec![
+            (int_priority(base), "base".into()),
+            (
+                string_priority(format!("{base}.0").into_bytes()),
+                "float_base".into()
+            ),
+            (int_priority(base + 1), "plus".into()),
+        ]),
+        ["base", "float_base", "plus"]
+    );
+    assert_eq!(
+        run(vec![
+            (int_priority(base + 1), "plus".into()),
+            (int_priority(base), "base".into()),
+            (
+                string_priority(format!("{base}.0").into_bytes()),
+                "float_base".into()
+            ),
+        ]),
+        ["base", "plus", "float_base"]
+    );
+
+    let mut mixed = Vec::new();
+    for index in 0..12_i64 {
+        let reversed = 11 - index;
+        mixed.push((int_priority(base + reversed), format!("i{reversed}")));
+        mixed.push((
+            string_priority(format!("{}.0", base + index).into_bytes()),
+            format!("f{index}"),
+        ));
+    }
+    assert_eq!(
+        run(mixed),
+        [
+            "f0", "f1", "i0", "i1", "f2", "i2", "f3", "f4", "f5", "i3", "i4", "i5", "i6", "f6",
+            "i7", "i8", "i9", "f7", "f8", "f9", "i10", "f10", "i11", "f11",
+        ]
+    );
 }
 
 #[test]

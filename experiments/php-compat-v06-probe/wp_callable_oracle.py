@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 import run_check as native
 import wp_hooks_oracle as hooks
-from callable_contract import validate_observation
+from callable_v2_contract import validate_observation
 from hook_contract import _require_exact, _unique_frame_object
 
 ROOT, HERE = hooks.ROOT, hooks.HERE
@@ -109,7 +109,7 @@ def bridge_comparison(report):
         _require_exact(result['php_observation'], report['oracle']['cases'], label + ' callable WP observations')
     return {'native_receipt': native.RECEIPT.relative_to(ROOT).as_posix(), 'native_receipt_sha256': digest(native.RECEIPT),
         'wasm_receipt': wasm_path.relative_to(ROOT).as_posix(), 'wasm_receipt_sha256': digest(wasm_path),
-        'matched_cases': list(report['oracle']['cases']), 'all_program_observations_matched': True}
+        'matched_cases': ['base.' + key for key in report['oracle']['cases']['base']] + ['coercions.' + key for key in report['oracle']['cases']['coercions']], 'all_program_observations_matched': True}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

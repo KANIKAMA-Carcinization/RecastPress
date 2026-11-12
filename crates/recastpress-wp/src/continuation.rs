@@ -55,6 +55,8 @@ pub enum PhpHandleKind {
     ReferenceCell,
     Closure,
     Callable,
+    /// Raw PHP API parameter retained until its boundary operations complete.
+    Argument,
     Array,
     Resource,
     Throwable,

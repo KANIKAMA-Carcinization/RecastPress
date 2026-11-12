@@ -53,7 +53,8 @@ CALLABLE_FILES = HOST_FIXTURE_ORDER + ("callable_driver.php", "callable_adapter.
 sys.path.insert(0, str(WASM_DIR.parent))
 from publish_contract import self_check as publish_self_check, validate_publish_result
 from hook_contract import SCENARIOS as HOOK_SCENARIOS, self_check as hook_self_check, validate_hook_result
-from callable_contract import self_check as callable_self_check, validate_result as validate_callable_result
+from callable_v2_contract import (self_check as callable_self_check, validate_result as validate_callable_result,
+    reject_mutated_transcripts as reject_callable_transcripts)
 from handle_contract import SCENARIOS as HANDLE_SCENARIOS, self_check as handle_self_check, validate_handle_result
 
 
@@ -99,7 +100,7 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.append(WASM_DIR.parent / "publish_contract.py")
     paths.append(WASM_DIR.parent / "handle_contract.py")
     paths.append(WASM_DIR.parent / "hook_contract.py")
-    paths.extend(WASM_DIR.parent / name for name in ("callable_contract.py", "wp_callable_oracle.py"))
+    paths.extend(WASM_DIR.parent / name for name in ("callable_contract.py", "callable_v2_contract.py", "wp_callable_oracle.py"))
     paths.extend(WASM_DIR.parent / "fixtures" / name for name in ("callable_adapter.php", "callable_driver.php", "callable_program.php", "callable_wp_oracle.php", "CALLABLE_API_CONTRACT.md"))
     paths.extend(ROOT / "crates/recastpress-wp/tests" / name
                  for name in ("hooks_contract.rs", "dispatcher_contract.rs"))
@@ -583,7 +584,9 @@ def verify_latest(publish: bool = False, handles: bool = False, *, profile=None)
     if not binary_path.is_file():
         raise ValueError("latest bridge receipt host binary is missing or stale")
     _validate_binary_receipt(report, sha_file(binary_path), relative(binary_path))
-    PROFILE_VALIDATORS[prefix](report.get("host_result"))
+    verified_mutations = PROFILE_VALIDATORS[prefix](report.get("host_result"))
+    if prefix == "callables" and report.get("callable_transcript_rejections") != verified_mutations:
+        raise ValueError("Wasm callable transcript rejection inventory differs")
     print(f"{prefix} receipt verified: {relative(receipt_path)}")
     return 0
 
@@ -662,7 +665,7 @@ def validate_hook_host_result(value: dict) -> None:
 
 
 
-def validate_callable_host_result(value: dict) -> None:
+def validate_callable_host_result(value: dict) -> list[str]:
     result = _mapping(value)
     if (result.get("schema") != "recastpress.php-compat-v06-wasm-callables.v1"
             or result.get("execution") != "passed" or result.get("compiler_profile") != COMPILER_PROFILE):
@@ -680,6 +683,34 @@ def validate_callable_host_result(value: dict) -> None:
             or type(case.get("peer_elapsed_ms")) is not int or case["peer_elapsed_ms"] < 0):
         raise ValueError("callable guest did not complete successfully")
     validate_callable_result(case.get("peer"))
+    captures = case.get("wire")
+    if not isinstance(captures, dict) or set(captures) != {"php", "rust"}:
+        raise ValueError("Wasm callable raw wire inventory differs")
+    streams = {}
+    total = 0
+    parents = set()
+    for direction, item in captures.items():
+        if not isinstance(item, dict) or set(item) != {"path", "bytes", "sha256"}:
+            raise ValueError("Wasm callable wire capture fields differ")
+        if type(item["path"]) is not str:
+            raise ValueError("Wasm callable wire path differs")
+        path = (ROOT / item["path"]).resolve()
+        try:
+            path.relative_to((ROOT / "target/php-compat-v06-wire").resolve())
+        except ValueError as error:
+            raise ValueError("Wasm callable wire capture escaped private target") from error
+        if path.name != direction + ".jsonl.bin":
+            raise ValueError("Wasm callable wire filename differs")
+        parents.add(path.parent)
+        if type(item["bytes"]) is not int or not 0 <= item["bytes"] <= 33_554_432:
+            raise ValueError("Wasm callable wire byte bound differs")
+        total += item["bytes"]
+        if total > 33_554_432 or path.stat().st_size != item["bytes"] or sha_file(path) != item["sha256"]:
+            raise ValueError("Wasm callable wire bytes/hash differ")
+        streams[direction] = path.read_bytes()
+    if len(parents) != 1:
+        raise ValueError("Wasm callable wire captures are from different runs")
+    return reject_callable_transcripts(streams, case["peer"])
 
 
 PROFILE_VALIDATORS = {
@@ -731,6 +762,7 @@ def main() -> int:
     binary_before = binary_after = None
     target = None
     capture_dir = None
+    callable_transcript_rejections = None
     try:
         target = selected_target()
         capture_dir = target / ".bridge-runs" / f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')}-{uuid.uuid4().hex}"
@@ -761,7 +793,7 @@ def main() -> int:
                 if not wire.endswith("\n") or "\n" in wire[:-1] or "\r" in wire:
                     raise ValueError("host must emit exactly one newline terminated JSON record")
                 host_receipt = json.loads(wire)
-                PROFILE_VALIDATORS[profile](host_receipt)
+                callable_transcript_rejections = PROFILE_VALIDATORS[profile](host_receipt)
                 if binary_before != binary_after:
                     raise ValueError("host binary changed during execution")
         after = fixed_inputs()
@@ -821,6 +853,7 @@ def main() -> int:
             }) for label, item in (("build", build), ("host", host))
         },
         "raw_capture": captures,
+        "callable_transcript_rejections": callable_transcript_rejections,
         "host_result": host_receipt,
         "build_timeout_seconds": BUILD_TIMEOUT,
         "host_timeout_seconds": HOST_TIMEOUT,

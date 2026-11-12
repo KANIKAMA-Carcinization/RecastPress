@@ -15,13 +15,14 @@ if (count($argv) !== 2 || $argv[1] !== 'callable_api') {
 
 try {
     $wire = new BridgeProtocol();
-    $registry = new HandleRegistry('61');
+    $registry = new HandleRegistry('71');
     $adapter = new CallableApiAdapter($wire, $registry);
     CallableApiAdapter::bind($adapter);
 
     $wire->send('start_root', [
         'operation' => 'callable_api',
-        'request_generation' => '61',
+        'protocol' => 2,
+        'request_generation' => '71',
     ]);
 
     $rootInvoke = $wire->receive();

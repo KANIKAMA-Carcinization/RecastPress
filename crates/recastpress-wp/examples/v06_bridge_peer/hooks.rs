@@ -3,8 +3,8 @@
 use super::*;
 use recastpress_wp::{
     dispatcher::{DispatchStep, Dispatcher, DispatcherCallback},
-    hooks::{CallbackId, ContextCallback, HookError, PhpInvocation},
-    value::PhpValue,
+    hooks::{CallbackId, ContextCallback, HookError, HookScalar, PhpInvocation},
+    value::{PhpKey, PhpValue},
 };
 use std::{
     collections::HashSet,
@@ -173,8 +173,8 @@ fn expect_invocation(
     };
     if &callback != expected.callback_id
         || observed_handle != expected.handle
-        || observed_hook != expected.hook
-        || observed_priority != expected.priority
+        || observed_hook != HookScalar::Bytes(expected.hook.as_bytes().to_vec())
+        || observed_priority != PhpKey::Integer(expected.priority)
         || actual_value != expected.expected_value
     {
         return Err(format!("{}_invocation_mismatch", expected.label));
