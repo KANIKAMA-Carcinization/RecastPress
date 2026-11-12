@@ -8,7 +8,8 @@ use recastpress_wp::{
     },
     dispatcher::{
         ControlOperation, ControlResult, ControlStep, DispatchBoundary, DispatchStep,
-        DispatchTicket, Dispatcher, HookBindingLookupResult,
+        DispatchTicket, Dispatcher, FilterCounterLookup, FilterCounterMutation,
+        FilterCounterOperandAccess, FilterCounterResult, HookBindingLookupResult,
     },
     hooks::{CallbackId, ContextCallback, HookArgument, HookPriority, HookScalar, PhpCallMode},
     value::{PhpArray, PhpKey, PhpValue},
@@ -1588,6 +1589,53 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         )))
     }
 
+    fn counter_operand(
+        &mut self,
+        access: FilterCounterOperandAccess,
+        boundary_access: &str,
+        handle: PhpHandle,
+        operation: OperationId,
+        parent_wire: &str,
+        label: &str,
+    ) -> Result<Result<(HookArgument, FilterCounterResult), PhpHandle>, String> {
+        self.check_argument(handle, label)?;
+        let mut cursor = self
+            .dispatcher
+            .begin_filter_counter_operand(access)
+            .map_err(|error| format!("{label}_begin_counter_operand:{error:?}"))?;
+        let (original, array_key) = match self.boundary_array_key(
+            handle,
+            boundary_access,
+            false,
+            operation,
+            parent_wire,
+            label,
+        )? {
+            Ok(parts) => parts,
+            Err(thrown) => {
+                self.dispatcher
+                    .cancel_filter_counter_operand(&mut cursor, thrown)
+                    .map_err(|error| format!("{label}_cancel_counter_operand:{error:?}"))?;
+                return match self.run_control(&mut cursor, operation, parent_wire, label)? {
+                    ControlOutcome::Throwable(observed) if observed == thrown => Ok(Err(thrown)),
+                    ControlOutcome::Throwable(_) => {
+                        Err(format!("{label}_cancel_throwable_changed"))
+                    }
+                    ControlOutcome::Result(_) => Err(format!("{label}_cancel_completed_normally")),
+                };
+            }
+        };
+        let hook = HookArgument::new(original, array_key);
+        self.dispatcher
+            .resume_filter_counter_operand(&mut cursor, &hook)
+            .map_err(|error| format!("{label}_resume_counter_operand:{error:?}"))?;
+        match self.run_control(&mut cursor, operation, parent_wire, label)? {
+            ControlOutcome::Result(ControlResult::FilterCounter(result)) => Ok(Ok((hook, result))),
+            ControlOutcome::Throwable(thrown) => Ok(Err(thrown)),
+            ControlOutcome::Result(_) => Err(format!("{label}_counter_result_mismatch")),
+        }
+    }
+
     fn api_did(
         &mut self,
         payload: &Value,
@@ -1596,39 +1644,63 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<Completion<PhpValue>, String> {
         exact_keys(payload, &["api", "arguments"], "did_filter_call")?;
         let handle = self.current_argument("hook")?;
-        let (original, array_key) = match self.boundary_array_key(
-            handle,
+        let (hook, isset) = match self.counter_operand(
+            FilterCounterOperandAccess::Isset,
             "isset",
-            false,
+            handle,
             operation,
             parent_wire,
-            "did_filter_hook_key",
+            "did_filter_hook_isset",
         )? {
-            Ok(parts) => parts,
-            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(result) => result,
+            Err(thrown) => return Ok(Completion::PhpThrowable(thrown)),
         };
-        let hook = HookArgument::new(original, array_key);
         self.remember_hook(hook.clone());
-        if self.dispatcher.did_filter_typed(&hook) != 0 {
-            match self.boundary_array_key(
-                handle,
-                "read",
-                false,
-                operation,
-                parent_wire,
-                "did_filter_hook_read",
-            )? {
-                Ok((read_original, read_key)) => {
-                    if read_key != hook.array_key
-                        || !same_scalar_representation(&read_original, &hook.original)
-                    {
-                        return Err("did_filter_hook_key_changed".into());
+        let count = match isset {
+            FilterCounterResult::Lookup(FilterCounterLookup::Value(_)) => {
+                match self.counter_operand(
+                    FilterCounterOperandAccess::Read,
+                    "read",
+                    handle,
+                    operation,
+                    parent_wire,
+                    "did_filter_hook_read",
+                )? {
+                    Ok((
+                        read_hook,
+                        FilterCounterResult::Lookup(FilterCounterLookup::Value(count)),
+                    )) => {
+                        if read_hook.array_key != hook.array_key
+                            || !same_scalar_representation(&read_hook.original, &hook.original)
+                        {
+                            return Err("did_filter_hook_key_changed".into());
+                        }
+                        count
                     }
+                    Ok((
+                        read_hook,
+                        FilterCounterResult::Lookup(
+                            FilterCounterLookup::Missing | FilterCounterLookup::NullOperand,
+                        ),
+                    )) => {
+                        if read_hook.array_key != hook.array_key
+                            || !same_scalar_representation(&read_hook.original, &hook.original)
+                        {
+                            return Err("did_filter_hook_key_changed".into());
+                        }
+                        return Ok(Completion::Value(PhpValue::Null));
+                    }
+                    Ok(_) => return Err("did_filter_read_result_mismatch".into()),
+                    Err(thrown) => return Ok(Completion::PhpThrowable(thrown)),
                 }
-                Err(handle) => return Ok(Completion::PhpThrowable(handle)),
             }
-        }
-        let count = self.dispatcher.did_filter_typed(&hook);
+            FilterCounterResult::Lookup(
+                FilterCounterLookup::Missing | FilterCounterLookup::NullOperand,
+            ) => 0,
+            FilterCounterResult::Mutation(_) => {
+                return Err("did_filter_isset_result_mismatch".into());
+            }
+        };
         let count = i64::try_from(count).map_err(|_| "did_filter_count_overflow")?;
         Ok(Completion::Value(PhpValue::Integer(count)))
     }
@@ -1645,19 +1717,58 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             "apply_filters_call",
         )?;
         let hook_handle = self.current_argument("hook")?;
-        let (original, array_key) = match self.boundary_array_key(
-            hook_handle,
+        let (hook, isset) = match self.counter_operand(
+            FilterCounterOperandAccess::Isset,
             "isset",
-            false,
+            hook_handle,
             operation,
             parent_wire,
             "apply_counter_isset",
         )? {
-            Ok(hook) => hook,
-            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(result) => result,
+            Err(thrown) => return Ok(Completion::PhpThrowable(thrown)),
         };
-        let hook = HookArgument::new(original, array_key);
         self.remember_hook(hook.clone());
+        let counter_access = match isset {
+            FilterCounterResult::Lookup(FilterCounterLookup::Value(_)) => {
+                FilterCounterOperandAccess::Increment
+            }
+            FilterCounterResult::Lookup(
+                FilterCounterLookup::Missing | FilterCounterLookup::NullOperand,
+            ) => FilterCounterOperandAccess::WriteOne,
+            FilterCounterResult::Mutation(_) => {
+                return Err("apply_counter_isset_result_mismatch".into());
+            }
+        };
+        let counter_boundary = match counter_access {
+            FilterCounterOperandAccess::Increment => "increment",
+            FilterCounterOperandAccess::WriteOne => "write",
+            _ => return Err("apply_counter_access_mismatch".into()),
+        };
+        let (mutation_hook, mutation) = match self.counter_operand(
+            counter_access,
+            counter_boundary,
+            hook_handle,
+            operation,
+            parent_wire,
+            "apply_counter_mutation",
+        )? {
+            Ok(result) => result,
+            Err(thrown) => return Ok(Completion::PhpThrowable(thrown)),
+        };
+        if mutation_hook.array_key != hook.array_key
+            || !same_scalar_representation(&mutation_hook.original, &hook.original)
+        {
+            return Err("apply_counter_mutation_key_changed".into());
+        }
+        if !matches!(
+            mutation,
+            FilterCounterResult::Mutation(
+                FilterCounterMutation::Applied | FilterCounterMutation::Discarded
+            )
+        ) {
+            return Err("apply_counter_mutation_result_mismatch".into());
+        }
         let value = parse_pod(
             payload.get("value").ok_or("apply_value_missing")?,
             "apply_value",
@@ -1672,8 +1783,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .collect::<Result<Vec<_>, _>>()?;
         let ticket = self
             .dispatcher
-            .begin_filter_effectful_typed(&hook, value, &extra)
-            .map_err(|error| format!("begin_filter:{error:?}"))?;
+            .begin_filter_after_counter_typed(&hook, value, &extra)
+            .map_err(|error| format!("begin_filter_after_counter:{error:?}"))?;
         self.drive_dispatch(ticket, &hook, operation, parent_wire)
     }
 
@@ -1737,29 +1848,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     let completion = match boundary {
                         DispatchBoundary::FilterCounterWrite
                         | DispatchBoundary::FilterCounterIncrement => {
-                            let access = if boundary == DispatchBoundary::FilterCounterWrite {
-                                "write"
-                            } else {
-                                "increment"
-                            };
-                            match self.boundary_array_key(
-                                self.current_argument("hook")?,
-                                access,
-                                false,
-                                operation,
-                                caller_wire,
-                                "apply_counter_write",
-                            )? {
-                                Ok((original, key)) => {
-                                    if !same_scalar_representation(&original, &hook.original)
-                                        || key != hook.array_key
-                                    {
-                                        return Err("apply_counter_key_changed".into());
-                                    }
-                                    Completion::Value(PhpValue::Null)
-                                }
-                                Err(handle) => Completion::PhpThrowable(handle),
-                            }
+                            return Err("counter_boundary_after_counted_filter_start".into());
                         }
                         DispatchBoundary::NamedHookIsset => {
                             match self.boundary_array_key(

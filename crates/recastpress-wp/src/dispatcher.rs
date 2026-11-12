@@ -61,7 +61,7 @@ pub struct Dispatcher {
     slots: Vec<Option<Storage<Dispatcher>>>,
     current: Vec<HookScalar>,
     actions: Vec<(PhpKey, u64)>,
-    filters: Vec<(PhpKey, u64)>,
+    filters: FilterCounterTable,
     active_calls: usize,
     diagnostics: Vec<HookDiagnostic>,
     dispatcher_id: u64,
@@ -89,6 +89,48 @@ struct HookBindingTable {
 #[derive(Clone, Debug)]
 struct HookBindingOperand {
     version: Arc<HookBindingVersion>,
+}
+
+#[derive(Clone, Debug, Default)]
+struct FilterCounterVersion {
+    entries: Vec<(PhpKey, u64)>,
+}
+
+#[derive(Debug)]
+struct FilterCounterTable {
+    current: Arc<FilterCounterVersion>,
+}
+
+#[derive(Clone, Debug)]
+struct FilterCounterOperand {
+    version: Arc<FilterCounterVersion>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FilterCounterOperandAccess {
+    Isset,
+    Read,
+    WriteOne,
+    Increment,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FilterCounterLookup {
+    Value(u64),
+    Missing,
+    NullOperand,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FilterCounterMutation {
+    Applied,
+    Discarded,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FilterCounterResult {
+    Lookup(FilterCounterLookup),
+    Mutation(FilterCounterMutation),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -169,6 +211,85 @@ impl HookBindingTable {
         );
         self.versions.push(Arc::downgrade(&self.current));
         result
+    }
+}
+
+impl FilterCounterTable {
+    fn new() -> Self {
+        let current = Arc::new(FilterCounterVersion::default());
+        Self { current }
+    }
+
+    fn capture_operand(&self) -> FilterCounterOperand {
+        FilterCounterOperand {
+            version: Arc::clone(&self.current),
+        }
+    }
+
+    fn read_operand(&self, operand: &FilterCounterOperand, key: &PhpKey) -> FilterCounterLookup {
+        let current_version = Arc::ptr_eq(&self.current, &operand.version);
+        let version_still_owned = Arc::strong_count(&operand.version) > 1;
+        if !current_version && !version_still_owned {
+            return FilterCounterLookup::NullOperand;
+        }
+        key_get(&operand.version.entries, key)
+            .copied()
+            .map_or(FilterCounterLookup::Missing, FilterCounterLookup::Value)
+    }
+
+    fn update_operand(
+        &mut self,
+        operand: FilterCounterOperand,
+        key: PhpKey,
+        access: FilterCounterOperandAccess,
+    ) -> FilterCounterMutation {
+        if !Arc::ptr_eq(&self.current, &operand.version) {
+            return FilterCounterMutation::Discarded;
+        }
+        drop(operand);
+        match access {
+            FilterCounterOperandAccess::WriteOne => {
+                self.mutate(|entries| {
+                    key_set(entries, key, 1);
+                });
+            }
+            FilterCounterOperandAccess::Increment => {
+                self.mutate(|entries| increment_key_counter(entries, key));
+            }
+            FilterCounterOperandAccess::Isset | FilterCounterOperandAccess::Read => {
+                unreachable!("lookup access cannot mutate the filter counter table")
+            }
+        }
+        FilterCounterMutation::Applied
+    }
+
+    fn write_one_live(&mut self, key: PhpKey) {
+        self.mutate(|entries| {
+            key_set(entries, key, 1);
+        });
+    }
+
+    fn increment_live(&mut self, key: PhpKey) {
+        self.mutate(|entries| increment_key_counter(entries, key));
+    }
+
+    fn mutate<R>(&mut self, mutation: impl FnOnce(&mut Vec<(PhpKey, u64)>) -> R) -> R {
+        if Arc::strong_count(&self.current) > 1 {
+            self.current = Arc::new((*self.current).clone());
+        }
+        mutation(
+            &mut Arc::get_mut(&mut self.current)
+                .expect("unique filter counter table after copy-on-write")
+                .entries,
+        )
+    }
+}
+
+impl std::ops::Deref for FilterCounterTable {
+    type Target = [(PhpKey, u64)];
+
+    fn deref(&self) -> &Self::Target {
+        &self.current.entries
     }
 }
 
@@ -284,6 +405,11 @@ enum ControlFinish {
         operand: Option<HookBindingOperand>,
         result: Option<HookBindingLookupResult>,
     },
+    FilterCounterOperand {
+        access: FilterCounterOperandAccess,
+        operand: Option<FilterCounterOperand>,
+        result: Option<FilterCounterResult>,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -295,6 +421,7 @@ pub enum ControlResult {
     HookUnbound,
     TargetReleased,
     HookBindingLookup(HookBindingLookupResult),
+    FilterCounter(FilterCounterResult),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -375,7 +502,7 @@ impl Default for Dispatcher {
             slots: Vec::new(),
             current: Vec::new(),
             actions: Vec::new(),
-            filters: Vec::new(),
+            filters: FilterCounterTable::new(),
             active_calls: 0,
             diagnostics: Vec::new(),
             dispatcher_id: NEXT_DISPATCHER_ID.fetch_add(1, Ordering::Relaxed),
@@ -543,6 +670,7 @@ impl Dispatcher {
         if matches!(
             &operation.finish,
             ControlFinish::HookBindingLookup { result: None, .. }
+                | ControlFinish::FilterCounterOperand { result: None, .. }
         ) && self
             .control_stack
             .last()
@@ -660,6 +788,9 @@ impl Dispatcher {
             ControlFinish::ReleaseTarget => ControlResult::TargetReleased,
             ControlFinish::HookBindingLookup { result, .. } => {
                 ControlResult::HookBindingLookup(result.ok_or(HookError::InvalidControlOperation)?)
+            }
+            ControlFinish::FilterCounterOperand { result, .. } => {
+                ControlResult::FilterCounter(result.ok_or(HookError::InvalidControlOperation)?)
             }
         };
         self.control_stack.pop();
@@ -900,6 +1031,113 @@ impl Dispatcher {
         Ok(())
     }
 
+    /// Capture the `$wp_filters` operand before PHP converts the hook array key.
+    /// The returned control cursor is single-use and participates in the same
+    /// nested-operation ordering as hook binding lookups.
+    pub fn begin_filter_counter_operand(
+        &mut self,
+        access: FilterCounterOperandAccess,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let operand = self.filters.capture_operand();
+        let operation = self.new_control(ControlFinish::FilterCounterOperand {
+            access,
+            operand: Some(operand),
+            result: None,
+        })?;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = true;
+        Ok(operation)
+    }
+
+    /// Resolve a captured counter operand after PHP has completed key conversion.
+    /// Stale sole-owner reads are NullOperand; a separately-held old version remains
+    /// readable. A stale write/increment is reported as Discarded from the live map.
+    pub fn resume_filter_counter_operand(
+        &mut self,
+        operation: &mut ControlOperation,
+        name: &HookArgument,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        let (access, operand) = match &mut operation.finish {
+            ControlFinish::FilterCounterOperand {
+                access,
+                operand,
+                result,
+            } if result.is_none() => (
+                *access,
+                operand.take().ok_or(HookError::InvalidControlOperation)?,
+            ),
+            _ => return Err(HookError::InvalidControlOperation),
+        };
+        let result = match access {
+            FilterCounterOperandAccess::Isset | FilterCounterOperandAccess::Read => {
+                FilterCounterResult::Lookup(self.filters.read_operand(&operand, &name.array_key))
+            }
+            FilterCounterOperandAccess::WriteOne | FilterCounterOperandAccess::Increment => {
+                FilterCounterResult::Mutation(self.filters.update_operand(
+                    operand,
+                    name.array_key.clone(),
+                    access,
+                ))
+            }
+        };
+        if let ControlFinish::FilterCounterOperand {
+            result: stored_result,
+            ..
+        } = &mut operation.finish
+        {
+            *stored_result = Some(result);
+        }
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    /// Retire a suspended counter operand when PHP key conversion throws.
+    pub fn cancel_filter_counter_operand(
+        &mut self,
+        operation: &mut ControlOperation,
+        thrown: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        match &mut operation.finish {
+            ControlFinish::FilterCounterOperand {
+                operand, result, ..
+            } if result.is_none() => {
+                operand.take().ok_or(HookError::InvalidControlOperation)?;
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        }
+        operation.pending_throwable = Some(thrown);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
     fn new_control(&mut self, finish: ControlFinish) -> Result<ControlOperation, HookError> {
         let sequence = self.next_control;
         self.next_control = self
@@ -914,6 +1152,7 @@ impl Dispatcher {
             ControlFinish::UnbindHook => Vec::new(),
             ControlFinish::ReleaseTarget => Vec::new(),
             ControlFinish::HookBindingLookup { .. } => Vec::new(),
+            ControlFinish::FilterCounterOperand { .. } => Vec::new(),
             ControlFinish::Remove { .. } => Vec::new(),
         };
         self.control_stack.push(ActiveControl {
@@ -1490,7 +1729,7 @@ impl Dispatcher {
             dispatcher: self.dispatcher_id,
             sequence,
         };
-        increment_key_counter(&mut self.filters, name.array_key.clone());
+        self.filters.increment_live(name.array_key.clone());
         self.active_calls += 1;
         let all_key = PhpKey::Bytes(b"all".to_vec());
         let all_slot = key_get(&self.bindings, &all_key).copied();
@@ -1571,6 +1810,70 @@ impl Dispatcher {
             current_pushes: 0,
             phase,
             slot: None,
+            frame_started: false,
+            waiting_for_php: false,
+            waiting_for_boundary: false,
+            waiting_for_release: false,
+            pending_releases: VecDeque::new(),
+            pending_release: None,
+            pending_throwable: None,
+            throwable_abandoned: false,
+            effectful: true,
+            binding_operand: None,
+        });
+        Ok(ticket)
+    }
+
+    /// Start a filter after the caller has completed the PHP counter isset and
+    /// write/increment operands. This enters the existing all/named phases without
+    /// incrementing the filter counter a second time.
+    pub fn begin_filter_after_counter_typed(
+        &mut self,
+        name: &HookArgument,
+        value: PhpValue,
+        extra: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
+        if !self.resumable.is_empty()
+            && !self.resumable.last().is_some_and(|dispatch| {
+                (dispatch.waiting_for_php
+                    || dispatch.waiting_for_boundary
+                    || dispatch.waiting_for_release)
+                    && dispatch.pending_throwable.is_none()
+            })
+        {
+            return Err(HookError::DispatchParentNotPending);
+        }
+        if self.active_calls >= MAX_NESTING {
+            return Err(HookError::NestingLimit);
+        }
+        let sequence = self.next_ticket;
+        self.next_ticket = self
+            .next_ticket
+            .checked_add(1)
+            .ok_or(HookError::InvalidDispatchTicket)?;
+        let ticket = DispatchTicket {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        };
+        self.active_calls += 1;
+        let all_slot = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied();
+        let base_depth = self.current.len();
+        if all_slot.is_some() {
+            self.current.push(name.original.clone());
+        }
+        self.resumable.push(ResumableDispatch {
+            ticket,
+            hook: name.clone(),
+            value,
+            extra: extra.to_vec(),
+            base_depth,
+            current_pushes: usize::from(all_slot.is_some()),
+            phase: if all_slot.is_some() {
+                DispatchPhase::All
+            } else {
+                DispatchPhase::NamedHookIsset
+            },
+            slot: all_slot,
             frame_started: false,
             waiting_for_php: false,
             waiting_for_boundary: false,
@@ -1982,11 +2285,8 @@ impl Dispatcher {
         };
         match phase {
             DispatchPhase::CounterWrite => {
-                key_set(
-                    &mut self.filters,
-                    self.resumable.last().unwrap().hook.array_key.clone(),
-                    1,
-                );
+                self.filters
+                    .write_one_live(self.resumable.last().unwrap().hook.array_key.clone());
                 let all_exists = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).is_some();
                 let dispatch = self.resumable.last_mut().expect("active dispatch");
                 if all_exists {
@@ -2000,10 +2300,8 @@ impl Dispatcher {
                 }
             }
             DispatchPhase::CounterIncrement => {
-                increment_key_counter(
-                    &mut self.filters,
-                    self.resumable.last().unwrap().hook.array_key.clone(),
-                );
+                self.filters
+                    .increment_live(self.resumable.last().unwrap().hook.array_key.clone());
                 let all_slot = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied();
                 let dispatch = self.resumable.last_mut().expect("active dispatch");
                 if let Some(slot) = all_slot {
@@ -2193,7 +2491,7 @@ impl Dispatcher {
         if action {
             increment_key_counter(&mut self.actions, name.array_key.clone());
         } else {
-            increment_key_counter(&mut self.filters, name.array_key.clone());
+            self.filters.increment_live(name.array_key.clone());
         }
         let result = (|| {
             let all_key = PhpKey::Bytes(b"all".to_vec());

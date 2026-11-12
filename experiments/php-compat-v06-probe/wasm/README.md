@@ -107,21 +107,23 @@ The one-shot regression also preserved [a rejected stale registry pin](evidence/
 
 ## Current wire-v2 regression receipts
 
-All seven profiles below passed on the frozen coercion/operand source. Repository, Linux snapshot and post-run source identities match. Independent verification checks binaries and private captures; the callable profile also replays the actual PHP/Rust wire and rejects 37 mutations. Earlier receipts remain historical.
+All seven profiles below passed on the frozen filter-counter operand source. Repository, Linux snapshot and post-run source identities match. Independent verification checks binaries and private captures; the callable profile also replays the actual PHP/Rust wire and rejects 37 mutations. Earlier receipts remain historical.
 
 | Profile | Receipt | Origin inputs |
 | --- | --- | --- |
-| callables | [passed](evidence/callables-20261112T213629.161230Z-success.json) | [109 inputs](evidence/wsl-callables-origin-20261112T213634.391224Z.json) |
-| hooks | [passed](evidence/hooks-20261112T213938.445844Z-success.json) | [109 inputs](evidence/wsl-hooks-origin-20261112T213945.142947Z.json) |
-| bridge | [passed](evidence/bridge-20261112T214155.155876Z-success.json) | [109 inputs](evidence/wsl-bridge-origin-20261112T214201.172517Z.json) |
-| publish | [passed](evidence/publish-20261112T214409.743250Z-success.json) | [109 inputs](evidence/wsl-publish-origin-20261112T214415.717897Z.json) |
-| handles | [passed](evidence/handles-20261112T214617.769591Z-success.json) | [109 inputs](evidence/wsl-handles-origin-20261112T214623.479616Z.json) |
-| run | [passed](evidence/run-20261112T214817Z-success.json) | [82 inputs](evidence/wsl-language-origin-20261112T214818.961391Z.json) |
-| trap | [passed](evidence/trap-20261112T215533.119762Z-success.json) | [110 inputs](evidence/wsl-trap-origin-20261112T215542.516787Z.json) |
+| callables | [passed](evidence/callables-20261112T223842.807257Z-success.json) | [109 inputs](evidence/wsl-callables-origin-20261112T223848.463726Z.json) |
+| hooks | [passed](evidence/hooks-20261112T224144.686706Z-success.json) | [109 inputs](evidence/wsl-hooks-origin-20261112T224150.282859Z.json) |
+| bridge | [passed](evidence/bridge-20261112T224351.680621Z-success.json) | [109 inputs](evidence/wsl-bridge-origin-20261112T224357.182415Z.json) |
+| publish | [passed](evidence/publish-20261112T224555.926648Z-success.json) | [109 inputs](evidence/wsl-publish-origin-20261112T224601.307654Z.json) |
+| handles | [passed](evidence/handles-20261112T224758.627909Z-success.json) | [109 inputs](evidence/wsl-handles-origin-20261112T224804.180517Z.json) |
+| run | [passed](evidence/run-20261112T224953Z-success.json) | [82 inputs](evidence/wsl-language-origin-20261112T224955.193199Z.json) |
+| trap | [passed](evidence/trap-20261112T225622.205736Z-success.json) | [110 inputs](evidence/wsl-trap-origin-20261112T225629.222057Z.json) |
 
-The callable run matched all 40 observation paths (20 base and 20 coercion groups): 884 API calls, 214 callback invocations, 183 callable releases, 2,777 language effects and 819 argument-release batches, with 4,881 PHP / 4,880 Rust frames. Both captured directions total 3,008,463 bytes. Actual PHP_INT_SIZE is 8, and PHP_INT_MIN/MAX survive the shared filter calls. The module compiled in 101,133 ms and executed the fixture in 7,374 ms in this development run; these are not product CPU budgets.
+The callable run matched all 58 observation paths (20 base, 20 coercion groups, and 18 counter COW cases): 981 API calls, 214 callback invocations, 183 callable releases, 2,986 language effects and 916 argument-release batches, with 5,284 PHP / 5,283 Rust frames. Both captured directions total 3,298,386 bytes. Actual PHP_INT_SIZE is 8, and PHP_INT_MIN/MAX survive the shared filter calls. The module compiled in 105,998 ms and executed the fixture in 7,743 ms in this development run; these are not product CPU budgets.
 
-The pinned WordPress comparison binds 193 source inputs and hashes both current native and Wasm receipts. Native owns/reaps 32 children across nine scenarios; each Wasm wrapper records and verifies its owned processes. Counter/priority-array COW, heap-valued filters, direct WordPress globals and production runtime integration remain separate acceptance work.
+Rust captures filter-counter operands before PHP key conversion. The counter cases cover isset, initial assignment, increment and read warnings with read-only controls and nested writes. A three-level case preserves a middle read of the old count while the outer read returns actual null; the final live count differs between the read-only and nested-write handlers. Null did_filter results are retained. The 18 cases do not establish every counter-array ownership condition.
+
+The pinned WordPress comparison binds 193 source inputs and hashes both current native and Wasm receipts. Native owns/reaps 32 children across nine scenarios; each Wasm wrapper records and verifies its owned processes. Priority-bucket COW, other counter operations, heap-valued filters, direct WordPress globals and production runtime integration remain separate acceptance work.
 
 ## Fixed inputs
 

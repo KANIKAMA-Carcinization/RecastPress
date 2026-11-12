@@ -109,7 +109,13 @@ def bridge_comparison(report):
         _require_exact(result['php_observation'], report['oracle']['cases'], label + ' callable WP observations')
     return {'native_receipt': native.RECEIPT.relative_to(ROOT).as_posix(), 'native_receipt_sha256': digest(native.RECEIPT),
         'wasm_receipt': wasm_path.relative_to(ROOT).as_posix(), 'wasm_receipt_sha256': digest(wasm_path),
-        'matched_cases': ['base.' + key for key in report['oracle']['cases']['base']] + ['coercions.' + key for key in report['oracle']['cases']['coercions']], 'all_program_observations_matched': True}
+        'matched_cases': (
+            ['base.' + key for key in report['oracle']['cases']['base']]
+            + ['coercions.' + key for key in report['oracle']['cases']['coercions']]
+            + ['counter_cow.' + group + '.' + phase + '.' + mode
+               for group, phases in report['oracle']['cases']['counter_cow'].items()
+               for phase, modes in phases.items() for mode in modes]
+        ), 'all_program_observations_matched': True}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

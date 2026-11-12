@@ -924,6 +924,255 @@ function callable_program_all_boundary_reentry(): array
     ];
 }
 
+function callable_program_counter_cow_leaf(string $group, string $phase, string $mode, float $hook, int $warningIndex): array
+{
+    $otherHook = 'callable-counter-cow-other-' . $group . '-' . $phase . '-' . $mode;
+    $setup = ['value' => null, 'warnings' => []];
+    if ($group !== 'missing_counter') {
+        $setup = callable_program_capture_warnings(static fn () => apply_filters($hook, 'seed:first'));
+    }
+
+    $warnings = [];
+    $injectedAt = null;
+    $readOnlyOtherCount = null;
+    $nestedApplyValue = null;
+    $nestedDidFilter = null;
+    $operationValue = null;
+    set_error_handler(static function (int $severity, string $message) use (
+        &$warnings,
+        &$injectedAt,
+        &$readOnlyOtherCount,
+        &$nestedApplyValue,
+        &$nestedDidFilter,
+        $group,
+        $phase,
+        $mode,
+        $warningIndex,
+        $otherHook,
+    ): bool {
+        $warnings[] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+        if ($injectedAt === null && count($warnings) === $warningIndex) {
+            $injectedAt = ['warning_index' => count($warnings)];
+            if ($mode === 'nested_write') {
+                $nestedApplyValue = apply_filters($otherHook, 'child');
+                $nestedDidFilter = did_filter($otherHook);
+            } else {
+                $readOnlyOtherCount = did_filter($otherHook);
+            }
+        }
+
+        return true;
+    });
+    try {
+        if ($group === 'did_filter') {
+            $operationValue = did_filter($hook);
+        } else {
+            $operationInput = $group === 'existing_counter' ? 'seed:second' : 'seed:missing';
+            $operationValue = apply_filters($hook, $operationInput);
+        }
+    } finally {
+        restore_error_handler();
+    }
+
+    $after = callable_program_capture_warnings(static fn () => did_filter($hook));
+    $otherAfter = did_filter($otherHook);
+
+    return [
+        'hook_bits' => bin2hex(pack('E', $hook)),
+        'setup' => $setup,
+        'operation' => [
+            'value' => $operationValue,
+            'warnings' => $warnings,
+            'injected_at' => $injectedAt,
+            'read_only_other_did_filter' => $readOnlyOtherCount,
+            'nested_apply_value' => $nestedApplyValue,
+            'nested_did_filter' => $nestedDidFilter,
+        ],
+        'after' => [
+            'did_filter' => $after['value'],
+            'warnings' => $after['warnings'],
+            'other_did_filter' => $otherAfter,
+        ],
+    ];
+}
+
+function callable_program_counter_cow_nested_read_leaf(string $mode, float $hook): array
+{
+    $otherHook = 'callable-counter-cow-owner-other-' . $mode;
+    $setup = callable_program_capture_warnings(static fn () => apply_filters($hook, 'seed:first'));
+
+    $outerWarnings = [];
+    $middleWarnings = [];
+    $innerWarnings = [];
+    $outerInjectedAt = null;
+    $middleInjectedAt = null;
+    $innerInjectedAt = null;
+    $outerInjected = false;
+    $middleInjected = false;
+    $innerInjected = false;
+    $middleDidFilter = null;
+    $middleApplyValue = null;
+    $readOnlyOtherCount = null;
+    $innerApplyValue = null;
+    $innerDidFilter = null;
+    $outerValue = null;
+    set_error_handler(static function (int $severity, string $message) use (
+        &$outerWarnings,
+        &$middleWarnings,
+        &$innerWarnings,
+        &$outerInjectedAt,
+        &$middleInjectedAt,
+        &$innerInjectedAt,
+        &$outerInjected,
+        &$middleInjected,
+        &$innerInjected,
+        &$middleDidFilter,
+        &$middleApplyValue,
+        &$readOnlyOtherCount,
+        &$innerApplyValue,
+        &$innerDidFilter,
+        $hook,
+        $otherHook,
+        $mode,
+    ): bool {
+        $outerWarnings[] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+        if (!$outerInjected && count($outerWarnings) === 2) {
+            $outerInjected = true;
+            $outerInjectedAt = ['warning_index' => count($outerWarnings)];
+            set_error_handler(static function (int $middleSeverity, string $middleMessage) use (
+                &$middleWarnings,
+                &$middleInjectedAt,
+                &$middleInjected,
+                &$middleDidFilter,
+                &$middleApplyValue,
+                &$innerWarnings,
+                &$innerInjectedAt,
+                &$innerInjected,
+                &$readOnlyOtherCount,
+                &$innerApplyValue,
+                &$innerDidFilter,
+                $hook,
+                $otherHook,
+                $mode,
+            ): bool {
+                $middleWarnings[] = ['severity' => $middleSeverity, 'message_hex' => bin2hex($middleMessage)];
+                if (!$middleInjected && count($middleWarnings) === 2) {
+                    $middleInjected = true;
+                    $middleInjectedAt = ['warning_index' => count($middleWarnings)];
+                    set_error_handler(static function (int $innerSeverity, string $innerMessage) use (
+                        &$innerWarnings,
+                        &$innerInjectedAt,
+                        &$innerInjected,
+                        &$readOnlyOtherCount,
+                        &$innerApplyValue,
+                        &$innerDidFilter,
+                        $otherHook,
+                        $mode,
+                    ): bool {
+                        $innerWarnings[] = ['severity' => $innerSeverity, 'message_hex' => bin2hex($innerMessage)];
+                        if (!$innerInjected && count($innerWarnings) === 2) {
+                            $innerInjected = true;
+                            $innerInjectedAt = ['warning_index' => count($innerWarnings)];
+                            if ($mode === 'nested_write') {
+                                $innerApplyValue = apply_filters($otherHook, 'inner');
+                                $innerDidFilter = did_filter($otherHook);
+                            } else {
+                                $readOnlyOtherCount = did_filter($otherHook);
+                            }
+                        }
+
+                        return true;
+                    });
+                    try {
+                        $middleApplyValue = apply_filters($hook, 'seed:middle');
+                    } finally {
+                        restore_error_handler();
+                    }
+                }
+
+                return true;
+            });
+            try {
+                $middleDidFilter = did_filter($hook);
+            } finally {
+                restore_error_handler();
+            }
+        }
+
+        return true;
+    });
+    try {
+        $outerValue = did_filter($hook);
+    } finally {
+        restore_error_handler();
+    }
+
+    $after = callable_program_capture_warnings(static fn () => did_filter($hook));
+    $otherAfter = did_filter($otherHook);
+
+    return [
+        'hook_bits' => bin2hex(pack('E', $hook)),
+        'setup' => $setup,
+        'operation' => [
+            'value' => $outerValue,
+            'warnings' => $outerWarnings,
+            'injected_at' => $outerInjectedAt,
+            'middle_did_filter' => $middleDidFilter,
+            'float_apply_value' => $middleApplyValue,
+            'middle_warnings' => $middleWarnings,
+            'middle_injected_at' => $middleInjectedAt,
+            'nested_string_apply_value' => $innerApplyValue,
+            'inner_did_filter' => $innerDidFilter,
+            'inner_warnings' => $innerWarnings,
+            'inner_injected_at' => $innerInjectedAt,
+            'read_only_other_did_filter' => $readOnlyOtherCount,
+        ],
+        'after' => [
+            'did_filter' => $after['value'],
+            'warnings' => $after['warnings'],
+            'other_did_filter' => $otherAfter,
+        ],
+    ];
+}
+
+function callable_program_counter_cow_cases(): array
+{
+    $phases = [
+        'existing_counter' => [
+            'counter_isset' => 1,
+            'increment' => 2,
+            'later_hook_lookup' => 3,
+        ],
+        'missing_counter' => [
+            'counter_isset' => 1,
+            'counter_write' => 2,
+            'later_hook_lookup' => 3,
+        ],
+        'did_filter' => [
+            'counter_isset' => 1,
+            'counter_read' => 2,
+        ],
+    ];
+    $result = [];
+    $caseIndex = 0;
+    foreach ($phases as $group => $groupPhases) {
+        foreach ($groupPhases as $phase => $warningIndex) {
+            foreach (['control', 'nested_write'] as $mode) {
+                $hook = 102000.5 + $caseIndex;
+                $caseIndex++;
+                $result[$group][$phase][$mode] = callable_program_counter_cow_leaf(
+                    $group,
+                    $phase,
+                    $mode,
+                    $hook,
+                    $warningIndex,
+                );
+            }
+        }
+    }
+
+    return $result;
+}
 function callable_program_coercion_cases(): array
 {
     $result = [];
@@ -1257,5 +1506,9 @@ function callable_program_run(): array
     $base = callable_program_run_base();
     $coercions['all_boundary_reentry'] = callable_program_all_boundary_reentry();
 
-    return ['base' => $base, 'coercions' => $coercions];
+    $counterCow = callable_program_counter_cow_cases();
+    $counterCow['nested_read_owners']['inner_increment']['control'] = callable_program_counter_cow_nested_read_leaf('control', 102201.5);
+    $counterCow['nested_read_owners']['inner_increment']['nested_write'] = callable_program_counter_cow_nested_read_leaf('nested_write', 102202.5);
+
+    return ['base' => $base, 'coercions' => $coercions, 'counter_cow' => $counterCow];
 }

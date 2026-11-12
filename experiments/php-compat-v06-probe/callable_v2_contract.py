@@ -1302,6 +1302,1018 @@ EXPECTED_COERCIONS = {'runtime_integer_width': {'php_version': '8.5.12',
                                                                   'current_filter_after_cleanup': {'type': 'float',
                                                                                                    'bits': '40f8a89800000000'},
                                                                   'doing_filter_after_cleanup': True}}}
+EXPECTED_COUNTER_COW = json.loads(r'''
+{
+    "existing_counter": {
+        "counter_isset": {
+            "control": {
+                "hook_bits": "40f8e70800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 2,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e71800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        },
+        "increment": {
+            "control": {
+                "hook_bits": "40f8e72800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 2,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e73800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        },
+        "later_hook_lookup": {
+            "control": {
+                "hook_bits": "40f8e74800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 3
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 2,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e75800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": "seed:second",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 3
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 2,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        }
+    },
+    "missing_counter": {
+        "counter_isset": {
+            "control": {
+                "hook_bits": "40f8e76800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030362e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030362e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030362e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030362e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030362e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e77800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030372e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030372e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030372e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030372e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030372e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        },
+        "counter_write": {
+            "control": {
+                "hook_bits": "40f8e78800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030382e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030382e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030382e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030382e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030382e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e79800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030392e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030392e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030392e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 0,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323030392e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        },
+        "later_hook_lookup": {
+            "control": {
+                "hook_bits": "40f8e7a800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 3
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031302e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e7b800000000",
+                "setup": {
+                    "value": null,
+                    "warnings": []
+                },
+                "operation": {
+                    "value": "seed:missing",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 3
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        }
+    },
+    "did_filter": {
+        "counter_isset": {
+            "control": {
+                "hook_bits": "40f8e7c800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e7d800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": 0,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 1
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031332e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        },
+        "counter_read": {
+            "control": {
+                "hook_bits": "40f8e7e800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": 0,
+                    "nested_apply_value": null,
+                    "nested_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031342e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8e7f800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": null,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": null,
+                    "nested_apply_value": "child",
+                    "nested_did_filter": 1
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323031352e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        }
+    },
+    "nested_read_owners": {
+        "inner_increment": {
+            "control": {
+                "hook_bits": "40f8f39800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": null,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "middle_did_filter": 1,
+                    "float_apply_value": "seed:middle",
+                    "middle_warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "middle_injected_at": {
+                        "warning_index": 2
+                    },
+                    "nested_string_apply_value": null,
+                    "inner_did_filter": null,
+                    "inner_warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "inner_injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": 0
+                },
+                "after": {
+                    "did_filter": 2,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230312e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 0
+                }
+            },
+            "nested_write": {
+                "hook_bits": "40f8f3a800000000",
+                "setup": {
+                    "value": "seed:first",
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ]
+                },
+                "operation": {
+                    "value": null,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "injected_at": {
+                        "warning_index": 2
+                    },
+                    "middle_did_filter": 1,
+                    "float_apply_value": "seed:middle",
+                    "middle_warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "middle_injected_at": {
+                        "warning_index": 2
+                    },
+                    "nested_string_apply_value": "inner",
+                    "inner_did_filter": 1,
+                    "inner_warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "inner_injected_at": {
+                        "warning_index": 2
+                    },
+                    "read_only_other_did_filter": null
+                },
+                "after": {
+                    "did_filter": 1,
+                    "warnings": [
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        },
+                        {
+                            "severity": 8192,
+                            "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f6174203130323230322e3520746f20696e74206c6f73657320707265636973696f6e"
+                        }
+                    ],
+                    "other_did_filter": 1
+                }
+            }
+        }
+    }
+}
+''')
+
+
 ARGUMENTS = {
     'add_filter': ('hook', 'callback', 'priority', 'accepted_args'),
     'remove_filter': ('hook', 'callback', 'priority'),
@@ -1366,12 +2378,21 @@ def handle(value, kind):
     return tuple(value[key] for key in ('request', 'kind', 'slot', 'generation', 'token'))
 
 
+def validate_did_filter_result(node):
+    validate_pod(node)
+    if node['type'] == 'null':
+        return
+    if node['type'] != 'int' or int(node['value']) < 0:
+        raise ValueError('did_filter result differs')
+
+
 def validate_observation(value):
-    exact(value, ('base', 'coercions'), 'program observation')
+    exact(value, ('base', 'coercions', 'counter_cow'), 'program observation')
     _require_exact(value['base'], EXPECTED_OBSERVATION, 'original twenty cases')
     if EXPECTED_COERCIONS is None:
         raise ValueError('pinned WordPress coercion observation has not been frozen')
     _require_exact(value['coercions'], EXPECTED_COERCIONS, 'measured coercion cases')
+    _require_exact(value['counter_cow'], EXPECTED_COUNTER_COW, 'measured counter COW cases')
 
 
 def validate_result(value):
@@ -1546,8 +2567,8 @@ def validate_transcript(streams, result):
                     raise ValueError('has_filter exact/any result not bool')
                 if not exact_mode and kind not in ('int', 'string') and node != {'type': 'bool', 'value': False}:
                     raise ValueError('has_filter search result differs')
-            if name == 'did_filter' and (kind != 'int' or int(node['value']) < 0):
-                raise ValueError('did_filter result differs')
+            if name == 'did_filter':
+                validate_did_filter_result(node)
         if name == 'apply_filters':
             expected = context['throwable'] or {'kind': 'value', 'value': context['value']}
             _require_exact(outcome, expected, 'filter callback/Return correlation')
@@ -1748,7 +2769,7 @@ def validate_transcript(streams, result):
 
 def self_check():
     """Exercise structural replay while keeping unfrozen oracle data a failing gate."""
-    global EXPECTED_COERCIONS
+    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW
     import copy
     descriptor = {'request': REQUEST, 'kind': 'argument', 'slot': 0, 'generation': 1, 'token': '0102030405060708'}
     handle(descriptor, 'argument')
@@ -1778,8 +2799,19 @@ def self_check():
     else:
         raise AssertionError('deep frame accepted')
     previous = EXPECTED_COERCIONS
+    previous_counter_cow = EXPECTED_COUNTER_COW
     sample = {'self_test_only': True}
-    observation = {'base': EXPECTED_OBSERVATION, 'coercions': sample}
+    sample_counter_cow = {'self_test_only': True}
+    observation = {'base': EXPECTED_OBSERVATION, 'coercions': sample, 'counter_cow': sample_counter_cow}
+    for accepted in ({'type': 'null'}, {'type': 'int', 'value': '0'}):
+        validate_did_filter_result(accepted)
+    for rejected in ({'type': 'bool', 'value': False}, {'type': 'int', 'value': '-1'}, {'type': 'array', 'entries': []}):
+        try:
+            validate_did_filter_result(rejected)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('invalid did_filter POD result accepted')
     counts = dict.fromkeys(APIS, 0); counts['current_filter'] = 1
     result = {'scenario': SCENARIO, 'continuation_peer': True, 'frames_from_php': 5, 'frames_from_rust': 4,
         'api_counts': counts, 'callback_invocations': 0, 'release_effects': 0, 'boundary_effects': 0,
@@ -1788,6 +2820,7 @@ def self_check():
         'registry_observation': {'closed': True, 'live_after_close': 0, 'closed_read_rejected': True}}
     try:
         EXPECTED_COERCIONS = sample
+        EXPECTED_COUNTER_COW = sample_counter_cow
         validate_result(result)
         frames = {'php': [], 'rust': []}
         def add(direction, kind, payload, parent=None):
@@ -1827,6 +2860,7 @@ def self_check():
             raise AssertionError('bad v2 transcript accepted: ' + name)
     finally:
         EXPECTED_COERCIONS = previous
+        EXPECTED_COUNTER_COW = previous_counter_cow
     if previous is None:
         try:
             validate_result(result)

@@ -1,6 +1,10 @@
 use recastpress_wp::{
     continuation::{Completion, PhpHandle, PhpHandleKind, RequestGeneration},
-    dispatcher::{DispatchBoundary, DispatchStep, Dispatcher, DispatcherCallback},
+    dispatcher::{
+        ControlResult, ControlStep, DispatchBoundary, DispatchStep, Dispatcher, DispatcherCallback,
+        FilterCounterLookup, FilterCounterMutation, FilterCounterOperandAccess,
+        FilterCounterResult,
+    },
     hooks::{CallbackId, HookArgument, HookError, HookScalar},
     value::{PhpArray, PhpKey, PhpValue},
 };
@@ -48,6 +52,16 @@ fn id(name: &str) -> CallbackId {
     CallbackId {
         module: "fixture".into(),
         callback: name.into(),
+    }
+}
+
+fn finish_control(
+    dispatcher: &mut Dispatcher,
+    operation: &mut recastpress_wp::dispatcher::ControlOperation,
+) -> ControlResult {
+    match dispatcher.advance_control(operation).unwrap() {
+        ControlStep::Complete(result) => result,
+        step => panic!("unexpected control step: {step:?}"),
     }
 }
 
@@ -1911,4 +1925,291 @@ fn all_priority_mutation_reports_reference_warning_before_object_collection() {
         vec![HookDiagnostic::UndefinedCurrentPriority { iteration: 0 }]
     );
     assert!(dispatcher.take_diagnostics().is_empty());
+}
+
+#[test]
+fn filter_counter_operand_reads_null_after_sole_guard_is_invalidated() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher
+        .apply_filters("target", value("setup"), &[])
+        .unwrap();
+    let target = HookArgument::bytes("target");
+
+    let mut operand = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    dispatcher
+        .apply_filters("other", value("nested"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut operand, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut operand),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(
+            FilterCounterLookup::NullOperand
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
+
+    let missing = HookArgument::bytes("never-counted");
+    let mut missing_read = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Read)
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut missing_read, &missing)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut missing_read),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Missing))
+    );
+    assert_eq!(dispatcher.did_filter("other"), 1);
+
+    let mut read = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Read)
+        .unwrap();
+    dispatcher
+        .apply_filters("third", value("nested"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut read, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut read),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(
+            FilterCounterLookup::NullOperand
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
+}
+
+#[test]
+fn filter_counter_stale_increment_and_write_are_discarded_from_live_table() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher
+        .apply_filters("target", value("setup"), &[])
+        .unwrap();
+    let target = HookArgument::bytes("target");
+
+    let mut increment = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Increment)
+        .unwrap();
+    dispatcher
+        .apply_filters("other", value("nested"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut increment, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut increment),
+        ControlResult::FilterCounter(FilterCounterResult::Mutation(
+            FilterCounterMutation::Discarded
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
+    assert_eq!(dispatcher.did_filter("other"), 1);
+
+    let missing = HookArgument::bytes("missing");
+    let mut isset = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut isset, &missing)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut isset),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Missing))
+    );
+
+    let mut write = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::WriteOne)
+        .unwrap();
+    dispatcher
+        .apply_filters("other", value("nested again"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut write, &missing)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut write),
+        ControlResult::FilterCounter(FilterCounterResult::Mutation(
+            FilterCounterMutation::Discarded
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("missing"), 0);
+    assert_eq!(dispatcher.did_filter("other"), 2);
+}
+
+#[test]
+fn nested_filter_counter_operands_keep_the_old_version_until_the_outer_cursor_retires() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher
+        .apply_filters("target", value("setup"), &[])
+        .unwrap();
+    let target = HookArgument::bytes("target");
+
+    let mut outer = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    let mut inner = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    assert_eq!(
+        dispatcher.resume_filter_counter_operand(&mut outer, &target),
+        Err(HookError::ControlOperationOrder)
+    );
+    dispatcher
+        .apply_filters("other", value("nested"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut inner, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut inner),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Value(1)))
+    );
+    dispatcher
+        .resume_filter_counter_operand(&mut outer, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut outer),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(
+            FilterCounterLookup::NullOperand
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
+    assert_eq!(dispatcher.did_filter("other"), 1);
+}
+
+#[test]
+fn stale_counter_increment_does_not_change_an_old_version_kept_by_nested_reads() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher
+        .apply_filters("target", value("setup"), &[])
+        .unwrap();
+    let target = HookArgument::bytes("target");
+
+    let mut outer_read = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Read)
+        .unwrap();
+    let mut middle_read = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Read)
+        .unwrap();
+    let mut inner_increment = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Increment)
+        .unwrap();
+    dispatcher
+        .apply_filters("other", value("nested write"), &[])
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut inner_increment, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut inner_increment),
+        ControlResult::FilterCounter(FilterCounterResult::Mutation(
+            FilterCounterMutation::Discarded
+        ))
+    );
+
+    dispatcher
+        .resume_filter_counter_operand(&mut middle_read, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut middle_read),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Value(1)))
+    );
+    dispatcher
+        .resume_filter_counter_operand(&mut outer_read, &target)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut outer_read),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(
+            FilterCounterLookup::NullOperand
+        ))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
+    assert_eq!(dispatcher.did_filter("other"), 1);
+}
+
+#[test]
+fn filter_counter_boundary_throwable_cancels_cursor_and_rejects_replay_or_foreign_use() {
+    let mut dispatcher = Dispatcher::new();
+    let mut foreign = Dispatcher::new();
+    let name = HookArgument::bytes("target");
+    let mut operand = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    assert_eq!(
+        foreign.resume_filter_counter_operand(&mut operand, &name),
+        Err(HookError::InvalidControlOperation)
+    );
+    let thrown = throwable_handle(91);
+    assert_eq!(
+        dispatcher.cancel_filter_counter_operand(&mut operand, closure_handle(92)),
+        Err(HookError::InvalidPhpThrowableHandle)
+    );
+    dispatcher
+        .cancel_filter_counter_operand(&mut operand, thrown)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut operand),
+        Ok(ControlStep::PhpThrowable(thrown))
+    );
+    assert_eq!(
+        dispatcher.resume_filter_counter_operand(&mut operand, &name),
+        Err(HookError::InvalidControlOperation)
+    );
+    let mut next = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut next, &name)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut next),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Missing))
+    );
+}
+
+#[test]
+fn counted_effectful_dispatch_does_not_increment_counter_twice() {
+    let mut dispatcher = Dispatcher::new();
+    let name = HookArgument::bytes("target");
+    let mut isset = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::Isset)
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut isset, &name)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut isset),
+        ControlResult::FilterCounter(FilterCounterResult::Lookup(FilterCounterLookup::Missing))
+    );
+    let mut write = dispatcher
+        .begin_filter_counter_operand(FilterCounterOperandAccess::WriteOne)
+        .unwrap();
+    dispatcher
+        .resume_filter_counter_operand(&mut write, &name)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut write),
+        ControlResult::FilterCounter(FilterCounterResult::Mutation(
+            FilterCounterMutation::Applied
+        ))
+    );
+    let ticket = dispatcher
+        .begin_filter_after_counter_typed(&name, value("counted"), &[])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Boundary(DispatchBoundary::NamedHookIsset))
+    );
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::Complete(value("counted")))
+    );
+    assert_eq!(dispatcher.did_filter("target"), 1);
 }
