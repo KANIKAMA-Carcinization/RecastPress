@@ -61,6 +61,16 @@ fn closure_handle(slot: u32) -> PhpHandle {
     )
 }
 
+fn callable_handle(slot: u32) -> PhpHandle {
+    PhpHandle::new(
+        RequestGeneration::new(51),
+        PhpHandleKind::Callable,
+        slot,
+        1,
+        u64::from(slot),
+    )
+}
+
 fn throwable_handle(slot: u32) -> PhpHandle {
     PhpHandle::new(
         RequestGeneration::new(51),
@@ -80,6 +90,7 @@ fn drive_native_ticket(
         DispatchStep::InvokePhp(invocation) => {
             panic!("unexpected PHP callback: {}", invocation.callback.callback)
         }
+        DispatchStep::ReleasePhp(handle) => panic!("unexpected PHP release: {handle:?}"),
         DispatchStep::PhpThrowable(handle) => {
             panic!("unexpected PHP throwable handle: {handle:?}")
         }
@@ -951,8 +962,411 @@ fn recv_invocation(
         handle: closure_handle(slot),
         hook: hook.into(),
         priority,
+        call_mode: recastpress_wp::hooks::PhpCallMode::Array,
         args: vec![value(input)],
     }
+}
+
+#[test]
+fn callable_control_remove_yields_final_release_before_cleanup_and_allows_reentry() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+    use recastpress_wp::hooks::ContextCallback;
+
+    let mut dispatcher = Dispatcher::new();
+    let callable = callable_handle(901);
+    let mut add = dispatcher
+        .begin_add(
+            "callable-hook",
+            10,
+            DispatcherCallback::php_callable(id("object-callable"), 0, callable).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    let mut remove = dispatcher
+        .begin_remove("callable-hook", 10, &id("object-callable"))
+        .unwrap();
+    assert!(!dispatcher.has_callbacks("callable-hook"));
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    assert_eq!(
+        dispatcher.advance_control(&mut remove),
+        Err(HookError::PhpReleasePending)
+    );
+    assert_eq!(
+        dispatcher.resume_control_release(&mut remove, callable_handle(999)),
+        Err(HookError::InvalidPhpCallableHandle)
+    );
+
+    let replacement = callable_handle(902);
+    let mut nested_add = dispatcher
+        .begin_add(
+            "callable-hook",
+            10,
+            ContextCallback::php_callable(id("replacement"), 1, replacement).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut nested_add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    assert_eq!(
+        dispatcher.resume_control_release(&mut remove, callable),
+        Ok(())
+    );
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(dispatcher.has_callbacks("callable-hook"));
+}
+
+#[test]
+fn nested_control_cleanup_pins_storage_until_parent_resumes() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    for (callback_id, slot) in [("outer", 905), ("inner", 906)] {
+        let mut add = dispatcher
+            .begin_add(
+                "nested-removal",
+                10,
+                DispatcherCallback::php_callable(id(callback_id), 1, callable_handle(slot))
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(
+            dispatcher.advance_control(&mut add).unwrap(),
+            ControlStep::Complete(ControlResult::Added(true))
+        );
+    }
+
+    let mut outer = dispatcher
+        .begin_remove("nested-removal", 10, &id("outer"))
+        .unwrap();
+    let outer_handle = callable_handle(905);
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::ReleasePhp(outer_handle)
+    );
+
+    let mut inner = dispatcher
+        .begin_remove("nested-removal", 10, &id("inner"))
+        .unwrap();
+    let inner_handle = callable_handle(906);
+    assert_eq!(
+        dispatcher.advance_control(&mut inner).unwrap(),
+        ControlStep::ReleasePhp(inner_handle)
+    );
+    dispatcher
+        .resume_control_release(&mut inner, inner_handle)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut inner).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(!dispatcher.has_callbacks("nested-removal"));
+
+    dispatcher
+        .resume_control_release(&mut outer, outer_handle)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(!dispatcher.has_callbacks("nested-removal"));
+}
+
+#[test]
+fn parent_control_cleanup_does_not_unbind_reentrant_replacement_slot() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    for (callback_id, slot) in [("outer", 915), ("inner", 916)] {
+        let mut add = dispatcher
+            .begin_add(
+                "rebound-hook",
+                10,
+                DispatcherCallback::php_callable(id(callback_id), 1, callable_handle(slot))
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(
+            dispatcher.advance_control(&mut add).unwrap(),
+            ControlStep::Complete(ControlResult::Added(true))
+        );
+    }
+    let mut outer = dispatcher
+        .begin_remove("rebound-hook", 10, &id("outer"))
+        .unwrap();
+    let outer_handle = callable_handle(915);
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::ReleasePhp(outer_handle)
+    );
+    let mut inner = dispatcher
+        .begin_remove("rebound-hook", 10, &id("inner"))
+        .unwrap();
+    let inner_handle = callable_handle(916);
+    assert_eq!(
+        dispatcher.advance_control(&mut inner).unwrap(),
+        ControlStep::ReleasePhp(inner_handle)
+    );
+    dispatcher
+        .resume_control_release(&mut inner, inner_handle)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut inner).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+
+    let replacement = callable_handle(917);
+    let mut add = dispatcher
+        .begin_add(
+            "rebound-hook",
+            10,
+            DispatcherCallback::php_callable(id("replacement"), 1, replacement).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    dispatcher
+        .resume_control_release(&mut outer, outer_handle)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut outer).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(dispatcher.has_at("rebound-hook", 10, &id("replacement")));
+}
+
+#[test]
+fn callable_removed_during_invocation_releases_after_snapshot_finishes() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+    use recastpress_wp::hooks::PhpCallMode;
+
+    let mut dispatcher = Dispatcher::new();
+    let callable = callable_handle(911);
+    let mut add = dispatcher
+        .begin_add(
+            "snapshot-hook",
+            5,
+            DispatcherCallback::php_callable(id("snapshot-callable"), 0, callable).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    let mut add_next = dispatcher
+        .begin_add(
+            "snapshot-hook",
+            5,
+            DispatcherCallback::php_callable(id("next-snapshot-callable"), 1, callable_handle(912))
+                .unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add_next).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    let ticket = dispatcher
+        .begin_filter("snapshot-hook", value("seed"), &[])
+        .unwrap();
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected PHP invocation")
+    };
+    assert_eq!(invocation.call_mode, PhpCallMode::Zero);
+    assert_eq!(invocation.handle, callable);
+
+    let mut remove = dispatcher
+        .begin_remove("snapshot-hook", 5, &id("snapshot-callable"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(dispatcher.has_callbacks("snapshot-hook"));
+    dispatcher.resume_php(ticket, value("returned")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(callable)
+    );
+    assert_eq!(dispatcher.current_priority("snapshot-hook"), Some(5));
+    assert_eq!(
+        dispatcher.resume_php_release(ticket, callable_handle(999)),
+        Err(HookError::InvalidPhpCallableHandle)
+    );
+    assert_eq!(
+        dispatcher.advance(ticket),
+        Err(HookError::PhpReleasePending)
+    );
+    dispatcher.resume_php_release(ticket, callable).unwrap();
+    assert_eq!(
+        dispatcher.resume_php_release(ticket, callable),
+        Err(HookError::NoPhpReleasePending)
+    );
+    let DispatchStep::InvokePhp(next) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected next snapshot callback")
+    };
+    assert_eq!(next.handle, callable_handle(912));
+    dispatcher.resume_php(ticket, value("next-result")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(value("next-result"))
+    );
+}
+
+#[test]
+fn callable_modes_preserve_wp_zero_negative_and_all_dispatch_rules() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+    use recastpress_wp::hooks::PhpCallMode;
+
+    let mut dispatcher = Dispatcher::new();
+    for (name, hook, accepted, slot) in [
+        ("all-callback", "all", 0, 921),
+        ("negative-callback", "modes", -1, 922),
+    ] {
+        let mut add = dispatcher
+            .begin_add(
+                hook,
+                10,
+                DispatcherCallback::php_callable(id(name), accepted, callable_handle(slot))
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(
+            dispatcher.advance_control(&mut add).unwrap(),
+            ControlStep::Complete(ControlResult::Added(true))
+        );
+    }
+    let ticket = dispatcher
+        .begin_filter("modes", value("seed"), &[])
+        .unwrap();
+    let DispatchStep::InvokePhp(all) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected all callback")
+    };
+    assert_eq!(all.handle, callable_handle(921));
+    assert_eq!(all.call_mode, PhpCallMode::All);
+    assert_eq!(all.args, [value("modes"), value("seed")]);
+    dispatcher.resume_php(ticket, value("ignored")).unwrap();
+    let DispatchStep::InvokePhp(named) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected named callback")
+    };
+    assert_eq!(named.handle, callable_handle(922));
+    assert_eq!(named.call_mode, PhpCallMode::Array);
+    assert!(named.args.is_empty());
+    dispatcher.resume_php(ticket, value("done")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(value("done"))
+    );
+}
+
+#[test]
+fn callable_release_throwable_preserves_partial_remove_state() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    let callable = callable_handle(931);
+    let mut add = dispatcher
+        .begin_add(
+            "throwing-remove",
+            5,
+            DispatcherCallback::php_callable(id("throwing"), 1, callable).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    let mut remove = dispatcher
+        .begin_remove("throwing-remove", 5, &id("throwing"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    let thrown = throwable_handle(932);
+    dispatcher
+        .resume_control_release_completion(&mut remove, callable, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PhpThrowable(thrown)
+    );
+    assert!(!dispatcher.has_callbacks("throwing-remove"));
+
+    let mut add_again = dispatcher
+        .begin_add(
+            "throwing-remove",
+            5,
+            DispatcherCallback::php_callable(id("next"), 1, callable_handle(933)).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut add_again).unwrap(),
+        ControlStep::Complete(ControlResult::Added(true))
+    );
+    assert!(dispatcher.has_callbacks("throwing-remove"));
+}
+
+#[test]
+fn callable_release_throwable_abandons_dispatch_but_preserves_wp_frame_state() {
+    use recastpress_wp::dispatcher::{ControlResult, ControlStep};
+
+    let mut dispatcher = Dispatcher::new();
+    let first = callable_handle(941);
+    for (callback_id, handle) in [("first", first), ("second", callable_handle(942))] {
+        let mut add = dispatcher
+            .begin_add(
+                "release-throw-hook",
+                5,
+                DispatcherCallback::php_callable(id(callback_id), 1, handle).unwrap(),
+            )
+            .unwrap();
+        assert_eq!(
+            dispatcher.advance_control(&mut add).unwrap(),
+            ControlStep::Complete(ControlResult::Added(true))
+        );
+    }
+    let ticket = dispatcher
+        .begin_filter("release-throw-hook", value("seed"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(ticket),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    let mut remove = dispatcher
+        .begin_remove("release-throw-hook", 5, &id("first"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    dispatcher.resume_php(ticket, value("returned")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(first)
+    );
+    let thrown = throwable_handle(943);
+    dispatcher
+        .resume_php_release_completion(ticket, first, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::PhpThrowable(thrown)
+    );
+    assert_eq!(dispatcher.current_hook(), Some("release-throw-hook"));
+    assert_eq!(dispatcher.hook_stack_depth(), 1);
+    assert_eq!(dispatcher.current_priority("release-throw-hook"), Some(5));
+    assert!(dispatcher.has_callbacks("release-throw-hook"));
 }
 
 #[test]

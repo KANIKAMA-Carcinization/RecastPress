@@ -161,6 +161,7 @@ fn expect_invocation(
         hook: observed_hook,
         priority: observed_priority,
         args,
+        ..
     }) = step
     else {
         return Err(format!("{}_expected_php_invocation", expected.label));

@@ -13,6 +13,7 @@ use serde_json::{Map, Value, json};
 use std::fmt;
 use std::io::{BufRead, Read, Write};
 
+mod callables;
 mod handles;
 mod hooks;
 mod publish;
@@ -135,12 +136,34 @@ struct Wire<R, W> {
     total: usize,
 }
 
+#[derive(Clone, Copy)]
+struct FrameExpectation<'a> {
+    kind: &'a str,
+    parent_effect: Option<&'a str>,
+}
+
 impl<R: BufRead, W: Write> Wire<R, W> {
     fn receive(
         &mut self,
         expected_kind: &str,
         parent_effect: Option<&str>,
     ) -> Result<Value, String> {
+        let (_, payload) = self.receive_one_of(&[FrameExpectation {
+            kind: expected_kind,
+            parent_effect,
+        }])?;
+        Ok(payload)
+    }
+
+    /// Receive one of a closed set of frame kinds while keeping the same
+    /// framing, request, sequence, depth, and parent-effect checks as `receive`.
+    fn receive_one_of(
+        &mut self,
+        expected: &[FrameExpectation<'_>],
+    ) -> Result<(String, Value), String> {
+        if expected.is_empty() {
+            return Err("expected_frame_kind_set_empty".into());
+        }
         let mut line = Vec::new();
         let n = (&mut self.reader)
             .take((MAX_FRAME + 1) as u64)
@@ -162,11 +185,6 @@ impl<R: BufRead, W: Write> Wire<R, W> {
             .0;
         de.end().map_err(|e| format!("trailing_json:{e}"))?;
         check_decoded_limits(&frame)?;
-        let mut keys = vec!["v", "request", "seq", "kind", "payload"];
-        if parent_effect.is_some() {
-            keys.push("parent_effect");
-        }
-        exact_keys(&frame, &keys, "frame")?;
         let obj = frame.as_object().ok_or("frame_must_be_object")?;
         if obj.get("v") != Some(&json!(1)) || obj.get("request") != Some(&json!(REQUEST)) {
             return Err("frame_request_or_version".into());
@@ -175,19 +193,41 @@ impl<R: BufRead, W: Write> Wire<R, W> {
             return Err("frame_sequence".into());
         }
         self.in_seq += 1;
-        if obj.get("kind").and_then(Value::as_str) != Some(expected_kind) {
-            return Err("frame_kind".into());
+        let kind = obj
+            .get("kind")
+            .and_then(Value::as_str)
+            .ok_or("frame_kind")?;
+        let observed_parent = obj.get("parent_effect").and_then(Value::as_str);
+        let shape = expected
+            .iter()
+            .find(|candidate| {
+                candidate.kind == kind
+                    && candidate.parent_effect == observed_parent
+                    && obj.contains_key("parent_effect") == candidate.parent_effect.is_some()
+            })
+            .ok_or_else(|| {
+                if expected.iter().any(|candidate| candidate.kind == kind) {
+                    "parent_effect_correlation"
+                } else {
+                    "frame_kind"
+                }
+            })?;
+        let mut keys = vec!["v", "request", "seq", "kind", "payload"];
+        if shape.parent_effect.is_some() {
+            keys.push("parent_effect");
         }
-        if let Some(parent) = parent_effect
-            && obj.get("parent_effect").and_then(Value::as_str) != Some(parent)
-        {
+        exact_keys(&frame, &keys, "frame")?;
+        if shape.parent_effect.is_some() && observed_parent != shape.parent_effect {
             return Err("parent_effect_correlation".into());
+        }
+        if !expected.iter().any(|candidate| candidate.kind == kind) {
+            return Err("frame_kind".into());
         }
         let payload = obj.get("payload").cloned().ok_or("missing_payload")?;
         if !payload.is_object() {
             return Err("payload_must_be_object".into());
         }
-        Ok(payload)
+        Ok((kind.to_owned(), payload))
     }
 
     fn send(
@@ -704,6 +744,7 @@ pub fn run_peer<R: BufRead, W: Write>(
         "hooks" => hooks::run_hooks_peer(wire),
         "hooks_catch" => hooks::run_hooks_throw_peer(wire, "hooks_catch"),
         "hooks_abort" => hooks::run_hooks_throw_peer(wire, "hooks_abort"),
+        "callable_api" => callables::run_callables_peer(wire),
         _ => Err("unknown_bridge_scenario".into()),
     }
 }

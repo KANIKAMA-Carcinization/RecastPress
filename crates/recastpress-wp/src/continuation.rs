@@ -54,6 +54,7 @@ pub enum PhpHandleKind {
     Object,
     ReferenceCell,
     Closure,
+    Callable,
     Array,
     Resource,
     Throwable,

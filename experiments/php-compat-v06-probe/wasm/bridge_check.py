@@ -48,10 +48,12 @@ PUBLISH_FILES = HOST_FIXTURE_ORDER + ("publish_driver.php",)
 HANDLE_SCHEMA = "recastpress.php-compat-v06-wasm-handles.v1"
 HANDLE_FILES = HOST_FIXTURE_ORDER + ("handle_driver.php",)
 HOOK_FILES = HOST_FIXTURE_ORDER + ("hooks_driver.php",)
+CALLABLE_FILES = HOST_FIXTURE_ORDER + ("callable_driver.php", "callable_adapter.php", "callable_program.php")
 
 sys.path.insert(0, str(WASM_DIR.parent))
 from publish_contract import self_check as publish_self_check, validate_publish_result
 from hook_contract import SCENARIOS as HOOK_SCENARIOS, self_check as hook_self_check, validate_hook_result
+from callable_contract import self_check as callable_self_check, validate_result as validate_callable_result
 from handle_contract import SCENARIOS as HANDLE_SCENARIOS, self_check as handle_self_check, validate_handle_result
 
 
@@ -97,6 +99,8 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.append(WASM_DIR.parent / "publish_contract.py")
     paths.append(WASM_DIR.parent / "handle_contract.py")
     paths.append(WASM_DIR.parent / "hook_contract.py")
+    paths.extend(WASM_DIR.parent / name for name in ("callable_contract.py", "wp_callable_oracle.py"))
+    paths.extend(WASM_DIR.parent / "fixtures" / name for name in ("callable_adapter.php", "callable_driver.php", "callable_program.php", "callable_wp_oracle.php", "CALLABLE_API_CONTRACT.md"))
     paths.extend(ROOT / "crates/recastpress-wp/tests" / name
                  for name in ("hooks_contract.rs", "dispatcher_contract.rs"))
     paths.append(WASM_DIR.parent / "fixtures" / "hooks_driver.php")
@@ -482,6 +486,7 @@ PROFILE_SCOPES = {
     "publish": "fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation",
     "handles": "fixed PHP-WASIX request-local registry lifetime, reference rebinding, slot generations, destructor reentry and normal/abort cleanup",
     "hooks": "fixed resumable Rust hooks with PHP Closures, nested Throwable catch/recovery and root abort, active-bucket snapshot and future-priority mutation",
+    "callables": "PHP standard hook API control under one script effect, generic callable identity, deferred release and destructor reentry; materialized POD filter values",
 }
 
 
@@ -657,11 +662,32 @@ def validate_hook_host_result(value: dict) -> None:
 
 
 
+def validate_callable_host_result(value: dict) -> None:
+    result = _mapping(value)
+    if (result.get("schema") != "recastpress.php-compat-v06-wasm-callables.v1"
+            or result.get("execution") != "passed" or result.get("compiler_profile") != COMPILER_PROFILE):
+        raise ValueError("callable host header differs")
+    artifact = _mapping(result.get("artifact"))
+    if not _int_is(artifact.get("bytes"), ARTIFACT_BYTES) or artifact.get("sha256") != ARTIFACT_SHA256:
+        raise ValueError("callable host artifact differs")
+    fixtures = WASM_DIR.parent / "fixtures"
+    expected = [[name, (fixtures / name).stat().st_size, sha_file(fixtures / name)] for name in CALLABLE_FILES]
+    if result.get("fixtures") != expected:
+        raise ValueError("callable guest fixture map differs")
+    case = _mapping(result.get("case"))
+    if (case.get("status") != "passed" or not _int_is(case.get("php_exit_code"), 0)
+            or case.get("guest_completed") is not True or case.get("thread_joined") is not True
+            or type(case.get("peer_elapsed_ms")) is not int or case["peer_elapsed_ms"] < 0):
+        raise ValueError("callable guest did not complete successfully")
+    validate_callable_result(case.get("peer"))
+
+
 PROFILE_VALIDATORS = {
     "bridge": validate_host_result,
     "publish": validate_publish_host_result,
     "handles": validate_handle_host_result,
     "hooks": validate_hook_host_result,
+    "callables": validate_callable_host_result,
 }
 
 
@@ -675,7 +701,7 @@ def _isolated_env(target: Path) -> dict:
 
 def main() -> int:
     args = sys.argv[1:]
-    profile_flags = {"--publish": "publish", "--handles": "handles", "--hooks": "hooks"}
+    profile_flags = {"--publish": "publish", "--handles": "handles", "--hooks": "hooks", "--callables": "callables"}
     selected = [arg for arg in args if arg in profile_flags]
     if len(selected) > 1:
         raise ValueError("select one fixed bridge profile")
@@ -683,13 +709,13 @@ def main() -> int:
     args = [arg for arg in args if arg not in profile_flags]
     if args == ["--self-test"]:
         {"bridge": self_check, "publish": publish_self_check,
-         "handles": handle_self_check, "hooks": hook_self_check}[profile]()
+         "handles": handle_self_check, "hooks": hook_self_check, "callables": callable_self_check}[profile]()
         print(f"{profile} result validator self-test passed")
         return 0
     if args == ["--verify-only"]:
         return verify_latest(profile=profile)
     if args:
-        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles|--hooks]", file=sys.stderr)
+        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles|--hooks|--callables]", file=sys.stderr)
         return 2
     if platform.system() != "Linux":
         print("bridge execution is Linux-only", file=sys.stderr)

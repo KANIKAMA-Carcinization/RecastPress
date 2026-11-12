@@ -43,7 +43,7 @@ const STRICT_ORACLE_SHA256: &str =
 const DISPATCHER_SHA256: &str = "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1";
 const STRICT_JSON_SHA256: &str = "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565";
 const HANDLE_REGISTRY_SHA256: &str =
-    "280e0244eea5c3cf078acea392b2e6854af16f2bc6acd1af3e42c180b20e3bff";
+    "2f633d67d0a172b31db9c34184f2cce88b5c8414d05e986badf5a9ce324a60bb";
 const OUTPUT_LIMIT: usize = 64 * 1024;
 #[cfg(feature = "llvm")]
 const COMPILER_PROFILE: &str = "wasmer-7.2.0/llvm-default";

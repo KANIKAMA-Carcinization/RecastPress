@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
 
@@ -49,7 +50,25 @@ def sha_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+FIXTURE_PINS = {
+    "surface_oracle.php": "FIXTURE_SHA256",
+    "dispatcher.php": "DISPATCHER_SHA256",
+    "strict_json.php": "STRICT_JSON_SHA256",
+    "strict_json_oracle.php": "STRICT_ORACLE_SHA256",
+    "handle_registry.php": "HANDLE_REGISTRY_SHA256",
+}
+
+
+def verify_fixture_pins(source: str | None = None) -> None:
+    source = MAIN_RS.read_text(encoding="utf-8") if source is None else source
+    for name, symbol in FIXTURE_PINS.items():
+        matches = re.findall(r"const " + symbol + r': &str\s*=\s*"([0-9a-f]{64})";', source)
+        if len(matches) != 1 or matches[0] != sha_file(FIXTURE_DIR / name):
+            raise ValueError(f"fixed host fixture pin differs: {name}")
+
+
 def fixed_inputs() -> dict:
+    verify_fixture_pins()
     result = {}
     for path in BOUND_INPUTS:
         relative = path.relative_to(ROOT).as_posix()
@@ -78,6 +97,15 @@ def source_bound_verdict(status: str, unchanged: bool) -> tuple[str, str | None]
 
 
 def self_check() -> None:
+    verify_fixture_pins()
+    source = MAIN_RS.read_text(encoding="utf-8")
+    for symbol in FIXTURE_PINS.values():
+        broken = re.sub(r'(const ' + symbol + r': &str\s*=\s*")[0-9a-f]{64}', r'\g<1>' + '0' * 64, source)
+        try:
+            verify_fixture_pins(broken)
+        except ValueError:
+            continue
+        raise AssertionError(f"stale fixture pin accepted before build: {symbol}")
     cases = [
         (b"PHP_WASIX_V06_PHASE=module_compile\n", "module_compile"),
         (b"PHP_WASIX_V06_PHASE=module_compile\nPHP_WASIX_V06_PHASE=php_execution_surface_oracle\n", "surface_oracle"),

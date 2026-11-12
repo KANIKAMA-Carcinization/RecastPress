@@ -58,6 +58,9 @@ const BRIDGE_DRIVER: &[u8] = include_bytes!("../../../fixtures/bridge_driver.php
 const PUBLISH_DRIVER: &[u8] = include_bytes!("../../../fixtures/publish_driver.php");
 const HANDLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/handle_driver.php");
 const HOOK_DRIVER: &[u8] = include_bytes!("../../../fixtures/hooks_driver.php");
+const CALLABLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/callable_driver.php");
+const CALLABLE_ADAPTER: &[u8] = include_bytes!("../../../fixtures/callable_adapter.php");
+const CALLABLE_PROGRAM: &[u8] = include_bytes!("../../../fixtures/callable_program.php");
 const HANDLE_REGISTRY: &[u8] = include_bytes!("../../../fixtures/handle_registry.php");
 const STRICT_JSON: &[u8] = include_bytes!("../../../fixtures/strict_json.php");
 const SURFACE: &[u8] = include_bytes!("../../../fixtures/surface_oracle.php");
@@ -113,6 +116,19 @@ const HOOK_FILES: [(&str, &[u8]); 8] = [
     FILES[5],
     FILES[6],
     ("hooks_driver.php", HOOK_DRIVER),
+];
+
+const CALLABLE_FILES: [(&str, &[u8]); 10] = [
+    ("surface_oracle.php", SURFACE),
+    ("dispatcher.php", DISPATCHER),
+    ("strict_json.php", STRICT_JSON),
+    ("strict_json_oracle.php", STRICT_ORACLE),
+    ("bridge_driver.php", BRIDGE_DRIVER),
+    ("recovery.php", RECOVERY),
+    ("handle_registry.php", HANDLE_REGISTRY),
+    ("callable_driver.php", CALLABLE_DRIVER),
+    ("callable_adapter.php", CALLABLE_ADAPTER),
+    ("callable_program.php", CALLABLE_PROGRAM),
 ];
 const TRAP_POINTS: u64 = 100_000_000;
 
@@ -339,6 +355,7 @@ fn run() -> Result<()> {
                 | "--publish"
                 | "--handles"
                 | "--hooks"
+                | "--callables"
         ),
         "unsupported fixed bridge mode"
     );
@@ -412,6 +429,25 @@ fn run() -> Result<()> {
                 "fixtures": fixtures,
                 "cases": [normal, aborted],
                 "compile_elapsed_ms": compile_ms,
+                "execution_elapsed_ms": execution_started.elapsed().as_millis()
+            })
+        );
+        return Ok(());
+    }
+    if mode == "--callables" {
+        let case = run_scenario(&module, module_hash, "callable_api")?;
+        let fixtures: Vec<_> = CALLABLE_FILES
+            .iter()
+            .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+            .collect();
+        println!(
+            "{}",
+            json!({
+                "schema": "recastpress.php-compat-v06-wasm-callables.v1",
+                "execution": "passed", "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+                "compiler_profile": COMPILER_PROFILE,
+                "artifact": {"path": ARTIFACT_RELATIVE, "bytes": ARTIFACT_BYTES, "sha256": artifact_hash},
+                "fixtures": fixtures, "case": case, "compile_elapsed_ms": compile_ms,
                 "execution_elapsed_ms": execution_started.elapsed().as_millis()
             })
         );
@@ -1145,6 +1181,8 @@ fn run_guest(
     let mut runner = WasiRunner::new();
     let guest_args = if matches!(scenario, "handles" | "handles_abort") {
         vec!["-n", "/fixture/handle_driver.php", scenario]
+    } else if scenario == "callable_api" {
+        vec!["-n", "/fixture/callable_driver.php", scenario]
     } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
         vec!["-n", "/fixture/hooks_driver.php", scenario]
     } else if scenario == "publish" {
@@ -1178,6 +1216,8 @@ fn run_guest(
             Arc::new(FixedFilesFs {
                 files: if matches!(scenario, "handles" | "handles_abort") {
                     &HANDLE_FILES
+                } else if scenario == "callable_api" {
+                    &CALLABLE_FILES
                 } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
                     &HOOK_FILES
                 } else if scenario == "publish" {

@@ -4,12 +4,12 @@ use crate::{
     continuation::{Completion, PhpHandle, PhpHandleKind},
     hooks::{
         self, CallbackId, Context, ContextCallback, HookDiagnostic, HookError, HookStep,
-        MAX_NESTING, Mode, PhpInvocation, Storage,
+        MAX_NESTING, Mode, PhpInvocation, PhpReleaseQueue, Storage,
     },
     value::PhpValue,
 };
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, VecDeque},
     sync::atomic::{AtomicU64, Ordering},
 };
 
@@ -30,6 +30,9 @@ pub struct Dispatcher {
     next_ticket: u64,
     resumable: Vec<ResumableDispatch>,
     advancing: Option<DispatchTicket>,
+    releases: PhpReleaseQueue,
+    next_control: u64,
+    control_stack: Vec<ActiveControl>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -38,9 +41,61 @@ pub struct DispatchTicket {
     sequence: u64,
 }
 
+#[derive(Debug)]
+pub struct ControlOperation {
+    dispatcher: u64,
+    sequence: u64,
+    finish: ControlFinish,
+    pending_release: Option<PhpHandle>,
+    pending_releases: VecDeque<PhpHandle>,
+    pending_throwable: Option<PhpHandle>,
+    completed: bool,
+}
+
+#[derive(Debug)]
+struct ActiveControl {
+    sequence: u64,
+    waiting_release: bool,
+    pinned_slots: Vec<usize>,
+}
+
+#[derive(Debug)]
+enum ControlFinish {
+    Add {
+        slot: usize,
+        priority: i64,
+        priority_existed: bool,
+    },
+    Remove {
+        name: String,
+        slot: usize,
+        priority: i64,
+        removed: bool,
+    },
+    RemoveAll {
+        name: String,
+        slot: Option<usize>,
+    },
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ControlResult {
+    Added(bool),
+    Removed(bool),
+    RemovedAll,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ControlStep {
+    ReleasePhp(PhpHandle),
+    Complete(ControlResult),
+    PhpThrowable(PhpHandle),
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum DispatchStep {
     InvokePhp(PhpInvocation),
+    ReleasePhp(PhpHandle),
     Complete(PhpValue),
     PhpThrowable(PhpHandle),
 }
@@ -63,7 +118,11 @@ struct ResumableDispatch {
     slot: Option<usize>,
     frame_started: bool,
     waiting_for_php: bool,
+    waiting_for_release: bool,
+    pending_releases: VecDeque<PhpHandle>,
+    pending_release: Option<PhpHandle>,
     pending_throwable: Option<PhpHandle>,
+    throwable_abandoned: bool,
 }
 
 impl Default for Dispatcher {
@@ -80,6 +139,9 @@ impl Default for Dispatcher {
             next_ticket: 1,
             resumable: Vec::new(),
             advancing: None,
+            releases: PhpReleaseQueue::default(),
+            next_control: 1,
+            control_stack: Vec::new(),
         }
     }
 }
@@ -90,13 +152,18 @@ impl Context for Dispatcher {
             .as_mut()
             .expect("active or registered hook object")
     }
+
+    fn release_queue(&self) -> &PhpReleaseQueue {
+        &self.releases
+    }
 }
 
 impl Dispatcher {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn add(&mut self, name: &str, priority: i64, callback: DispatcherCallback) {
+    pub fn add(&mut self, name: &str, priority: i64, mut callback: DispatcherCallback) {
+        callback.attach_release_queue(&self.releases);
         let slot = match self.bindings.get(name) {
             Some(&slot) => slot,
             None => {
@@ -117,6 +184,231 @@ impl Dispatcher {
         self.storage(slot).add(priority, callback);
         self.capture_diagnostics(slot);
     }
+
+    /// Begin adding a callable while preserving the PHP assignment/release boundary.
+    pub fn begin_add(
+        &mut self,
+        name: &str,
+        priority: i64,
+        mut callback: DispatcherCallback,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let slot = self.ensure_slot(name);
+        callback.attach_release_queue(&self.releases);
+        let priority_existed = self.storage(slot).add_entry(priority, callback);
+        self.new_control(ControlFinish::Add {
+            slot,
+            priority,
+            priority_existed,
+        })
+    }
+
+    /// Begin removing one callback. A final release is yielded before bucket cleanup.
+    pub fn begin_remove(
+        &mut self,
+        name: &str,
+        priority: i64,
+        id: &CallbackId,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let Some(&slot) = self.bindings.get(name) else {
+            return self.new_control(ControlFinish::Remove {
+                name: name.into(),
+                slot: usize::MAX,
+                priority,
+                removed: false,
+            });
+        };
+        let removed = self.storage(slot).remove_entry(priority, id);
+        self.new_control(ControlFinish::Remove {
+            name: name.into(),
+            slot,
+            priority,
+            removed,
+        })
+    }
+
+    /// Begin removing a priority or all callbacks, yielding final releases before resorting.
+    pub fn begin_remove_all(
+        &mut self,
+        name: &str,
+        priority: Option<i64>,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let slot = self.bindings.get(name).copied();
+        if let Some(slot) = slot {
+            self.storage(slot).remove_all_entries(priority);
+        }
+        self.new_control(ControlFinish::RemoveAll {
+            name: name.into(),
+            slot,
+        })
+    }
+
+    pub fn advance_control(
+        &mut self,
+        operation: &mut ControlOperation,
+    ) -> Result<ControlStep, HookError> {
+        self.check_control_top(operation)?;
+        if operation.pending_release.is_some() {
+            return Err(HookError::PhpReleasePending);
+        }
+        operation.pending_releases.extend(self.releases.drain());
+        if let Some(handle) = operation.pending_releases.pop_front() {
+            operation.pending_release = Some(handle);
+            self.control_stack
+                .last_mut()
+                .expect("active control")
+                .waiting_release = true;
+            return Ok(ControlStep::ReleasePhp(handle));
+        }
+        if let Some(handle) = operation.pending_throwable {
+            self.control_stack.pop();
+            operation.completed = true;
+            self.collect_unused();
+            return Ok(ControlStep::PhpThrowable(handle));
+        }
+        let result = match &operation.finish {
+            ControlFinish::Add {
+                slot,
+                priority,
+                priority_existed,
+            } => {
+                self.storage(*slot).finish_add(*priority, *priority_existed);
+                self.capture_diagnostics(*slot);
+                ControlResult::Added(true)
+            }
+            ControlFinish::Remove {
+                name,
+                slot,
+                priority,
+                removed,
+            } => {
+                if *slot != usize::MAX && *removed {
+                    self.storage(*slot).finish_remove(*priority);
+                    self.capture_diagnostics(*slot);
+                    self.unbind_empty(name, *slot);
+                    self.collect_unused();
+                }
+                ControlResult::Removed(*removed)
+            }
+            ControlFinish::RemoveAll { name, slot } => {
+                if let Some(slot) = slot {
+                    self.storage(*slot).finish_remove_all();
+                    self.capture_diagnostics(*slot);
+                    self.unbind_empty(name, *slot);
+                    self.collect_unused();
+                }
+                ControlResult::RemovedAll
+            }
+        };
+        self.control_stack.pop();
+        operation.completed = true;
+        self.collect_unused();
+        Ok(ControlStep::Complete(result))
+    }
+
+    pub fn resume_control_release(
+        &mut self,
+        operation: &mut ControlOperation,
+        handle: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.resume_control_release_completion(operation, handle, Completion::Value(PhpValue::Null))
+    }
+
+    pub fn resume_control_release_completion(
+        &mut self,
+        operation: &mut ControlOperation,
+        handle: PhpHandle,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if operation.pending_release != Some(handle) {
+            return Err(HookError::InvalidPhpCallableHandle);
+        }
+        if let Completion::PhpThrowable(thrown) = completion {
+            if thrown.kind() != PhpHandleKind::Throwable {
+                return Err(HookError::InvalidPhpThrowableHandle);
+            }
+            operation.pending_throwable = Some(thrown);
+        }
+        operation.pending_release = None;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_release = false;
+        Ok(())
+    }
+
+    fn begin_control_allowed(&self) -> Result<(), HookError> {
+        if self.advancing.is_some() {
+            return Err(HookError::ControlOperationOrder);
+        }
+        if self
+            .control_stack
+            .last()
+            .is_some_and(|control| !control.waiting_release)
+        {
+            return Err(HookError::ControlOperationOrder);
+        }
+        Ok(())
+    }
+
+    fn new_control(&mut self, finish: ControlFinish) -> Result<ControlOperation, HookError> {
+        let sequence = self.next_control;
+        self.next_control = self
+            .next_control
+            .checked_add(1)
+            .ok_or(HookError::InvalidControlOperation)?;
+        let pinned_slots = match &finish {
+            ControlFinish::Add { slot, .. } => vec![*slot],
+            ControlFinish::Remove { slot, .. } if *slot != usize::MAX => vec![*slot],
+            ControlFinish::RemoveAll { slot, .. } => slot.iter().copied().collect(),
+            ControlFinish::Remove { .. } => Vec::new(),
+        };
+        self.control_stack.push(ActiveControl {
+            sequence,
+            waiting_release: false,
+            pinned_slots,
+        });
+        Ok(ControlOperation {
+            dispatcher: self.dispatcher_id,
+            sequence,
+            finish,
+            pending_release: None,
+            pending_releases: VecDeque::new(),
+            pending_throwable: None,
+            completed: false,
+        })
+    }
+
+    fn check_control_top(&self, operation: &ControlOperation) -> Result<(), HookError> {
+        if operation.dispatcher != self.dispatcher_id || operation.completed {
+            return Err(HookError::InvalidControlOperation);
+        }
+        if self.control_stack.last().map(|control| control.sequence) != Some(operation.sequence) {
+            return Err(HookError::ControlOperationOrder);
+        }
+        Ok(())
+    }
+
+    fn ensure_slot(&mut self, name: &str) -> usize {
+        if let Some(&slot) = self.bindings.get(name) {
+            return slot;
+        }
+        let slot = self
+            .slots
+            .iter()
+            .position(Option::is_none)
+            .unwrap_or(self.slots.len());
+        if slot == self.slots.len() {
+            self.slots.push(Some(Storage::default()));
+        } else {
+            self.slots[slot] = Some(Storage::default());
+        }
+        self.bindings.insert(name.into(), slot);
+        slot
+    }
     pub fn remove(&mut self, name: &str, priority: i64, id: &CallbackId) -> bool {
         let Some(&slot) = self.bindings.get(name) else {
             return false;
@@ -136,7 +428,7 @@ impl Dispatcher {
         }
     }
     fn unbind_empty(&mut self, name: &str, slot: usize) {
-        if !self.storage(slot).has_callbacks() {
+        if self.bindings.get(name) == Some(&slot) && !self.storage(slot).has_callbacks() {
             self.bindings.remove(name);
         }
     }
@@ -147,6 +439,10 @@ impl Dispatcher {
             }
             if state.as_ref().is_some_and(|state| !state.is_active())
                 && !self.bindings.values().any(|bound| *bound == slot)
+                && !self
+                    .control_stack
+                    .iter()
+                    .any(|control| control.pinned_slots.contains(&slot))
             {
                 *state = None;
             }
@@ -217,7 +513,8 @@ impl Dispatcher {
     ) -> Result<DispatchTicket, HookError> {
         if !self.resumable.is_empty()
             && !self.resumable.last().is_some_and(|dispatch| {
-                dispatch.waiting_for_php && dispatch.pending_throwable.is_none()
+                (dispatch.waiting_for_php || dispatch.waiting_for_release)
+                    && dispatch.pending_throwable.is_none()
             })
         {
             return Err(HookError::DispatchParentNotPending);
@@ -257,7 +554,11 @@ impl Dispatcher {
             slot: all_slot,
             frame_started: false,
             waiting_for_php: false,
+            waiting_for_release: false,
+            pending_releases: VecDeque::new(),
+            pending_release: None,
             pending_throwable: None,
+            throwable_abandoned: false,
         });
         Ok(ticket)
     }
@@ -276,13 +577,52 @@ impl Dispatcher {
 
     fn advance_inner(&mut self, ticket: DispatchTicket) -> Result<DispatchStep, HookError> {
         self.check_top_ticket(ticket)?;
+        if self
+            .resumable
+            .last()
+            .is_some_and(|dispatch| dispatch.waiting_for_release)
+        {
+            return Err(HookError::PhpReleasePending);
+        }
+        if let Some(dispatch) = self.resumable.last_mut()
+            && let Some(handle) = dispatch.pending_releases.pop_front()
+        {
+            dispatch.waiting_for_release = true;
+            dispatch.pending_release = Some(handle);
+            return Ok(DispatchStep::ReleasePhp(handle));
+        }
         if let Some(handle) = self
             .resumable
             .last()
             .and_then(|dispatch| dispatch.pending_throwable)
         {
-            self.retire_top_dispatch_for_throwable();
-            return Ok(DispatchStep::PhpThrowable(handle));
+            if !self
+                .resumable
+                .last()
+                .is_some_and(|dispatch| dispatch.throwable_abandoned)
+            {
+                let slot = self
+                    .resumable
+                    .last()
+                    .and_then(|dispatch| dispatch.frame_started.then_some(dispatch.slot).flatten());
+                if let Some(slot) = slot {
+                    hooks::abandon_frame_for_throwable(self, slot);
+                }
+                let releases = self.releases.drain();
+                let dispatch = self.resumable.last_mut().expect("active dispatch");
+                dispatch.throwable_abandoned = true;
+                dispatch.pending_releases = releases;
+                if let Some(release) = dispatch.pending_releases.pop_front() {
+                    dispatch.waiting_for_release = true;
+                    dispatch.pending_release = Some(release);
+                    return Ok(DispatchStep::ReleasePhp(release));
+                }
+                self.retire_top_dispatch_for_throwable();
+                return Ok(DispatchStep::PhpThrowable(handle));
+            } else {
+                self.retire_top_dispatch_for_throwable();
+                return Ok(DispatchStep::PhpThrowable(handle));
+            }
         }
         if self
             .resumable
@@ -385,6 +725,17 @@ impl Dispatcher {
                         .waiting_for_php = true;
                     return Ok(DispatchStep::InvokePhp(invocation));
                 }
+                Ok(HookStep::ReleasePhp(releases)) => {
+                    let dispatch = self.resumable.last_mut().expect("active dispatch");
+                    dispatch.pending_releases.extend(releases);
+                    let handle = dispatch
+                        .pending_releases
+                        .pop_front()
+                        .expect("release event contains at least one handle");
+                    dispatch.waiting_for_release = true;
+                    dispatch.pending_release = Some(handle);
+                    return Ok(DispatchStep::ReleasePhp(handle));
+                }
                 Ok(HookStep::Complete(output)) => {
                     let dispatch = self.resumable.last_mut().expect("active dispatch");
                     dispatch.frame_started = false;
@@ -408,6 +759,46 @@ impl Dispatcher {
     /// Accept one PHP filter result for the closure invocation currently pending on this ticket.
     pub fn resume_php(&mut self, ticket: DispatchTicket, value: PhpValue) -> Result<(), HookError> {
         self.resume_php_completion(ticket, Completion::Value(value))
+    }
+
+    /// Confirm that PHP completed the release effect currently yielded for this filter.
+    pub fn resume_php_release(
+        &mut self,
+        ticket: DispatchTicket,
+        handle: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.resume_php_release_completion(ticket, handle, Completion::Value(PhpValue::Null))
+    }
+
+    pub fn resume_php_release_completion(
+        &mut self,
+        ticket: DispatchTicket,
+        handle: PhpHandle,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
+        self.check_top_ticket(ticket)?;
+        if self.advancing == Some(ticket) {
+            return Err(HookError::DispatchTicketBusy);
+        }
+        let dispatch = self
+            .resumable
+            .last_mut()
+            .expect("validated dispatch ticket");
+        if !dispatch.waiting_for_release {
+            return Err(HookError::NoPhpReleasePending);
+        }
+        if dispatch.pending_release != Some(handle) {
+            return Err(HookError::InvalidPhpCallableHandle);
+        }
+        if let Completion::PhpThrowable(thrown) = completion {
+            if thrown.kind() != PhpHandleKind::Throwable {
+                return Err(HookError::InvalidPhpThrowableHandle);
+            }
+            dispatch.pending_throwable = Some(thrown);
+        }
+        dispatch.pending_release = None;
+        dispatch.waiting_for_release = false;
+        Ok(())
     }
 
     /// Accept the full outcome of the PHP closure invocation pending on this ticket.
@@ -442,6 +833,10 @@ impl Dispatcher {
                     .last_mut()
                     .expect("active dispatch")
                     .pending_throwable = Some(handle);
+                self.resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .waiting_for_php = false;
             }
         }
         Ok(())
