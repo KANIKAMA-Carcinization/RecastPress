@@ -52,8 +52,8 @@ jobs:
         run: cargo test --workspace --offline --locked
       - name: Check all workspace targets
         run: cargo clippy --workspace --all-targets --offline --locked -- -D warnings
-      - name: Verify continuation without authentication providers
-        run: cargo test -p recastpress-wp --no-default-features --test continuation_contract --offline --locked
+      - name: Verify continuation and hooks without authentication providers
+        run: cargo test -p recastpress-wp --no-default-features --test continuation_contract --test hooks_contract --test dispatcher_contract --offline --locked
       - name: Run native PHP and Rust continuation comparison
         id: native_probe
         run: python -B experiments/php-compat-v06-probe/run_check.py --record

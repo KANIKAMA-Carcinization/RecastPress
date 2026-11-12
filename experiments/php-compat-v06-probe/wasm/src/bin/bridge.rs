@@ -57,6 +57,7 @@ const ARTIFACT_SHA256: &str = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8b
 const BRIDGE_DRIVER: &[u8] = include_bytes!("../../../fixtures/bridge_driver.php");
 const PUBLISH_DRIVER: &[u8] = include_bytes!("../../../fixtures/publish_driver.php");
 const HANDLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/handle_driver.php");
+const HOOK_DRIVER: &[u8] = include_bytes!("../../../fixtures/hooks_driver.php");
 const HANDLE_REGISTRY: &[u8] = include_bytes!("../../../fixtures/handle_registry.php");
 const STRICT_JSON: &[u8] = include_bytes!("../../../fixtures/strict_json.php");
 const SURFACE: &[u8] = include_bytes!("../../../fixtures/surface_oracle.php");
@@ -102,6 +103,16 @@ const HANDLE_FILES: [(&str, &[u8]); 8] = [
     FILES[5],
     FILES[6],
     ("handle_driver.php", HANDLE_DRIVER),
+];
+const HOOK_FILES: [(&str, &[u8]); 8] = [
+    FILES[0],
+    FILES[1],
+    FILES[2],
+    FILES[3],
+    FILES[4],
+    FILES[5],
+    FILES[6],
+    ("hooks_driver.php", HOOK_DRIVER),
 ];
 const TRAP_POINTS: u64 = 100_000_000;
 
@@ -327,6 +338,7 @@ fn run() -> Result<()> {
                 | "--surface-recovery"
                 | "--publish"
                 | "--handles"
+                | "--hooks"
         ),
         "unsupported fixed bridge mode"
     );
@@ -405,16 +417,23 @@ fn run() -> Result<()> {
         );
         return Ok(());
     }
-    if mode == "--publish" {
-        let case = run_scenario(&module, module_hash, "publish")?;
-        let fixtures: Vec<_> = PUBLISH_FILES
+    if matches!(mode, "--publish" | "--hooks") {
+        let hook_profile = mode == "--hooks";
+        let scenario = if hook_profile { "hooks" } else { "publish" };
+        let files = if hook_profile {
+            &HOOK_FILES
+        } else {
+            &PUBLISH_FILES
+        };
+        let case = run_scenario(&module, module_hash, scenario)?;
+        let fixtures: Vec<_> = files
             .iter()
             .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
             .collect();
         println!(
             "{}",
             json!({
-                "schema": "recastpress.php-compat-v06-wasm-publish.v1",
+                "schema": format!("recastpress.php-compat-v06-wasm-{scenario}.v1"),
                 "execution": "passed",
                 "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
                 "compiler_profile": COMPILER_PROFILE,
@@ -1118,6 +1137,8 @@ fn run_guest(
     let mut runner = WasiRunner::new();
     let guest_args = if matches!(scenario, "handles" | "handles_abort") {
         vec!["-n", "/fixture/handle_driver.php", scenario]
+    } else if scenario == "hooks" {
+        vec!["-n", "/fixture/hooks_driver.php", "hooks"]
     } else if scenario == "publish" {
         vec!["-n", "/fixture/publish_driver.php", "publish"]
     } else if scenario.starts_with("trap_") || scenario == "cpu_loop" {
@@ -1149,6 +1170,8 @@ fn run_guest(
             Arc::new(FixedFilesFs {
                 files: if matches!(scenario, "handles" | "handles_abort") {
                     &HANDLE_FILES
+                } else if scenario == "hooks" {
+                    &HOOK_FILES
                 } else if scenario == "publish" {
                     &PUBLISH_FILES
                 } else if scenario.starts_with("trap_") || scenario == "cpu_loop" {

@@ -2834,6 +2834,7 @@
           "suffix",
           "absent_hooks_still_increment_separate_action_and_filter_counts",
           "all_hook_receives_unsliced_original_arguments_and_cannot_replace_value",
+          "all_hook_permanent_removal_current_stack_sync_vs_resumable_reproduction",
           "nested_different_hooks_restore_the_call_stack",
           "deleting_and_readding_an_active_binding_keeps_old_and_new_objects_separate",
           "all_can_register_a_previously_absent_target_before_dispatch",

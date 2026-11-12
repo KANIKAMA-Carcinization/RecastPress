@@ -47,9 +47,11 @@ PUBLISH_HOST_NAME = HOST_NAME
 PUBLISH_FILES = HOST_FIXTURE_ORDER + ("publish_driver.php",)
 HANDLE_SCHEMA = "recastpress.php-compat-v06-wasm-handles.v1"
 HANDLE_FILES = HOST_FIXTURE_ORDER + ("handle_driver.php",)
+HOOK_FILES = HOST_FIXTURE_ORDER + ("hooks_driver.php",)
 
 sys.path.insert(0, str(WASM_DIR.parent))
 from publish_contract import self_check as publish_self_check, validate_publish_result
+from hook_contract import self_check as hook_self_check, validate_hook_result
 from handle_contract import SCENARIOS as HANDLE_SCENARIOS, self_check as handle_self_check, validate_handle_result
 
 
@@ -94,6 +96,10 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.append(PUBLISH_FIXTURE)
     paths.append(WASM_DIR.parent / "publish_contract.py")
     paths.append(WASM_DIR.parent / "handle_contract.py")
+    paths.append(WASM_DIR.parent / "hook_contract.py")
+    paths.extend(ROOT / "crates/recastpress-wp/tests" / name
+                 for name in ("hooks_contract.rs", "dispatcher_contract.rs"))
+    paths.append(WASM_DIR.parent / "fixtures" / "hooks_driver.php")
     paths.extend(WASM_DIR.parent / "fixtures" / name for name in ("handle_registry.php", "handle_driver.php"))
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
     paths.append(RECOVERY_FIXTURE)
@@ -469,12 +475,28 @@ def self_check() -> None:
         raise AssertionError("changed host binary receipt was accepted")
 
 
-def _receipt_name(status: str, ended: datetime, failure: str | None, publish: bool = False, handles: bool = False) -> str:
+PROFILE_SCOPES = {
+    "bridge": "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close",
+    "publish": "fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation",
+    "handles": "fixed PHP-WASIX request-local registry lifetime, reference rebinding, slot generations, destructor reentry and normal/abort cleanup",
+    "hooks": "fixed resumable Rust hook iteration with PHP closures, nested filters, active-bucket snapshot and future-priority mutation",
+}
+
+
+def _profile_name(publish=False, handles=False, profile=None):
+    if profile is None:
+        if publish and handles:
+            raise ValueError("select one fixed bridge profile")
+        return "publish" if publish else ("handles" if handles else "bridge")
+    if publish or handles or profile not in PROFILE_SCOPES:
+        raise ValueError("select one fixed bridge profile")
+    return profile
+
+
+def _receipt_name(status: str, ended: datetime, failure: str | None, publish: bool = False, handles: bool = False, *, profile=None) -> str:
     stamp = ended.strftime("%Y%m%dT%H%M%S.%fZ")
     suffix = "success" if status == "passed" else (failure or "failed")
-    prefix = "publish" if publish else "bridge"
-    if handles:
-        prefix = "handles"
+    prefix = _profile_name(publish, handles, profile)
     path = EVIDENCE / f"{prefix}-{stamp}-{suffix}.json"
     index = 1
     while path.exists():
@@ -530,10 +552,8 @@ def _save_private_capture(run_dir: Path, label: str, item) -> dict | None:
     return captures
 
 
-def verify_latest(publish: bool = False, handles: bool = False) -> int:
-    prefix = "publish" if publish else "bridge"
-    if handles:
-        prefix = "handles"
+def verify_latest(publish: bool = False, handles: bool = False, *, profile=None) -> int:
+    prefix = _profile_name(publish, handles, profile)
     receipts = sorted(EVIDENCE.glob(f"{prefix}-*.json"), key=lambda item: item.name)
     if not receipts:
         raise ValueError("no bridge receipt exists")
@@ -551,17 +571,12 @@ def verify_latest(publish: bool = False, handles: bool = False) -> int:
         target.relative_to((ROOT / "target").resolve())
     except ValueError as error:
         raise ValueError("latest bridge receipt target is outside repository target/") from error
-    host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
+    host_name = HOST_NAME
     binary_path = target / "debug" / host_name
     if not binary_path.is_file():
         raise ValueError("latest bridge receipt host binary is missing or stale")
     _validate_binary_receipt(report, sha_file(binary_path), relative(binary_path))
-    if handles:
-        validate_handle_host_result(report.get("host_result"))
-    elif publish:
-        validate_publish_host_result(report.get("host_result"))
-    else:
-        validate_host_result(report.get("host_result"))
+    PROFILE_VALIDATORS[prefix](report.get("host_result"))
     print(f"{prefix} receipt verified: {relative(receipt_path)}")
     return 0
 
@@ -613,6 +628,36 @@ def validate_handle_host_result(value: dict) -> None:
         validate_handle_result(case.get("peer"), scenario)
 
 
+def validate_hook_host_result(value: dict) -> None:
+    result = _mapping(value)
+    if (result.get("schema") != "recastpress.php-compat-v06-wasm-hooks.v1"
+            or result.get("execution") != "passed"
+            or result.get("compiler_profile") != COMPILER_PROFILE):
+        raise ValueError("hook host header mismatch")
+    artifact = _mapping(result.get("artifact"))
+    if not _int_is(artifact.get("bytes"), ARTIFACT_BYTES) or artifact.get("sha256") != ARTIFACT_SHA256:
+        raise ValueError("hook host module identity differs")
+    fixture_dir = WASM_DIR.parent / "fixtures"
+    expected = [[name, (fixture_dir / name).stat().st_size, sha_file(fixture_dir / name)]
+                for name in HOOK_FILES]
+    if result.get("fixtures") != expected:
+        raise ValueError("hook fixture identities differ")
+    case = _mapping(result.get("case"))
+    if (case.get("status") != "passed" or not _int_is(case.get("php_exit_code"), 0)
+            or case.get("guest_completed") is not True or case.get("thread_joined") is not True
+            or type(case.get("peer_elapsed_ms")) is not int or case["peer_elapsed_ms"] < 0):
+        raise ValueError("hook guest did not complete successfully")
+    validate_hook_result(case.get("peer"))
+
+
+PROFILE_VALIDATORS = {
+    "bridge": validate_host_result,
+    "publish": validate_publish_host_result,
+    "handles": validate_handle_host_result,
+    "hooks": validate_hook_host_result,
+}
+
+
 def _isolated_env(target: Path) -> dict:
     env = {"PATH": os.environ.get("PATH", ""), "CARGO_TARGET_DIR": str(target)}
     for key in ("RUSTUP_HOME", "CARGO_HOME", "RUSTUP_TOOLCHAIN", "CARGO_BUILD_JOBS", "CARGO_INCREMENTAL", "CARGO_PROFILE_DEV_DEBUG", "LD_LIBRARY_PATH"):
@@ -623,31 +668,21 @@ def _isolated_env(target: Path) -> dict:
 
 def main() -> int:
     args = sys.argv[1:]
-    publish = "--publish" in args
-    handles = "--handles" in args
-    if (publish and handles) or args.count("--publish") > 1 or args.count("--handles") > 1:
+    profile_flags = {"--publish": "publish", "--handles": "handles", "--hooks": "hooks"}
+    selected = [arg for arg in args if arg in profile_flags]
+    if len(selected) > 1:
         raise ValueError("select one fixed bridge profile")
-    args = [arg for arg in args if arg not in ("--publish", "--handles")]
-    if args == ["--self-test"] and handles:
-        handle_self_check()
-        print("handle result validator self-test passed")
-        return 0
-    if args == ["--self-test"] and publish:
-        publish_self_check()
-        print("publish result validator self-test passed")
-        return 0
+    profile = profile_flags[selected[0]] if selected else "bridge"
+    args = [arg for arg in args if arg not in profile_flags]
     if args == ["--self-test"]:
-        self_check()
-        print("bridge result validator self-test passed")
+        {"bridge": self_check, "publish": publish_self_check,
+         "handles": handle_self_check, "hooks": hook_self_check}[profile]()
+        print(f"{profile} result validator self-test passed")
         return 0
-    if args == ["--verify-only"] and handles:
-        return verify_latest(handles=True)
-    if args == ["--verify-only"] and publish:
-        return verify_latest(True)
     if args == ["--verify-only"]:
-        return verify_latest()
+        return verify_latest(profile=profile)
     if args:
-        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles]", file=sys.stderr)
+        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles|--hooks]", file=sys.stderr)
         return 2
     if platform.system() != "Linux":
         print("bridge execution is Linux-only", file=sys.stderr)
@@ -666,10 +701,10 @@ def main() -> int:
     try:
         target = selected_target()
         capture_dir = target / ".bridge-runs" / f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')}-{uuid.uuid4().hex}"
-        before = fixed_inputs(publish)
+        before = fixed_inputs()
         env = _isolated_env(target)
         target.mkdir(parents=True, exist_ok=True)
-        host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
+        host_name = HOST_NAME
         build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path",
             relative(MANIFEST), "--bin", host_name, "--target-dir", relative(target)]
         phase = "build"
@@ -682,7 +717,7 @@ def main() -> int:
         else:
             phase = "host"
             binary_before = sha_file(binary_path)
-            host_args = ["--handles"] if handles else (["--publish"] if publish else [])
+            host_args = [] if profile == "bridge" else ["--" + profile]
             host = run_bounded([str(binary_path)] + host_args, env, HOST_TIMEOUT, "host")
             binary_after = sha_file(binary_path)
             if host["returncode"] != 0 or host["failure"]:
@@ -693,13 +728,10 @@ def main() -> int:
                 if not wire.endswith("\n") or "\n" in wire[:-1] or "\r" in wire:
                     raise ValueError("host must emit exactly one newline terminated JSON record")
                 host_receipt = json.loads(wire)
-                if handles:
-                    validate_handle_host_result(host_receipt)
-                else:
-                    (validate_publish_host_result if publish else validate_host_result)(host_receipt)
+                PROFILE_VALIDATORS[profile](host_receipt)
                 if binary_before != binary_after:
                     raise ValueError("host binary changed during execution")
-        after = fixed_inputs(publish)
+        after = fixed_inputs()
         if before != after:
             failure = "source_bound_inputs_changed"
             phase = "source_bound_verification"
@@ -707,7 +739,7 @@ def main() -> int:
         failure = failure or f"{type(error).__name__}"
         if not after:
             try:
-                after = fixed_inputs(publish)
+                after = fixed_inputs()
             except BaseException:
                 after = {}
 
@@ -717,7 +749,7 @@ def main() -> int:
 
     ended = datetime.now(timezone.utc)
     status = "passed" if failure is None else "failed"
-    host_name = PUBLISH_HOST_NAME if publish else HOST_NAME
+    host_name = HOST_NAME
     binary = (target / "debug" / host_name) if target else (DEFAULT_TARGET / "debug" / host_name)
     binary_hash = sha_file(binary) if binary.is_file() else None
     captures = {}
@@ -730,7 +762,7 @@ def main() -> int:
             return None
         return {key: item[key] for key in ("pid", "returncode", "timed_out", "output_limited", "reaped", "failure")}
     report = {
-        "schema": "recastpress.php-compat-v06-wasm-handles-run.v1" if handles else ("recastpress.php-compat-v06-wasm-publish-run.v1" if publish else "recastpress.php-compat-v06-wasm-bridge-run.v1"),
+        "schema": f"recastpress.php-compat-v06-wasm-{profile}-run.v1",
         "status": status,
         "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
         "compiler_profile": COMPILER_PROFILE,
@@ -759,13 +791,10 @@ def main() -> int:
         "host_result": host_receipt,
         "build_timeout_seconds": BUILD_TIMEOUT,
         "host_timeout_seconds": HOST_TIMEOUT,
-        "scope": ("fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation"
-            if publish else "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close"),
+        "scope": PROFILE_SCOPES[profile],
     }
-    if handles:
-        report["scope"] = "fixed PHP-WASIX request-local registry lifetime, reference rebinding, slot generations, destructor reentry and normal/abort cleanup"
     EVIDENCE.mkdir(parents=True, exist_ok=True)
-    name = _receipt_name(status, ended, failure, publish, handles)
+    name = _receipt_name(status, ended, failure, profile=profile)
     path = EVIDENCE / name
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{status}: {relative(path)}")

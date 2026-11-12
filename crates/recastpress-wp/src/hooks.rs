@@ -1,7 +1,10 @@
 //! Request-local WP_Hook subset with a context-independent iteration engine.
 //! Native callback identity, PHP references, and Wasm transport remain distinct.
 
-use crate::value::PhpValue;
+use crate::{
+    continuation::{PhpHandle, PhpHandleKind},
+    value::PhpValue,
+};
 use std::{collections::BTreeMap, fmt, sync::Arc};
 
 pub(crate) const MAX_NESTING: usize = 64;
@@ -16,6 +19,14 @@ pub struct CallbackId {
 pub enum HookError {
     NestingLimit,
     CallbackFailed(String),
+    InvalidPhpCallbackHandle,
+    PhpCallbackRequiresContinuation,
+    PhpCallbackPending,
+    NoPhpCallbackPending,
+    InvalidDispatchTicket,
+    DispatchTicketOrder,
+    DispatchTicketBusy,
+    DispatchParentNotPending,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -35,12 +46,26 @@ impl HookDiagnostic {
 
 type CallbackFn<C> = dyn Fn(&mut C, &[PhpValue]) -> Result<PhpValue, HookError> + Send + Sync;
 
+enum CallbackTarget<C> {
+    Native(Arc<CallbackFn<C>>),
+    PhpClosure(PhpHandle),
+}
+
+impl<C> Clone for CallbackTarget<C> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Native(function) => Self::Native(Arc::clone(function)),
+            Self::PhpClosure(handle) => Self::PhpClosure(*handle),
+        }
+    }
+}
+
 pub type Callback = ContextCallback<Hook>;
 
 pub struct ContextCallback<C> {
     id: CallbackId,
     accepted_args: i64,
-    function: Arc<CallbackFn<C>>,
+    target: CallbackTarget<C>,
 }
 
 impl<C> Clone for ContextCallback<C> {
@@ -48,7 +73,7 @@ impl<C> Clone for ContextCallback<C> {
         Self {
             id: self.id.clone(),
             accepted_args: self.accepted_args,
-            function: Arc::clone(&self.function),
+            target: self.target.clone(),
         }
     }
 }
@@ -58,6 +83,13 @@ impl<C> fmt::Debug for ContextCallback<C> {
         f.debug_struct("Callback")
             .field("id", &self.id)
             .field("accepted_args", &self.accepted_args)
+            .field(
+                "target",
+                &match &self.target {
+                    CallbackTarget::Native(_) => "native",
+                    CallbackTarget::PhpClosure(_) => "php_closure",
+                },
+            )
             .finish_non_exhaustive()
     }
 }
@@ -71,27 +103,88 @@ impl<C> ContextCallback<C> {
         Self {
             id,
             accepted_args,
-            function: Arc::new(function),
+            target: CallbackTarget::Native(Arc::new(function)),
+        }
+    }
+
+    pub fn php(id: CallbackId, accepted_args: i64, handle: PhpHandle) -> Result<Self, HookError> {
+        if handle.kind() != PhpHandleKind::Closure {
+            return Err(HookError::InvalidPhpCallbackHandle);
+        }
+        Ok(Self {
+            id,
+            accepted_args,
+            target: CallbackTarget::PhpClosure(handle),
+        })
+    }
+
+    pub fn id(&self) -> &CallbackId {
+        &self.id
+    }
+
+    pub fn php_handle(&self) -> Option<PhpHandle> {
+        match &self.target {
+            CallbackTarget::PhpClosure(handle) => Some(*handle),
+            CallbackTarget::Native(_) => None,
         }
     }
 }
 
-#[derive(Debug)]
-struct Frame {
+struct Frame<C> {
     iteration: Vec<i64>,
     cursor: usize,
     running_priority: Option<i64>,
+    bucket: Option<Vec<ContextCallback<C>>>,
+    bucket_priority: Option<i64>,
+    callback_cursor: usize,
+    value: PhpValue,
+    args: Vec<PhpValue>,
+    mode: Mode,
+    waiting_for_php: bool,
 }
 
-impl Frame {
+impl<C> fmt::Debug for Frame<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Frame")
+            .field("iteration", &self.iteration)
+            .field("cursor", &self.cursor)
+            .field("running_priority", &self.running_priority)
+            .field("bucket", &self.bucket)
+            .field("bucket_priority", &self.bucket_priority)
+            .field("callback_cursor", &self.callback_cursor)
+            .field("value", &self.value)
+            .field("args", &self.args)
+            .field("mode", &self.mode)
+            .field("waiting_for_php", &self.waiting_for_php)
+            .finish()
+    }
+}
+
+impl<C> Frame<C> {
     fn current(&self) -> Option<i64> {
         self.iteration.get(self.cursor).copied()
     }
 }
 
+/// A registered PHP closure requested by a resumable hook dispatch.
+#[derive(Clone, Debug, PartialEq)]
+pub struct PhpInvocation {
+    pub callback: CallbackId,
+    pub handle: PhpHandle,
+    pub hook: String,
+    pub priority: i64,
+    pub args: Vec<PhpValue>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum HookStep {
+    InvokePhp(PhpInvocation),
+    Complete(PhpValue),
+}
+
 pub(crate) struct Storage<C> {
     callbacks: BTreeMap<i64, Vec<ContextCallback<C>>>,
-    frames: Vec<Frame>,
+    frames: Vec<Frame<C>>,
     doing_action: bool,
     diagnostics: Vec<HookDiagnostic>,
 }
@@ -118,6 +211,13 @@ impl<C> fmt::Debug for Storage<C> {
 }
 
 impl<C> Storage<C> {
+    pub(crate) fn cancel_frame(&mut self) {
+        self.frames.pop();
+        if self.frames.is_empty() {
+            self.doing_action = false;
+        }
+    }
+
     pub(crate) fn add(&mut self, priority: i64, callback: ContextCallback<C>) {
         let existed = self.callbacks.contains_key(&priority);
         let callbacks = self.callbacks.entry(priority).or_default();
@@ -233,20 +333,20 @@ pub(crate) trait Context: Sized {
     fn storage(&mut self, slot: usize) -> &mut Storage<Self>;
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum Mode {
     Filter,
     Action,
     All,
 }
 
-pub(crate) fn invoke<C: Context>(
+pub(crate) fn start<C: Context>(
     context: &mut C,
     slot: usize,
-    mut value: PhpValue,
-    mut args: Vec<PhpValue>,
+    value: PhpValue,
+    args: Vec<PhpValue>,
     mode: Mode,
-) -> Result<PhpValue, HookError> {
+) -> Result<bool, HookError> {
     let storage = context.storage(slot);
     if storage.frames.len() >= MAX_NESTING {
         return Err(HookError::NestingLimit);
@@ -254,67 +354,150 @@ pub(crate) fn invoke<C: Context>(
     if mode == Mode::Action {
         storage.doing_action = true;
     }
-    let first = storage
-        .callbacks
-        .first_key_value()
-        .map(|(&priority, _)| priority);
-    let result = if let Some(first) = first {
-        storage.frames.push(Frame {
-            iteration: storage.callbacks.keys().copied().collect(),
-            cursor: 0,
-            running_priority: if mode == Mode::All { None } else { Some(first) },
-        });
-        let result = (|| {
-            let mut priority = first;
-            loop {
-                let storage = context.storage(slot);
-                if mode != Mode::All {
+    let Some((&first, _)) = storage.callbacks.first_key_value() else {
+        return Ok(false);
+    };
+    storage.frames.push(Frame {
+        iteration: storage.callbacks.keys().copied().collect(),
+        cursor: 0,
+        running_priority: if mode == Mode::All { None } else { Some(first) },
+        bucket: None,
+        bucket_priority: None,
+        callback_cursor: 0,
+        value,
+        args,
+        mode,
+        waiting_for_php: false,
+    });
+    Ok(true)
+}
+
+/// Run native callbacks until completion or one PHP closure needs the caller.
+pub(crate) fn advance<C: Context>(context: &mut C, slot: usize) -> Result<HookStep, HookError> {
+    loop {
+        let (priority, callback, args) = {
+            let storage = context.storage(slot);
+            let Some(frame) = storage.frames.last_mut() else {
+                return Err(HookError::InvalidDispatchTicket);
+            };
+            if frame.waiting_for_php {
+                return Err(HookError::PhpCallbackPending);
+            }
+            let Some(priority) = frame.bucket_priority.or_else(|| frame.current()) else {
+                let finished = storage.frames.pop().expect("active hook frame");
+                if storage.frames.is_empty() && (finished.mode == Mode::Action) {
+                    storage.doing_action = false;
+                }
+                return Ok(HookStep::Complete(finished.value));
+            };
+            frame.running_priority = if frame.mode == Mode::All {
+                None
+            } else {
+                Some(priority)
+            };
+            if frame.bucket.is_none() {
+                frame.bucket = Some(
                     storage
-                        .frames
-                        .last_mut()
-                        .expect("active hook frame")
-                        .running_priority = Some(priority);
-                }
-                let callbacks = storage
-                    .callbacks
-                    .get(&priority)
-                    .cloned()
-                    .unwrap_or_default();
-                for callback in callbacks {
-                    if mode != Mode::All && !context.storage(slot).doing_action {
-                        args[0] = value.clone();
-                    }
-                    let accepted = if mode == Mode::All {
-                        args.len()
-                    } else if callback.accepted_args >= 0 {
-                        usize::try_from(callback.accepted_args)
-                            .unwrap_or(usize::MAX)
-                            .min(args.len())
-                    } else {
-                        args.len().saturating_sub(
-                            usize::try_from(callback.accepted_args.unsigned_abs())
-                                .unwrap_or(usize::MAX),
-                        )
-                    };
-                    value = (callback.function)(context, &args[..accepted])?;
-                }
+                        .callbacks
+                        .get(&priority)
+                        .cloned()
+                        .unwrap_or_default(),
+                );
+                frame.bucket_priority = Some(priority);
+                frame.callback_cursor = 0;
+            }
+            let bucket = frame.bucket.as_ref().expect("bucket snapshot");
+            if frame.callback_cursor >= bucket.len() {
+                frame.bucket = None;
+                frame.bucket_priority = None;
+                frame.callback_cursor = 0;
+                frame.cursor += 1;
+                continue;
+            }
+            if frame.mode != Mode::All && !storage.doing_action {
+                frame.args[0] = frame.value.clone();
+            }
+            let callback = bucket[frame.callback_cursor].clone();
+            let accepted = if frame.mode == Mode::All {
+                frame.args.len()
+            } else if callback.accepted_args >= 0 {
+                usize::try_from(callback.accepted_args)
+                    .unwrap_or(usize::MAX)
+                    .min(frame.args.len())
+            } else {
+                frame.args.len().saturating_sub(
+                    usize::try_from(callback.accepted_args.unsigned_abs()).unwrap_or(usize::MAX),
+                )
+            };
+            (priority, callback, frame.args[..accepted].to_vec())
+        };
+
+        match callback.target.clone() {
+            CallbackTarget::PhpClosure(handle) => {
+                let storage = context.storage(slot);
+                let frame = storage.frames.last_mut().expect("active hook frame");
+                frame.waiting_for_php = true;
+                return Ok(HookStep::InvokePhp(PhpInvocation {
+                    callback: callback.id,
+                    handle,
+                    hook: String::new(),
+                    priority,
+                    args,
+                }));
+            }
+            CallbackTarget::Native(function) => {
+                let output = function(context, &args)?;
                 let frame = context
                     .storage(slot)
                     .frames
                     .last_mut()
                     .expect("active hook frame");
-                frame.cursor += 1;
-                let Some(next) = frame.current() else {
-                    break;
-                };
-                priority = next;
+                frame.value = output;
+                frame.callback_cursor += 1;
             }
-            Ok(value)
-        })();
-        context.storage(slot).frames.pop();
-        result
-    } else {
+        }
+    }
+}
+
+pub(crate) fn resume<C: Context>(
+    context: &mut C,
+    slot: usize,
+    value: PhpValue,
+) -> Result<(), HookError> {
+    let frame = context
+        .storage(slot)
+        .frames
+        .last_mut()
+        .ok_or(HookError::InvalidDispatchTicket)?;
+    if !frame.waiting_for_php {
+        return Err(HookError::NoPhpCallbackPending);
+    }
+    frame.value = value;
+    frame.waiting_for_php = false;
+    frame.callback_cursor += 1;
+    Ok(())
+}
+
+pub(crate) fn invoke<C: Context>(
+    context: &mut C,
+    slot: usize,
+    value: PhpValue,
+    args: Vec<PhpValue>,
+    mode: Mode,
+) -> Result<PhpValue, HookError> {
+    let started = start(context, slot, value.clone(), args, mode)?;
+    let result = if !started {
         Ok(value)
+    } else {
+        let result = match advance(context, slot) {
+            Ok(HookStep::Complete(value)) => Ok(value),
+            Ok(HookStep::InvokePhp(_)) => Err(HookError::PhpCallbackRequiresContinuation),
+            Err(error) => Err(error),
+        };
+        if result.is_err() {
+            context.storage(slot).frames.pop();
+        }
+        result
     };
     let storage = context.storage(slot);
     if storage.frames.is_empty() && (mode == Mode::Action || result.is_err()) {

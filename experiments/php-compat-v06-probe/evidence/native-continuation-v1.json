@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-12T15:43:39+00:00",
+  "recorded_at_utc": "2026-11-12T16:43:08+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "9d1ef6ab14b2b75bfe52f117a073a5b68a90308b2e7b19a1e542a389b1ddff9e",
+    "experiments/php-compat-v06-probe/run_check.py": "10735f41950c89ef54583ab7285a2edc81c9257e4a2fd0d845919d8e8648169c",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
-    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "15319ab562f70ad84ce27767cf42a59deddda015d766068dfb6b31e61cd5c043",
-    "experiments/php-compat-v06-probe/README.ja.md": "4716e6e90ad4b875fc73c60bc99a2055907a0e446c6bb94fb690ec9dd5a7ca98",
+    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "6fda7ed08d6c1ad624db2bc2ad2c218ef935fd8e998b29738e8f04f5850c493a",
+    "experiments/php-compat-v06-probe/README.ja.md": "dc0ea0e8e0a8672399050865a6e0fd156f921ab46364bf64cbfd14668b7cab3c",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -21,6 +21,10 @@
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/fixtures/handle_registry.php": "280e0244eea5c3cf078acea392b2e6854af16f2bc6acd1af3e42c180b20e3bff",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
+    "experiments/php-compat-v06-probe/hook_contract.py": "cd12ef9548f7b6256404169b9605fc9365d2c6d90f4014b53a01bb4ff67a795f",
+    "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "9c002edb8dc06a8c0779ff936c1b1d21f14482084705c74500c0b0f9c96d052b",
+    "crates/recastpress-wp/tests/hooks_contract.rs": "bed79d9b470f843ae3875bc1e9d84e3dab3ad20b8b67f3bedabdb04dbe868a80",
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": "672f71fb24ab9ec88ae68ba04beb1584763426307ff956a912d428e2b5aa05b0",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "3e3c478c43354bfa38be8f64a0cc853eac430ce89493e7946257083403f9840a",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
@@ -30,7 +34,73 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
+    "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "cb4543399fcbe90662949e31afa580231a7aa636d5235b64c5513dc3e2d024af",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
+    "crates/recastpress-wp/src/auth_cookie.rs": "f1114600968267dd202f61bf6494a768a25b788f1e24bc330b8edf209df8cc97",
+    "crates/recastpress-wp/src/auth_cookie_parse.rs": "a3f6578333abd6ddc7a85e24800ef49dcd12ba6ea616a74280a6d8840c31e248",
+    "crates/recastpress-wp/src/auth_cookie_verify.rs": "a23ff10aa85582e3119355ee3f1e9f5323f371e960b0e678f2762a2816efb9c8",
+    "crates/recastpress-wp/src/auth_cookie_verify_contract.rs": "8a7dd1c8b86e05a3a3199fabe177c5e3365c8d41e8abd448bc18107ce41436ca",
+    "crates/recastpress-wp/src/bad_protocol.rs": "8cdb88b7bc4db1d7e2080c258adbafaa24e7933ba7c6d8069dfc64a8bb007b1f",
+    "crates/recastpress-wp/src/bad_protocol_once.rs": "bc3dd6c19162347f9a5903b0343c0e268184bc152cbae75d07cfe31502e4ef85",
+    "crates/recastpress-wp/src/bad_protocol_outer.rs": "a80f928577ad7977687c3f993731bc861edaa0856ec250cebf4135f093e83fac",
+    "crates/recastpress-wp/src/charset.rs": "c383382d88a34e9a958fb8e4c520e86bd8aa7e442d3d5fa9c63da7914030aeb5",
+    "crates/recastpress-wp/src/colors.rs": "01c55e733c5c6dca8586ca6350b2e3c01b9c990c9a31e5007dad2f64a0872789",
+    "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
+    "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
+    "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
+    "crates/recastpress-wp/src/dispatcher.rs": "5f7f34199f6ed5fde9bf50654f8e5cc2ee1a42e4fde3e4ed22710633507f8472",
+    "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
+    "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
+    "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
+    "crates/recastpress-wp/src/entity_decode.rs": "cc7d3c18a1e0ee5d05eb12ebaf332e399ee82b38b4239d2b1f07eb1ec7267f99",
+    "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
+    "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
+    "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
+    "crates/recastpress-wp/src/hooks.rs": "76a6c881585ee3b6b6385d570344cee3c36c7025468cad26ccb6213d11940719",
+    "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
+    "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
+    "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
+    "crates/recastpress-wp/src/html_replacement.rs": "2a975b7a9bae189c172f1bda3cb7347832a520b24a843b05c8ec5bec75f2a38a",
+    "crates/recastpress-wp/src/json_encode.rs": "dbe3436c2ff1a0535e1f833f871aae2cf06aa061dfeb971b79fa824e6f6bd76f",
+    "crates/recastpress-wp/src/jsonp.rs": "e93e8879270cd099ce2ff086c381bb0e85087e74fb332921afc1f9c0e31ff476",
+    "crates/recastpress-wp/src/kses_slashes.rs": "4f9f737b9bd4b8740abd74ed3858f201f3e0a4a7005be3eb8aaf15edbdaa6034",
+    "crates/recastpress-wp/src/lists.rs": "e26f57363e91b70025847ac34fe0964e3c7a16f8d285099df18acddd46e75315",
+    "crates/recastpress-wp/src/locale_mime.rs": "4ce174eac38a77abeca85113fb80295267ec317dc647cda60263774ac6af6248",
+    "crates/recastpress-wp/src/media_type.rs": "6d5280a30aa7cf703f767c54e501ba2ebef66350cda17ea3545b2c2786ec0fe8",
+    "crates/recastpress-wp/src/no_null.rs": "3dafd0923bdaef9a03e7c9877fb404c156a13f3bf6719d0dcb56b5674ee431fe",
+    "crates/recastpress-wp/src/numbers.rs": "52ca7e1c5847f0dec64ecc20b7a44eecf282a5794df3337ddba332a70e83ce90",
+    "crates/recastpress-wp/src/password_dispatch.rs": "888002f6c38be72166e63ba869da222801f7f11c373c8e5fac3035ed0ccf0bbf",
+    "crates/recastpress-wp/src/password_hash.rs": "4a12a0b9b8a48b0862f9da25885de19f7dafc40778ab0f4d0b9d4a8b7259cbad",
+    "crates/recastpress-wp/src/password_legacy.rs": "767e27cb13a439fc85d5d7682985970c8f0b9bd7f9683ba85f73a4dd93750550",
+    "crates/recastpress-wp/src/password_rehash.rs": "42c17d29ec1a7411568b67df52720ec257dd87344655f8c00c7e4ac92eff2ef0",
+    "crates/recastpress-wp/src/password_verify.rs": "ea27d475386710169ac518b0023176e3d1a7dffd2d77f5ef894e7ea797ee6283",
+    "crates/recastpress-wp/src/post_meta_cached.rs": "0ae3405f07dc26f5e03bd21ab0ef0fd1f94d8fd8c507006183eadce9a8329840",
+    "crates/recastpress-wp/src/post_slug_truncate.rs": "a893dbfbc890cd23ae6088ac90d7e8d3478cb48f48251804ad29e93ff2eb03d4",
+    "crates/recastpress-wp/src/query.rs": "9d03c84c633ea848d7668b6d32d3380d9748e91d0a8cbcbe0fc9dca3499159dd",
+    "crates/recastpress-wp/src/remove_accents.rs": "63ba089653a45cff2ab84add0a4d27536b7c6baafe601e64391da0a87292141d",
+    "crates/recastpress-wp/src/remove_accents_table.rs": "7fcb730c309dc8cfe9f3b92956edb3c7c17a91ffb2cdad6c4923a8e0d5db6c83",
+    "crates/recastpress-wp/src/request_media.rs": "7264bee2a170570baf735ccf96766ac9cce782ca4f0728c4c25c00b9e3a871f5",
+    "crates/recastpress-wp/src/sanitize_text.rs": "041f1b739c93766ac2814487c28e078688e4ac5459b86e3ba54cbdda6f776609",
+    "crates/recastpress-wp/src/sanitize_title.rs": "ed5bea63677bcd0d2b44b7fca813f063d2a17d5b5e31e2dc62b90aae4279fd21",
+    "crates/recastpress-wp/src/sanitize_user.rs": "fc09bb062653e097776b1fb3f6801091aefe330f727b701855bcd3f938fe32e2",
+    "crates/recastpress-wp/src/serialization.rs": "5414cedb546a8c74a84bb9ea16ab9246b4882a1e11c798a703f3fc295e1c86c3",
+    "crates/recastpress-wp/src/specialchars.rs": "a7ba9faa09ea54af76b0c0b860ee08ce150065462a12fdc22855e57b7d419dc5",
+    "crates/recastpress-wp/src/strings.rs": "a9a9a1b991f8be3f95326aca70bd1871d4949002317d4bfaf48caa9f429de384",
+    "crates/recastpress-wp/src/strip_all_tags.rs": "f31e6e868b477bd390d566ed30777eed76bb39679fd111909cc23cc40c71a7ae",
+    "crates/recastpress-wp/src/texturize/primes.rs": "33b534898d5ebd33ce59a23ff501d9614680aa7a583d3dfed63fe518ca17dbeb",
+    "crates/recastpress-wp/src/texturize.rs": "49b53194e3be821b11f0f2c3c9c3f7d0419a38a61493a1d4a9e1bb0fa465aa56",
+    "crates/recastpress-wp/src/title.rs": "ac62d59ce60a89b8ac0dae07ae692ba284f68e3000012dd859b36b3e5e33f9ae",
+    "crates/recastpress-wp/src/title_with_dashes.rs": "0f3fe1ebd2375c06d6896c622ec9de0029b25c1a5ac8ac6dded2059898b2232d",
+    "crates/recastpress-wp/src/unicode.rs": "8595ffce4d4eb96e8a9c75d44307b215d59a4cec2e182a142da22d9058aed887",
+    "crates/recastpress-wp/src/unique_ids.rs": "32679a7583119f19bef92186199678c92081c4577561c79634a6d2d66171260c",
+    "crates/recastpress-wp/src/url.rs": "4d32b60d5c710439e5470aac4dfea4a4552fd2373e139112b823f334e532d817",
+    "crates/recastpress-wp/src/url_shorten.rs": "eb63eea91af213beccf3150742c5b20be03ffe9961a3311407d58f0be984bca0",
+    "crates/recastpress-wp/src/utf8.rs": "6739d6a1bacd3adbea170f4c85fde9f7e2c0ef8492be801360f3baca0aca4bc7",
+    "crates/recastpress-wp/src/utf8_uri_encode.rs": "ce9b146d6e76a9134519ebf742dc67ddc71af6690cb31fc2e6945743b6234d30",
+    "crates/recastpress-wp/src/uuid.rs": "0dafa10f607deadeb6ae8975f502a8a57f4cb9a80aa2489c6bf985e3aece1bf0",
+    "crates/recastpress-wp/src/value.rs": "ee1d84f35bfb91a889f2711be1aee7622bfee1e0fafbe5520bfdcf6fb3af264e",
+    "crates/recastpress-wp/src/xml_entity_mapping.rs": "011b9f19787e14889ac00b2cc5f2b8ca98501840daa84325b2431232dd680d23",
+    "crates/recastpress-wp/src/zeroise.rs": "1f1e806cba9a6026469ac2128634d8809e2fa2ba16d7f48b823ed9ef4be0b57a",
     ".reference/php-8.5.12/brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
     ".reference/php-8.5.12/brotlidec.dll": "d6aa2b6651696a66ef00e43921aa7629907ca4f2f1a35deeff25ff921bc2eeed",
     ".reference/php-8.5.12/deplister.exe": "f976218dad6500815537eb558f40f8041670df1631ae1598bd0bb5fec928062e",
@@ -123,11 +193,11 @@
     "working_directory": "."
   },
   "rust": {
-    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "443b74229d7f6502adf87fbfea0292e38335644aafdbb10dc241e0b0cf89b30d",
+  "adapter_binary_sha256": "8250cd915769ea77e96b788eb7edd079f39748bcfdab697caf6029f2082b927e",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -164,8 +234,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 30032,
-      "rust": 29424
+      "php": 26732,
+      "rust": 29524
     },
     "returncodes": {
       "php": 0,
@@ -223,8 +293,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 27332,
-      "rust": 17836
+      "php": 15912,
+      "rust": 27592
     },
     "returncodes": {
       "php": 0,
@@ -288,8 +358,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 25100,
-      "rust": 23792
+      "php": 20252,
+      "rust": 28408
     },
     "returncodes": {
       "php": 0,
@@ -439,8 +509,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 21468,
-        "rust": 30260
+        "php": 29064,
+        "rust": 28124
       },
       "returncodes": {
         "php": 0,
@@ -516,8 +586,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 14764,
-        "rust": 27632
+        "php": 15600,
+        "rust": 23856
       },
       "returncodes": {
         "php": 0,
@@ -595,6 +665,90 @@
       }
     }
   },
+  "resumable_hooks_bridge": {
+    "processes": {
+      "php": 12300,
+      "rust": 10404
+    },
+    "returncodes": {
+      "php": 0,
+      "rust": 0
+    },
+    "scenario": "hooks",
+    "rust_marker": "V06_HOOKS_OK continuation_peer=true",
+    "frames_from_php": 7,
+    "frames_from_rust": 6,
+    "relayed_bytes": 4345,
+    "all_reaped": true,
+    "observations": {
+      "rust_child": null,
+      "rust_root": null,
+      "rust_throwable_return": null,
+      "rust_abort": null,
+      "php_final": {
+        "alias_same": true,
+        "same_closure_handle": true,
+        "distinct_closures": true,
+        "parent_hook_restored": true,
+        "closed_read_rejected": true,
+        "registry_live_after_close": 0,
+        "final_name": "root-before-child:child:root-after-child:b:late",
+        "returned_value_hex": "736565643a72353a63333a7068702d6368696c643a63373a7068702d726f6f743a7068702d623a6c6174653a723230",
+        "trace": [
+          "root_a:enter",
+          "child:enter",
+          "child:exit",
+          "root_a:after-child",
+          "root_a:exit",
+          "root_b",
+          "late"
+        ]
+      }
+    },
+    "expected_frame_counts": {
+      "php": 7,
+      "rust": 6
+    },
+    "hook_result": {
+      "child_filters": 1,
+      "continuation_depth_after": 0,
+      "continuation_peer": true,
+      "final_value_hex": "736565643a72353a63333a7068702d6368696c643a63373a7068702d726f6f743a7068702d623a6c6174653a723230",
+      "frames_from_php": 7,
+      "frames_from_rust": 6,
+      "hook_depth_after": 0,
+      "late_registered": true,
+      "native_trace": [
+        "r5",
+        "c3",
+        "c7",
+        "r20"
+      ],
+      "php_observation": {
+        "alias_same": true,
+        "closed_read_rejected": true,
+        "distinct_closures": true,
+        "final_name": "root-before-child:child:root-after-child:b:late",
+        "parent_hook_restored": true,
+        "registry_live_after_close": 0,
+        "returned_value_hex": "736565643a72353a63333a7068702d6368696c643a63373a7068702d726f6f743a7068702d623a6c6174653a723230",
+        "same_closure_handle": true,
+        "trace": [
+          "root_a:enter",
+          "child:enter",
+          "child:exit",
+          "root_a:after-child",
+          "root_a:exit",
+          "root_b",
+          "late"
+        ]
+      },
+      "root_b_removed": true,
+      "root_filters": 1,
+      "scenario": "hooks",
+      "state_after": "Finished"
+    }
+  },
   "negative_vectors_rejected_by_rust": [
     "correlation",
     "handle",
@@ -616,76 +770,76 @@
     "escaped_duplicate_key"
   ],
   "owned_children": {
-    "spawned_and_reaped": 24,
+    "spawned_and_reaped": 26,
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 24880,
+        "pid": 25236,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 27364,
+        "pid": 26840,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 24804,
+        "pid": 19140,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 3688,
+        "pid": 29592,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 12944,
+        "pid": 29320,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 14428,
+        "pid": 1732,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 26656,
+        "pid": 27288,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 20408,
+        "pid": 28584,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 26116,
+        "pid": 28920,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 30248,
+        "pid": 18800,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 29608,
+        "pid": 28716,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 26524,
+        "pid": 22588,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 28476,
+        "pid": 30552,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 23896,
+        "pid": 25692,
         "returncode": 0,
         "reaped": true
       }
@@ -708,6 +862,10 @@
         "rust": 0
       },
       "handles_abort": {
+        "php": 0,
+        "rust": 0
+      },
+      "hooks": {
         "php": 0,
         "rust": 0
       }

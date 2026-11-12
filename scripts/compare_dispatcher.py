@@ -41,6 +41,15 @@ def cases():
     for name, mutations in changes:
         initial = [("alpha", "a", 10, 1), ("alpha", "b", 10, 1), ("alpha", "d", 30, 1)] if name == "active_rebind" else [("all", "a", 10, 0), ("all", "b", 10, 0), ("alpha", "c", 10, 1)]
         add(name, initial, callbacks={**definitions, "a": {"mutations": mutations}}, calls=[normal, {**normal, "hook": "beta"}, normal])
+    for keep_named in [True, False]:
+        mutations = [{"kind": "clear", "hook": "all"}]
+        if not keep_named:
+            mutations.append({"kind": "clear", "hook": "alpha"})
+        case_id = "all_self_remove_keep_named_stack" if keep_named else "all_self_remove_remove_named_stack"
+        initial = [("all", "a", 10, 0), ("alpha", "c", 10, 1)]
+        callbacks = {**definitions, "a": {"mutations": mutations}}
+        add(case_id, initial, callbacks=callbacks, calls=[normal])
+
     generator = random.Random(71305)
     names = ["alpha", "beta", "all"]
     priorities = [-5, 0, 5, 10, 20]

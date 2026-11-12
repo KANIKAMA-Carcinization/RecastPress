@@ -1,5 +1,6 @@
 use recastpress_wp::{
-    dispatcher::{Dispatcher, DispatcherCallback},
+    continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
+    dispatcher::{DispatchStep, Dispatcher, DispatcherCallback},
     hooks::{CallbackId, HookError},
     value::{PhpArray, PhpKey, PhpValue},
 };
@@ -47,6 +48,28 @@ fn id(name: &str) -> CallbackId {
     CallbackId {
         module: "fixture".into(),
         callback: name.into(),
+    }
+}
+
+fn closure_handle(slot: u32) -> PhpHandle {
+    PhpHandle::new(
+        RequestGeneration::new(51),
+        PhpHandleKind::Closure,
+        slot,
+        1,
+        u64::from(slot),
+    )
+}
+
+fn drive_native_ticket(
+    dispatcher: &mut Dispatcher,
+    ticket: recastpress_wp::dispatcher::DispatchTicket,
+) -> PhpValue {
+    match dispatcher.advance(ticket).unwrap() {
+        DispatchStep::Complete(value) => value,
+        DispatchStep::InvokePhp(invocation) => {
+            panic!("unexpected PHP callback: {}", invocation.callback.callback)
+        }
     }
 }
 fn value(text: &str) -> PhpValue {
@@ -169,6 +192,576 @@ fn deleting_and_readding_an_active_binding_keeps_old_and_new_objects_separate() 
     assert!(!dispatcher.has_at("target", 30, &id("old_future")));
 }
 
+fn mutating_dispatcher(trace: Arc<Mutex<Vec<&'static str>>>) -> Dispatcher {
+    let mut dispatcher = Dispatcher::new();
+    let all_trace = Arc::clone(&trace);
+    dispatcher.add(
+        "all",
+        10,
+        DispatcherCallback::new(id("all_replace"), 0, move |dispatcher, _| {
+            all_trace.lock().unwrap().push("all_old");
+            assert_eq!(dispatcher.current_hook(), Some("target"));
+            dispatcher.add(
+                "all",
+                0,
+                DispatcherCallback::new(id("all_early"), 0, |_, _| Ok(value("ignored"))),
+            );
+            dispatcher.remove_all("all", None);
+            let nested_trace = Arc::clone(&all_trace);
+            dispatcher.add(
+                "all",
+                20,
+                DispatcherCallback::new(id("all_new"), 0, move |dispatcher, _| {
+                    assert_eq!(dispatcher.current_hook(), Some("target"));
+                    nested_trace.lock().unwrap().push("all_new");
+                    Ok(value("ignored"))
+                }),
+            );
+            Ok(value("ignored"))
+        }),
+    );
+
+    let target_trace = Arc::clone(&trace);
+    dispatcher.add(
+        "target",
+        10,
+        DispatcherCallback::new(id("target_replace"), 1, move |dispatcher, args| {
+            target_trace.lock().unwrap().push("target_old");
+            assert_eq!(dispatcher.current_hook(), Some("target"));
+            dispatcher.remove_all("target", None);
+            let next_trace = Arc::clone(&target_trace);
+            dispatcher.add(
+                "target",
+                20,
+                DispatcherCallback::new(id("target_new"), 1, move |dispatcher, args| {
+                    assert_eq!(dispatcher.current_hook(), Some("target"));
+                    next_trace.lock().unwrap().push("target_new");
+                    let PhpValue::Bytes(mut output) = args[0].clone() else {
+                        panic!("expected bytes")
+                    };
+                    output.extend_from_slice(b"new");
+                    Ok(PhpValue::Bytes(output))
+                }),
+            );
+            assert_eq!(
+                dispatcher.apply_filters("target", value("nested"), &[]),
+                Ok(value("nestednew"))
+            );
+            assert_eq!(dispatcher.current_hook(), Some("target"));
+            Ok(args[0].clone())
+        }),
+    );
+    dispatcher.add(
+        "target",
+        10,
+        DispatcherCallback::new(id("old_peer"), 1, move |_, args| {
+            trace.lock().unwrap().push("old_peer");
+            let PhpValue::Bytes(mut output) = args[0].clone() else {
+                panic!("expected bytes")
+            };
+            output.extend_from_slice(b"old_peer");
+            Ok(PhpValue::Bytes(output))
+        }),
+    );
+    dispatcher.add(
+        "target",
+        30,
+        DispatcherCallback::new(id("old_future"), 1, |_, _| Ok(value("wrong"))),
+    );
+    dispatcher
+}
+
+#[test]
+fn resumable_native_dispatch_matches_sync_all_and_named_binding_mutation() {
+    let sync_trace = Arc::new(Mutex::new(Vec::new()));
+    let mut sync = mutating_dispatcher(Arc::clone(&sync_trace));
+    let sync_first = sync.apply_filters("target", value("first"), &[]).unwrap();
+    let sync_second = sync.apply_filters("target", value("second"), &[]).unwrap();
+    let sync_diagnostics = sync.take_diagnostics();
+    let sync_counts = (
+        sync.did_filter("target"),
+        sync.did_filter("all"),
+        sync.hook_stack_depth(),
+    );
+
+    let async_trace = Arc::new(Mutex::new(Vec::new()));
+    let mut resumable = mutating_dispatcher(Arc::clone(&async_trace));
+    let first = resumable
+        .begin_filter("target", value("first"), &[])
+        .unwrap();
+    let async_first = drive_native_ticket(&mut resumable, first);
+    let second = resumable
+        .begin_filter("target", value("second"), &[])
+        .unwrap();
+    let async_second = drive_native_ticket(&mut resumable, second);
+
+    assert_eq!(
+        (async_first, async_second),
+        (sync_first.clone(), sync_second.clone())
+    );
+    assert_eq!(*async_trace.lock().unwrap(), *sync_trace.lock().unwrap());
+    assert_eq!(resumable.take_diagnostics(), sync_diagnostics);
+    assert_eq!(
+        (
+            resumable.did_filter("target"),
+            resumable.did_filter("all"),
+            resumable.hook_stack_depth()
+        ),
+        sync_counts
+    );
+    assert_eq!(sync_first, value("firstold_peer"));
+    assert_eq!(sync_second, value("secondnew"));
+    assert_eq!(
+        *async_trace.lock().unwrap(),
+        vec![
+            "all_old",
+            "target_old",
+            "all_new",
+            "target_new",
+            "old_peer",
+            "all_new",
+            "target_new"
+        ]
+    );
+    assert_eq!(resumable.current_hook(), None);
+}
+
+#[test]
+fn all_hook_permanent_removal_current_stack_sync_vs_resumable_reproduction() {
+    for keep_named in [true, false] {
+        let sync_trace = Arc::new(Mutex::new(Vec::new()));
+        let sync_current = Arc::new(Mutex::new(Vec::new()));
+        let mut sync = Dispatcher::new();
+        let all_trace = Arc::clone(&sync_trace);
+        sync.add(
+            "all",
+            10,
+            DispatcherCallback::new(id("remove_all"), 0, move |dispatcher, _| {
+                all_trace.lock().unwrap().push("all");
+                dispatcher.remove_all("all", None);
+                if !keep_named {
+                    dispatcher.remove_all("target", None);
+                }
+                Ok(value("ignored"))
+            }),
+        );
+        let named_trace = Arc::clone(&sync_trace);
+        let named_current = Arc::clone(&sync_current);
+        sync.add(
+            "target",
+            10,
+            DispatcherCallback::new(id("named"), 1, move |dispatcher, args| {
+                named_trace.lock().unwrap().push("named");
+                named_current.lock().unwrap().push((
+                    dispatcher.current_hook().map(str::to_owned),
+                    dispatcher.hook_stack_depth(),
+                ));
+                Ok(args[0].clone())
+            }),
+        );
+        let sync_value = sync.apply_filters("target", value("input"), &[]).unwrap();
+        let sync_observation = (
+            sync_value,
+            sync_trace.lock().unwrap().clone(),
+            sync.current_hook().map(str::to_owned),
+            sync.hook_stack_depth(),
+            sync.take_diagnostics(),
+            sync_current.lock().unwrap().clone(),
+        );
+
+        let async_trace = Arc::new(Mutex::new(Vec::new()));
+        let async_current = Arc::new(Mutex::new(Vec::new()));
+        let mut resumable = Dispatcher::new();
+        let all_trace = Arc::clone(&async_trace);
+        resumable.add(
+            "all",
+            10,
+            DispatcherCallback::new(id("remove_all"), 0, move |dispatcher, _| {
+                all_trace.lock().unwrap().push("all");
+                dispatcher.remove_all("all", None);
+                if !keep_named {
+                    dispatcher.remove_all("target", None);
+                }
+                Ok(value("ignored"))
+            }),
+        );
+        let named_trace = Arc::clone(&async_trace);
+        let named_current = Arc::clone(&async_current);
+        resumable.add(
+            "target",
+            10,
+            DispatcherCallback::new(id("named"), 1, move |dispatcher, args| {
+                named_trace.lock().unwrap().push("named");
+                named_current.lock().unwrap().push((
+                    dispatcher.current_hook().map(str::to_owned),
+                    dispatcher.hook_stack_depth(),
+                ));
+                Ok(args[0].clone())
+            }),
+        );
+        let ticket = resumable
+            .begin_filter("target", value("input"), &[])
+            .unwrap();
+        let async_value = drive_native_ticket(&mut resumable, ticket);
+        let async_observation = (
+            async_value,
+            async_trace.lock().unwrap().clone(),
+            resumable.current_hook().map(str::to_owned),
+            resumable.hook_stack_depth(),
+            resumable.take_diagnostics(),
+            async_current.lock().unwrap().clone(),
+        );
+
+        assert_eq!(sync_observation.0, async_observation.0);
+        assert_eq!(sync_observation.1, async_observation.1);
+        assert_eq!(sync_observation.2, async_observation.2);
+        assert_eq!(sync_observation.3, async_observation.3);
+        assert_eq!(sync_observation.4, async_observation.4);
+        assert_eq!(sync_observation.2, Some("target".into()));
+        assert_eq!(sync_observation.3, 1);
+        assert_eq!(async_observation.2, Some("target".into()));
+        assert_eq!(async_observation.3, 1);
+        assert_eq!(sync_observation.5, async_observation.5);
+        assert_eq!(
+            sync_observation.5,
+            if keep_named {
+                vec![(Some("target".into()), 2)]
+            } else {
+                Vec::new()
+            }
+        );
+    }
+}
+
+#[test]
+fn php_callback_yields_snapshot_mutates_nested_filter_and_resumes_in_order() {
+    let mut dispatcher = Dispatcher::new();
+    let native_trace = Arc::new(Mutex::new(Vec::new()));
+    dispatcher.add(
+        "root",
+        5,
+        DispatcherCallback::new(id("r5"), 1, |_, args| {
+            let PhpValue::Bytes(mut output) = args[0].clone() else {
+                panic!("expected bytes")
+            };
+            output.extend_from_slice(b":r5");
+            Ok(PhpValue::Bytes(output))
+        }),
+    );
+    dispatcher.add(
+        "root",
+        10,
+        DispatcherCallback::php(id("root_a"), 1, closure_handle(1)).unwrap(),
+    );
+    dispatcher.add(
+        "root",
+        10,
+        DispatcherCallback::php(id("root_b"), 1, closure_handle(2)).unwrap(),
+    );
+    dispatcher.add(
+        "root",
+        20,
+        DispatcherCallback::new(id("r20"), 1, |_, args| {
+            let PhpValue::Bytes(mut output) = args[0].clone() else {
+                panic!("expected bytes")
+            };
+            output.extend_from_slice(b":r20");
+            Ok(PhpValue::Bytes(output))
+        }),
+    );
+    for (priority, callback, suffix) in [(3, "c3", b":c3".as_slice()), (7, "c7", b":c7".as_slice())]
+    {
+        let suffix = suffix.to_vec();
+        let trace = Arc::clone(&native_trace);
+        dispatcher.add(
+            "child",
+            priority,
+            DispatcherCallback::new(id(callback), 1, move |_, args| {
+                trace.lock().unwrap().push(callback);
+                let PhpValue::Bytes(mut output) = args[0].clone() else {
+                    panic!("expected bytes")
+                };
+                output.extend_from_slice(&suffix);
+                Ok(PhpValue::Bytes(output))
+            }),
+        );
+    }
+    dispatcher.add(
+        "child",
+        5,
+        DispatcherCallback::php(id("child"), 1, closure_handle(3)).unwrap(),
+    );
+
+    let root = dispatcher.begin_filter("root", value("seed"), &[]).unwrap();
+    assert_eq!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(recv_invocation(
+            "root_a", "root", 10, "seed:r5", 1
+        )))
+    );
+    assert_eq!(dispatcher.advance(root), Err(HookError::PhpCallbackPending));
+    assert!(dispatcher.remove("root", 10, &id("root_b")));
+    dispatcher.add(
+        "root",
+        15,
+        DispatcherCallback::php(id("late"), 1, closure_handle(4)).unwrap(),
+    );
+    let child = dispatcher
+        .begin_filter("child", value("seed:r5"), &[])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(root),
+        Err(HookError::DispatchTicketOrder)
+    );
+    assert_eq!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::InvokePhp(recv_invocation(
+            "child",
+            "child",
+            5,
+            "seed:r5:c3",
+            3
+        )))
+    );
+    assert!(
+        dispatcher
+            .resume_php(child, value("seed:r5:c3:php-child"))
+            .is_ok()
+    );
+    assert_eq!(
+        dispatcher.resume_php(child, value("duplicate")),
+        Err(HookError::NoPhpCallbackPending)
+    );
+    let child_result = drive_native_ticket(&mut dispatcher, child);
+    assert_eq!(child_result, value("seed:r5:c3:php-child:c7"));
+    assert_eq!(dispatcher.current_hook(), Some("root"));
+    let root_a_result = bytes_suffix(&child_result, b":php-root");
+    dispatcher.resume_php(root, root_a_result).unwrap();
+    assert_eq!(
+        dispatcher.resume_php(root, value("duplicate")),
+        Err(HookError::NoPhpCallbackPending)
+    );
+    assert_eq!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(recv_invocation(
+            "root_b",
+            "root",
+            10,
+            "seed:r5:c3:php-child:c7:php-root",
+            2
+        )))
+    );
+    dispatcher
+        .resume_php(root, value("seed:r5:c3:php-child:c7:php-root:php-b"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(recv_invocation(
+            "late",
+            "root",
+            15,
+            "seed:r5:c3:php-child:c7:php-root:php-b",
+            4
+        )))
+    );
+    dispatcher
+        .resume_php(root, value("seed:r5:c3:php-child:c7:php-root:php-b:late"))
+        .unwrap();
+    assert_eq!(
+        drive_native_ticket(&mut dispatcher, root),
+        value("seed:r5:c3:php-child:c7:php-root:php-b:late:r20")
+    );
+    assert!(!dispatcher.has_at("root", 10, &id("root_b")));
+    assert!(dispatcher.has_at("root", 15, &id("late")));
+    assert_eq!(*native_trace.lock().unwrap(), vec!["c3", "c7"]);
+    assert_eq!(dispatcher.did_filter("root"), 1);
+    assert_eq!(dispatcher.did_filter("child"), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+    assert_eq!(dispatcher.current_hook(), None);
+    assert_eq!(
+        dispatcher.advance(root),
+        Err(HookError::InvalidDispatchTicket)
+    );
+}
+
+#[test]
+fn resumable_tickets_reject_foreign_order_replay_and_cancel_child_restores_parent() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "root",
+        10,
+        DispatcherCallback::php(id("root"), 1, closure_handle(1)).unwrap(),
+    );
+    dispatcher.add(
+        "child",
+        10,
+        DispatcherCallback::php(id("child"), 1, closure_handle(2)).unwrap(),
+    );
+    let root = dispatcher.begin_filter("root", value("root"), &[]).unwrap();
+    assert!(matches!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+
+    let mut foreign = Dispatcher::new();
+    assert_eq!(foreign.advance(root), Err(HookError::InvalidDispatchTicket));
+    assert_eq!(foreign.cancel(root), Err(HookError::InvalidDispatchTicket));
+
+    let child = dispatcher
+        .begin_filter("child", value("child"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert_eq!(
+        dispatcher.advance(root),
+        Err(HookError::DispatchTicketOrder)
+    );
+    dispatcher.cancel(child).unwrap();
+    assert_eq!(
+        dispatcher.advance(child),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    dispatcher.resume_php(root, value("root-return")).unwrap();
+    assert_eq!(
+        drive_native_ticket(&mut dispatcher, root),
+        value("root-return")
+    );
+    assert_eq!(
+        dispatcher.cancel(root),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(dispatcher.current_hook(), None);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+
+    let cancelled = dispatcher
+        .begin_filter("root", value("cancel"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(cancelled),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    dispatcher.cancel(cancelled).unwrap();
+    assert_eq!(
+        dispatcher.advance(cancelled),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(dispatcher.current_hook(), None);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn same_ticket_reentry_is_rejected_while_native_sync_nested_dispatch_still_works() {
+    let ticket_cell = Arc::new(Mutex::new(None));
+    let callback_ticket = Arc::clone(&ticket_cell);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "outer",
+        10,
+        DispatcherCallback::new(id("outer"), 1, move |dispatcher, args| {
+            let ticket = callback_ticket.lock().unwrap().expect("ticket installed");
+            assert_eq!(
+                dispatcher.advance(ticket),
+                Err(HookError::DispatchTicketBusy)
+            );
+            assert_eq!(
+                dispatcher.cancel(ticket),
+                Err(HookError::DispatchTicketBusy)
+            );
+            assert_eq!(
+                dispatcher.resume_php(ticket, value("wrong")),
+                Err(HookError::DispatchTicketBusy)
+            );
+            assert_eq!(
+                dispatcher.apply_filters("inner", args[0].clone(), &[]),
+                Ok(value("outer"))
+            );
+            assert_eq!(dispatcher.current_hook(), Some("outer"));
+            Ok(args[0].clone())
+        }),
+    );
+    dispatcher.add(
+        "inner",
+        10,
+        DispatcherCallback::new(id("inner"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let ticket = dispatcher
+        .begin_filter("outer", value("outer"), &[])
+        .unwrap();
+    *ticket_cell.lock().unwrap() = Some(ticket);
+    assert_eq!(drive_native_ticket(&mut dispatcher, ticket), value("outer"));
+    assert_eq!(dispatcher.did_filter("outer"), 1);
+    assert_eq!(dispatcher.did_filter("inner"), 1);
+    assert_eq!(dispatcher.current_hook(), None);
+}
+
+#[test]
+fn resumable_dispatch_safely_skips_removed_all_binding_before_first_advance() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "all",
+        10,
+        DispatcherCallback::new(id("all"), 0, |_, _| Ok(value("ignored"))),
+    );
+    dispatcher.add("target", 10, suffix("target"));
+    let ticket = dispatcher
+        .begin_filter("target", value("start"), &[])
+        .unwrap();
+    dispatcher.remove_all("all", None);
+    // Reuse the freed slot for another hook, then install a new all binding.
+    dispatcher.add(
+        "other",
+        10,
+        DispatcherCallback::new(id("other"), 0, |_, _| Ok(value("wrong"))),
+    );
+    let all_calls = Arc::new(Mutex::new(0));
+    let seen = Arc::clone(&all_calls);
+    dispatcher.add(
+        "all",
+        10,
+        DispatcherCallback::new(id("new_all"), 0, move |_, _| {
+            *seen.lock().unwrap() += 1;
+            Ok(value("ignored"))
+        }),
+    );
+    assert_eq!(
+        drive_native_ticket(&mut dispatcher, ticket),
+        value("starttarget")
+    );
+    assert_eq!(*all_calls.lock().unwrap(), 1);
+    assert_eq!(
+        dispatcher.apply_filters("other", value("other"), &[]),
+        Ok(value("wrong"))
+    );
+    assert_eq!(dispatcher.current_hook(), None);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+fn bytes_suffix(value: &PhpValue, suffix: &[u8]) -> PhpValue {
+    let PhpValue::Bytes(mut output) = value.clone() else {
+        panic!("expected bytes")
+    };
+    output.extend_from_slice(suffix);
+    PhpValue::Bytes(output)
+}
+
+fn recv_invocation(
+    callback: &str,
+    hook: &str,
+    priority: i64,
+    input: &str,
+    slot: u32,
+) -> recastpress_wp::hooks::PhpInvocation {
+    recastpress_wp::hooks::PhpInvocation {
+        callback: id(callback),
+        handle: closure_handle(slot),
+        hook: hook.into(),
+        priority,
+        args: vec![value(input)],
+    }
+}
+
 #[test]
 fn all_can_register_a_previously_absent_target_before_dispatch() {
     let mut dispatcher = Dispatcher::new();
@@ -210,6 +803,35 @@ fn recursion_limit_and_callback_failure_restore_request_stack() {
         dispatcher.apply_filters("loop", value("value"), &[]),
         Ok(value("valuerecovered"))
     );
+}
+
+#[test]
+fn synchronous_php_yield_error_cleans_nested_dispatch_but_preserves_parent() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "outer",
+        10,
+        DispatcherCallback::new(id("outer"), 1, |dispatcher, args| {
+            assert_eq!(
+                dispatcher.apply_filters("php_inner", args[0].clone(), &[]),
+                Err(HookError::PhpCallbackRequiresContinuation)
+            );
+            assert_eq!(dispatcher.current_hook(), Some("outer"));
+            assert_eq!(dispatcher.hook_stack_depth(), 1);
+            Ok(args[0].clone())
+        }),
+    );
+    dispatcher.add(
+        "php_inner",
+        10,
+        DispatcherCallback::php(id("php"), 1, closure_handle(8)).unwrap(),
+    );
+    assert_eq!(
+        dispatcher.apply_filters("outer", value("ok"), &[]),
+        Ok(value("ok"))
+    );
+    assert_eq!(dispatcher.current_hook(), None);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
 }
 
 #[test]

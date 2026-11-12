@@ -1,4 +1,5 @@
 use recastpress_wp::{
+    continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
     hooks::{Callback, CallbackId, Hook, HookError},
     value::{PhpArray, PhpKey, PhpValue},
 };
@@ -70,6 +71,16 @@ fn id(name: &str) -> CallbackId {
         module: "fixture".into(),
         callback: name.into(),
     }
+}
+
+fn closure_handle(slot: u32) -> PhpHandle {
+    PhpHandle::new(
+        RequestGeneration::new(51),
+        PhpHandleKind::Closure,
+        slot,
+        1,
+        u64::from(slot),
+    )
 }
 fn value(value: &str) -> PhpValue {
     PhpValue::Bytes(value.as_bytes().to_vec())
@@ -227,4 +238,22 @@ fn recursion_limit_is_bounded_and_restores_request_state() {
         Err(HookError::NestingLimit)
     );
     assert_eq!(hook.nesting_depth(), 0);
+}
+
+#[test]
+fn php_callback_handle_kind_is_explicit_and_sync_hook_cleans_up_on_yield() {
+    let wrong_kind = PhpHandle::new(RequestGeneration::new(51), PhpHandleKind::Object, 1, 1, 1);
+    assert!(matches!(
+        Callback::php(id("wrong_kind"), 1, wrong_kind),
+        Err(HookError::InvalidPhpCallbackHandle)
+    ));
+
+    let mut hook = Hook::new();
+    hook.add(10, Callback::php(id("php"), 1, closure_handle(1)).unwrap());
+    assert_eq!(
+        hook.apply_filters(value("start"), &[]),
+        Err(HookError::PhpCallbackRequiresContinuation)
+    );
+    assert_eq!(hook.nesting_depth(), 0);
+    assert_eq!(hook.current_priority(), None);
 }
