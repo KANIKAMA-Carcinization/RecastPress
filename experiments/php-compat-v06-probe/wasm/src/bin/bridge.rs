@@ -419,35 +419,43 @@ fn run() -> Result<()> {
     }
     if matches!(mode, "--publish" | "--hooks") {
         let hook_profile = mode == "--hooks";
-        let scenario = if hook_profile { "hooks" } else { "publish" };
         let files = if hook_profile {
             &HOOK_FILES
         } else {
             &PUBLISH_FILES
         };
-        let case = run_scenario(&module, module_hash, scenario)?;
         let fixtures: Vec<_> = files
             .iter()
             .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
             .collect();
-        println!(
-            "{}",
-            json!({
-                "schema": format!("recastpress.php-compat-v06-wasm-{scenario}.v1"),
-                "execution": "passed",
-                "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
-                "compiler_profile": COMPILER_PROFILE,
-                "artifact": {
-                    "path": ARTIFACT_RELATIVE,
-                    "bytes": ARTIFACT_BYTES,
-                    "sha256": artifact_hash
-                },
-                "fixtures": fixtures,
-                "case": case,
-                "compile_elapsed_ms": compile_ms,
-                "execution_elapsed_ms": execution_started.elapsed().as_millis()
-            })
-        );
+        let mut result = json!({
+            "schema": if hook_profile {
+                "recastpress.php-compat-v06-wasm-hooks.v2"
+            } else {
+                "recastpress.php-compat-v06-wasm-publish.v1"
+            },
+            "execution": "passed",
+            "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+            "compiler_profile": COMPILER_PROFILE,
+            "artifact": {
+                "path": ARTIFACT_RELATIVE,
+                "bytes": ARTIFACT_BYTES,
+                "sha256": artifact_hash
+            },
+            "fixtures": fixtures,
+            "compile_elapsed_ms": compile_ms
+        });
+        if hook_profile {
+            let mut cases = Vec::new();
+            for scenario in ["hooks", "hooks_catch", "hooks_abort"] {
+                cases.push(run_scenario(&module, module_hash, scenario)?);
+            }
+            result["cases"] = json!(cases);
+        } else {
+            result["case"] = run_scenario(&module, module_hash, "publish")?;
+        }
+        result["execution_elapsed_ms"] = json!(execution_started.elapsed().as_millis());
+        println!("{result}");
         return Ok(());
     }
     if mode == "--cpu-loop" {
@@ -1137,8 +1145,8 @@ fn run_guest(
     let mut runner = WasiRunner::new();
     let guest_args = if matches!(scenario, "handles" | "handles_abort") {
         vec!["-n", "/fixture/handle_driver.php", scenario]
-    } else if scenario == "hooks" {
-        vec!["-n", "/fixture/hooks_driver.php", "hooks"]
+    } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
+        vec!["-n", "/fixture/hooks_driver.php", scenario]
     } else if scenario == "publish" {
         vec!["-n", "/fixture/publish_driver.php", "publish"]
     } else if scenario.starts_with("trap_") || scenario == "cpu_loop" {
@@ -1170,7 +1178,7 @@ fn run_guest(
             Arc::new(FixedFilesFs {
                 files: if matches!(scenario, "handles" | "handles_abort") {
                     &HANDLE_FILES
-                } else if scenario == "hooks" {
+                } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
                     &HOOK_FILES
                 } else if scenario == "publish" {
                     &PUBLISH_FILES

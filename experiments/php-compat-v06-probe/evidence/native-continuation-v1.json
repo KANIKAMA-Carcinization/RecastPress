@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-12T16:43:08+00:00",
+  "recorded_at_utc": "2026-11-12T17:37:43+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "10735f41950c89ef54583ab7285a2edc81c9257e4a2fd0d845919d8e8648169c",
+    "experiments/php-compat-v06-probe/run_check.py": "e0198439a29a2a8830ccedb0782c37f388358cffc6e3c6f51463f4f114c347dd",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
-    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "6fda7ed08d6c1ad624db2bc2ad2c218ef935fd8e998b29738e8f04f5850c493a",
-    "experiments/php-compat-v06-probe/README.ja.md": "dc0ea0e8e0a8672399050865a6e0fd156f921ab46364bf64cbfd14668b7cab3c",
+    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "9dc2605d77ee0b0947178232db24c3c62baf4001376e68e2dbf6e41b0e67a802",
+    "experiments/php-compat-v06-probe/README.ja.md": "e19aaf0315bf6a009fc78a25a353c572762591f630b1cca44e10d7eb5a15d44b",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -21,20 +21,23 @@
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/fixtures/handle_registry.php": "280e0244eea5c3cf078acea392b2e6854af16f2bc6acd1af3e42c180b20e3bff",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
-    "experiments/php-compat-v06-probe/hook_contract.py": "cd12ef9548f7b6256404169b9605fc9365d2c6d90f4014b53a01bb4ff67a795f",
-    "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "9c002edb8dc06a8c0779ff936c1b1d21f14482084705c74500c0b0f9c96d052b",
+    "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
+    "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
+    "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
+    "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
+    "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "crates/recastpress-wp/tests/hooks_contract.rs": "bed79d9b470f843ae3875bc1e9d84e3dab3ad20b8b67f3bedabdb04dbe868a80",
-    "crates/recastpress-wp/tests/dispatcher_contract.rs": "672f71fb24ab9ec88ae68ba04beb1584763426307ff956a912d428e2b5aa05b0",
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": "81c460abd93c1b236b78888caaf5edc5136c2af8539de4eaeb80109e7628a0e6",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
-    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "3e3c478c43354bfa38be8f64a0cc853eac430ce89493e7946257083403f9840a",
+    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "85b45fe7a0129bd178687410c4ab5e53df59a72a243792c973321c9428160bf2",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
-    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "67c752b158434b9fafc0c1a573457358114b52d87adbc7f9448903d955ad9601",
+    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
-    "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "cb4543399fcbe90662949e31afa580231a7aa636d5235b64c5513dc3e2d024af",
+    "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "5036026e7ca042637214e31c0312cae3539b2b881b2791be9a9367dc4af38e66",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
     "crates/recastpress-wp/src/auth_cookie.rs": "f1114600968267dd202f61bf6494a768a25b788f1e24bc330b8edf209df8cc97",
     "crates/recastpress-wp/src/auth_cookie_parse.rs": "a3f6578333abd6ddc7a85e24800ef49dcd12ba6ea616a74280a6d8840c31e248",
@@ -48,7 +51,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "5f7f34199f6ed5fde9bf50654f8e5cc2ee1a42e4fde3e4ed22710633507f8472",
+    "crates/recastpress-wp/src/dispatcher.rs": "b62adda608d2a710a7571857cb314ee264b8ac0b3f94275729470844792ca257",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -56,7 +59,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "76a6c881585ee3b6b6385d570344cee3c36c7025468cad26ccb6213d11940719",
+    "crates/recastpress-wp/src/hooks.rs": "d2130e1bcb0aa2933f6011232887ba722620add468d69085b6cc0e0d2ab1cedc",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -197,7 +200,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "8250cd915769ea77e96b788eb7edd079f39748bcfdab697caf6029f2082b927e",
+  "adapter_binary_sha256": "3cb663af4026b4824700b0cfe6df52f85de69897598c3dc705717447266090ce",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -234,8 +237,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 26732,
-      "rust": 29524
+      "php": 26780,
+      "rust": 30388
     },
     "returncodes": {
       "php": 0,
@@ -289,12 +292,36 @@
     "expected_frame_counts": {
       "php": 5,
       "rust": 4
+    },
+    "raw_capture": {
+      "php": {
+        "stdout": "target/php-compat-v06-probe/captures/surface-ad96a974f8364574ad56f3f04215303f-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-ad96a974f8364574ad56f3f04215303f-php-stderr.bin"
+      },
+      "rust": {
+        "stdout": "target/php-compat-v06-probe/captures/surface-ad96a974f8364574ad56f3f04215303f-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-ad96a974f8364574ad56f3f04215303f-rust-stderr.bin"
+      }
+    },
+    "process_output": {
+      "php": {
+        "stdout_bytes": 1733,
+        "stdout_sha256": "0639d4bba43ead2adcce7c227b3b4f15e648b5a9c9fd769e0157ae428c25b716",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust": {
+        "stdout_bytes": 879,
+        "stdout_sha256": "f7d21be96588ab973d51db7486ed6d3a5c5db1ede8841a2951bc285a5a8a93b7",
+        "stderr_bytes": 1052,
+        "stderr_sha256": "d8d907522ec0bba24592962960c260290aa6492118fdaef3c835a83846e57a29"
+      }
     }
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 15912,
-      "rust": 27592
+      "php": 30524,
+      "rust": 26440
     },
     "returncodes": {
       "php": 0,
@@ -354,12 +381,36 @@
     "expected_frame_counts": {
       "php": 4,
       "rust": 4
+    },
+    "raw_capture": {
+      "php": {
+        "stdout": "target/php-compat-v06-probe/captures/throwable-8174226a1f7749af8e79260f5d98fafb-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-8174226a1f7749af8e79260f5d98fafb-php-stderr.bin"
+      },
+      "rust": {
+        "stdout": "target/php-compat-v06-probe/captures/throwable-8174226a1f7749af8e79260f5d98fafb-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-8174226a1f7749af8e79260f5d98fafb-rust-stderr.bin"
+      }
+    },
+    "process_output": {
+      "php": {
+        "stdout_bytes": 1147,
+        "stdout_sha256": "fc79bfac2e053a4103b5cc8e014240fa5fc02be30317a911b33a61440d8b545a",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust": {
+        "stdout_bytes": 826,
+        "stdout_sha256": "0201f5ddbc5f1b12590bbd097900e07beccf2b2b6c2dc49aa736776270a44adb",
+        "stderr_bytes": 1115,
+        "stderr_sha256": "e6f6028f30bebe8a69857a4972e2604509756db2e18d9a652d5745566655047c"
+      }
     }
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 20252,
-      "rust": 28408
+      "php": 20852,
+      "rust": 29300
     },
     "returncodes": {
       "php": 0,
@@ -504,13 +555,37 @@
           }
         }
       }
+    },
+    "raw_capture": {
+      "php": {
+        "stdout": "target/php-compat-v06-probe/captures/publish-67197c2a1bf64929b102d654517b93a3-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-67197c2a1bf64929b102d654517b93a3-php-stderr.bin"
+      },
+      "rust": {
+        "stdout": "target/php-compat-v06-probe/captures/publish-67197c2a1bf64929b102d654517b93a3-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-67197c2a1bf64929b102d654517b93a3-rust-stderr.bin"
+      }
+    },
+    "process_output": {
+      "php": {
+        "stdout_bytes": 4517,
+        "stdout_sha256": "c60bce281f814a6d5f332b52d01dc3d509423a9739a57f3a39880d2f15eb85bd",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust": {
+        "stdout_bytes": 2866,
+        "stdout_sha256": "ac4ebfe1fcdda10e48536d7bc5aba60edf2fbf4b4fffd8ee287b4f10397cb620",
+        "stderr_bytes": 1527,
+        "stderr_sha256": "16ffa467ac6bc075dc557e5dc9f87050151d4cb9bc0bff80a87f40cae6737d05"
+      }
     }
   },
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 29064,
-        "rust": 28124
+        "php": 25748,
+        "rust": 18580
       },
       "returncodes": {
         "php": 0,
@@ -582,12 +657,36 @@
         "scenario": "handles",
         "slot_reused": true,
         "state_after": "Finished"
+      },
+      "raw_capture": {
+        "php": {
+          "stdout": "target/php-compat-v06-probe/captures/handles-273fd0057a13434180c3201839aff1ef-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-273fd0057a13434180c3201839aff1ef-php-stderr.bin"
+        },
+        "rust": {
+          "stdout": "target/php-compat-v06-probe/captures/handles-273fd0057a13434180c3201839aff1ef-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-273fd0057a13434180c3201839aff1ef-rust-stderr.bin"
+        }
+      },
+      "process_output": {
+        "php": {
+          "stdout_bytes": 3009,
+          "stdout_sha256": "37019cbaf0213837535465c978c0ad1c07146abd065852bacba8af9522c19c0b",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "rust": {
+          "stdout_bytes": 557,
+          "stdout_sha256": "bd1f95efc625be2be77906f65d4f35b7f4f8ea6328aacc94bf5a9f334db806fc",
+          "stderr_bytes": 749,
+          "stderr_sha256": "7040edac240f4106d1a2e4521beb375915ff8456d11b906505cd40fa3c15e9b3"
+        }
       }
     },
     "handles_abort": {
       "processes": {
-        "php": 15600,
-        "rust": 23856
+        "php": 13428,
+        "rust": 4328
       },
       "returncodes": {
         "php": 0,
@@ -662,13 +761,37 @@
         "scenario": "handles_abort",
         "slot_reused": true,
         "state_after": "Aborted"
+      },
+      "raw_capture": {
+        "php": {
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-4dc8b09eea94468c8807c8e8e3785898-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-4dc8b09eea94468c8807c8e8e3785898-php-stderr.bin"
+        },
+        "rust": {
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-4dc8b09eea94468c8807c8e8e3785898-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-4dc8b09eea94468c8807c8e8e3785898-rust-stderr.bin"
+        }
+      },
+      "process_output": {
+        "php": {
+          "stdout_bytes": 3013,
+          "stdout_sha256": "2aed7de8c785e093380af0f7f23ebbe6b5618e4d99b7f5db74c5ee9bcf58f356",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "rust": {
+          "stdout_bytes": 555,
+          "stdout_sha256": "6f21cebbbe44658751d2bb8555b3736b0ac5a49766f868d1ac14dddceef4f780",
+          "stderr_bytes": 753,
+          "stderr_sha256": "b08f98866e95df61f47ac84eecd0f99e4a86a0df73d19bf5d34e0f38287a9d9d"
+        }
       }
     }
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 12300,
-      "rust": 10404
+      "php": 18096,
+      "rust": 20712
     },
     "returncodes": {
       "php": 0,
@@ -711,8 +834,10 @@
     },
     "hook_result": {
       "child_filters": 1,
+      "child_priority_after": null,
       "continuation_depth_after": 0,
       "continuation_peer": true,
+      "current_hook_after": null,
       "final_value_hex": "736565643a72353a63333a7068702d6368696c643a63373a7068702d726f6f743a7068702d623a6c6174653a723230",
       "frames_from_php": 7,
       "frames_from_rust": 6,
@@ -745,8 +870,410 @@
       },
       "root_b_removed": true,
       "root_filters": 1,
+      "root_priority_after": null,
       "scenario": "hooks",
       "state_after": "Finished"
+    },
+    "raw_capture": {
+      "php": {
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e118cd812ba742b0ba6de705e6c07340-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e118cd812ba742b0ba6de705e6c07340-php-stderr.bin"
+      },
+      "rust": {
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e118cd812ba742b0ba6de705e6c07340-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e118cd812ba742b0ba6de705e6c07340-rust-stderr.bin"
+      }
+    },
+    "process_output": {
+      "php": {
+        "stdout_bytes": 2614,
+        "stdout_sha256": "b89939ab42a338c5c7c4464c5f53fa4b7665c751328117375b9a2f322fb2dd3a",
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust": {
+        "stdout_bytes": 1731,
+        "stdout_sha256": "735ecbfa2dbb600f8b4791898ed2589dd6e467f1e92ca961e425ac6eb19b7987",
+        "stderr_bytes": 989,
+        "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
+      }
+    }
+  },
+  "resumable_hook_throwable_bridges": {
+    "hooks_catch": {
+      "processes": {
+        "php": 2532,
+        "rust": 18548
+      },
+      "returncodes": {
+        "php": 0,
+        "rust": 0
+      },
+      "scenario": "hooks_catch",
+      "rust_marker": "V06_HOOKS_OK continuation_peer=true",
+      "frames_from_php": 7,
+      "frames_from_rust": 6,
+      "relayed_bytes": 4974,
+      "all_reaped": true,
+      "observations": {
+        "rust_child": null,
+        "rust_root": null,
+        "rust_throwable_return": null,
+        "rust_abort": null,
+        "php_final": {
+          "alias_same": true,
+          "same_closure_handle": true,
+          "distinct_closures": true,
+          "parent_ticket_preserved": true,
+          "closed_read_rejected": true,
+          "registry_live_after_close": 0,
+          "final_name": "root-before-child:child:root-after-child:b:late",
+          "returned_value_hex": "736565643a72353a7068702d726f6f742d6361756768743a7068702d623a6c6174653a723230",
+          "trace": [
+            "root_a:enter",
+            "child:enter",
+            "child:throw",
+            "child:transport_catch",
+            "child:finally",
+            "root_a:child_rethrow",
+            "root_a:caught_same_object",
+            "root_a:resume",
+            "root_a:exit",
+            "root_b",
+            "late"
+          ],
+          "throwable_class": "RuntimeException",
+          "throwable_message": "hooks child fixture throwable",
+          "child_throw_same_object": true,
+          "root_rethrow_same_object": true,
+          "root_caught_same_object": true,
+          "root_transport_catch_same_object": false,
+          "child_throw_count": 1,
+          "root_rethrow_count": 1,
+          "root_catch_count": 1,
+          "root_transport_catch_count": 0,
+          "external_throwable_alive_after_close": true,
+          "current_hook_after": "root",
+          "hook_depth_after": 1
+        }
+      },
+      "expected_frame_counts": {
+        "php": 7,
+        "rust": 6
+      },
+      "hook_result": {
+        "abort_observation": null,
+        "child_filters": 1,
+        "child_priority_after": 5,
+        "child_ticket_retired": true,
+        "continuation_depth_after": 0,
+        "continuation_peer": true,
+        "current_hook_after": "root",
+        "final_value_hex": "736565643a72353a7068702d726f6f742d6361756768743a7068702d623a6c6174653a723230",
+        "frames_from_php": 7,
+        "frames_from_rust": 6,
+        "hook_depth_after": 1,
+        "late_registered": true,
+        "native_trace": [
+          "r5",
+          "c3",
+          "r20"
+        ],
+        "parent_ticket_preserved": true,
+        "php_observation": {
+          "alias_same": true,
+          "child_throw_count": 1,
+          "child_throw_same_object": true,
+          "closed_read_rejected": true,
+          "current_hook_after": "root",
+          "distinct_closures": true,
+          "external_throwable_alive_after_close": true,
+          "final_name": "root-before-child:child:root-after-child:b:late",
+          "hook_depth_after": 1,
+          "parent_ticket_preserved": true,
+          "registry_live_after_close": 0,
+          "returned_value_hex": "736565643a72353a7068702d726f6f742d6361756768743a7068702d623a6c6174653a723230",
+          "root_catch_count": 1,
+          "root_caught_same_object": true,
+          "root_rethrow_count": 1,
+          "root_rethrow_same_object": true,
+          "root_transport_catch_count": 0,
+          "root_transport_catch_same_object": false,
+          "same_closure_handle": true,
+          "throwable_class": "RuntimeException",
+          "throwable_message": "hooks child fixture throwable",
+          "trace": [
+            "root_a:enter",
+            "child:enter",
+            "child:throw",
+            "child:transport_catch",
+            "child:finally",
+            "root_a:child_rethrow",
+            "root_a:caught_same_object",
+            "root_a:resume",
+            "root_a:exit",
+            "root_b",
+            "late"
+          ]
+        },
+        "root_b_removed": true,
+        "root_filters": 1,
+        "root_priority_after": null,
+        "root_ticket_retired_by_throwable": false,
+        "scenario": "hooks_catch",
+        "state_after": "Finished"
+      },
+      "raw_capture": {
+        "php": {
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-a5e1b8fee53a497fb818e3e5319177ed-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-a5e1b8fee53a497fb818e3e5319177ed-php-stderr.bin"
+        },
+        "rust": {
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-a5e1b8fee53a497fb818e3e5319177ed-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-a5e1b8fee53a497fb818e3e5319177ed-rust-stderr.bin"
+        }
+      },
+      "process_output": {
+        "php": {
+          "stdout_bytes": 3123,
+          "stdout_sha256": "09aee51549b78bf69c31134def9af4e286846abb59ee18705aa54749190d1fd8",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "rust": {
+          "stdout_bytes": 1851,
+          "stdout_sha256": "6d763408686cfb886ba71cbab0d32927efe2851bed99bb1128413c9dfb4abcb6",
+          "stderr_bytes": 1582,
+          "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
+        }
+      },
+      "hook_transcript_rejections": [
+        "wrong_start_generation",
+        "extra_start_field",
+        "duplicate_callback_id",
+        "duplicate_live_slot",
+        "wrong_child_input",
+        "false_mutate_parent",
+        "wrong_child_parent",
+        "changed_throwable_return",
+        "wrong_handle_kind",
+        "wrong_request",
+        "bool_slot",
+        "replayed_root_sequence",
+        "wrong_root_outcome",
+        "false_closed_handle_check",
+        "live_registry_after_close",
+        "wrong_transport_count",
+        "duplicate_decoded_key",
+        "unterminated_frame"
+      ]
+    },
+    "hooks_abort": {
+      "processes": {
+        "php": 29344,
+        "rust": 27144
+      },
+      "returncodes": {
+        "php": 0,
+        "rust": 0
+      },
+      "scenario": "hooks_abort",
+      "rust_marker": "V06_HOOKS_OK continuation_peer=true",
+      "frames_from_php": 5,
+      "frames_from_rust": 4,
+      "relayed_bytes": 4015,
+      "all_reaped": true,
+      "observations": {
+        "rust_child": null,
+        "rust_root": null,
+        "rust_throwable_return": null,
+        "rust_abort": {
+          "completion": {
+            "class": "RuntimeException",
+            "handle": {
+              "generation": 1,
+              "kind": "throwable",
+              "request": "51",
+              "slot": 6,
+              "token": "37377c7549324aa7"
+            },
+            "kind": "php_throwable",
+            "message": "hooks child fixture throwable"
+          },
+          "continuation_depth": 0,
+          "current_hook": "child",
+          "finish_request_after_abort_rejected": true,
+          "hook_depth": 2,
+          "late_registered": true,
+          "late_resume_rejected": true,
+          "reason": "php_throwable",
+          "root_b_removed": true,
+          "root_ticket_retired": true,
+          "state": "Aborted"
+        },
+        "php_final": {
+          "alias_same": true,
+          "same_closure_handle": true,
+          "distinct_closures": true,
+          "parent_ticket_preserved": true,
+          "closed_read_rejected": true,
+          "registry_live_after_close": 0,
+          "final_name": "root-before-child:child",
+          "returned_value_hex": null,
+          "trace": [
+            "root_a:enter",
+            "child:enter",
+            "child:throw",
+            "child:transport_catch",
+            "child:finally",
+            "root_a:child_rethrow",
+            "root_a:transport_catch",
+            "root_a:finally"
+          ],
+          "throwable_class": "RuntimeException",
+          "throwable_message": "hooks child fixture throwable",
+          "child_throw_same_object": true,
+          "root_rethrow_same_object": true,
+          "root_caught_same_object": false,
+          "root_transport_catch_same_object": true,
+          "child_throw_count": 1,
+          "root_rethrow_count": 1,
+          "root_catch_count": 0,
+          "root_transport_catch_count": 1,
+          "external_throwable_alive_after_close": true,
+          "current_hook_after": "child",
+          "hook_depth_after": 2
+        }
+      },
+      "expected_frame_counts": {
+        "php": 5,
+        "rust": 4
+      },
+      "hook_result": {
+        "abort_observation": {
+          "completion": {
+            "class": "RuntimeException",
+            "handle": {
+              "generation": 1,
+              "kind": "throwable",
+              "request": "51",
+              "slot": 6,
+              "token": "37377c7549324aa7"
+            },
+            "kind": "php_throwable",
+            "message": "hooks child fixture throwable"
+          },
+          "continuation_depth": 0,
+          "current_hook": "child",
+          "finish_request_after_abort_rejected": true,
+          "hook_depth": 2,
+          "late_registered": true,
+          "late_resume_rejected": true,
+          "reason": "php_throwable",
+          "root_b_removed": true,
+          "root_ticket_retired": true,
+          "state": "Aborted"
+        },
+        "child_filters": 1,
+        "child_priority_after": 5,
+        "child_ticket_retired": true,
+        "continuation_depth_after": 0,
+        "continuation_peer": true,
+        "current_hook_after": "child",
+        "final_value_hex": null,
+        "frames_from_php": 5,
+        "frames_from_rust": 4,
+        "hook_depth_after": 2,
+        "late_registered": true,
+        "native_trace": [
+          "r5",
+          "c3"
+        ],
+        "parent_ticket_preserved": true,
+        "php_observation": {
+          "alias_same": true,
+          "child_throw_count": 1,
+          "child_throw_same_object": true,
+          "closed_read_rejected": true,
+          "current_hook_after": "child",
+          "distinct_closures": true,
+          "external_throwable_alive_after_close": true,
+          "final_name": "root-before-child:child",
+          "hook_depth_after": 2,
+          "parent_ticket_preserved": true,
+          "registry_live_after_close": 0,
+          "returned_value_hex": null,
+          "root_catch_count": 0,
+          "root_caught_same_object": false,
+          "root_rethrow_count": 1,
+          "root_rethrow_same_object": true,
+          "root_transport_catch_count": 1,
+          "root_transport_catch_same_object": true,
+          "same_closure_handle": true,
+          "throwable_class": "RuntimeException",
+          "throwable_message": "hooks child fixture throwable",
+          "trace": [
+            "root_a:enter",
+            "child:enter",
+            "child:throw",
+            "child:transport_catch",
+            "child:finally",
+            "root_a:child_rethrow",
+            "root_a:transport_catch",
+            "root_a:finally"
+          ]
+        },
+        "root_b_removed": true,
+        "root_filters": 1,
+        "root_priority_after": 10,
+        "root_ticket_retired_by_throwable": true,
+        "scenario": "hooks_abort",
+        "state_after": "Aborted"
+      },
+      "raw_capture": {
+        "php": {
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-06ddb52cf94f4980b36a856223cb92ab-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-06ddb52cf94f4980b36a856223cb92ab-php-stderr.bin"
+        },
+        "rust": {
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-06ddb52cf94f4980b36a856223cb92ab-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-06ddb52cf94f4980b36a856223cb92ab-rust-stderr.bin"
+        }
+      },
+      "process_output": {
+        "php": {
+          "stdout_bytes": 2526,
+          "stdout_sha256": "c595df8975ef9d35668ea70b8cad11a31be1f65181917d569378ef87fc55bdb9",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "rust": {
+          "stdout_bytes": 1489,
+          "stdout_sha256": "e5475b81fd8dda5ac98a925d5a02cd6ea2b8b07cde676acaac05ade4f1eb7151",
+          "stderr_bytes": 1817,
+          "stderr_sha256": "5a9507030df1976006cffb37556103852fbbe12481c9e0b0bd64aa7445b730cb"
+        }
+      },
+      "hook_transcript_rejections": [
+        "wrong_start_generation",
+        "extra_start_field",
+        "duplicate_callback_id",
+        "duplicate_live_slot",
+        "wrong_child_input",
+        "false_mutate_parent",
+        "wrong_child_parent",
+        "changed_throwable_return",
+        "wrong_handle_kind",
+        "wrong_request",
+        "bool_slot",
+        "replayed_root_sequence",
+        "wrong_root_outcome",
+        "false_closed_handle_check",
+        "live_registry_after_close",
+        "wrong_transport_count",
+        "duplicate_decoded_key",
+        "unterminated_frame"
+      ]
     }
   },
   "negative_vectors_rejected_by_rust": [
@@ -770,76 +1297,76 @@
     "escaped_duplicate_key"
   ],
   "owned_children": {
-    "spawned_and_reaped": 26,
+    "spawned_and_reaped": 30,
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 25236,
+        "pid": 28572,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 26840,
+        "pid": 23024,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 19140,
+        "pid": 25176,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 29592,
+        "pid": 27508,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 29320,
+        "pid": 27604,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 1732,
+        "pid": 26456,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27288,
+        "pid": 2472,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28584,
+        "pid": 18084,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28920,
+        "pid": 16556,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 18800,
+        "pid": 13924,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28716,
+        "pid": 26664,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 22588,
+        "pid": 18104,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 30552,
+        "pid": 10492,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25692,
+        "pid": 24904,
         "returncode": 0,
         "reaped": true
       }
@@ -866,6 +1393,14 @@
         "rust": 0
       },
       "hooks": {
+        "php": 0,
+        "rust": 0
+      },
+      "hooks_catch": {
+        "php": 0,
+        "rust": 0
+      },
+      "hooks_abort": {
         "php": 0,
         "rust": 0
       }

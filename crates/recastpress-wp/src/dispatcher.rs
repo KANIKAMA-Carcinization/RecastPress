@@ -1,6 +1,7 @@
-//! Named plugin.php-style dispatch for supported request-local native callbacks.
+//! Named plugin.php-style dispatch for request-local native and resumable PHP callbacks.
 
 use crate::{
+    continuation::{Completion, PhpHandle, PhpHandleKind},
     hooks::{
         self, CallbackId, Context, ContextCallback, HookDiagnostic, HookError, HookStep,
         MAX_NESTING, Mode, PhpInvocation, Storage,
@@ -41,6 +42,7 @@ pub struct DispatchTicket {
 pub enum DispatchStep {
     InvokePhp(PhpInvocation),
     Complete(PhpValue),
+    PhpThrowable(PhpHandle),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -61,6 +63,7 @@ struct ResumableDispatch {
     slot: Option<usize>,
     frame_started: bool,
     waiting_for_php: bool,
+    pending_throwable: Option<PhpHandle>,
 }
 
 impl Default for Dispatcher {
@@ -171,6 +174,9 @@ impl Dispatcher {
     pub fn priority_of(&self, name: &str, id: &CallbackId) -> Option<i64> {
         self.state(name).and_then(|state| state.priority_of(id))
     }
+    pub fn current_priority(&self, name: &str) -> Option<i64> {
+        self.state(name).and_then(Storage::current_priority)
+    }
     pub fn current_hook(&self) -> Option<&str> {
         self.current.last().map(String::as_str)
     }
@@ -210,10 +216,9 @@ impl Dispatcher {
         extra: &[PhpValue],
     ) -> Result<DispatchTicket, HookError> {
         if !self.resumable.is_empty()
-            && !self
-                .resumable
-                .last()
-                .is_some_and(|dispatch| dispatch.waiting_for_php)
+            && !self.resumable.last().is_some_and(|dispatch| {
+                dispatch.waiting_for_php && dispatch.pending_throwable.is_none()
+            })
         {
             return Err(HookError::DispatchParentNotPending);
         }
@@ -252,6 +257,7 @@ impl Dispatcher {
             slot: all_slot,
             frame_started: false,
             waiting_for_php: false,
+            pending_throwable: None,
         });
         Ok(ticket)
     }
@@ -270,6 +276,14 @@ impl Dispatcher {
 
     fn advance_inner(&mut self, ticket: DispatchTicket) -> Result<DispatchStep, HookError> {
         self.check_top_ticket(ticket)?;
+        if let Some(handle) = self
+            .resumable
+            .last()
+            .and_then(|dispatch| dispatch.pending_throwable)
+        {
+            self.retire_top_dispatch_for_throwable();
+            return Ok(DispatchStep::PhpThrowable(handle));
+        }
         if self
             .resumable
             .last()
@@ -393,20 +407,43 @@ impl Dispatcher {
 
     /// Accept one PHP filter result for the closure invocation currently pending on this ticket.
     pub fn resume_php(&mut self, ticket: DispatchTicket, value: PhpValue) -> Result<(), HookError> {
+        self.resume_php_completion(ticket, Completion::Value(value))
+    }
+
+    /// Accept the full outcome of the PHP closure invocation pending on this ticket.
+    /// A Throwable retires the internal frame while preserving the public WP hook stack.
+    pub fn resume_php_completion(
+        &mut self,
+        ticket: DispatchTicket,
+        completion: Completion<PhpValue>,
+    ) -> Result<(), HookError> {
         self.check_top_ticket(ticket)?;
         if self.advancing == Some(ticket) {
             return Err(HookError::DispatchTicketBusy);
         }
         let dispatch = self.resumable.last().expect("validated dispatch ticket");
-        if !dispatch.waiting_for_php {
+        if !dispatch.waiting_for_php || dispatch.pending_throwable.is_some() {
             return Err(HookError::NoPhpCallbackPending);
         }
-        let slot = dispatch.slot.ok_or(HookError::InvalidDispatchTicket)?;
-        hooks::resume(self, slot, value)?;
-        self.resumable
-            .last_mut()
-            .expect("active dispatch")
-            .waiting_for_php = false;
+        match completion {
+            Completion::Value(value) => {
+                let slot = dispatch.slot.ok_or(HookError::InvalidDispatchTicket)?;
+                hooks::resume(self, slot, value)?;
+                self.resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .waiting_for_php = false;
+            }
+            Completion::PhpThrowable(handle) => {
+                if handle.kind() != PhpHandleKind::Throwable {
+                    return Err(HookError::InvalidPhpThrowableHandle);
+                }
+                self.resumable
+                    .last_mut()
+                    .expect("active dispatch")
+                    .pending_throwable = Some(handle);
+            }
+        }
         Ok(())
     }
 
@@ -452,6 +489,16 @@ impl Dispatcher {
     }
 
     fn cancel_top_dispatch(&mut self) {
+        let base_depth = self.cancel_top_dispatch_frame();
+        self.current.truncate(base_depth);
+        self.complete_top_dispatch();
+    }
+
+    fn retire_top_dispatch_for_throwable(&mut self) {
+        self.complete_top_dispatch();
+    }
+
+    fn cancel_top_dispatch_frame(&mut self) -> usize {
         if let Some(dispatch) = self.resumable.last() {
             let base_depth = dispatch.base_depth;
             if dispatch.frame_started
@@ -460,9 +507,10 @@ impl Dispatcher {
             {
                 state.cancel_frame();
             }
-            self.current.truncate(base_depth);
+            base_depth
+        } else {
+            self.current.len()
         }
-        self.complete_top_dispatch();
     }
 
     fn dispatch(

@@ -18,7 +18,7 @@ The entrypoint builds the explicit one-shot binary with `cargo build --offline -
 
 ## Registry-integrated profile snapshot status
 
-The source maps are one-shot: five files; default continuation bridge: seven files; publish and handles: eight files; hooks: eight files; trap-only guest: one file. The native one-shot and interactive surface/throwable fixtures use the shared `HandleRegistry`. The linked one-shot, default continuation, publish, handles and trap receipts below passed against the 77b3655 shared-registry profile snapshot and remain historical for the current hooks source; hooks Wasm execution against current source is pending.
+The fixture maps are one-shot: five files; default continuation bridge: seven files; publish and handles: eight files; hooks: eight files; trap-only guest: one file. The native one-shot and interactive surface/throwable fixtures use the shared `HandleRegistry`. The current hooks profile runs normal, caught-Throwable and root-abort guests on one compiled module. Current-source measurements for all six profiles are listed at the end; earlier measurements remain historical.
 
 The historical [registry-integrated one-shot receipt](evidence/run-20261112T154442Z-success.json) passed the 15-check surface oracle and 11-check strict JSON oracle. Its [WSL language origin receipt](evidence/wsl-language-origin-20261112T154444.848614Z.json) confirms the 82-input snapshot matched the repository. It was observed at 2026-11-12 15:44 UTC (2026-11-13 00:44 JST); module compilation took 103,063 ms and fixture execution 328 ms.
 
@@ -82,10 +82,11 @@ python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --hooks
 python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --hooks --verify-only
 ```
 
-The hooks profile mounts the default seven-file bridge map plus `hooks_driver.php` (eight files total). It resolves and invokes real PHP Closures through `HandleRegistry`; the fixture keeps the external Closure aliases alive through `RequestFinished`. The native Rust 1.94 smoke passed with seven PHP and six Rust frames, including nested dispatch, priority/cursor/bucket snapshot behavior, mutation during a child hook, object and Closure identity, and rejection after registry close. The [real PHP-Wasm hooks receipt](evidence/hooks-20261112T163831.989293Z-success.json) passed with the same seven/six frames, final bytes, traces, heap observations and zero remaining registry slots. Its [WSL origin](evidence/wsl-hooks-origin-20261112T163836.899479Z.json) binds 98 inputs before snapshot, in the snapshot, and after execution. Module compilation took 118,740 ms and execution 174 ms on this development host; these observations do not establish product performance. Existing one-shot/default/publish/handles/trap receipts refer to the earlier 77b3655 shared-registry source profile; the new source profile is recorded in the table below.
+The hooks profile mounts the default seven-file bridge map plus hooks_driver.php (eight files total). It resolves and invokes real PHP Closures through HandleRegistry; the fixture keeps the external Closure aliases alive through RequestFinished. The earlier native and PHP-Wasm hooks observations cover the normal seven-PHP/six-Rust-frame path only. The [PHP-Wasm receipt](evidence/hooks-20261112T163831.989293Z-success.json) and its [98-input WSL origin](evidence/wsl-hooks-origin-20261112T163836.899479Z.json) are historical for the pre-Throwable hooks source; compilation took 118,740 ms and execution 174 ms on that development host. They do not verify the current Throwable scenarios.
 
-This fixture does not prove production removal's final-reference release, complete WordPress callable identity, product hooks or Query acceptance. Production dispatcher integration remains a later milestone.
+The current native --self-test passed all eight scenarios, including hooks_catch and hooks_abort; an independent private-capture check confirmed frame sequence, parent correlation, typed completion/Throwable identity and RequestFinished statistics. In catch mode the same real child RuntimeException is caught by the root Closure and normal rootB/late/native dispatch continues (7 PHP/6 Rust frames; final bytes seed:r5:php-root-caught:php-b:late:r20). In abort mode the same Throwable propagates, retires the root ticket and aborts the Continuation; rootB/late/r20 do not execute (5 PHP/4 Rust frames). Both cases retain the expected parent-registration mutation observations. The public hook stack and retained WP iteration priorities are observed separately from Continuation state: after child throw the current hook is child, depth 2, child priority 5; catch finishes at root/depth 1 with child priority 5 and root priority null; abort remains child/depth 2 with child priority 5 and root priority 10. Rust reports Continuation depth 0 and Finished/Aborted separately.
 
+The [Wasm v2 receipt](evidence/hooks-20261112T173452.858642Z-success.json) passed all three modes, with [100 bound origin inputs](evidence/wsl-hooks-origin-20261112T173458.519571Z.json). Module compilation took 99,073 ms and all guest executions 544 ms on this development host. The native eight-bridge record binds 178 inputs and 30 reaped children. The separate [pinned WordPress oracle receipt](../evidence/wp-hooks-throwable-v1.json) binds 184 inputs and compares all three native/Wasm outcomes with actual plugin.php/WP_Hook: final bytes, object name, registration mutation, current hook, stack depth and retained priorities match. Continuation terminal state is a Rust observation after the actual PHP terminal frame, rather than a PHP report of a future state. The fixture does not establish production removal final-reference release, complete WordPress callable identity, product hooks or Query acceptance. Production dispatcher integration remains a later milestone.
 ## Fixed inputs
 
 | Input | Fixed identity |
@@ -131,15 +132,15 @@ The Rust tracker covers PHP-issued observation metadata and publish ordering. Th
 
 ## Current-source regression receipts
 
-All six profiles below ran against the frozen resumable-hooks source. The origin records bind the repository, Linux snapshot and post-run identities; local independent verification also checked host binaries and private stdout/stderr captures. Earlier receipts remain historical.
+All six profiles below ran against the frozen typed-Throwable hooks source. The origin records bind repository, Linux snapshot and post-run identities; independent local verification checked host binaries and bounded stdout/stderr captures. Earlier receipts remain historical.
 
 | Profile | Receipt | Origin inputs |
 | --- | --- | --- |
-| run | [passed](evidence/run-20261112T164109Z-success.json) | [82 inputs](evidence/wsl-language-origin-20261112T164112.695230Z.json) |
-| bridge | [passed](evidence/bridge-20261112T164417.393369Z-success.json) | [98 inputs](evidence/wsl-bridge-origin-20261112T164424.322799Z.json) |
-| publish | [passed](evidence/publish-20261112T164633.606149Z-success.json) | [98 inputs](evidence/wsl-publish-origin-20261112T164638.646888Z.json) |
-| handles | [passed](evidence/handles-20261112T164842.009570Z-success.json) | [98 inputs](evidence/wsl-handles-origin-20261112T164847.621358Z.json) |
-| hooks | [passed](evidence/hooks-20261112T163831.989293Z-success.json) | [98 inputs](evidence/wsl-hooks-origin-20261112T163836.899479Z.json) |
-| trap | [passed](evidence/trap-20261112T165559.382920Z-success.json) | [99 inputs](evidence/wsl-trap-origin-20261112T165606.737708Z.json) |
+| run | [passed](evidence/run-20261112T173818Z-success.json) | [82 inputs](evidence/wsl-language-origin-20261112T173820.135428Z.json) |
+| bridge | [passed](evidence/bridge-20261112T174005.465552Z-success.json) | [100 inputs](evidence/wsl-bridge-origin-20261112T174010.986504Z.json) |
+| publish | [passed](evidence/publish-20261112T174203.243538Z-success.json) | [100 inputs](evidence/wsl-publish-origin-20261112T174208.877821Z.json) |
+| handles | [passed](evidence/handles-20261112T174355.050422Z-success.json) | [100 inputs](evidence/wsl-handles-origin-20261112T174400.301060Z.json) |
+| hooks | [passed](evidence/hooks-20261112T173452.858642Z-success.json) | [100 inputs](evidence/wsl-hooks-origin-20261112T173458.519571Z.json) |
+| trap | [passed](evidence/trap-20261112T175008.246021Z-success.json) | [101 inputs](evidence/wsl-trap-origin-20261112T175014.840259Z.json) |
 
-The hooks, default, publish and handles profiles bind 98 inputs, trap binds 99 and the one-shot runner binds 82. Module compilation and execution measurements are per-run development observations recorded in the receipts. This does not establish production resource budgets or worker reuse.
+The hooks profile covers normal/catch/abort with 7/6, 7/6 and 5/4 PHP/Rust frames. The default bridge still covers surface/throwable and exit/partial-frame/pipe-close recovery; publish, handle lifetime, metered trap and owned CPU-loop recovery passed again. Build/host processes were reaped. These measurements do not establish product CPU budgets or worker reuse.

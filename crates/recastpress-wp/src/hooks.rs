@@ -20,6 +20,7 @@ pub enum HookError {
     NestingLimit,
     CallbackFailed(String),
     InvalidPhpCallbackHandle,
+    InvalidPhpThrowableHandle,
     PhpCallbackRequiresContinuation,
     PhpCallbackPending,
     NoPhpCallbackPending,

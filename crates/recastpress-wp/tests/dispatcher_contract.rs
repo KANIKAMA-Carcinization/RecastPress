@@ -1,5 +1,5 @@
 use recastpress_wp::{
-    continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
+    continuation::{Completion, PhpHandle, PhpHandleKind, RequestGeneration},
     dispatcher::{DispatchStep, Dispatcher, DispatcherCallback},
     hooks::{CallbackId, HookError},
     value::{PhpArray, PhpKey, PhpValue},
@@ -61,6 +61,16 @@ fn closure_handle(slot: u32) -> PhpHandle {
     )
 }
 
+fn throwable_handle(slot: u32) -> PhpHandle {
+    PhpHandle::new(
+        RequestGeneration::new(51),
+        PhpHandleKind::Throwable,
+        slot,
+        1,
+        u64::from(slot),
+    )
+}
+
 fn drive_native_ticket(
     dispatcher: &mut Dispatcher,
     ticket: recastpress_wp::dispatcher::DispatchTicket,
@@ -69,6 +79,9 @@ fn drive_native_ticket(
         DispatchStep::Complete(value) => value,
         DispatchStep::InvokePhp(invocation) => {
             panic!("unexpected PHP callback: {}", invocation.callback.callback)
+        }
+        DispatchStep::PhpThrowable(handle) => {
+            panic!("unexpected PHP throwable handle: {handle:?}")
         }
     }
 }
@@ -594,7 +607,7 @@ fn resumable_tickets_reject_foreign_order_replay_and_cancel_child_restores_paren
     );
     dispatcher.add(
         "child",
-        10,
+        5,
         DispatcherCallback::php(id("child"), 1, closure_handle(2)).unwrap(),
     );
     let root = dispatcher.begin_filter("root", value("root"), &[]).unwrap();
@@ -649,6 +662,186 @@ fn resumable_tickets_reject_foreign_order_replay_and_cancel_child_restores_paren
     );
     assert_eq!(dispatcher.current_hook(), None);
     assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn throwable_completion_cancels_child_and_restores_parent_pending() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "root",
+        10,
+        DispatcherCallback::php(id("root"), 1, closure_handle(21)).unwrap(),
+    );
+    dispatcher.add(
+        "child",
+        5,
+        DispatcherCallback::php(id("child"), 1, closure_handle(22)).unwrap(),
+    );
+    let root = dispatcher.begin_filter("root", value("root"), &[]).unwrap();
+    assert!(matches!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    let child = dispatcher
+        .begin_filter("child", value("child"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+
+    let mut foreign = Dispatcher::new();
+    assert_eq!(
+        foreign.resume_php_completion(child, Completion::PhpThrowable(throwable_handle(25))),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(
+        dispatcher.resume_php_completion(root, Completion::PhpThrowable(throwable_handle(26))),
+        Err(HookError::DispatchTicketOrder)
+    );
+    let wrong_kind = closure_handle(23);
+    assert_eq!(
+        dispatcher.resume_php_completion(child, Completion::PhpThrowable(wrong_kind)),
+        Err(HookError::InvalidPhpThrowableHandle)
+    );
+    assert_eq!(
+        dispatcher.advance(child),
+        Err(HookError::PhpCallbackPending)
+    );
+    assert_eq!(dispatcher.current_hook(), Some("child"));
+    assert_eq!(dispatcher.hook_stack_depth(), 2);
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+
+    let thrown = throwable_handle(24);
+    dispatcher
+        .resume_php_completion(child, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.resume_php(child, value("duplicate")),
+        Err(HookError::NoPhpCallbackPending)
+    );
+    assert_eq!(
+        dispatcher.resume_php_completion(child, Completion::PhpThrowable(throwable_handle(27))),
+        Err(HookError::NoPhpCallbackPending)
+    );
+    assert_eq!(
+        dispatcher.begin_filter("grandchild", value("grandchild"), &[]),
+        Err(HookError::DispatchParentNotPending)
+    );
+    assert_eq!(dispatcher.did_filter("grandchild"), 0);
+    assert_eq!(dispatcher.current_hook(), Some("child"));
+    assert_eq!(dispatcher.hook_stack_depth(), 2);
+    assert_eq!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::PhpThrowable(thrown))
+    );
+    assert_eq!(
+        dispatcher.advance(child),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(dispatcher.current_hook(), Some("child"));
+    assert_eq!(dispatcher.hook_stack_depth(), 2);
+    assert!(dispatcher.doing_hook(Some("root")));
+    assert!(dispatcher.doing_hook(Some("child")));
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+    assert_eq!(dispatcher.did_filter("child"), 1);
+    assert_eq!(dispatcher.advance(root), Err(HookError::PhpCallbackPending));
+
+    let reentry = dispatcher
+        .begin_filter("child", value("reentry"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(reentry),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    dispatcher.resume_php(reentry, value("reentered")).unwrap();
+    assert_eq!(
+        dispatcher.advance(reentry),
+        Ok(DispatchStep::Complete(value("reentered")))
+    );
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+    assert_eq!(dispatcher.did_filter("child"), 2);
+
+    dispatcher.resume_php(root, value("caught-child")).unwrap();
+    assert_eq!(
+        drive_native_ticket(&mut dispatcher, root),
+        value("caught-child")
+    );
+    assert_eq!(dispatcher.current_hook(), Some("root"));
+    assert_eq!(dispatcher.hook_stack_depth(), 1);
+    assert_eq!(dispatcher.current_priority("root"), None);
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+    assert!(dispatcher.doing_hook(Some("root")));
+    assert!(!dispatcher.doing_hook(Some("child")));
+}
+
+#[test]
+fn root_throwable_consumes_only_its_dispatch_ticket() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "root",
+        10,
+        DispatcherCallback::php(id("root"), 1, closure_handle(31)).unwrap(),
+    );
+    dispatcher.add(
+        "child",
+        5,
+        DispatcherCallback::php(id("child"), 1, closure_handle(33)).unwrap(),
+    );
+    let root = dispatcher.begin_filter("root", value("root"), &[]).unwrap();
+    assert!(matches!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    let child = dispatcher
+        .begin_filter("child", value("child"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+    let child_thrown = throwable_handle(32);
+    dispatcher
+        .resume_php_completion(child, Completion::PhpThrowable(child_thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(child),
+        Ok(DispatchStep::PhpThrowable(child_thrown))
+    );
+    assert_eq!(dispatcher.current_hook(), Some("child"));
+    assert_eq!(dispatcher.hook_stack_depth(), 2);
+    assert!(dispatcher.doing_hook(Some("root")));
+    assert!(dispatcher.doing_hook(Some("child")));
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
+    let thrown = throwable_handle(34);
+    dispatcher
+        .resume_php_completion(root, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(root),
+        Ok(DispatchStep::PhpThrowable(thrown))
+    );
+    assert_eq!(
+        dispatcher.advance(root),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(
+        dispatcher.resume_php_completion(root, Completion::PhpThrowable(thrown)),
+        Err(HookError::InvalidDispatchTicket)
+    );
+    assert_eq!(dispatcher.current_hook(), Some("child"));
+    assert_eq!(dispatcher.hook_stack_depth(), 2);
+    assert!(dispatcher.doing_hook(Some("root")));
+    assert!(dispatcher.doing_hook(Some("child")));
+    assert_eq!(dispatcher.current_priority("root"), Some(10));
+    assert_eq!(dispatcher.current_priority("child"), Some(5));
 }
 
 #[test]

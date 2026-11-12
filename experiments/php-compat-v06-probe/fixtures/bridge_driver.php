@@ -222,6 +222,8 @@ function run_throwable_probe(): void {
     ], 'transport' => $wire->stats()]);
 }
 
+if (in_array(($argv[1] ?? null), ['hooks', 'hooks_catch', 'hooks_abort'], true)) return;
+
 if (($argv[1] ?? 'surface') === 'throwable') {
     try { run_throwable_probe(); } catch (Throwable $e) { fail_bridge($e); }
 } elseif (($argv[1] ?? 'surface') === 'surface') try {

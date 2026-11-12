@@ -51,7 +51,7 @@ HOOK_FILES = HOST_FIXTURE_ORDER + ("hooks_driver.php",)
 
 sys.path.insert(0, str(WASM_DIR.parent))
 from publish_contract import self_check as publish_self_check, validate_publish_result
-from hook_contract import self_check as hook_self_check, validate_hook_result
+from hook_contract import SCENARIOS as HOOK_SCENARIOS, self_check as hook_self_check, validate_hook_result
 from handle_contract import SCENARIOS as HANDLE_SCENARIOS, self_check as handle_self_check, validate_handle_result
 
 
@@ -100,6 +100,8 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.extend(ROOT / "crates/recastpress-wp/tests" / name
                  for name in ("hooks_contract.rs", "dispatcher_contract.rs"))
     paths.append(WASM_DIR.parent / "fixtures" / "hooks_driver.php")
+    paths.extend(WASM_DIR.parent / "fixtures" / name
+                 for name in ("CONTRACT.md", "HOOKS_THROWABLE_CONTRACT.md"))
     paths.extend(WASM_DIR.parent / "fixtures" / name for name in ("handle_registry.php", "handle_driver.php"))
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
     paths.append(RECOVERY_FIXTURE)
@@ -479,7 +481,7 @@ PROFILE_SCOPES = {
     "bridge": "fixed PHP-WASIX callback bridge, throwable continuation and fresh-guest recovery after exit, partial frame and pipe close",
     "publish": "fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation",
     "handles": "fixed PHP-WASIX request-local registry lifetime, reference rebinding, slot generations, destructor reentry and normal/abort cleanup",
-    "hooks": "fixed resumable Rust hook iteration with PHP closures, nested filters, active-bucket snapshot and future-priority mutation",
+    "hooks": "fixed resumable Rust hooks with PHP Closures, nested Throwable catch/recovery and root abort, active-bucket snapshot and future-priority mutation",
 }
 
 
@@ -630,7 +632,7 @@ def validate_handle_host_result(value: dict) -> None:
 
 def validate_hook_host_result(value: dict) -> None:
     result = _mapping(value)
-    if (result.get("schema") != "recastpress.php-compat-v06-wasm-hooks.v1"
+    if (result.get("schema") != "recastpress.php-compat-v06-wasm-hooks.v2"
             or result.get("execution") != "passed"
             or result.get("compiler_profile") != COMPILER_PROFILE):
         raise ValueError("hook host header mismatch")
@@ -642,12 +644,17 @@ def validate_hook_host_result(value: dict) -> None:
                 for name in HOOK_FILES]
     if result.get("fixtures") != expected:
         raise ValueError("hook fixture identities differ")
-    case = _mapping(result.get("case"))
-    if (case.get("status") != "passed" or not _int_is(case.get("php_exit_code"), 0)
-            or case.get("guest_completed") is not True or case.get("thread_joined") is not True
-            or type(case.get("peer_elapsed_ms")) is not int or case["peer_elapsed_ms"] < 0):
-        raise ValueError("hook guest did not complete successfully")
-    validate_hook_result(case.get("peer"))
+    cases = result.get("cases")
+    if not isinstance(cases, list) or len(cases) != len(HOOK_SCENARIOS):
+        raise ValueError("hook guest scenario count differs")
+    for scenario, case in zip(HOOK_SCENARIOS, cases):
+        case = _mapping(case)
+        if (case.get("status") != "passed" or not _int_is(case.get("php_exit_code"), 0)
+                or case.get("guest_completed") is not True or case.get("thread_joined") is not True
+                or type(case.get("peer_elapsed_ms")) is not int or case["peer_elapsed_ms"] < 0):
+            raise ValueError("hook guest did not complete successfully")
+        validate_hook_result(case.get("peer"), scenario)
+
 
 
 PROFILE_VALIDATORS = {

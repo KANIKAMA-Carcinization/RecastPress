@@ -1,6 +1,6 @@
 # PHP fixture contract
 
-These fixtures measure PHP runtime behavior only. They do not load WordPress and do not implement or claim to port WordPress query, hook, or persistence logic. The fixed comparison source remains `.reference/wordpress-7.1.3` for later source-derived cases.
+The surface and strict-JSON fixtures measure PHP language behavior. Interactive fixtures connect bounded Rust continuation and dispatcher subsets to PHP Closures, objects and Throwable handles; they do not bootstrap WordPress. The separate `hooks_wp_oracle.php` runs pinned `plugin.php` / `WP_Hook` from `.reference/wordpress-7.1.3` to compare the hook value and exception outcomes. See [the typed hook Throwable contract](HOOKS_THROWABLE_CONTRACT.md). Query, persistence and full WordPress acceptance remain outside these fixtures.
 
 ## One-shot surface fixture
 

@@ -702,6 +702,8 @@ pub fn run_peer<R: BufRead, W: Write>(
         "handles" => handles::run_handles_peer(wire, false),
         "handles_abort" => handles::run_handles_peer(wire, true),
         "hooks" => hooks::run_hooks_peer(wire),
+        "hooks_catch" => hooks::run_hooks_throw_peer(wire, "hooks_catch"),
+        "hooks_abort" => hooks::run_hooks_throw_peer(wire, "hooks_abort"),
         _ => Err("unknown_bridge_scenario".into()),
     }
 }
