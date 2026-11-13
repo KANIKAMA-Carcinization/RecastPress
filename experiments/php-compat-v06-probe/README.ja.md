@@ -64,6 +64,8 @@ filter valueと引数はnull、bool、signed-64 int、IEEE float bit pattern、b
 
 Action fixtureは文字列hookを使い、固定WP 7.1.3、native PHP/Rust peer、PHP-WASIX/Rust peerで同じ観測を比較します。counter更新・読取りは実PHPの`$wp_actions`配列境界を呼び、Rust dispatcherのaction counterは更新成功後に進めます。`$wp_actions`配列のCOW再入はfilter counter COWから推測せず未検証です。非文字列hook keyの変換警告順もこのAction profileでは受入していません。現実装はdispatcher key lookupとPHP counter boundaryの両方でhook keyを評価するため、float hookの警告回数・Throwable位置をWPと同一と主張しません。
 
+[$wp_actions scalar seed probe](wp_action_counter_seed_poc.py)、[PHP fixture](fixtures/wp_action_counter_seed_poc.php)、[receipt](evidence/wp-action-counter-seed-poc-v1.json)で、固定WP 7.1.3／PHP 8.5.12に外部scalar counter値をseedしたtarget-only挙動を測定した。nullは`did_action`で0と読まれ、dispatch後は整数1になる。bool `true`はそのまま残って`E_WARNING`、整数7は8、float 7.5は8.5、非数値文字列`a`は`b`（follow-up後は`c`）になり、それぞれ`E_DEPRECATED`、`PHP_INT_MAX`はfloatへoverflowする。最初のdispatchはcallbackが`RuntimeException`を投げているため、receiptの`first_return`は通常returnの観測値ではない。診断は一時的なerror handlerで捕捉した結果であり、異なるhandlerの挙動は未測定である。Rust/native/Wasm bridgeは引き続きcounter increment／readを整数に限定し、scalar seedは未実装である。このtarget-only測定はbridge対応やproduction互換性を主張しない。
+
 ## 固定WordPress hook oracle
 
 固定WordPressとPHPを準備済みのrepository rootで実行します。CIのnative runnerはこのWordPress oracleを自動実行しません。
