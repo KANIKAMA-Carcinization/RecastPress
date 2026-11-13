@@ -2226,6 +2226,324 @@ function callable_program_priority_throwable_cleanup_leaf(string $case): array
     ];
 }
 
+function callable_program_remove_cow_leaf(string $case, bool $priorityFirst): array
+{
+    $trigger = match ($case) {
+        'warning1_remove_target', 'warning1_add_missing_target' => 1,
+        'warning2_empty_priority7', 'warning2_recreate_priority7' => 2,
+        'read_warning_adds_replacement' => 3,
+        'unset_warning_adds_replacement' => 4,
+        default => 0,
+    };
+    $group = $priorityFirst ? 'first' : 'read-unset';
+    $hook = 'callable-remove-cow-' . $group . '-' . $case;
+    $state = [
+        'trace' => [],
+        'events' => [],
+        'warnings' => [],
+        'warning_index' => 0,
+    ];
+    $targetCalls = 0;
+    $keeperCalls = 0;
+    $replacementCalls = 0;
+    $target = static function (string $value) use (&$state, &$targetCalls): string {
+        $targetCalls++;
+        $state['trace'][] = 'target';
+        return $value . ':target';
+    };
+    $keeper = static function (string $value) use (&$state, &$keeperCalls): string {
+        $keeperCalls++;
+        $state['trace'][] = 'keeper';
+        return $value . ':keeper';
+    };
+    $replacement = static function (string $value) use (&$state, &$replacementCalls): string {
+        $replacementCalls++;
+        $state['trace'][] = 'replacement';
+        return $value . ':replacement';
+    };
+    $anchor = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'anchor';
+        return $value . ':anchor';
+    };
+
+    $targetExistsInitially = $case !== 'warning1_add_missing_target';
+    if ($targetExistsInitially) {
+        add_filter($hook, $target, 7, 1);
+    } else {
+        add_filter($hook, $keeper, 7, 1);
+    }
+    add_filter($hook, $anchor, 10, 1);
+
+    set_error_handler(static function (int $severity, string $message) use (
+        &$state,
+        $hook,
+        $case,
+        $trigger,
+        $target,
+        $replacement,
+        $priorityFirst,
+    ): bool {
+        $index = ++$state['warning_index'];
+        $state['warnings'][] = [
+            'index' => $index,
+            'severity' => $severity,
+            'message_hex' => bin2hex($message),
+        ];
+        $state['events'][] = ['kind' => 'warning', 'index' => $index];
+        if ($index !== $trigger) {
+            return true;
+        }
+
+        $state['events'][] = ['kind' => 'handler_enter', 'index' => $index];
+        if ($priorityFirst) {
+            if ($case === 'warning1_remove_target' || $case === 'warning2_empty_priority7') {
+                $state['events'][] = [
+                    'kind' => 'handler_remove_target',
+                    'result' => remove_filter($hook, $target, 7),
+                ];
+            } elseif ($case === 'warning1_add_missing_target') {
+                $state['events'][] = [
+                    'kind' => 'handler_add_target',
+                    'result' => add_filter($hook, $target, 7, 1),
+                ];
+            } elseif ($case === 'warning2_recreate_priority7') {
+                $state['events'][] = [
+                    'kind' => 'handler_remove_target',
+                    'result' => remove_filter($hook, $target, 7),
+                ];
+                $state['events'][] = [
+                    'kind' => 'handler_add_replacement',
+                    'result' => add_filter($hook, $replacement, 7, 1),
+                ];
+            }
+        } else {
+            $state['events'][] = [
+                'kind' => 'handler_add_replacement',
+                'result' => add_filter($hook, $replacement, 7, 1),
+            ];
+        }
+        $state['events'][] = ['kind' => 'handler_exit', 'index' => $index];
+        return true;
+    });
+
+    $removeResult = null;
+    $caught = null;
+    try {
+        $removeResult = remove_filter($hook, $target, 7.5);
+    } catch (Throwable $throwable) {
+        $caught = [
+            'class_hex' => bin2hex($throwable::class),
+            'message_hex' => bin2hex($throwable->getMessage()),
+        ];
+    } finally {
+        restore_error_handler();
+    }
+
+    $afterRemove = [
+        'target' => has_filter($hook, $target),
+        'keeper' => has_filter($hook, $keeper),
+        'replacement' => has_filter($hook, $replacement),
+        'anchor' => has_filter($hook, $anchor),
+        'any' => has_filter($hook),
+    ];
+    $state['events'][] = ['kind' => 'after_remove', 'state' => $afterRemove];
+    $state['trace'] = [];
+    $applyValue = apply_filters($hook, 'seed');
+    return [
+        'case' => $case,
+        'trigger_warning' => $trigger,
+        'warnings' => $state['warnings'],
+        'events' => $state['events'],
+        'remove_result' => $removeResult,
+        'caught' => $caught,
+        'after_remove' => $afterRemove,
+        'apply_value' => $applyValue,
+        'apply_trace' => $state['trace'],
+        'callback_calls' => [
+            'target' => $targetCalls,
+            'keeper' => $keeperCalls,
+            'replacement' => $replacementCalls,
+        ],
+    ];
+}
+
+function callable_program_remove_cow_cases(): array
+{
+    return [
+        'priority_first' => [
+            'control' => callable_program_remove_cow_leaf('control', true),
+            'warning1_remove_target' => callable_program_remove_cow_leaf('warning1_remove_target', true),
+            'warning1_add_missing_target' => callable_program_remove_cow_leaf('warning1_add_missing_target', true),
+            'warning2_empty_priority7' => callable_program_remove_cow_leaf('warning2_empty_priority7', true),
+            'warning2_recreate_priority7' => callable_program_remove_cow_leaf('warning2_recreate_priority7', true),
+        ],
+        'priority_read_unset' => [
+            'control' => callable_program_remove_cow_leaf('control', false),
+            'read_warning_adds_replacement' => callable_program_remove_cow_leaf('read_warning_adds_replacement', false),
+            'unset_warning_adds_replacement' => callable_program_remove_cow_leaf('unset_warning_adds_replacement', false),
+        ],
+    ];
+}
+
+final class CallableProgramHookUnsetDestructor
+{
+    public static ?Throwable $lastThrown = null;
+
+    public function __construct(
+        private array &$events,
+        private Throwable $failure,
+    ) {}
+
+    public function __invoke(string $value): string
+    {
+        $this->events[] = 'replacement_invoked';
+        return $value . ':replacement';
+    }
+
+    public function __destruct()
+    {
+        $this->events[] = 'replacement_destructor';
+        self::$lastThrown = $this->failure;
+        throw $this->failure;
+    }
+}
+
+function callable_program_hook_unset_leaf(string $case): array
+{
+    if (!in_array($case, ['control', 'inject_on_hook_unset', 'throw_during_finally'], true)) {
+        throw new RuntimeException('unknown callable hook-unset case');
+    }
+
+    $hook = 7.5;
+    $state = [
+        'events' => [],
+        'warnings' => [],
+        'trace' => [],
+        'phase' => 'setup',
+        'injecting' => false,
+        'injection_result' => null,
+    ];
+    $primary = $case === 'throw_during_finally' ? new RuntimeException('primary A') : null;
+    $secondary = $case === 'throw_during_finally' ? new RuntimeException('destructor B') : null;
+    $caught = null;
+    CallableProgramHookUnsetDestructor::$lastThrown = null;
+    $target = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'target';
+        return $value . ':target';
+    };
+    $replacement = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'replacement';
+        return $value . ':replacement';
+    };
+
+    set_error_handler(static function (int $severity, string $message) use (
+        &$state,
+        $case,
+        $hook,
+        $replacement,
+        $secondary,
+    ): bool {
+        $index = count($state['warnings']) + 1;
+        $state['warnings'][] = [
+            'index' => $index,
+            'phase' => $state['phase'],
+            'severity' => $severity,
+            'message_hex' => bin2hex($message),
+        ];
+        $state['events'][] = [
+            'kind' => 'warning',
+            'index' => $index,
+            'phase' => $state['phase'],
+        ];
+        if ($case !== 'control'
+            && $state['phase'] === 'remove'
+            && $index === 7
+            && !$state['injecting']
+        ) {
+            $state['injecting'] = true;
+            $state['events'][] = ['kind' => 'injection_enter', 'warning_index' => $index];
+            $state['phase'] = 'nested_add';
+            if ($case === 'throw_during_finally') {
+                $object = new CallableProgramHookUnsetDestructor($state['events'], $secondary);
+                $state['injection_result'] = add_filter(7, $object, 7, 1);
+                unset($object);
+            } else {
+                $state['injection_result'] = add_filter(7, $replacement, 7, 1);
+            }
+            $state['phase'] = 'remove';
+            $state['events'][] = [
+                'kind' => 'injection_return',
+                'warning_index' => $index,
+                'result' => $state['injection_result'],
+            ];
+            $state['injecting'] = false;
+        }
+        return true;
+    });
+
+    $setupResult = add_filter($hook, $target, 7, 1);
+    $removeResult = null;
+    if ($case === 'throw_during_finally') {
+        try {
+            try {
+                $state['events'][] = ['kind' => 'throw_primary_A'];
+                throw $primary;
+            } finally {
+                $state['phase'] = 'remove';
+                $removeResult = remove_filter($hook, $target, 7);
+            }
+        } catch (Throwable $throwable) {
+            $caught = [
+                'class_hex' => bin2hex($throwable::class),
+                'message_hex' => bin2hex($throwable->getMessage()),
+                'is_primary_A' => $throwable === $primary,
+                'is_destructor_B' => $throwable === CallableProgramHookUnsetDestructor::$lastThrown,
+                'previous_is_primary_A' => $throwable->getPrevious() === $primary,
+            ];
+            $state['events'][] = [
+                'kind' => 'caught',
+                'is_primary_A' => $throwable === $primary,
+                'is_destructor_B' => $throwable === CallableProgramHookUnsetDestructor::$lastThrown,
+            ];
+        }
+    } else {
+        $state['phase'] = 'remove';
+        $removeResult = remove_filter($hook, $target, 7);
+    }
+
+    $state['phase'] = 'observe';
+    $afterRemove = [
+        'target' => has_filter($hook, $target),
+        'replacement' => has_filter($hook, $replacement),
+        'any' => has_filter($hook),
+    ];
+    $state['trace'] = [];
+    $applyValue = apply_filters($hook, 'seed');
+    restore_error_handler();
+
+    return [
+        'case' => $case,
+        'hook_value' => $hook,
+        'setup_result' => $setupResult,
+        'remove_result' => $removeResult,
+        'injection_result' => $state['injection_result'],
+        'caught' => $caught,
+        'warnings' => $state['warnings'],
+        'events' => $state['events'],
+        'after_remove' => $afterRemove,
+        'apply_value' => $applyValue,
+        'apply_trace' => $state['trace'],
+    ];
+}
+
+function callable_program_hook_unset_cases(): array
+{
+    return [
+        'control' => callable_program_hook_unset_leaf('control'),
+        'inject_on_hook_unset' => callable_program_hook_unset_leaf('inject_on_hook_unset'),
+        'throw_during_finally' => callable_program_hook_unset_leaf('throw_during_finally'),
+    ];
+}
 function callable_program_priority_cow_cases(): array
 {
     return [
@@ -2277,5 +2595,7 @@ function callable_program_run(): array
         'coercions' => $coercions,
         'counter_cow' => $counterCow,
         'priority_cow' => $priorityCow,
+        'remove_cow' => callable_program_remove_cow_cases(),
+        'hook_unset_reentry' => callable_program_hook_unset_cases(),
     ];
 }

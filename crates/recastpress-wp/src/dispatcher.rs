@@ -5,7 +5,7 @@ use crate::{
     hooks::{
         self, CallbackId, CallbackMap, Context, ContextCallback, HookArgument, HookDiagnostic,
         HookError, HookPriority, HookScalar, HookStep, MAX_NESTING, Mode, PhpInvocation,
-        PhpReleaseQueue, Storage,
+        PhpReleaseQueue, PriorityBucketState, Storage,
     },
     value::{PhpKey, PhpValue},
 };
@@ -393,8 +393,7 @@ pub struct ControlOperation {
     pending_throwable: Option<PhpHandle>,
     priority_read_pending: bool,
     priority_read_complete: bool,
-    priority_read_missing: bool,
-    priority_bucket_empty: Option<bool>,
+    priority_bucket_state: Option<PriorityBucketState>,
     priority_missing_offset_needed: bool,
     priority_missing_offset_pending: bool,
     priority_unset_pending: bool,
@@ -424,6 +423,16 @@ enum ControlFinish {
         priority: HookPriority,
         removed: bool,
         priority_read_checkpoint: bool,
+        priority_read_operand: Option<Arc<CallbackMap<Dispatcher>>>,
+        priority_unset_operand: Option<Arc<CallbackMap<Dispatcher>>>,
+    },
+    RemoveExistence {
+        slot: usize,
+        target_sequence: u64,
+        operand: Option<Arc<CallbackMap<Dispatcher>>>,
+        priority: Option<HookPriority>,
+        callback: Option<CallbackId>,
+        result: Option<CallbackSnapshot>,
     },
     RemoveAll {
         key: PhpKey,
@@ -466,7 +475,7 @@ enum ControlFinish {
     PriorityWriteCancel,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ControlResult {
     Added(bool),
     Removed(bool),
@@ -477,6 +486,7 @@ pub enum ControlResult {
     HookBindingLookup(HookBindingLookupResult),
     FilterCounter(FilterCounterResult),
     PrioritySnapshot(PrioritySnapshot),
+    RemoveExistence(CallbackSnapshot),
     PriorityWrite(PriorityWriteToken),
     PriorityWriteCommitted,
     PriorityWriteCancelled,
@@ -488,6 +498,7 @@ pub enum ControlStep {
     PriorityRead {
         priority: HookPriority,
         missing: bool,
+        state: PriorityBucketState,
     },
     PriorityMissingOffset(HookPriority),
     PriorityUnset(HookPriority),
@@ -673,6 +684,8 @@ impl Dispatcher {
                 priority,
                 removed: false,
                 priority_read_checkpoint: false,
+                priority_read_operand: None,
+                priority_unset_operand: None,
             });
         };
         let removed = self.storage(slot).remove_entry(&priority, id);
@@ -682,6 +695,8 @@ impl Dispatcher {
             priority,
             removed,
             priority_read_checkpoint: false,
+            priority_read_operand: None,
+            priority_unset_operand: None,
         })
     }
 
@@ -733,6 +748,7 @@ impl Dispatcher {
                 | ControlFinish::FilterCounterOperand { result: None, .. }
                 | ControlFinish::PriorityExistence { result: None, .. }
                 | ControlFinish::PriorityWrite { result: None, .. }
+                | ControlFinish::RemoveExistence { result: None, .. }
         ) && self
             .control_stack
             .last()
@@ -755,27 +771,41 @@ impl Dispatcher {
             self.collect_unused();
             return Ok(ControlStep::PhpThrowable(handle));
         }
-        if !operation.priority_read_complete
-            && let ControlFinish::Remove {
-                priority,
-                slot,
-                removed: true,
-                priority_read_checkpoint: true,
-                ..
-            } = &operation.finish
-        {
-            let missing = !self.storage_ref(*slot).has_priority(priority.key());
-            operation.priority_read_missing = missing;
-            operation.priority_read_complete = true;
-            operation.priority_read_pending = true;
-            self.control_stack
-                .last_mut()
-                .expect("active control")
-                .waiting_boundary = true;
-            return Ok(ControlStep::PriorityRead {
-                priority: priority.clone(),
-                missing,
-            });
+        if !operation.priority_read_complete {
+            let read = match &operation.finish {
+                ControlFinish::Remove {
+                    priority,
+                    slot,
+                    removed: true,
+                    priority_read_checkpoint: true,
+                    ..
+                } => Some((priority.clone(), *slot)),
+                _ => None,
+            };
+            if let Some((priority, slot)) = read {
+                let operand = self.storage_ref(slot).callback_map();
+                let state = Storage::<Dispatcher>::priority_bucket_state(&operand, priority.key());
+                let missing = state == PriorityBucketState::Missing;
+                operation.priority_read_complete = true;
+                operation.priority_bucket_state = Some(state);
+                operation.priority_read_pending = true;
+                if let ControlFinish::Remove {
+                    priority_read_operand,
+                    ..
+                } = &mut operation.finish
+                {
+                    *priority_read_operand = Some(operand);
+                }
+                self.control_stack
+                    .last_mut()
+                    .expect("active control")
+                    .waiting_boundary = true;
+                return Ok(ControlStep::PriorityRead {
+                    priority,
+                    missing,
+                    state,
+                });
+            }
         }
         if operation.priority_missing_offset_needed {
             let ControlFinish::Remove { priority, .. } = &operation.finish else {
@@ -789,16 +819,31 @@ impl Dispatcher {
                 .waiting_boundary = true;
             return Ok(ControlStep::PriorityMissingOffset(priority.clone()));
         }
-        if operation.priority_bucket_empty == Some(true) && !operation.priority_unset_complete {
-            let ControlFinish::Remove { priority, .. } = &operation.finish else {
-                unreachable!("priority unset belongs to remove")
+        if matches!(
+            operation.priority_bucket_state,
+            Some(PriorityBucketState::Empty | PriorityBucketState::Missing)
+        ) && !operation.priority_unset_complete
+        {
+            let (priority, slot) = match &operation.finish {
+                ControlFinish::Remove { priority, slot, .. } => (priority.clone(), *slot),
+                _ => unreachable!("priority unset belongs to remove"),
             };
+            if slot != usize::MAX {
+                let operand = self.storage_ref(slot).callback_map();
+                if let ControlFinish::Remove {
+                    priority_unset_operand,
+                    ..
+                } = &mut operation.finish
+                {
+                    *priority_unset_operand = Some(operand);
+                }
+            }
             operation.priority_unset_pending = true;
             self.control_stack
                 .last_mut()
                 .expect("active control")
                 .waiting_boundary = true;
-            return Ok(ControlStep::PriorityUnset(priority.clone()));
+            return Ok(ControlStep::PriorityUnset(priority));
         }
         if operation.priority_unset_complete && !operation.priority_refresh_complete {
             if let ControlFinish::Remove { slot, priority, .. } = &operation.finish
@@ -855,6 +900,9 @@ impl Dispatcher {
                 ControlResult::FilterCounter(result.ok_or(HookError::InvalidControlOperation)?)
             }
             ControlFinish::PriorityExistence { result, .. } => ControlResult::PrioritySnapshot(
+                result.clone().ok_or(HookError::InvalidControlOperation)?,
+            ),
+            ControlFinish::RemoveExistence { result, .. } => ControlResult::RemoveExistence(
                 result.clone().ok_or(HookError::InvalidControlOperation)?,
             ),
             ControlFinish::PriorityWrite { result, .. } => {
@@ -945,22 +993,36 @@ impl Dispatcher {
         if !operation.priority_read_pending {
             return Err(HookError::NoPhpPriorityAccessPending);
         }
+        let priority = match &operation.finish {
+            ControlFinish::Remove { priority, .. } => priority.clone(),
+            _ => return Err(HookError::InvalidControlOperation),
+        };
         if let Completion::PhpThrowable(thrown) = completion {
             if thrown.kind() != PhpHandleKind::Throwable {
                 return Err(HookError::InvalidPhpThrowableHandle);
             }
             operation.pending_throwable = Some(thrown);
-        } else if let ControlFinish::Remove { slot, priority, .. } = &operation.finish {
-            if *slot != usize::MAX {
-                match self
-                    .storage_ref(*slot)
-                    .priority_bucket_empty(priority.key())
-                {
-                    Some(empty) => operation.priority_bucket_empty = Some(empty),
-                    None => operation.priority_missing_offset_needed = true,
-                }
+            if let ControlFinish::Remove {
+                priority_read_operand,
+                ..
+            } = &mut operation.finish
+            {
+                drop(priority_read_operand.take());
+            }
+        } else if let ControlFinish::Remove {
+            priority_read_operand,
+            ..
+        } = &mut operation.finish
+        {
+            let operand = priority_read_operand
+                .as_ref()
+                .ok_or(HookError::InvalidControlOperation)?;
+            let state = Storage::<Dispatcher>::priority_bucket_state(operand, priority.key());
+            operation.priority_bucket_state = Some(state);
+            if state == PriorityBucketState::Missing {
+                operation.priority_missing_offset_needed = true;
             } else {
-                operation.priority_bucket_empty = Some(true);
+                drop(priority_read_operand.take());
             }
         }
         operation.priority_read_pending = false;
@@ -985,8 +1047,21 @@ impl Dispatcher {
                 return Err(HookError::InvalidPhpThrowableHandle);
             }
             operation.pending_throwable = Some(thrown);
+            if let ControlFinish::Remove {
+                priority_read_operand,
+                ..
+            } = &mut operation.finish
+            {
+                drop(priority_read_operand.take());
+            }
         } else {
-            operation.priority_bucket_empty = Some(true);
+            if let ControlFinish::Remove {
+                priority_read_operand,
+                ..
+            } = &mut operation.finish
+            {
+                drop(priority_read_operand.take());
+            }
         }
         operation.priority_missing_offset_pending = false;
         self.control_stack
@@ -1010,9 +1085,35 @@ impl Dispatcher {
                 return Err(HookError::InvalidPhpThrowableHandle);
             }
             operation.pending_throwable = Some(thrown);
-        } else if let ControlFinish::Remove { slot, priority, .. } = &operation.finish {
+            if let ControlFinish::Remove {
+                priority_unset_operand,
+                ..
+            } = &mut operation.finish
+            {
+                drop(priority_unset_operand.take());
+            }
+        } else if let ControlFinish::Remove {
+            slot,
+            priority,
+            priority_unset_operand,
+            ..
+        } = &mut operation.finish
+        {
             if *slot != usize::MAX {
-                self.storage(*slot).unset_priority_bucket(priority);
+                let mut operand = priority_unset_operand
+                    .take()
+                    .ok_or(HookError::InvalidControlOperation)?;
+                let detached = !Arc::ptr_eq(&operand, &self.storage_ref(*slot).callback_map());
+                if detached {
+                    Storage::<Dispatcher>::unset_priority_bucket_in_map(
+                        Arc::make_mut(&mut operand),
+                        priority.key(),
+                    );
+                    drop(operand);
+                } else {
+                    drop(operand);
+                    self.storage(*slot).unset_priority_bucket(priority);
+                }
             }
             operation.priority_unset_complete = true;
         }
@@ -1257,6 +1358,7 @@ impl Dispatcher {
             ControlFinish::FilterCounterOperand { .. } => Vec::new(),
             ControlFinish::PriorityExistence { slot, .. }
             | ControlFinish::PriorityWrite { slot, .. }
+            | ControlFinish::RemoveExistence { slot, .. }
             | ControlFinish::PriorityWriteCommit { slot, .. } => vec![*slot],
             ControlFinish::PriorityWriteCancel => Vec::new(),
             ControlFinish::Remove { .. } => Vec::new(),
@@ -1276,8 +1378,7 @@ impl Dispatcher {
             pending_throwable: None,
             priority_read_pending: false,
             priority_read_complete: false,
-            priority_read_missing: false,
-            priority_bucket_empty: None,
+            priority_bucket_state: None,
             priority_missing_offset_needed: false,
             priority_missing_offset_pending: false,
             priority_unset_pending: false,
@@ -1431,6 +1532,28 @@ impl Dispatcher {
         &mut self,
         target: HookTarget,
     ) -> Result<ControlOperation, HookError> {
+        self.begin_release_target_inner(target, None)
+    }
+
+    /// Release a pinned receiver while an earlier PHP Throwable is already
+    /// unwinding. Callable destructors run through the release cursor and may
+    /// replace that Throwable, preserving PHP's `finally` behavior.
+    pub fn begin_release_target_with_throwable(
+        &mut self,
+        target: HookTarget,
+        thrown: PhpHandle,
+    ) -> Result<ControlOperation, HookError> {
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        self.begin_release_target_inner(target, Some(thrown))
+    }
+
+    fn begin_release_target_inner(
+        &mut self,
+        target: HookTarget,
+        thrown: Option<PhpHandle>,
+    ) -> Result<ControlOperation, HookError> {
         self.begin_control_allowed()?;
         if target.dispatcher != self.dispatcher_id {
             return Err(HookError::InvalidHookTarget);
@@ -1444,7 +1567,9 @@ impl Dispatcher {
         };
         self.targets.remove(index);
         self.collect_unused();
-        self.new_control(ControlFinish::ReleaseTarget)
+        let mut operation = self.new_control(ControlFinish::ReleaseTarget)?;
+        operation.pending_throwable = thrown;
+        Ok(operation)
     }
 
     fn target_parts(&self, target: HookTarget) -> Result<(PhpKey, usize), HookError> {
@@ -1847,6 +1972,126 @@ impl Dispatcher {
         self.begin_remove_target_with_snapshot(target, priority, id, snapshot)
     }
 
+    /// Capture the callback map before PHP's line-212 `isset` key conversion.
+    /// The resolved bool remains the outer API result when warning-handler
+    /// reentry changes the live callback map during that conversion.
+    pub fn begin_remove_existence(
+        &mut self,
+        target: HookTarget,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (_, slot) = self.target_parts(target)?;
+        let operand = self.storage_ref(slot).callback_map();
+        let operation = self.new_control(ControlFinish::RemoveExistence {
+            slot,
+            target_sequence: target.sequence,
+            operand: Some(operand),
+            priority: None,
+            callback: None,
+            result: None,
+        })?;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = true;
+        Ok(operation)
+    }
+
+    /// Resolve the line-212 callback existence result against the captured map.
+    pub fn resume_remove_existence(
+        &mut self,
+        operation: &mut ControlOperation,
+        priority: HookPriority,
+        callback: &CallbackId,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        let (slot, target_sequence, operand) = match &mut operation.finish {
+            ControlFinish::RemoveExistence {
+                slot,
+                target_sequence,
+                operand,
+                priority: stored_priority,
+                callback: stored_callback,
+                result,
+            } if result.is_none() => {
+                if stored_priority.is_some() || stored_callback.is_some() {
+                    return Err(HookError::InvalidControlOperation);
+                }
+                (
+                    *slot,
+                    *target_sequence,
+                    operand.take().ok_or(HookError::InvalidControlOperation)?,
+                )
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        };
+        let snapshot = CallbackSnapshot {
+            dispatcher: self.dispatcher_id,
+            target_sequence,
+            priority_key: priority.key().clone(),
+            callback: callback.clone(),
+            exists: Storage::<Dispatcher>::map_has_at(&operand, priority.key(), callback),
+        };
+        drop(operand);
+        if let ControlFinish::RemoveExistence {
+            priority: stored_priority,
+            callback: stored_callback,
+            result,
+            ..
+        } = &mut operation.finish
+        {
+            *stored_priority = Some(priority);
+            *stored_callback = Some(callback.clone());
+            *result = Some(snapshot);
+        }
+        self.capture_diagnostics(slot);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    /// Cancel a line-212 callback-map operand after a PHP Throwable.
+    pub fn cancel_remove_existence(
+        &mut self,
+        operation: &mut ControlOperation,
+        thrown: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        match &mut operation.finish {
+            ControlFinish::RemoveExistence {
+                operand, result, ..
+            } if result.is_none() => {
+                drop(operand.take().ok_or(HookError::InvalidControlOperation)?);
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        }
+        operation.pending_throwable = Some(thrown);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
     pub fn capture_callback_snapshot(
         &self,
         target: HookTarget,
@@ -1888,6 +2133,8 @@ impl Dispatcher {
             priority,
             removed: snapshot.exists,
             priority_read_checkpoint: true,
+            priority_read_operand: None,
+            priority_unset_operand: None,
         })
     }
 

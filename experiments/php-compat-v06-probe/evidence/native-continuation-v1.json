@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-13T00:02:35+00:00",
+  "recorded_at_utc": "2026-11-13T15:40:51+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "8be8f92a57be781f4fba43b2cb2e7be2812c158f4d6a7416f2722736fd44904e",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "8fea26ef7d1f29623d0115c4736f0efc231ac80aa7442355d2896d7ed62d1788",
-    "experiments/php-compat-v06-probe/README.ja.md": "9735cf16aa11032a4d6567854e20d3aab2b1dd2a9a346d1b8fcc91ab374e4a2b",
+    "experiments/php-compat-v06-probe/README.ja.md": "26c2acfb4b4b8c67aacd543e91bfa59052c148b5fc8ea612a085072030a21e6c",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -24,18 +24,18 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
     "experiments/php-compat-v06-probe/callable_contract.py": "113f8d45c1706f091702e36eb49d127e64ed1416437dff42f2eac23d13b94ad3",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "9623212dc320fafd0609551bc3e89df253ad26a1e5b2c66af2eb3c0fd75dff37",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "3f6eaaa06492dc45c4efe47ced04fc4bb557d467fb8f0ae0c16ac7d6228f279d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "d7ff5f0491b1480e41f798d4201a6f2568fd756d18b4b8059e68e02c98eff7f6",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "0937e03764e9ed274e68da5c7c6a54a24aa34b6e842ea5fd76c7d2c9e52abce1",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "32bf91fb14e02a1b6a893f29dedfe5004fbe6a377ba6c5f5fb01c52f48896e83",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b38b9cb7b7b3a8e80028a951a7e24124cd3d5a09387d66114cf1fa24049409d9",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "bae12c8ef1b071d35771ea005e2d650bc0b4dd26e96f2bec93cb11911948badd",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "719606c742ac59ede0e66b0182025197449c3b20bc2425983e560ee7c98f5b1f",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "c982e2adf2473ab1978e56a69e8c6171fa01ed8ba44b46811e31c990d92d3cfe",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "391e78c626045beeed5d6230c0243b019df81659fb68ff8e91a0b33dde59f750",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "eead1332f8eec7c2131f96a8ab319f36ba9c35f2efd8eacf56ad220f4eec5b9f",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
-    "crates/recastpress-wp/tests/dispatcher_contract.rs": "899baab7873d5a996404df41880e782fca383e226ebe19f041dc2fae0b5e67cc",
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": "0c454c5527f948663e7345e70f9a83bb24ea4120b1100799b72bf0f7d648dece",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
@@ -44,7 +44,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "edd5acbccdc3dd9180c83e8476726451a3e23f2951395ccf525d0b174a1b0818",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "1b969c572c7a182243c41199d31b84914aa54669dcfeef5313908fb9e7f27cd1",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
@@ -60,7 +60,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "1ce73c4a68a4ba09a3b18bf9300ee334fefed2c7308ff75347264bf42e0956ca",
+    "crates/recastpress-wp/src/dispatcher.rs": "b56c25f1068cda1830f169c444c80d52aad00c90316dcdb38428cfae1c7cb957",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -68,7 +68,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "65180f3bba51af2bc60800e116710d4db84135bccae8e79f05ac0e02c8dddf3d",
+    "crates/recastpress-wp/src/hooks.rs": "ee77adcba6c17de9475981963e80e2c9cb0b1dfe63d641ec7af76e8f3cc258a7",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -205,11 +205,11 @@
     "working_directory": "."
   },
   "rust": {
-    "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "87c3c517269437798e1afcad59a96a3192a84f812edafbc9e3c3a59d03f919fb",
+  "adapter_binary_sha256": "ca5a13223064d1e769008a40fb66b559b358b3ebe46733b8aeedca519b4684ea",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -247,8 +247,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 29644,
-      "rust": 23428
+      "php": 5396,
+      "rust": 21960
     },
     "returncodes": {
       "php": 0,
@@ -305,12 +305,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-88babedd6f8d40b7b465c1f54bb95b6a-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-88babedd6f8d40b7b465c1f54bb95b6a-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-88babedd6f8d40b7b465c1f54bb95b6a-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-88babedd6f8d40b7b465c1f54bb95b6a-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -330,8 +330,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 18356,
-      "rust": 21872
+      "php": 31448,
+      "rust": 1724
     },
     "returncodes": {
       "php": 0,
@@ -394,12 +394,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-25652da70a7e407fa4c7a53fdd01dcdb-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-25652da70a7e407fa4c7a53fdd01dcdb-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-25652da70a7e407fa4c7a53fdd01dcdb-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-25652da70a7e407fa4c7a53fdd01dcdb-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -419,8 +419,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 3608,
-      "rust": 29412
+      "php": 21344,
+      "rust": 17820
     },
     "returncodes": {
       "php": 0,
@@ -568,12 +568,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-095e20dfd6494fcd8164b4733562a050-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-095e20dfd6494fcd8164b4733562a050-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-095e20dfd6494fcd8164b4733562a050-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-095e20dfd6494fcd8164b4733562a050-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -594,8 +594,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 5676,
-        "rust": 29164
+        "php": 9180,
+        "rust": 24184
       },
       "returncodes": {
         "php": 0,
@@ -670,18 +670,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-b13102ddf3d84ddbbcd40a294ab6dba2-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-b13102ddf3d84ddbbcd40a294ab6dba2-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-b13102ddf3d84ddbbcd40a294ab6dba2-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-b13102ddf3d84ddbbcd40a294ab6dba2-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "bffc4560ba1b717dd16f6ebd696b4ef9bb89aa8f1a33852207991ce950a57df0",
+          "stdout_sha256": "7b1879c93b259198122c0d3bc1a9204f6f2a41a3035597a786283181675c9338",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -695,8 +695,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 10940,
-        "rust": 25412
+        "php": 26280,
+        "rust": 7260
       },
       "returncodes": {
         "php": 0,
@@ -774,18 +774,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-c1d71764f49f46de86e88efc15824721-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-c1d71764f49f46de86e88efc15824721-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-c1d71764f49f46de86e88efc15824721-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-c1d71764f49f46de86e88efc15824721-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "67e1072bca1dfb8711b3c503b7a292095f06556bd0c5ffdaf47f112339272949",
+          "stdout_sha256": "f75b6c585d2698b06e1ae7fb7a60495ec625ce95abdddcece09792a6b0f08894",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -800,8 +800,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 22596,
-      "rust": 29460
+      "php": 30108,
+      "rust": 25752
     },
     "returncodes": {
       "php": 0,
@@ -886,24 +886,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e06c6d4d37174c2fad27cbe4b7051224-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e06c6d4d37174c2fad27cbe4b7051224-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e06c6d4d37174c2fad27cbe4b7051224-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e06c6d4d37174c2fad27cbe4b7051224-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "1e973990622220575d79bf1ca9c074184acf7941876733727169b7c959747ffc",
+        "stdout_sha256": "9625c31ada832e6fb4c42dbd62499626485da5dc438415bb41a20efe12b9a08a",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "c655cd892d0d83e5ab0ef253045b5439ca9546edbeb4d5f5ab0f088c251a806d",
+        "stdout_sha256": "1bcd25c6808e61cdefa1b072d66fb321c0ac2b05bd78f8f4818126fbc1896ac3",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -912,8 +912,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 29372,
-        "rust": 27764
+        "php": 11104,
+        "rust": 17612
       },
       "returncodes": {
         "php": 0,
@@ -1035,24 +1035,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-b35a6a621eff4ec697e796653489fd56-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-b35a6a621eff4ec697e796653489fd56-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-b35a6a621eff4ec697e796653489fd56-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-b35a6a621eff4ec697e796653489fd56-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "ffdbd59f7d9c0374c29ff479fe72a4fc5567f1ef5c9d5cd00554df845f437bf8",
+          "stdout_sha256": "4af607a30438a292b8c670ea09cee6834d1f39cedbe68bf6776d6d6f28451cad",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "c3a741d58be7926c585b5e5c186fa7be215da91a25443964fbae7fb83fd5c849",
+          "stdout_sha256": "1fa5826a02d97601f7fd8987d6db1f57ba2e7dc912011fb77ce107fcd9f01353",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1080,8 +1080,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 25808,
-        "rust": 19140
+        "php": 26988,
+        "rust": 31568
       },
       "returncodes": {
         "php": 0,
@@ -1105,7 +1105,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "15aa33a759df3f44"
+              "token": "f51141c775bd61f7"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1168,7 +1168,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "15aa33a759df3f44"
+              "token": "f51141c775bd61f7"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1242,26 +1242,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-bfdf4b681a424dcfb25d4e369325f50a-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-bfdf4b681a424dcfb25d4e369325f50a-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-bfdf4b681a424dcfb25d4e369325f50a-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-bfdf4b681a424dcfb25d4e369325f50a-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "4c9cb6ede0a1c0568a331f651fe0c359f905a54477cd1db3a8f5548af58ec84a",
+          "stdout_sha256": "f1576276c7d4134ab49704ae998754a3fa78956cbf2cc58e4e36e756448bf2fb",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "6247d55ab9d8d590ba3dd6e4cf1eb617b115e01449940c5bc08065ef75aa240b",
+          "stdout_sha256": "6c9ed233a52dac5681de8d9663a1028d811993edd9d8047e785c85dc0c996e2f",
           "stderr_bytes": 1817,
-          "stderr_sha256": "b0405abf4477aa007cae7afb4243745771f54acce167402075922f79bdb3e722"
+          "stderr_sha256": "c03a1b2ee1faf4139e897e04586e7ee127d8fd3be0dfc065d09a072acd50cd90"
         }
       },
       "hook_transcript_rejections": [
@@ -1288,8 +1288,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 18124,
-      "rust": 28668
+      "php": 3864,
+      "rust": 19920
     },
     "returncodes": {
       "php": 0,
@@ -1297,9 +1297,9 @@
     },
     "scenario": "callable_api",
     "rust_marker": "V06_CALLABLES_OK continuation_peer=true",
-    "frames_from_php": 8092,
-    "frames_from_rust": 8091,
-    "relayed_bytes": 5160789,
+    "frames_from_php": 8788,
+    "frames_from_rust": 8787,
+    "relayed_bytes": 5641225,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -6823,30 +6823,1195 @@
               ]
             }
           }
+        },
+        "remove_cow": {
+          "priority_first": {
+            "control": {
+              "case": "control",
+              "trigger_warning": 0,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:anchor",
+              "apply_trace": [
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 0
+              }
+            },
+            "warning1_remove_target": {
+              "case": "warning1_remove_target",
+              "trigger_warning": 1,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "556e646566696e6564206172726179206b65792037"
+                },
+                {
+                  "index": 5,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "warning",
+                  "index": 5
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:anchor",
+              "apply_trace": [
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 0
+              }
+            },
+            "warning1_add_missing_target": {
+              "case": "warning1_add_missing_target",
+              "trigger_warning": 1,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_add_target",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 1
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": 7,
+                    "keeper": 7,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": false,
+              "caught": null,
+              "after_remove": {
+                "target": 7,
+                "keeper": 7,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:keeper:target:anchor",
+              "apply_trace": [
+                "keeper",
+                "target",
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 1,
+                "keeper": 1,
+                "replacement": 0
+              }
+            },
+            "warning2_empty_priority7": {
+              "case": "warning2_empty_priority7",
+              "trigger_warning": 2,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "556e646566696e6564206172726179206b65792037"
+                },
+                {
+                  "index": 5,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "warning",
+                  "index": 5
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:anchor",
+              "apply_trace": [
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 0
+              }
+            },
+            "warning2_recreate_priority7": {
+              "case": "warning2_recreate_priority7",
+              "trigger_warning": 2,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": 7,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": 7,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:replacement:anchor",
+              "apply_trace": [
+                "replacement",
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 1
+              }
+            }
+          },
+          "priority_read_unset": {
+            "control": {
+              "case": "control",
+              "trigger_warning": 0,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:anchor",
+              "apply_trace": [
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 0
+              }
+            },
+            "read_warning_adds_replacement": {
+              "case": "read_warning_adds_replacement",
+              "trigger_warning": 3,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 3
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": false,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": false,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:anchor",
+              "apply_trace": [
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 0
+              }
+            },
+            "unset_warning_adds_replacement": {
+              "case": "unset_warning_adds_replacement",
+              "trigger_warning": 4,
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 3,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "index": 4,
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "warning",
+                  "index": 4
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 4
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "index": 4
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "target": false,
+                    "keeper": false,
+                    "replacement": 7,
+                    "anchor": 10,
+                    "any": true
+                  }
+                }
+              ],
+              "remove_result": true,
+              "caught": null,
+              "after_remove": {
+                "target": false,
+                "keeper": false,
+                "replacement": 7,
+                "anchor": 10,
+                "any": true
+              },
+              "apply_value": "seed:replacement:anchor",
+              "apply_trace": [
+                "replacement",
+                "anchor"
+              ],
+              "callback_calls": {
+                "target": 0,
+                "keeper": 0,
+                "replacement": 1
+              }
+            }
+          }
+        },
+        "hook_unset_reentry": {
+          "control": {
+            "case": "control",
+            "hook_value": 7.5,
+            "setup_result": true,
+            "remove_result": true,
+            "injection_result": null,
+            "caught": null,
+            "warnings": [
+              {
+                "index": 1,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 8,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 9,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 10,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 11,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 12,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 13,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "events": [
+              {
+                "kind": "warning",
+                "index": 1,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 2,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 3,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 4,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 5,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 6,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 7,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 8,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 9,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 10,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 11,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 12,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 13,
+                "phase": "observe"
+              }
+            ],
+            "after_remove": {
+              "target": false,
+              "replacement": false,
+              "any": false
+            },
+            "apply_value": "seed",
+            "apply_trace": []
+          },
+          "inject_on_hook_unset": {
+            "case": "inject_on_hook_unset",
+            "hook_value": 7.5,
+            "setup_result": true,
+            "remove_result": true,
+            "injection_result": true,
+            "caught": null,
+            "warnings": [
+              {
+                "index": 1,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 8,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 9,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 10,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 11,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 12,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 13,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "events": [
+              {
+                "kind": "warning",
+                "index": 1,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 2,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 3,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 4,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 5,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 6,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 7,
+                "phase": "remove"
+              },
+              {
+                "kind": "injection_enter",
+                "warning_index": 7
+              },
+              {
+                "kind": "injection_return",
+                "warning_index": 7,
+                "result": true
+              },
+              {
+                "kind": "warning",
+                "index": 8,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 9,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 10,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 11,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 12,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 13,
+                "phase": "observe"
+              }
+            ],
+            "after_remove": {
+              "target": false,
+              "replacement": false,
+              "any": false
+            },
+            "apply_value": "seed",
+            "apply_trace": []
+          },
+          "throw_during_finally": {
+            "case": "throw_during_finally",
+            "hook_value": 7.5,
+            "setup_result": true,
+            "remove_result": null,
+            "injection_result": true,
+            "caught": {
+              "class_hex": "52756e74696d65457863657074696f6e",
+              "message_hex": "64657374727563746f722042",
+              "is_primary_A": false,
+              "is_destructor_B": true,
+              "previous_is_primary_A": true
+            },
+            "warnings": [
+              {
+                "index": 1,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "phase": "setup",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "phase": "remove",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 8,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 9,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 10,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 11,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 12,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 13,
+                "phase": "observe",
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "events": [
+              {
+                "kind": "warning",
+                "index": 1,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 2,
+                "phase": "setup"
+              },
+              {
+                "kind": "warning",
+                "index": 3,
+                "phase": "setup"
+              },
+              {
+                "kind": "throw_primary_A"
+              },
+              {
+                "kind": "warning",
+                "index": 4,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 5,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 6,
+                "phase": "remove"
+              },
+              {
+                "kind": "warning",
+                "index": 7,
+                "phase": "remove"
+              },
+              {
+                "kind": "injection_enter",
+                "warning_index": 7
+              },
+              {
+                "kind": "injection_return",
+                "warning_index": 7,
+                "result": true
+              },
+              "replacement_destructor",
+              {
+                "kind": "caught",
+                "is_primary_A": false,
+                "is_destructor_B": true
+              },
+              {
+                "kind": "warning",
+                "index": 8,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 9,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 10,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 11,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 12,
+                "phase": "observe"
+              },
+              {
+                "kind": "warning",
+                "index": 13,
+                "phase": "observe"
+              }
+            ],
+            "after_remove": {
+              "target": false,
+              "replacement": false,
+              "any": false
+            },
+            "apply_value": "seed",
+            "apply_trace": []
+          }
         }
       }
     },
     "expected_frame_counts": {
-      "php": 8092,
-      "rust": 8091
+      "php": 8788,
+      "rust": 8787
     },
     "callable_result": {
       "api_counts": {
-        "add_filter": 260,
-        "apply_filters": 138,
+        "add_filter": 285,
+        "apply_filters": 149,
         "current_filter": 65,
         "did_filter": 92,
         "doing_filter": 339,
-        "has_filter": 419,
-        "remove_filter": 91
+        "has_filter": 468,
+        "remove_filter": 105
       },
-      "argument_release_effects": 1339,
-      "boundary_effects": 4821,
-      "callback_invocations": 277,
+      "argument_release_effects": 1438,
+      "boundary_effects": 5282,
+      "callback_invocations": 289,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 8092,
-      "frames_from_rust": 8091,
+      "frames_from_php": 8788,
+      "frames_from_rust": 8787,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "php_observation": {
@@ -10792,6 +11957,527 @@
             }
           }
         },
+        "hook_unset_reentry": {
+          "control": {
+            "after_remove": {
+              "any": false,
+              "replacement": false,
+              "target": false
+            },
+            "apply_trace": [],
+            "apply_value": "seed",
+            "case": "control",
+            "caught": null,
+            "events": [
+              {
+                "index": 1,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 2,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 3,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 4,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 5,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 6,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 7,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 8,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 9,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 10,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 11,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 12,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 13,
+                "kind": "warning",
+                "phase": "observe"
+              }
+            ],
+            "hook_value": 7.5,
+            "injection_result": null,
+            "remove_result": true,
+            "setup_result": true,
+            "warnings": [
+              {
+                "index": 1,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 2,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 3,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 4,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 5,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 6,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 7,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 8,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 9,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 10,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 11,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 12,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 13,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              }
+            ]
+          },
+          "inject_on_hook_unset": {
+            "after_remove": {
+              "any": false,
+              "replacement": false,
+              "target": false
+            },
+            "apply_trace": [],
+            "apply_value": "seed",
+            "case": "inject_on_hook_unset",
+            "caught": null,
+            "events": [
+              {
+                "index": 1,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 2,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 3,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 4,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 5,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 6,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 7,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "kind": "injection_enter",
+                "warning_index": 7
+              },
+              {
+                "kind": "injection_return",
+                "result": true,
+                "warning_index": 7
+              },
+              {
+                "index": 8,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 9,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 10,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 11,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 12,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 13,
+                "kind": "warning",
+                "phase": "observe"
+              }
+            ],
+            "hook_value": 7.5,
+            "injection_result": true,
+            "remove_result": true,
+            "setup_result": true,
+            "warnings": [
+              {
+                "index": 1,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 2,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 3,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 4,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 5,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 6,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 7,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 8,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 9,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 10,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 11,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 12,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 13,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              }
+            ]
+          },
+          "throw_during_finally": {
+            "after_remove": {
+              "any": false,
+              "replacement": false,
+              "target": false
+            },
+            "apply_trace": [],
+            "apply_value": "seed",
+            "case": "throw_during_finally",
+            "caught": {
+              "class_hex": "52756e74696d65457863657074696f6e",
+              "is_destructor_B": true,
+              "is_primary_A": false,
+              "message_hex": "64657374727563746f722042",
+              "previous_is_primary_A": true
+            },
+            "events": [
+              {
+                "index": 1,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 2,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "index": 3,
+                "kind": "warning",
+                "phase": "setup"
+              },
+              {
+                "kind": "throw_primary_A"
+              },
+              {
+                "index": 4,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 5,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 6,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "index": 7,
+                "kind": "warning",
+                "phase": "remove"
+              },
+              {
+                "kind": "injection_enter",
+                "warning_index": 7
+              },
+              {
+                "kind": "injection_return",
+                "result": true,
+                "warning_index": 7
+              },
+              "replacement_destructor",
+              {
+                "is_destructor_B": true,
+                "is_primary_A": false,
+                "kind": "caught"
+              },
+              {
+                "index": 8,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 9,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 10,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 11,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 12,
+                "kind": "warning",
+                "phase": "observe"
+              },
+              {
+                "index": 13,
+                "kind": "warning",
+                "phase": "observe"
+              }
+            ],
+            "hook_value": 7.5,
+            "injection_result": true,
+            "remove_result": null,
+            "setup_result": true,
+            "warnings": [
+              {
+                "index": 1,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 2,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 3,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "setup",
+                "severity": 8192
+              },
+              {
+                "index": 4,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 5,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 6,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 7,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "remove",
+                "severity": 8192
+              },
+              {
+                "index": 8,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 9,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 10,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 11,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 12,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              },
+              {
+                "index": 13,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                "phase": "observe",
+                "severity": 8192
+              }
+            ]
+          }
+        },
         "priority_cow": {
           "accepted_args_partial_bucket": {
             "add_remove_victim": {
@@ -12366,6 +14052,650 @@
               ]
             }
           }
+        },
+        "remove_cow": {
+          "priority_first": {
+            "control": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": false,
+                "target": false
+              },
+              "apply_trace": [
+                "anchor"
+              ],
+              "apply_value": "seed:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 0,
+                "target": 0
+              },
+              "case": "control",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": false,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 0,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "warning1_add_missing_target": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": 7,
+                "replacement": false,
+                "target": 7
+              },
+              "apply_trace": [
+                "keeper",
+                "target",
+                "anchor"
+              ],
+              "apply_value": "seed:keeper:target:anchor",
+              "callback_calls": {
+                "keeper": 1,
+                "replacement": 0,
+                "target": 1
+              },
+              "case": "warning1_add_missing_target",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_add_target",
+                  "result": true
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_exit"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": 7,
+                    "replacement": false,
+                    "target": 7
+                  }
+                }
+              ],
+              "remove_result": false,
+              "trigger_warning": 1,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "warning1_remove_target": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": false,
+                "target": false
+              },
+              "apply_trace": [
+                "anchor"
+              ],
+              "apply_value": "seed:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 0,
+                "target": 0
+              },
+              "case": "warning1_remove_target",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_exit"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "index": 5,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": false,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 1,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "556e646566696e6564206172726179206b65792037",
+                  "severity": 2
+                },
+                {
+                  "index": 5,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "warning2_empty_priority7": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": false,
+                "target": false
+              },
+              "apply_trace": [
+                "anchor"
+              ],
+              "apply_value": "seed:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 0,
+                "target": 0
+              },
+              "case": "warning2_empty_priority7",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_exit"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "index": 5,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": false,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 2,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "556e646566696e6564206172726179206b65792037",
+                  "severity": 2
+                },
+                {
+                  "index": 5,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "warning2_recreate_priority7": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": 7,
+                "target": false
+              },
+              "apply_trace": [
+                "replacement",
+                "anchor"
+              ],
+              "apply_value": "seed:replacement:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 1,
+                "target": 0
+              },
+              "case": "warning2_recreate_priority7",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_remove_target",
+                  "result": true
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_exit"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": 7,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 2,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            }
+          },
+          "priority_read_unset": {
+            "control": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": false,
+                "target": false
+              },
+              "apply_trace": [
+                "anchor"
+              ],
+              "apply_value": "seed:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 0,
+                "target": 0
+              },
+              "case": "control",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": false,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 0,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "read_warning_adds_replacement": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": false,
+                "target": false
+              },
+              "apply_trace": [
+                "anchor"
+              ],
+              "apply_value": "seed:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 0,
+                "target": 0
+              },
+              "case": "read_warning_adds_replacement",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "index": 3,
+                  "kind": "handler_exit"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": false,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 3,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "unset_warning_adds_replacement": {
+              "after_remove": {
+                "anchor": 10,
+                "any": true,
+                "keeper": false,
+                "replacement": 7,
+                "target": false
+              },
+              "apply_trace": [
+                "replacement",
+                "anchor"
+              ],
+              "apply_value": "seed:replacement:anchor",
+              "callback_calls": {
+                "keeper": 0,
+                "replacement": 1,
+                "target": 0
+              },
+              "case": "unset_warning_adds_replacement",
+              "caught": null,
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "warning"
+                },
+                {
+                  "index": 4,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_add_replacement",
+                  "result": true
+                },
+                {
+                  "index": 4,
+                  "kind": "handler_exit"
+                },
+                {
+                  "kind": "after_remove",
+                  "state": {
+                    "anchor": 10,
+                    "any": true,
+                    "keeper": false,
+                    "replacement": 7,
+                    "target": false
+                  }
+                }
+              ],
+              "remove_result": true,
+              "trigger_warning": 4,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 3,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "index": 4,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            }
+          }
         }
       },
       "registry_observation": {
@@ -12373,32 +14703,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 247,
+      "release_effects": 272,
       "scenario": "callable_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-be9312242d694c708fc659ed59552b94-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-be9312242d694c708fc659ed59552b94-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-be9312242d694c708fc659ed59552b94-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-be9312242d694c708fc659ed59552b94-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 2620362,
-        "stdout_sha256": "71a088311b7309f4eb190d1622ab81c2e6ce681becadb923b32172adbab6156b",
+        "stdout_bytes": 2877749,
+        "stdout_sha256": "74f751cae0afca1c2540d89623190ea7b6074af2030e9f489ddc33bdd4551f00",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 2540427,
-        "stdout_sha256": "1a8b880420992119cc36a1491ca6e3c2d834867a50a082c493953c16712bdfe6",
-        "stderr_bytes": 101620,
-        "stderr_sha256": "284700c367bc11770173643ff85b21707ea97a61c19f28d4509fa30445efb230"
+        "stdout_bytes": 2763476,
+        "stdout_sha256": "5f216ea015115e593d271b5a546fc423c2523a102edea42bf92e97d5b6486f9a",
+        "stderr_bytes": 121532,
+        "stderr_sha256": "32c7aa3773904deb3b26b800bdaead965e3a19d2d3b23ae9f5de4e9377ccb72f"
       }
     },
     "callable_transcript_rejections": [
@@ -12471,72 +14801,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 20948,
+        "pid": 30044,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 15480,
+        "pid": 19484,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 24100,
+        "pid": 25976,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 14724,
+        "pid": 28668,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 8184,
+        "pid": 30312,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27044,
+        "pid": 8168,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25496,
+        "pid": 28668,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 14684,
+        "pid": 2024,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 24868,
+        "pid": 21296,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 21896,
+        "pid": 3624,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 888,
+        "pid": 17820,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 26364,
+        "pid": 25100,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 28936,
+        "pid": 30512,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 24620,
+        "pid": 16808,
         "returncode": 0,
         "reaped": true
       }

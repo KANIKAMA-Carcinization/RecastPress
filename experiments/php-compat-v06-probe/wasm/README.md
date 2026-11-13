@@ -107,23 +107,23 @@ The one-shot regression also preserved [a rejected stale registry pin](evidence/
 
 ## Current wire-v2 regression receipts
 
-All seven profiles below were recorded from the frozen priority-COW source. Their receipts and WSL origins verify the repository/snapshot source identities; the callable run also replays the captured PHP/Rust wire and rejects 42 mutations. Earlier receipts remain historical.
+All seven profiles below were recorded from the frozen remove-filter COW and hook-unset source snapshot. The 312-member WSL archive was checked against the repository before and after each run. Each origin links the exact receipt hash; profile wrappers also ran their independent verify-only checks. The callable run replays the captured PHP/Rust wire and rejects 42 mutations. Earlier receipts remain historical.
 
 | Profile | Receipt | Origin inputs |
 | --- | --- | --- |
-| run | [passed](evidence/run-20261113T001339Z-success.json) | [82 inputs](evidence/wsl-language-origin-20261113T001341.247246Z.json) |
-| bridge | [passed](evidence/bridge-20261113T000729.174260Z-success.json) | [109 inputs](evidence/wsl-bridge-origin-20261113T000735.422715Z.json) |
-| publish | [passed](evidence/publish-20261113T000934.956289Z-success.json) | [109 inputs](evidence/wsl-publish-origin-20261113T000941.210345Z.json) |
-| handles | [passed](evidence/handles-20261113T001148.104405Z-success.json) | [109 inputs](evidence/wsl-handles-origin-20261113T001153.939053Z.json) |
-| hooks | [passed](evidence/hooks-20261113T000526.411337Z-success.json) | [109 inputs](evidence/wsl-hooks-origin-20261113T000533.889170Z.json) |
-| callables | [passed](evidence/callables-20261113T000215.134058Z-success.json) | [109 inputs](evidence/wsl-callables-origin-20261113T000221.095266Z.json) |
-| trap | [passed](evidence/trap-20261113T002005.659310Z-success.json) | [110 inputs](evidence/wsl-trap-origin-20261113T002013.044905Z.json) |
+| run | [passed](evidence/run-20261113T150524Z-success.json) | [82 inputs](evidence/wsl-origin-20261113T150526Z.json) |
+| bridge | [passed](evidence/bridge-20261113T151405.561984Z-success.json) | [109 inputs](evidence/wsl-bridge-origin-20261113T151412.264618Z.json) |
+| hooks | [passed](evidence/hooks-20261113T151636.739413Z-success.json) | [109 inputs](evidence/wsl-hooks-origin-20261113T151642.880283Z.json) |
+| handles | [passed](evidence/handles-20261113T151918.169878Z-success.json) | [109 inputs](evidence/wsl-handles-origin-20261113T151930.806439Z.json) |
+| publish | [passed](evidence/publish-20261113T152206.257734Z-success.json) | [109 inputs](evidence/wsl-publish-origin-20261113T152211.631438Z.json) |
+| trap | [passed](evidence/trap-20261113T152934.542793Z-success.json) | [110 inputs](evidence/wsl-trap-origin-20261113T152941.803249Z.json) |
+| callables | [passed](evidence/callables-20261113T153343.740838Z-success.json) | [109 inputs](evidence/wsl-callables-origin-20261113T153349.865791Z.json) |
 
-The callable profile matched all 76 pinned WordPress observation paths: 20 base observations, 20 coercion observations, 18 counter-COW observations and 18 priority-COW / release-unwind observations. It recorded 1,404 API calls, 277 callback invocations, 247 callable releases, 4,821 language-boundary effects and 1,339 argument-release batches. PHP and Rust exchanged 8,092 and 8,091 frames; the wire total was 5,160,789 bytes. The transcript checker rejected 42 mutations. The fixed PHP runtime reports PHP_INT_SIZE 8, and PHP_INT_MIN/MAX survive the shared filter calls. The module compiled in 100,373 ms and executed the fixture in 11,484 ms in this development run; these are run observations, not product CPU budgets.
+The callable profile matched all 87 pinned WordPress observation paths: 20 base observations, 20 coercion observations, 18 counter-COW observations, 18 priority-COW / release-unwind observations, 8 remove-filter COW observations and 3 hook-unset reentry observations. It recorded 1,503 API calls, 289 callback invocations, 272 callable releases, 5,282 language-boundary effects and 1,438 argument-release batches. PHP and Rust exchanged 8,788 and 8,787 frames. The transcript checker rejected 42 mutations. The fixed PHP runtime reports PHP_INT_SIZE 8, and PHP_INT_MIN/MAX survive the shared filter calls. The module compiled in 107,787 ms and executed the fixture in 13,093 ms in this development run; these are run observations, not product CPU budgets.
 
 The pinned WordPress oracle binds 193 inputs and compares the current native and Wasm observations and receipts. The hook profile covers normal, caught-Throwable and abort scenarios. During foreach, the complete current bucket snapshot, including callbacks already visited, remains leased until that bucket finishes; the older per-callback release expectation was corrected to match the pinned WordPress lifetime and event order.
 
-The next public-API probes measure reentrant COW at remove_filter priority existence/read/unset boundaries and hook-table unset warning/COW boundaries. The 76-path fixture does not yet measure those combinations or target final callable release with a pending Throwable; the next pinned-WordPress probe will establish their behavior. Heap-valued filters, direct WordPress globals, and production dispatcher / Query integration remain outside this fixture profile.
+The 87-path fixture now measures reentrant COW at remove_filter priority existence/read/unset boundaries and hook-table unset warning boundaries, including target final release with a pending Throwable. It confirms that a callback inserted during the priority-read warning is removed by the later live unset, while one inserted during the unset warning remains; outer hook-table unset removes a reentrant replacement after the warning. The pending A / destructor B case preserves PHP's exact B-over-A previous chain. Heap-valued filters, direct WordPress globals, and production dispatcher / Query integration remain outside this fixture profile.
 
 ## Fixed inputs
 

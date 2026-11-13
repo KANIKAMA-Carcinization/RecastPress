@@ -1380,6 +1380,15 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             Ok(Some(id)) => Some(id),
         };
         let priority_handle = self.current_argument("priority")?;
+        let mut inner_removed = false;
+        let mut existence = match id.as_ref() {
+            Some(_) => Some(
+                self.dispatcher
+                    .begin_remove_existence(target)
+                    .map_err(|error| format!("remove_begin_existence:{error:?}"))?,
+            ),
+            None => None,
+        };
         let (priority_original, priority_key) = match self.boundary_array_key(
             priority_handle,
             "nested_isset",
@@ -1389,9 +1398,27 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             "remove_priority_isset",
         )? {
             Err(handle) => {
+                let completion = if let Some(mut cursor) = existence.take() {
+                    self.dispatcher
+                        .cancel_remove_existence(&mut cursor, handle)
+                        .map_err(|error| format!("remove_cancel_existence:{error:?}"))?;
+                    match self.run_control(
+                        &mut cursor,
+                        operation,
+                        parent_wire,
+                        "remove_cancel_existence",
+                    )? {
+                        ControlOutcome::Throwable(observed) => Completion::PhpThrowable(observed),
+                        ControlOutcome::Result(_) => {
+                            return Err("remove_existence_cancel_completed".into());
+                        }
+                    }
+                } else {
+                    Completion::PhpThrowable(handle)
+                };
                 return self.finish_target(
                     target,
-                    Completion::PhpThrowable(handle),
+                    completion,
                     operation,
                     parent_wire,
                     "remove_filter",
@@ -1400,48 +1427,60 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             Ok(priority) => priority,
         };
         let priority = HookPriority::new(priority_original, priority_key);
-        let mut inner_removed = false;
-        if let Some(id) = id {
-            let snapshot = self
-                .dispatcher
-                .capture_callback_snapshot(target, &priority, &id)
-                .map_err(|error| format!("remove_callback_snapshot:{error:?}"))?;
-            if snapshot.exists() {
-                match self.boundary_array_key(
-                    priority_handle,
-                    "unset",
-                    true,
-                    operation,
-                    parent_wire,
-                    "remove_priority_unset",
-                )? {
-                    Err(handle) => {
-                        return self.finish_target(
-                            target,
-                            Completion::PhpThrowable(handle),
-                            operation,
-                            parent_wire,
-                            "remove_filter",
-                        );
-                    }
-                    Ok((unset_original, unset_key)) => {
-                        if !same_scalar_representation(&unset_original, &priority.original)
-                            || unset_key != *priority.key()
-                        {
-                            return Err("remove_priority_unset_changed".into());
-                        }
+        let snapshot = if let (Some(mut cursor), Some(id)) = (existence.take(), id.as_ref()) {
+            self.dispatcher
+                .resume_remove_existence(&mut cursor, priority.clone(), id)
+                .map_err(|error| format!("remove_resume_existence:{error:?}"))?;
+            match self.run_control(&mut cursor, operation, parent_wire, "remove_existence")? {
+                ControlOutcome::Result(ControlResult::RemoveExistence(snapshot)) => Some(snapshot),
+                ControlOutcome::Throwable(handle) => {
+                    return self.finish_target(
+                        target,
+                        Completion::PhpThrowable(handle),
+                        operation,
+                        parent_wire,
+                        "remove_filter",
+                    );
+                }
+                _ => return Err("remove_existence_result_mismatch".into()),
+            }
+        } else {
+            None
+        };
+        if let (Some(id), Some(snapshot)) = (id.as_ref(), snapshot)
+            && snapshot.exists()
+        {
+            match self.boundary_array_key(
+                priority_handle,
+                "unset",
+                true,
+                operation,
+                parent_wire,
+                "remove_priority_unset",
+            )? {
+                Err(handle) => {
+                    return self.finish_target(
+                        target,
+                        Completion::PhpThrowable(handle),
+                        operation,
+                        parent_wire,
+                        "remove_filter",
+                    );
+                }
+                Ok((unset_original, unset_key)) => {
+                    if !same_scalar_representation(&unset_original, &priority.original)
+                        || unset_key != *priority.key()
+                    {
+                        return Err("remove_priority_unset_changed".into());
                     }
                 }
-                let mut control = self
-                    .dispatcher
-                    .begin_remove_target_with_snapshot(target, priority, &id, snapshot)
-                    .map_err(|error| format!("remove_begin_target:{error:?}"))?;
-                inner_removed = match self.run_control(
-                    &mut control,
-                    operation,
-                    parent_wire,
-                    "remove_filter",
-                )? {
+            }
+            let mut control = self
+                .dispatcher
+                .begin_remove_target_with_snapshot(target, priority.clone(), id, snapshot)
+                .map_err(|error| format!("remove_begin_target:{error:?}"))?;
+            inner_removed =
+                match self.run_control(&mut control, operation, parent_wire, "remove_filter")? {
                     ControlOutcome::Result(ControlResult::Removed(result)) => result,
                     ControlOutcome::Throwable(handle) => {
                         return self.finish_target(
@@ -1454,9 +1493,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     }
                     _ => return Err("remove_result_mismatch".into()),
                 };
-                if !inner_removed {
-                    return Err("remove_snapshot_result_changed".into());
-                }
+            if !inner_removed {
+                return Err("remove_snapshot_result_changed".into());
             }
         }
         match self.release_hook_target(target, operation, parent_wire, "remove_target")? {
@@ -1531,15 +1569,37 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             }
         };
         if empty {
-            match self.boundary_array_key(
+            let mut unset_lookup = self
+                .dispatcher
+                .begin_hook_binding_lookup()
+                .map_err(|error| format!("remove_begin_unset_lookup:{error:?}"))?;
+            let unset = self.boundary_array_key(
                 hook_handle,
                 "unset",
                 false,
                 operation,
                 parent_wire,
                 "remove_outer_hook_unset",
-            )? {
-                Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            )?;
+            match unset {
+                Err(handle) => {
+                    self.dispatcher
+                        .cancel_hook_binding_lookup(&mut unset_lookup, handle)
+                        .map_err(|error| format!("remove_cancel_unset_lookup:{error:?}"))?;
+                    return match self.run_control(
+                        &mut unset_lookup,
+                        operation,
+                        parent_wire,
+                        "remove_cancel_unset_lookup",
+                    )? {
+                        ControlOutcome::Throwable(observed) => {
+                            Ok(Completion::PhpThrowable(observed))
+                        }
+                        ControlOutcome::Result(_) => {
+                            Err("remove_unset_lookup_cancel_completed".into())
+                        }
+                    };
+                }
                 Ok((unset_original, unset_key)) => {
                     if !same_scalar_representation(&unset_original, &hook.original)
                         || unset_key != hook.array_key
@@ -1548,14 +1608,54 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     }
                 }
             }
+            self.dispatcher
+                .resume_hook_binding_lookup(&mut unset_lookup, &hook)
+                .map_err(|error| format!("remove_resume_unset_lookup:{error:?}"))?;
+            let unset_target = match self.run_control(
+                &mut unset_lookup,
+                operation,
+                parent_wire,
+                "remove_unset_lookup",
+            )? {
+                ControlOutcome::Result(ControlResult::HookBindingLookup(result)) => match result {
+                    HookBindingLookupResult::Found(target) => Some(target),
+                    HookBindingLookupResult::Missing | HookBindingLookupResult::NullOperand => None,
+                },
+                ControlOutcome::Throwable(handle) => {
+                    return Ok(Completion::PhpThrowable(handle));
+                }
+                _ => return Err("remove_unset_lookup_result".into()),
+            };
             let mut unbind = self
                 .dispatcher
                 .begin_unbind_hook(&hook)
                 .map_err(|error| format!("remove_begin_unbind_hook:{error:?}"))?;
-            match self.run_control(&mut unbind, operation, parent_wire, "remove_unbind")? {
-                ControlOutcome::Result(ControlResult::HookUnbound) => {}
-                ControlOutcome::Throwable(handle) => return Ok(Completion::PhpThrowable(handle)),
-                _ => return Err("remove_unbind_result".into()),
+            let unbind_completion =
+                match self.run_control(&mut unbind, operation, parent_wire, "remove_unbind")? {
+                    ControlOutcome::Result(ControlResult::HookUnbound) => {
+                        Completion::Value(PhpValue::Null)
+                    }
+                    ControlOutcome::Throwable(handle) => Completion::PhpThrowable(handle),
+                    _ => return Err("remove_unbind_result".into()),
+                };
+            let unbind_completion = if let Some(unset_target) = unset_target {
+                self.release_hook_target_completion(
+                    unset_target,
+                    unbind_completion,
+                    operation,
+                    parent_wire,
+                    "remove_unset_target_release",
+                )?
+            } else {
+                unbind_completion
+            };
+            match remove_result_after_unbind(inner_removed, unbind_completion)
+                .map_err(str::to_owned)?
+            {
+                Completion::PhpThrowable(handle) => {
+                    return Ok(Completion::PhpThrowable(handle));
+                }
+                Completion::Value(value) => return Ok(Completion::Value(value)),
             }
         }
         Ok(Completion::Value(PhpValue::Bool(inner_removed)))
@@ -2087,6 +2187,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 ControlStep::PriorityRead {
                     priority,
                     missing: _,
+                    state: _,
                 } => {
                     let handle = self.current_argument("priority")?;
                     let completion = match self.boundary_array_key(
@@ -2179,10 +2280,37 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         caller_wire: &str,
         label: &str,
     ) -> Result<Completion<PhpValue>, String> {
-        match self.release_hook_target(target, operation, caller_wire, label)? {
-            ControlOutcome::Result(ControlResult::TargetReleased) => Ok(completion),
-            ControlOutcome::Throwable(handle) => Ok(Completion::PhpThrowable(handle)),
-            _ => Err(format!("{label}_target_release_result")),
+        self.release_hook_target_completion(target, completion, operation, caller_wire, label)
+    }
+
+    fn release_hook_target_completion(
+        &mut self,
+        target: recastpress_wp::dispatcher::HookTarget,
+        completion: Completion<PhpValue>,
+        operation: OperationId,
+        caller_wire: &str,
+        label: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        match completion {
+            Completion::Value(value) => {
+                match self.release_hook_target(target, operation, caller_wire, label)? {
+                    ControlOutcome::Result(ControlResult::TargetReleased) => {
+                        Ok(Completion::Value(value))
+                    }
+                    ControlOutcome::Throwable(handle) => Ok(Completion::PhpThrowable(handle)),
+                    _ => Err(format!("{label}_target_release_result")),
+                }
+            }
+            Completion::PhpThrowable(throwable) => {
+                let mut cursor = self
+                    .dispatcher
+                    .begin_release_target_with_throwable(target, throwable)
+                    .map_err(|error| format!("{label}_begin_release_target_unwind:{error:?}"))?;
+                match self.run_control(&mut cursor, operation, caller_wire, label)? {
+                    ControlOutcome::Throwable(handle) => Ok(Completion::PhpThrowable(handle)),
+                    ControlOutcome::Result(_) => Err(format!("{label}_unwind_release_completed")),
+                }
+            }
         }
     }
 
@@ -2811,6 +2939,17 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     Ok(summary)
 }
 
+fn remove_result_after_unbind(
+    removed: bool,
+    completion: Completion<PhpValue>,
+) -> Result<Completion<PhpValue>, &'static str> {
+    match completion {
+        Completion::PhpThrowable(handle) => Ok(Completion::PhpThrowable(handle)),
+        Completion::Value(PhpValue::Null) => Ok(Completion::Value(PhpValue::Bool(removed))),
+        Completion::Value(_) => Err("remove_unbind_completion_mismatch"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2946,6 +3085,34 @@ mod tests {
         assert_eq!(
             peer.register_handle(&descriptor, PhpHandleKind::Throwable, "repeat"),
             Ok(handle)
+        );
+    }
+
+    #[test]
+    fn successful_hook_unbind_preserves_remove_filter_boolean() {
+        assert_eq!(
+            remove_result_after_unbind(true, Completion::Value(PhpValue::Null)),
+            Ok(Completion::Value(PhpValue::Bool(true)))
+        );
+        assert_eq!(
+            remove_result_after_unbind(false, Completion::Value(PhpValue::Null)),
+            Ok(Completion::Value(PhpValue::Bool(false)))
+        );
+
+        let thrown = PhpHandle::new(
+            RequestGeneration::new(71),
+            PhpHandleKind::Throwable,
+            9,
+            1,
+            91,
+        );
+        assert_eq!(
+            remove_result_after_unbind(true, Completion::PhpThrowable(thrown)),
+            Ok(Completion::PhpThrowable(thrown))
+        );
+        assert_eq!(
+            remove_result_after_unbind(true, Completion::Value(PhpValue::Integer(1))),
+            Err("remove_unbind_completion_mismatch")
         );
     }
 }

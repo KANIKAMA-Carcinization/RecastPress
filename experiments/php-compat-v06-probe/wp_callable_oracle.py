@@ -118,6 +118,11 @@ def bridge_comparison(report):
             + ['priority_cow.' + group + '.' + case
                for group, cases in report['oracle']['cases']['priority_cow'].items()
                for case in cases]
+            + ['remove_cow.' + group + '.' + case
+               for group, cases in report['oracle']['cases']['remove_cow'].items()
+               for case in cases]
+            + ['hook_unset_reentry.' + case
+               for case in report['oracle']['cases']['hook_unset_reentry']]
         ), 'all_program_observations_matched': True}
 
 def main():

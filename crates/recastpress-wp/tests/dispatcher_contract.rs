@@ -5,7 +5,7 @@ use recastpress_wp::{
         FilterCounterLookup, FilterCounterMutation, FilterCounterOperandAccess,
         FilterCounterResult,
     },
-    hooks::{CallbackId, HookArgument, HookError, HookPriority, HookScalar},
+    hooks::{CallbackId, HookArgument, HookError, HookPriority, HookScalar, PriorityBucketState},
     value::{PhpArray, PhpKey, PhpValue},
 };
 use std::sync::{Arc, Mutex};
@@ -2446,6 +2446,388 @@ fn release_effect_getters_expose_unwinding_throwable_and_cleanup_throwable_wins(
     assert_eq!(
         dispatch.advance(ticket),
         Ok(DispatchStep::PhpThrowable(destructor_throwable))
+    );
+}
+
+#[test]
+fn remove_existence_uses_pre_boundary_map_and_drains_old_callable() {
+    let hook = HookArgument::bytes("remove-existence-cow");
+    let priority = HookPriority::integer(7);
+    let callable = callable_handle(741);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("existing"), 1, callable).unwrap(),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+
+    let mut existence = dispatcher.begin_remove_existence(target).unwrap();
+    assert!(dispatcher.remove("remove-existence-cow", 7, &id("existing")));
+    dispatcher
+        .resume_remove_existence(&mut existence, priority.clone(), &id("existing"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut existence).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    dispatcher
+        .resume_control_release(&mut existence, callable)
+        .unwrap();
+    let snapshot = match dispatcher.advance_control(&mut existence).unwrap() {
+        ControlStep::Complete(ControlResult::RemoveExistence(snapshot)) => snapshot,
+        step => panic!("expected captured remove existence: {step:?}"),
+    };
+    assert!(snapshot.exists());
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn remove_existence_absent_snapshot_survives_reentrant_add() {
+    let hook = HookArgument::bytes("remove-missing-cow");
+    let priority = HookPriority::integer(7);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "remove-missing-cow",
+        10,
+        DispatcherCallback::new(id("anchor"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let mut existence = dispatcher.begin_remove_existence(target).unwrap();
+    dispatcher
+        .add_target(
+            target,
+            priority.clone(),
+            DispatcherCallback::new(id("late"), 1, |_, args| Ok(args[0].clone())),
+        )
+        .unwrap();
+    dispatcher
+        .resume_remove_existence(&mut existence, priority.clone(), &id("late"))
+        .unwrap();
+    let snapshot = match finish_control(&mut dispatcher, &mut existence) {
+        ControlResult::RemoveExistence(snapshot) => snapshot,
+        result => panic!("unexpected remove existence: {result:?}"),
+    };
+    assert!(!snapshot.exists());
+
+    let mut remove = dispatcher
+        .begin_remove_target_with_snapshot(target, priority.clone(), &id("late"), snapshot)
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut remove),
+        ControlResult::Removed(false)
+    );
+    assert!(
+        dispatcher
+            .has_at_target(target, &priority, &id("late"))
+            .unwrap()
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn cancelled_remove_existence_drains_old_map_before_throwable_override() {
+    let hook = HookArgument::bytes("remove-existence-throw");
+    let priority = HookPriority::integer(7);
+    let callable = callable_handle(742);
+    let original = throwable_handle(743);
+    let replacement = throwable_handle(744);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("existing"), 1, callable).unwrap(),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let mut existence = dispatcher.begin_remove_existence(target).unwrap();
+    assert_eq!(
+        dispatcher.cancel_remove_existence(&mut existence, closure_handle(745)),
+        Err(HookError::InvalidPhpThrowableHandle)
+    );
+    assert!(dispatcher.remove("remove-existence-throw", 7, &id("existing")));
+    dispatcher
+        .cancel_remove_existence(&mut existence, original)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut existence).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    assert_eq!(
+        dispatcher.pending_control_throwable(&existence).unwrap(),
+        Some(original)
+    );
+    dispatcher
+        .resume_control_release_completion(
+            &mut existence,
+            callable,
+            Completion::PhpThrowable(replacement),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut existence).unwrap(),
+        ControlStep::PhpThrowable(replacement)
+    );
+    assert_eq!(
+        dispatcher.advance_control(&mut existence),
+        Err(HookError::InvalidControlOperation)
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn remove_priority_read_keeps_empty_snapshot_but_unset_uses_new_live_operand() {
+    let hook = HookArgument::bytes("remove-read-cow");
+    let priority = HookPriority::integer(7);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        priority.clone(),
+        DispatcherCallback::new(id("removed"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let snapshot = dispatcher
+        .capture_callback_snapshot(target, &priority, &id("removed"))
+        .unwrap();
+    let mut remove = dispatcher
+        .begin_remove_target_with_snapshot(target, priority.clone(), &id("removed"), snapshot)
+        .unwrap();
+    let ControlStep::PriorityRead { state, missing, .. } =
+        dispatcher.advance_control(&mut remove).unwrap()
+    else {
+        panic!("expected priority read checkpoint")
+    };
+    assert_eq!(state, PriorityBucketState::Empty);
+    assert!(!missing);
+
+    dispatcher
+        .add_target(
+            target,
+            priority.clone(),
+            DispatcherCallback::new(id("read-replacement"), 1, |_, args| Ok(args[0].clone())),
+        )
+        .unwrap();
+    dispatcher
+        .resume_control_priority_read(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityUnset(priority.clone())
+    );
+    dispatcher
+        .resume_control_priority_unset(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(
+        !dispatcher
+            .has_at_target(target, &priority, &id("read-replacement"))
+            .unwrap()
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn remove_priority_unset_mutates_captured_detached_map_and_refreshes_live_map() {
+    let hook = HookArgument::bytes("remove-unset-cow");
+    let priority = HookPriority::integer(7);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        priority.clone(),
+        DispatcherCallback::new(id("removed"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let snapshot = dispatcher
+        .capture_callback_snapshot(target, &priority, &id("removed"))
+        .unwrap();
+    let mut remove = dispatcher
+        .begin_remove_target_with_snapshot(target, priority.clone(), &id("removed"), snapshot)
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityRead {
+            state: PriorityBucketState::Empty,
+            ..
+        }
+    ));
+    dispatcher
+        .resume_control_priority_read(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityUnset(priority.clone())
+    );
+
+    dispatcher
+        .add_target(
+            target,
+            priority.clone(),
+            DispatcherCallback::new(id("unset-replacement"), 1, |_, args| Ok(args[0].clone())),
+        )
+        .unwrap();
+    dispatcher
+        .resume_control_priority_unset(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    assert!(
+        dispatcher
+            .has_at_target(target, &priority, &id("unset-replacement"))
+            .unwrap()
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn remove_priority_missing_offset_is_distinct_from_empty_bucket() {
+    let hook = HookArgument::bytes("remove-missing-priority");
+    let priority = HookPriority::integer(7);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        priority.clone(),
+        DispatcherCallback::new(id("removed"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let snapshot = dispatcher
+        .capture_callback_snapshot(target, &priority, &id("removed"))
+        .unwrap();
+    dispatcher.remove_all("remove-missing-priority", Some(7));
+    let mut remove = dispatcher
+        .begin_remove_target_with_snapshot(target, priority.clone(), &id("removed"), snapshot)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityRead {
+            priority: priority.clone(),
+            missing: true,
+            state: PriorityBucketState::Missing,
+        }
+    );
+    dispatcher
+        .resume_control_priority_read(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityMissingOffset(priority.clone())
+    );
+    dispatcher
+        .resume_control_priority_missing_offset(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::PriorityUnset(priority.clone())
+    );
+    dispatcher
+        .resume_control_priority_unset(&mut remove, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut remove).unwrap(),
+        ControlStep::Complete(ControlResult::Removed(true))
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn target_release_during_throwable_unwind_preserves_destructor_override_path() {
+    let hook = HookArgument::bytes("release-target-unwind");
+    let callable = callable_handle(751);
+    let original = throwable_handle(752);
+    let replacement = throwable_handle(753);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &hook,
+        HookPriority::integer(7),
+        DispatcherCallback::php_callable(id("final-release"), 1, callable).unwrap(),
+    );
+    let target = dispatcher.capture_target(&hook, false).unwrap().unwrap();
+    let mut unbind = dispatcher.begin_unbind_hook(&hook).unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut unbind),
+        ControlResult::HookUnbound
+    );
+
+    assert_eq!(
+        dispatcher
+            .begin_release_target_with_throwable(target, closure_handle(754))
+            .unwrap_err(),
+        HookError::InvalidPhpThrowableHandle
+    );
+    let mut release = dispatcher
+        .begin_release_target_with_throwable(target, original)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut release).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    assert_eq!(
+        dispatcher.pending_control_throwable(&release).unwrap(),
+        Some(original)
+    );
+    dispatcher
+        .resume_control_release_completion(
+            &mut release,
+            callable,
+            Completion::PhpThrowable(replacement),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut release).unwrap(),
+        ControlStep::PhpThrowable(replacement)
+    );
+    assert_eq!(
+        dispatcher.release_target(target),
+        Err(HookError::InvalidHookTarget)
+    );
+}
+
+#[test]
+fn pre_unset_hook_binding_operand_keeps_receiver_while_live_unset_removes_injection() {
+    let hook = HookArgument::bytes("hook-unset-reentry");
+    let callable = callable_handle(761);
+    let mut dispatcher = Dispatcher::new();
+    let original_target = dispatcher.capture_target(&hook, true).unwrap().unwrap();
+
+    let mut lookup = dispatcher.begin_hook_binding_lookup().unwrap();
+    dispatcher
+        .add_target(
+            original_target,
+            HookPriority::integer(7),
+            DispatcherCallback::php_callable(id("injected"), 1, callable).unwrap(),
+        )
+        .unwrap();
+    dispatcher
+        .resume_hook_binding_lookup(&mut lookup, &hook)
+        .unwrap();
+    let selected_target = match finish_control(&mut dispatcher, &mut lookup) {
+        ControlResult::HookBindingLookup(
+            recastpress_wp::dispatcher::HookBindingLookupResult::Found(target),
+        ) => target,
+        result => panic!("expected pre-unset selected hook receiver: {result:?}"),
+    };
+
+    let mut unbind = dispatcher.begin_unbind_hook(&hook).unwrap();
+    assert!(!dispatcher.hook_is_set(&hook));
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut unbind),
+        ControlResult::HookUnbound
+    );
+    dispatcher.release_target(original_target).unwrap();
+    let mut release = dispatcher.begin_release_target(selected_target).unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut release).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    dispatcher
+        .resume_control_release(&mut release, callable)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut release).unwrap(),
+        ControlStep::Complete(ControlResult::TargetReleased)
     );
 }
 

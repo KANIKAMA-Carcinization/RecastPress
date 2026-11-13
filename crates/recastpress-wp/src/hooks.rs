@@ -387,6 +387,13 @@ pub enum HookStep {
 
 pub(crate) type CallbackMap<C> = Vec<(PhpKey, Vec<ContextCallback<C>>)>;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PriorityBucketState {
+    Missing,
+    Empty,
+    NonEmpty,
+}
+
 pub(crate) struct Storage<C> {
     callbacks: Arc<CallbackMap<C>>,
     priorities: Vec<PhpKey>,
@@ -590,14 +597,42 @@ impl<C> Storage<C> {
     pub(crate) fn map_has_priority(map: &CallbackMap<C>, priority: &PhpKey) -> bool {
         map.iter().any(|(key, _)| key == priority)
     }
+    pub(crate) fn map_has_at(map: &CallbackMap<C>, priority: &PhpKey, id: &CallbackId) -> bool {
+        map.iter()
+            .find(|(key, _)| key == priority)
+            .is_some_and(|(_, callbacks)| callbacks.iter().any(|callback| callback.id == *id))
+    }
     pub(crate) fn has_priority(&self, priority: &PhpKey) -> bool {
         self.callback_index(priority).is_some()
     }
-    pub(crate) fn priority_bucket_empty(&self, priority: &PhpKey) -> Option<bool> {
-        self.callback_bucket(priority).map(Vec::is_empty)
+    pub(crate) fn priority_bucket_state(
+        map: &CallbackMap<C>,
+        priority: &PhpKey,
+    ) -> PriorityBucketState {
+        map.iter().find(|(key, _)| key == priority).map_or(
+            PriorityBucketState::Missing,
+            |(_, callbacks)| {
+                if callbacks.is_empty() {
+                    PriorityBucketState::Empty
+                } else {
+                    PriorityBucketState::NonEmpty
+                }
+            },
+        )
+    }
+    pub(crate) fn unset_priority_bucket_in_map(
+        map: &mut CallbackMap<C>,
+        priority: &PhpKey,
+    ) -> bool {
+        let Some(index) = map.iter().position(|(key, _)| key == priority) else {
+            return false;
+        };
+        drop(map.remove(index));
+        true
     }
     pub(crate) fn finish_unset_priority(&mut self, priority: &HookPriority) {
-        self.priorities.retain(|key| key != &priority.key);
+        self.priorities = self.callbacks.iter().map(|(key, _)| key.clone()).collect();
+        let _ = priority;
         self.resort_active(None, false);
     }
     pub(crate) fn is_active(&self) -> bool {
