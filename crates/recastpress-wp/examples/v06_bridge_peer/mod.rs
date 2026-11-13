@@ -744,7 +744,7 @@ pub fn run_peer<R: BufRead, W: Write>(
         "hooks" => hooks::run_hooks_peer(wire),
         "hooks_catch" => hooks::run_hooks_throw_peer(wire, "hooks_catch"),
         "hooks_abort" => hooks::run_hooks_throw_peer(wire, "hooks_abort"),
-        "callable_api" => callables::run_callables_peer(wire),
+        "callable_api" | "action_api" => callables::run_callables_peer(wire),
         _ => Err("unknown_bridge_scenario".into()),
     }
 }

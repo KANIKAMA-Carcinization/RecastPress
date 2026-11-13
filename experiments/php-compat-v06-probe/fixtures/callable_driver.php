@@ -8,8 +8,8 @@ require_once __DIR__ . '/callable_program.php';
 
 use RecastPress\V06\Handles\HandleRegistry;
 
-if (count($argv) !== 2 || $argv[1] !== 'callable_api') {
-    fwrite(STDERR, "callable fixture requires exactly callable_api mode\n");
+if (count($argv) !== 2 || !in_array($argv[1], ['callable_api', 'action_api'], true)) {
+    fwrite(STDERR, "callable fixture requires callable_api or action_api mode\n");
     exit(2);
 }
 
@@ -20,7 +20,7 @@ try {
     CallableApiAdapter::bind($adapter);
 
     $wire->send('start_root', [
-        'operation' => 'callable_api',
+        'operation' => $argv[1],
         'protocol' => 2,
         'request_generation' => '71',
     ]);
@@ -37,7 +37,9 @@ try {
 
     $rootEffect = $rootInvoke['payload']['effect_id'];
     $adapter->setRootEffect($rootEffect);
-    $observation = callable_program_run();
+    $observation = $argv[1] === 'action_api'
+        ? callable_program_run_action_api()
+        : callable_program_run();
     $wire->send('resume', [
         'effect_id' => $rootEffect,
         'completion' => [
@@ -56,7 +58,7 @@ try {
         expect_kind($frame, 'return');
         expect_parent_effect($frame, null);
         expect_payload_keys($frame, ['operation', 'status'], 'callable_root_return');
-        if ($frame['payload']['operation'] !== 'callable_api'
+        if ($frame['payload']['operation'] !== $argv[1]
             || $frame['payload']['status'] !== 'ok'
         ) {
             throw new RuntimeException('callable_root_return_mismatch');

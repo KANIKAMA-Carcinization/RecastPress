@@ -18,7 +18,7 @@ use std::collections::{BTreeMap, HashMap};
 
 const REQUEST_GENERATION: u64 = 71;
 const SCRIPT_EFFECT: &str = "e-script";
-const API_NAMES: [&str; 7] = [
+const FILTER_API_NAMES: [&str; 7] = [
     "add_filter",
     "remove_filter",
     "has_filter",
@@ -26,6 +26,22 @@ const API_NAMES: [&str; 7] = [
     "current_filter",
     "doing_filter",
     "did_filter",
+];
+const API_NAMES: [&str; 14] = [
+    "add_filter",
+    "add_action",
+    "remove_filter",
+    "remove_action",
+    "has_filter",
+    "has_action",
+    "apply_filters",
+    "do_action",
+    "current_filter",
+    "current_action",
+    "doing_filter",
+    "doing_action",
+    "did_filter",
+    "did_action",
 ];
 const MAX_RELEASE_PASSES: usize = 64;
 
@@ -493,11 +509,12 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         api: &str,
     ) -> Result<Vec<(String, PhpHandle)>, String> {
         let names: &[&str] = match api {
-            "add_filter" => &["hook", "callback", "priority", "accepted_args"],
-            "remove_filter" => &["hook", "callback", "priority"],
-            "has_filter" => &["hook", "callback"],
-            "apply_filters" | "doing_filter" | "did_filter" => &["hook"],
-            "current_filter" => &[],
+            "add_filter" | "add_action" => &["hook", "callback", "priority", "accepted_args"],
+            "remove_filter" | "remove_action" => &["hook", "callback", "priority"],
+            "has_filter" | "has_action" => &["hook", "callback"],
+            "apply_filters" | "do_action" | "doing_filter" | "doing_action" | "did_filter"
+            | "did_action" => &["hook"],
+            "current_filter" | "current_action" => &[],
             _ => return Err("unknown_api_arguments".into()),
         };
         if names.is_empty() {
@@ -879,13 +896,15 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         let arguments = self.register_api_arguments(payload, &api_name)?;
         self.api_arguments.push(arguments.iter().cloned().collect());
         let completion = match api_name.as_str() {
-            "add_filter" => self.api_add(payload, operation, parent_wire),
-            "remove_filter" => self.api_remove(payload, operation, parent_wire),
-            "has_filter" => self.api_has(payload, operation, parent_wire),
+            "add_filter" | "add_action" => self.api_add(payload, operation, parent_wire),
+            "remove_filter" | "remove_action" => self.api_remove(payload, operation, parent_wire),
+            "has_filter" | "has_action" => self.api_has(payload, operation, parent_wire),
             "apply_filters" => self.api_apply(payload, operation, parent_wire),
-            "current_filter" => self.api_current(payload),
-            "doing_filter" => self.api_doing(payload, operation, parent_wire),
+            "do_action" => self.api_do_action(payload, operation, parent_wire),
+            "current_filter" | "current_action" => self.api_current(payload),
+            "doing_filter" | "doing_action" => self.api_doing(payload, operation, parent_wire),
             "did_filter" => self.api_did(payload, operation, parent_wire),
+            "did_action" => self.api_did_action(payload, operation, parent_wire),
             _ => Err("call_core_unknown_api".into()),
         }?;
         let release_throwable = self.release_arguments(&arguments, operation, parent_wire)?;
@@ -1904,6 +1923,68 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         Ok(Completion::Value(PhpValue::Integer(count)))
     }
 
+    fn api_did_action(
+        &mut self,
+        payload: &Value,
+        operation: OperationId,
+        parent_wire: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        exact_keys(payload, &["api", "arguments"], "did_action_call")?;
+        let handle = self.current_argument("hook")?;
+        self.check_argument(handle, "did_action_hook")?;
+        let value = match self.boundary_value(
+            "action_counter_read",
+            json!({"handle":descriptor(handle)}),
+            operation,
+            parent_wire,
+            "did_action_read",
+        )? {
+            Ok(value) => value,
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+        };
+        let count = parse_pod(&value, "did_action_count")?;
+        match count {
+            PhpValue::Integer(count) => Ok(Completion::Value(PhpValue::Integer(count))),
+            _ => Err("did_action_count_not_integer".into()),
+        }
+    }
+
+    fn api_do_action(
+        &mut self,
+        payload: &Value,
+        operation: OperationId,
+        parent_wire: &str,
+    ) -> Result<Completion<PhpValue>, String> {
+        exact_keys(payload, &["api", "arguments", "args"], "do_action_call")?;
+        let handle = self.current_argument("hook")?;
+        let (hook, array_key) = match self.boundary_array_key(
+            handle,
+            "isset",
+            false,
+            operation,
+            parent_wire,
+            "do_action_hook_key",
+        )? {
+            Ok(result) => result,
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+        };
+        let hook = HookArgument::new(hook, array_key);
+        self.remember_hook(hook.clone());
+        let args = payload
+            .get("args")
+            .and_then(Value::as_array)
+            .ok_or("do_action_args")?
+            .iter()
+            .enumerate()
+            .map(|(index, value)| parse_pod(value, &format!("do_action_arg_{index}")))
+            .collect::<Result<Vec<_>, _>>()?;
+        let ticket = self
+            .dispatcher
+            .begin_action_effectful_typed(&hook, &args)
+            .map_err(|error| format!("begin_action:{error:?}"))?;
+        self.drive_dispatch(ticket, &hook, operation, parent_wire)
+    }
+
     fn api_apply(
         &mut self,
         payload: &Value,
@@ -2057,6 +2138,26 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 }
                 DispatchStep::Boundary(boundary) => {
                     let completion = match boundary {
+                        DispatchBoundary::ActionCounterIncrement => {
+                            let handle = self.current_argument("hook")?;
+                            match self.boundary_value(
+                                "action_counter_increment",
+                                json!({"handle":descriptor(handle)}),
+                                operation,
+                                caller_wire,
+                                "action_counter_increment",
+                            )? {
+                                Err(handle) => Completion::PhpThrowable(handle),
+                                Ok(value) => {
+                                    let count =
+                                        parse_pod(&value, "action_counter_increment_count")?;
+                                    if !matches!(count, PhpValue::Integer(_)) {
+                                        return Err("action_counter_increment_not_integer".into());
+                                    }
+                                    Completion::Value(PhpValue::Null)
+                                }
+                            }
+                        }
                         DispatchBoundary::FilterCounterWrite
                         | DispatchBoundary::FilterCounterIncrement => {
                             return Err("counter_boundary_after_counted_filter_start".into());
@@ -2660,12 +2761,18 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         &["operation", "protocol", "request_generation"],
         "callables_start",
     )?;
-    if string(&start, "operation")? != "callable_api"
+    if !matches!(string(&start, "operation")?, "callable_api" | "action_api")
         || start.get("protocol") != Some(&json!(2))
         || string(&start, "request_generation")? != "71"
     {
         return Err("callables_start_operation_or_generation".into());
     }
+    let scenario = string(&start, "operation")?.to_owned();
+    let api_names = if scenario == "action_api" {
+        &API_NAMES[..]
+    } else {
+        &FILTER_API_NAMES[..]
+    };
     let root = continuation
         .start_root()
         .map_err(|error| format!("callables_start_root:{error:?}"))?;
@@ -2684,9 +2791,9 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         effect_ids: HashMap::new(),
         api_arguments: Vec::new(),
         hook_names: Vec::new(),
-        api_counts: API_NAMES
-            .into_iter()
-            .map(|name| (name.to_owned(), 0))
+        api_counts: api_names
+            .iter()
+            .map(|name| ((*name).to_owned(), 0))
             .collect(),
         callback_invocations: 0,
         release_effects: 0,
@@ -2850,11 +2957,8 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     peer.continuation
         .finish_operation(root)
         .map_err(|error| format!("finish_root:{error:?}"))?;
-    peer.wire.send(
-        "return",
-        None,
-        json!({"operation":"callable_api","status":"ok"}),
-    )?;
+    peer.wire
+        .send("return", None, json!({"operation":scenario,"status":"ok"}))?;
     let bytes_before_finished = peer.wire.total;
     let finished = peer.wire.receive("request_finished", None)?;
     exact_keys(
@@ -2922,7 +3026,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
             .collect(),
     );
     let summary = json!({
-        "scenario":"callable_api","continuation_peer":true,
+        "scenario":scenario,"continuation_peer":true,
         "frames_from_php":peer.wire.in_seq,"frames_from_rust":peer.wire.out_seq,
         "api_counts":api_counts,"callback_invocations":peer.callback_invocations,
         "release_effects":peer.release_effects,"late_resume_rejected":late_resume_rejected,
@@ -2934,8 +3038,13 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
     if peer.continuation.depth() != 0 || peer.continuation.state() != &RequestState::Finished {
         return Err("callable_final_continuation_state".into());
     }
-    eprintln!("V06_CALLABLES_RESULT {summary}");
-    eprintln!("V06_CALLABLES_OK continuation_peer=true");
+    if scenario == "action_api" {
+        eprintln!("V06_ACTIONS_RESULT {summary}");
+        eprintln!("V06_ACTIONS_OK continuation_peer=true");
+    } else {
+        eprintln!("V06_CALLABLES_RESULT {summary}");
+        eprintln!("V06_CALLABLES_OK continuation_peer=true");
+    }
     Ok(summary)
 }
 

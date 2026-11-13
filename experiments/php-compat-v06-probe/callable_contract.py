@@ -6,6 +6,10 @@ import re
 APIS = ('add_filter', 'remove_filter', 'has_filter', 'apply_filters',
         'current_filter', 'doing_filter', 'did_filter')
 SCENARIO = 'callable_api'
+ACTION_APIS = ('add_action', 'remove_action', 'has_action', 'do_action',
+               'current_action', 'doing_action', 'did_action')
+ACTION_SCENARIO = 'action_api'
+ALL_APIS = APIS + ACTION_APIS
 HEX = re.compile(r'[0-9a-f]*\Z')
 INTEGER = re.compile(r'(?:0|-?[1-9][0-9]*)\Z')
 

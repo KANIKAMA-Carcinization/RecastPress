@@ -356,6 +356,7 @@ fn run() -> Result<()> {
                 | "--handles"
                 | "--hooks"
                 | "--callables"
+                | "--actions"
         ),
         "unsupported fixed bridge mode"
     );
@@ -444,6 +445,25 @@ fn run() -> Result<()> {
             "{}",
             json!({
                 "schema": "recastpress.php-compat-v06-wasm-callables.v1",
+                "execution": "passed", "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+                "compiler_profile": COMPILER_PROFILE,
+                "artifact": {"path": ARTIFACT_RELATIVE, "bytes": ARTIFACT_BYTES, "sha256": artifact_hash},
+                "fixtures": fixtures, "case": case, "compile_elapsed_ms": compile_ms,
+                "execution_elapsed_ms": execution_started.elapsed().as_millis()
+            })
+        );
+        return Ok(());
+    }
+    if mode == "--actions" {
+        let case = run_scenario(&module, module_hash, "action_api")?;
+        let fixtures: Vec<_> = CALLABLE_FILES
+            .iter()
+            .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+            .collect();
+        println!(
+            "{}",
+            json!({
+                "schema": "recastpress.php-compat-v06-wasm-actions.v1",
                 "execution": "passed", "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
                 "compiler_profile": COMPILER_PROFILE,
                 "artifact": {"path": ARTIFACT_RELATIVE, "bytes": ARTIFACT_BYTES, "sha256": artifact_hash},
@@ -683,7 +703,7 @@ impl<W: Write> Write for RecordedWriter<W> {
 
 fn run_scenario(module: &wasmer::Module, module_hash: ModuleHash, scenario: &str) -> Result<Value> {
     eprintln!("PHP_WASIX_V06_BRIDGE_PHASE=guest_{scenario}");
-    let wire_capture = if scenario == "callable_api" {
+    let wire_capture = if matches!(scenario, "callable_api" | "action_api") {
         Some(Arc::new(Mutex::new(WireCapture::create()?)))
     } else {
         None
@@ -1335,7 +1355,7 @@ fn run_guest(
     let mut runner = WasiRunner::new();
     let guest_args = if matches!(scenario, "handles" | "handles_abort") {
         vec!["-n", "/fixture/handle_driver.php", scenario]
-    } else if scenario == "callable_api" {
+    } else if matches!(scenario, "callable_api" | "action_api") {
         vec!["-n", "/fixture/callable_driver.php", scenario]
     } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
         vec!["-n", "/fixture/hooks_driver.php", scenario]
@@ -1370,7 +1390,7 @@ fn run_guest(
             Arc::new(FixedFilesFs {
                 files: if matches!(scenario, "handles" | "handles_abort") {
                     &HANDLE_FILES
-                } else if scenario == "callable_api" {
+                } else if matches!(scenario, "callable_api" | "action_api") {
                     &CALLABLE_FILES
                 } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
                     &HOOK_FILES

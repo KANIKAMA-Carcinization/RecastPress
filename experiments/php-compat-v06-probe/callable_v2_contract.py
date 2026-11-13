@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from callable_contract import (APIS, SCENARIO, EXPECTED_OBSERVATION, canonical_hex,
+from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex,
     canonical_integer, validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
@@ -3899,6 +3899,10 @@ ARGUMENTS = {
     'remove_filter': ('hook', 'callback', 'priority'),
     'has_filter': ('hook', 'callback'), 'apply_filters': ('hook',),
     'current_filter': (), 'doing_filter': ('hook',), 'did_filter': ('hook',),
+    'add_action': ('hook', 'callback', 'priority', 'accepted_args'),
+    'remove_action': ('hook', 'callback', 'priority'),
+    'has_action': ('hook', 'callback'), 'do_action': ('hook',),
+    'current_action': (), 'doing_action': ('hook',), 'did_action': ('hook',),
 }
 RESULT_FIELDS = {'scenario', 'continuation_peer', 'frames_from_php', 'frames_from_rust',
     'api_counts', 'callback_invocations', 'release_effects', 'boundary_effects',
@@ -3969,7 +3973,25 @@ def validate_did_filter_result(node):
 EXPECTED_REMOVE_COW = json.loads(r'''{"priority_first":{"control":{"case":"control","trigger_warning":0,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"warning","index":3},{"kind":"warning","index":4},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:anchor","apply_trace":["anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":0}},"warning1_remove_target":{"case":"warning1_remove_target","trigger_warning":1,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":2,"message_hex":"556e646566696e6564206172726179206b65792037"},{"index":5,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"handler_enter","index":1},{"kind":"handler_remove_target","result":true},{"kind":"handler_exit","index":1},{"kind":"warning","index":2},{"kind":"warning","index":3},{"kind":"warning","index":4},{"kind":"warning","index":5},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:anchor","apply_trace":["anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":0}},"warning1_add_missing_target":{"case":"warning1_add_missing_target","trigger_warning":1,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"handler_enter","index":1},{"kind":"handler_add_target","result":true},{"kind":"handler_exit","index":1},{"kind":"after_remove","state":{"target":7,"keeper":7,"replacement":false,"anchor":10,"any":true}}],"remove_result":false,"caught":null,"after_remove":{"target":7,"keeper":7,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:keeper:target:anchor","apply_trace":["keeper","target","anchor"],"callback_calls":{"target":1,"keeper":1,"replacement":0}},"warning2_empty_priority7":{"case":"warning2_empty_priority7","trigger_warning":2,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":2,"message_hex":"556e646566696e6564206172726179206b65792037"},{"index":5,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"handler_enter","index":2},{"kind":"handler_remove_target","result":true},{"kind":"handler_exit","index":2},{"kind":"warning","index":3},{"kind":"warning","index":4},{"kind":"warning","index":5},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:anchor","apply_trace":["anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":0}},"warning2_recreate_priority7":{"case":"warning2_recreate_priority7","trigger_warning":2,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"handler_enter","index":2},{"kind":"handler_remove_target","result":true},{"kind":"handler_add_replacement","result":true},{"kind":"handler_exit","index":2},{"kind":"warning","index":3},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":7,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":7,"anchor":10,"any":true},"apply_value":"seed:replacement:anchor","apply_trace":["replacement","anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":1}}},"priority_read_unset":{"control":{"case":"control","trigger_warning":0,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"warning","index":3},{"kind":"warning","index":4},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:anchor","apply_trace":["anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":0}},"read_warning_adds_replacement":{"case":"read_warning_adds_replacement","trigger_warning":3,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"warning","index":3},{"kind":"handler_enter","index":3},{"kind":"handler_add_replacement","result":true},{"kind":"handler_exit","index":3},{"kind":"warning","index":4},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":false,"anchor":10,"any":true},"apply_value":"seed:anchor","apply_trace":["anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":0}},"unset_warning_adds_replacement":{"case":"unset_warning_adds_replacement","trigger_warning":4,"warnings":[{"index":1,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1},{"kind":"warning","index":2},{"kind":"warning","index":3},{"kind":"warning","index":4},{"kind":"handler_enter","index":4},{"kind":"handler_add_replacement","result":true},{"kind":"handler_exit","index":4},{"kind":"after_remove","state":{"target":false,"keeper":false,"replacement":7,"anchor":10,"any":true}}],"remove_result":true,"caught":null,"after_remove":{"target":false,"keeper":false,"replacement":7,"anchor":10,"any":true},"apply_value":"seed:replacement:anchor","apply_trace":["replacement","anchor"],"callback_calls":{"target":0,"keeper":0,"replacement":1}}}}''')
 EXPECTED_HOOK_UNSET_REENTRY = json.loads(r'''{"control":{"case":"control","hook_value":7.5,"setup_result":true,"remove_result":true,"injection_result":null,"caught":null,"warnings":[{"index":1,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":5,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":6,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":7,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":8,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":9,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":10,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":11,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":12,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":13,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1,"phase":"setup"},{"kind":"warning","index":2,"phase":"setup"},{"kind":"warning","index":3,"phase":"setup"},{"kind":"warning","index":4,"phase":"remove"},{"kind":"warning","index":5,"phase":"remove"},{"kind":"warning","index":6,"phase":"remove"},{"kind":"warning","index":7,"phase":"remove"},{"kind":"warning","index":8,"phase":"observe"},{"kind":"warning","index":9,"phase":"observe"},{"kind":"warning","index":10,"phase":"observe"},{"kind":"warning","index":11,"phase":"observe"},{"kind":"warning","index":12,"phase":"observe"},{"kind":"warning","index":13,"phase":"observe"}],"after_remove":{"target":false,"replacement":false,"any":false},"apply_value":"seed","apply_trace":[]},"inject_on_hook_unset":{"case":"inject_on_hook_unset","hook_value":7.5,"setup_result":true,"remove_result":true,"injection_result":true,"caught":null,"warnings":[{"index":1,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":5,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":6,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":7,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":8,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":9,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":10,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":11,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":12,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":13,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1,"phase":"setup"},{"kind":"warning","index":2,"phase":"setup"},{"kind":"warning","index":3,"phase":"setup"},{"kind":"warning","index":4,"phase":"remove"},{"kind":"warning","index":5,"phase":"remove"},{"kind":"warning","index":6,"phase":"remove"},{"kind":"warning","index":7,"phase":"remove"},{"kind":"injection_enter","warning_index":7},{"kind":"injection_return","warning_index":7,"result":true},{"kind":"warning","index":8,"phase":"observe"},{"kind":"warning","index":9,"phase":"observe"},{"kind":"warning","index":10,"phase":"observe"},{"kind":"warning","index":11,"phase":"observe"},{"kind":"warning","index":12,"phase":"observe"},{"kind":"warning","index":13,"phase":"observe"}],"after_remove":{"target":false,"replacement":false,"any":false},"apply_value":"seed","apply_trace":[]},"throw_during_finally":{"case":"throw_during_finally","hook_value":7.5,"setup_result":true,"remove_result":null,"injection_result":true,"caught":{"class_hex":"52756e74696d65457863657074696f6e","message_hex":"64657374727563746f722042","is_primary_A":false,"is_destructor_B":true,"previous_is_primary_A":true},"warnings":[{"index":1,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":2,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":3,"phase":"setup","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":4,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":5,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":6,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":7,"phase":"remove","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":8,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":9,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":10,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":11,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":12,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"},{"index":13,"phase":"observe","severity":8192,"message_hex":"496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"}],"events":[{"kind":"warning","index":1,"phase":"setup"},{"kind":"warning","index":2,"phase":"setup"},{"kind":"warning","index":3,"phase":"setup"},{"kind":"throw_primary_A"},{"kind":"warning","index":4,"phase":"remove"},{"kind":"warning","index":5,"phase":"remove"},{"kind":"warning","index":6,"phase":"remove"},{"kind":"warning","index":7,"phase":"remove"},{"kind":"injection_enter","warning_index":7},{"kind":"injection_return","warning_index":7,"result":true},"replacement_destructor",{"kind":"caught","is_primary_A":false,"is_destructor_B":true},{"kind":"warning","index":8,"phase":"observe"},{"kind":"warning","index":9,"phase":"observe"},{"kind":"warning","index":10,"phase":"observe"},{"kind":"warning","index":11,"phase":"observe"},{"kind":"warning","index":12,"phase":"observe"},{"kind":"warning","index":13,"phase":"observe"}],"after_remove":{"target":false,"replacement":false,"any":false},"apply_value":"seed","apply_trace":[]}}''')
 
+EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_second":true,"has_action_any":true,"has_action_zero_priority":0,"has_action_second_priority":10,"has_action_missing":false,"has_action_wrong_priority":false,"remove_action_wrong_priority":false,"remove_action_first":true,"has_action_after_remove":true},"do_action_returns":{"populated":null,"empty_args":null,"all_args":null,"all_without_named":null,"nested":null,"no_listener":null},"callbacks":[{"event":"first","args":["outer","tail"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":0,"wp_actions":1},{"event":"second","args":["outer","tail"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":0,"wp_actions":1},{"event":"first","args":["filter-seed"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":1,"wp_actions":1},{"event":"second","args":["ignored-first-return"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":1,"wp_actions":1}],"after_outer":{"did_action":1,"did_filter":0,"current_action":false,"doing_action":false},"empty_args":[{"accepted_args":1,"args":[""]},{"accepted_args":0,"args":[]}],"all_hook":{"events":[{"accepted_args":0,"args":["callable-action-all-args","alpha","beta","gamma"],"current_action":"callable-action-all-args","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-all-args","alpha","beta","gamma"],"current_action":"callable-action-all-args","doing_action":true,"did_action":1,"wp_actions":1},{"named":true,"args":["alpha"]},{"accepted_args":0,"args":["callable-action-all-without-named-listener","solo","extra"],"current_action":"callable-action-all-without-named-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-all-without-named-listener","solo","extra"],"current_action":"callable-action-all-without-named-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-api","filter-seed"],"current_action":"callable-action-api","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-api","filter-seed"],"current_action":"callable-action-api","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-nested","outer"],"current_action":"callable-action-nested","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-nested","outer"],"current_action":"callable-action-nested","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-nested","inner"],"current_action":"callable-action-nested","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-nested","inner"],"current_action":"callable-action-nested","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":0,"args":["callable-action-nested-child","child"],"current_action":"callable-action-nested-child","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-nested-child","child"],"current_action":"callable-action-nested-child","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-no-listener"],"current_action":"callable-action-no-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-no-listener"],"current_action":"callable-action-no-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-all","first"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-throw-all","first"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-all","follow-up"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-throw-all","follow-up"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":0,"args":["callable-action-throw-named","first"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-throw-named","first"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-named","follow-up"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-throw-named","follow-up"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":2,"wp_actions":2}],"did_action_without_named":1},"counter_independence":{"before_filter":{"did_action":1,"did_filter":0},"after_filter":{"did_action":1,"did_filter":1}},"nested":{"events":[{"event":"outer-enter","args":["outer"],"count":1,"current_action":"callable-action-nested"},{"event":"outer-enter","args":["inner"],"count":2,"current_action":"callable-action-nested"},{"event":"outer-exit","count":2,"current_action":"callable-action-nested"},{"event":"child","args":["child"],"current_action":"callable-action-nested-child","doing_parent":true,"doing_child":true},{"event":"outer-exit","count":2,"current_action":"callable-action-nested"}],"did_action":2,"current_action":"callable-action-throw-named","doing_action":true},"no_listener_count":{"before":0,"after":1},"throw_all":{"caught":{"class":"RuntimeException","message":"action all boom"},"events":[{"event":"all-enter","args":["callable-action-throw-all","first"],"count":1,"current_action":"callable-action-throw-all","doing":true},{"event":"all-enter","args":["callable-action-throw-all","follow-up"],"count":2,"current_action":"callable-action-throw-all","doing":true},{"event":"all-exit"},{"event":"named-after-all","args":["follow-up"]}],"after_catch":{"did_action":1,"current_action":"callable-action-throw-all","doing_action":true,"doing_named":true},"followup_return":null,"after_followup":{"did_action":2,"current_action":"callable-action-throw-all","doing_action":true,"doing_named":true}},"throw_named":{"caught":{"class":"RuntimeException","message":"action named boom"},"events":[{"event":"named-thrower","args":["first"],"count":1,"current_action":"callable-action-throw-named","doing":true},{"event":"named-thrower","args":["follow-up"],"count":2,"current_action":"callable-action-throw-named","doing":true},{"event":"named-later-sibling","args":["follow-up"]}],"after_catch":{"did_action":1,"current_action":"callable-action-throw-named","doing_action":true,"doing_named":true},"followup_return":null,"after_followup":{"did_action":2,"current_action":"callable-action-throw-named","doing_action":true,"doing_named":true}}}''')
+
+
+def validate_action_observation(value):
+    exact(value, ('action_api',), 'action API program observation')
+    if EXPECTED_ACTION_API is None:
+        raise ValueError('pinned WordPress action API observation has not been frozen')
+    _require_exact(value['action_api'], EXPECTED_ACTION_API, 'measured action API group')
+
+
 def validate_observation(value):
+    if isinstance(value, dict) and set(value) == {'action_api'}:
+        validate_action_observation(value)
+        return
+    action_group = None
+    if isinstance(value, dict) and 'action_api' in value:
+        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'action_api'), 'program observation')
+        action_group = value['action_api']
+        value = {key: item for key, item in value.items() if key != 'action_api'}
     exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry'), 'program observation')
     _require_exact(value['base'], EXPECTED_OBSERVATION, 'original twenty cases')
     if EXPECTED_COERCIONS is None:
@@ -3981,14 +4003,22 @@ def validate_observation(value):
     _require_exact(value['priority_cow'], EXPECTED_PRIORITY_COW, 'measured priority COW cases')
     _require_exact(value['remove_cow'], EXPECTED_REMOVE_COW, 'measured remove-filter COW cases')
     _require_exact(value['hook_unset_reentry'], EXPECTED_HOOK_UNSET_REENTRY, 'measured hook-unset reentry cases')
+    if action_group is not None:
+        validate_action_observation({'action_api': action_group})
 
 
 def validate_result(value):
     exact(value, RESULT_FIELDS, 'callable v2 result')
-    if value['scenario'] != SCENARIO or value['continuation_peer'] is not True:
+    if value['scenario'] == ACTION_SCENARIO:
+        expected_apis = ALL_APIS
+    elif value['scenario'] == SCENARIO:
+        expected_apis = APIS
+    else:
+        raise ValueError('callable v2 scenario differs')
+    if value['continuation_peer'] is not True:
         raise ValueError('callable v2 scenario differs')
     counts = value['api_counts']
-    exact(counts, APIS, 'API counts')
+    exact(counts, expected_apis, 'API counts')
     if any(type(number) is not int or number < 0 for number in counts.values()):
         raise ValueError('API counts type/range differs')
     for name in ('frames_from_php', 'frames_from_rust', 'callback_invocations',
@@ -4005,6 +4035,26 @@ def validate_result(value):
     _require_exact(value['registry_observation'],
         {'closed': True, 'live_after_close': 0, 'closed_read_rejected': True}, 'registry close')
     validate_observation(value['php_observation'])
+
+
+def validate_action_result(value):
+    if not isinstance(value, dict) or value.get('scenario') != ACTION_SCENARIO:
+        raise ValueError('action API result scenario differs')
+    validate_result(value)
+
+
+def action_self_check():
+    """Check the isolated action observation is frozen and rejects drift."""
+    if EXPECTED_ACTION_API is None:
+        raise ValueError('pinned WordPress action API observation has not been frozen')
+    validate_action_observation({'action_api': EXPECTED_ACTION_API})
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['do_action_returns']['populated'] = True
+    try:
+        validate_action_observation({'action_api': changed})
+    except ValueError:
+        return True
+    raise AssertionError('changed action API observation accepted')
 
 
 def _bounded_nodes(value):
@@ -4047,11 +4097,17 @@ def validate_transcript(streams, result):
                 raise ValueError('wire envelope identity differs')
             frames[direction].append(item)
     cursor = dict.fromkeys(frames, 0)
-    counts = dict.fromkeys(APIS, 0)
+    api_names = ALL_APIS if result['scenario'] == ACTION_SCENARIO else APIS
+    counts = dict.fromkeys(api_names, 0)
     observed = dict.fromkeys(('callback_invocations', 'release_effects', 'boundary_effects', 'argument_release_effects'), 0)
     effects, live, pending_release, registrations = set(), {}, set(), {}
     normalized_arguments = {}
     issued_generations = {}
+    action_counts = {}
+
+    def hook_token(key):
+        validate_key(key)
+        return key['type'], key['hex']
 
     def take(direction, kind, parent):
         index = cursor[direction]
@@ -4106,11 +4162,11 @@ def validate_transcript(streams, result):
     def api(parent):
         payload = take('php', 'call_core', parent)
         name = payload.get('api')
-        if name not in APIS:
+        if name not in api_names:
             raise ValueError('unknown API')
         fields = {'api'} | ({'arguments'} if ARGUMENTS[name] else set())
-        fields |= {'value', 'args'} if name == 'apply_filters' else set()
-        fields |= {'any', 'priority'} if name == 'has_filter' else {'any'} if name == 'doing_filter' else set()
+        fields |= {'value', 'args'} if name == 'apply_filters' else {'args'} if name == 'do_action' else set()
+        fields |= {'any', 'priority'} if name in ('has_filter', 'has_action') else {'any'} if name in ('doing_filter', 'doing_action') else set()
         exact(payload, fields, 'CallCore')
         descriptors = payload.get('arguments', {})
         exact(descriptors, ARGUMENTS[name], 'API argument inventory')
@@ -4120,16 +4176,17 @@ def validate_transcript(streams, result):
         counts[name] += 1
         if 'any' in payload and type(payload['any']) is not bool:
             raise ValueError('API any flag differs')
-        if name == 'has_filter' and payload['priority'] is not None:
+        if name in ('has_filter', 'has_action') and payload['priority'] is not None:
             validate_pod(payload['priority'])
             if payload['priority']['type'] != 'int':
                 raise ValueError('has_filter exact priority is not int')
-        if name == 'apply_filters':
-            validate_pod(payload['value'])
+        if name in ('apply_filters', 'do_action'):
             if not isinstance(payload['args'], list):
                 raise ValueError('apply args are not list')
             for value in payload['args']:
                 validate_pod(value)
+            if name == 'apply_filters':
+                validate_pod(payload['value'])
         context = {'name': name, 'payload': payload, 'owned': owned, 'released': not owned,
                    'hook': None, 'priority': None, 'callback_key': None, 'accepted': None,
                    'value': payload.get('value'), 'extra': payload.get('args'), 'throwable': None}
@@ -4143,23 +4200,29 @@ def validate_transcript(streams, result):
         completion(outcome, True)
         if outcome['kind'] == 'value':
             node = outcome['value']; kind = node['type']
-            if name in ('add_filter', 'remove_filter', 'doing_filter') and kind != 'bool':
+            if name in ('add_filter', 'remove_filter', 'doing_filter', 'add_action', 'remove_action', 'doing_action') and kind != 'bool':
                 raise ValueError('API bool result differs')
-            if name == 'add_filter' and node['value'] is not True:
-                raise ValueError('add_filter result not true')
-            if name == 'current_filter':
+            if name in ('add_filter', 'add_action') and node['value'] is not True:
+                raise ValueError('add API result not true')
+            if name in ('current_filter', 'current_action'):
                 scalar(node)
-            if name == 'has_filter':
+            if name in ('has_filter', 'has_action'):
                 exact_mode = payload['any'] or payload['priority'] is not None
                 if exact_mode and kind != 'bool':
-                    raise ValueError('has_filter exact/any result not bool')
+                    raise ValueError('has API exact/any result not bool')
                 if not exact_mode and kind not in ('int', 'string') and node != {'type': 'bool', 'value': False}:
-                    raise ValueError('has_filter search result differs')
+                    raise ValueError('has API search result differs')
             if name == 'did_filter':
                 validate_did_filter_result(node)
-        if name == 'apply_filters':
+            if name == 'did_action' and (kind != 'int' or canonical_integer(node['value'], 'did_action') < 0):
+                raise ValueError('did_action result differs')
+            if name == 'do_action' and node != {'type': 'null'}:
+                raise ValueError('do_action result is not null')
+        if name in ('apply_filters', 'do_action'):
             expected = context['throwable'] or {'kind': 'value', 'value': context['value']}
-            _require_exact(outcome, expected, 'filter callback/Return correlation')
+            if name == 'do_action':
+                expected = context['throwable'] or {'kind': 'value', 'value': {'type': 'null'}}
+            _require_exact(outcome, expected, 'dispatch callback/Return correlation')
 
     def effect(parent, context=None):
         payload = take('rust', 'invoke_php', parent)
@@ -4182,6 +4245,9 @@ def validate_transcript(streams, result):
                       'hook_scalar': ('handle',), 'release_arguments': ('handles',),
                       'missing_offset': ('key',), 'null_property': ('property',), 'null_method': ('method',),
                       'null_foreach': ()}
+            if result['scenario'] == ACTION_SCENARIO:
+                fields['action_counter_increment'] = ('handle',)
+                fields['action_counter_read'] = ('handle',)
             if action not in fields:
                 raise ValueError('unknown boundary action')
             exact(args, fields[action], 'boundary arguments')
@@ -4198,11 +4264,24 @@ def validate_transcript(streams, result):
                     validate_key(args['key'])
                 elif action == 'null_property' and args['property'] != 'callbacks':
                     raise ValueError('null property differs')
-                elif action == 'null_method' and (args['method'] not in ('add_filter', 'remove_filter', 'has_filter', 'apply_filters')
+                elif action == 'null_method' and (args['method'] not in ('add_filter', 'remove_filter', 'has_filter', 'apply_filters', 'add_action', 'remove_action', 'has_action', 'do_action')
                                                   or args['method'] != context['name']):
                     raise ValueError('null method differs from the active API')
-                if action == 'null_foreach' and context['name'] != 'apply_filters':
+                if action == 'null_foreach' and context['name'] not in ('apply_filters', 'do_action'):
                     raise ValueError('null foreach outside filter iteration')
+                observed['boundary_effects'] += 1
+            elif action in ('action_counter_increment', 'action_counter_read'):
+                expected_api = 'do_action' if action == 'action_counter_increment' else 'did_action'
+                if result['scenario'] != ACTION_SCENARIO or context['name'] != expected_api:
+                    raise ValueError('action counter boundary used outside its action API')
+                argument_id = require_live(args['handle'], 'argument')
+                if argument_id not in context['owned']:
+                    raise ValueError('action counter boundary uses another API argument')
+                by_name = context['payload']['arguments']
+                if by_name.get('hook') != args['handle']:
+                    raise ValueError('action counter boundary does not use its hook argument')
+                if action == 'action_counter_increment' and context['hook'] is None:
+                    raise ValueError('action counter boundary precedes hook normalization')
                 observed['boundary_effects'] += 1
             else:
                 argument_id = require_live(args['handle'], 'argument')
@@ -4220,7 +4299,7 @@ def validate_transcript(streams, result):
                             or type(args['null_to_zero']) is not bool
                             or args['null_to_zero'] != (role == 'priority')):
                         raise ValueError('array access mode/normalization role differs')
-                    if context['name'] in ('doing_filter', 'current_filter'):
+                    if context['name'] in ('doing_filter', 'current_filter', 'doing_action', 'current_action'):
                         raise ValueError('strict hook membership was key-coerced')
                 observed['boundary_effects'] += 1
         elif operation == 'callable':
@@ -4228,19 +4307,26 @@ def validate_transcript(streams, result):
             ident = require_live(payload['handle'], 'callable')
             registration = registrations[ident]
             scalar(payload['hook']); validate_key(payload['priority'])
-            if context is None or context['name'] != 'apply_filters' or context['hook'] is None:
-                raise ValueError('callable outside a typed filter')
+            if context is None or context['name'] not in ('apply_filters', 'do_action') or context['hook'] is None:
+                raise ValueError('callable outside a typed dispatch')
             _require_exact(payload['hook'], context['hook']['original'], 'invoked original hook')
             _require_exact(payload['priority'], registration['priority']['key'], 'invoked priority key')
             mode, accepted = payload['call_mode'], registration['accepted']
             if mode == 'all':
                 _require_exact(registration['hook']['key'], {'type': 'string', 'hex': b'all'.hex()}, 'all registration')
-                expected_args = [context['hook']['original'], context['value'], *context['extra']]
+                if context['name'] == 'do_action':
+                    expected_args = [context['hook']['original'], *context['extra']]
+                else:
+                    expected_args = [context['hook']['original'], context['value'], *context['extra']]
             else:
                 _require_exact(registration['hook']['key'], context['hook']['key'], 'named registration')
                 if mode != ('zero' if accepted == 0 else 'array'):
                     raise ValueError('named call mode differs')
-                expected_args = [] if accepted == 0 else [context['value'], *context['extra']][:accepted]
+                if context['name'] == 'do_action':
+                    action_args = context['extra'] or [{'type': 'string', 'hex': ''}]
+                    expected_args = [] if accepted == 0 else action_args[:accepted]
+                else:
+                    expected_args = [] if accepted == 0 else [context['value'], *context['extra']][:accepted]
             _require_exact(payload['args'], expected_args, 'typed argument slicing')
             observed['callback_invocations'] += 1
         elif operation == 'release_callable':
@@ -4316,6 +4402,27 @@ def validate_transcript(streams, result):
                     scalar(value['value'])
                 elif value['value'] is not None:
                     raise ValueError('unsupported scalar was substituted')
+            elif action == 'action_counter_increment':
+                validate_pod(value)
+                if value['type'] != 'int':
+                    raise ValueError('action counter increment result is not an integer')
+                key = hook_token(context['hook']['key'])
+                expected = action_counts.get(key, 0) + 1
+                if canonical_integer(value['value'], 'action counter increment') != expected:
+                    raise ValueError('action counter increment differs from the measured dispatch count')
+                action_counts[key] = expected
+            elif action == 'action_counter_read':
+                validate_pod(value)
+                if value['type'] != 'int':
+                    raise ValueError('action counter read is not an integer')
+                observed_count = canonical_integer(value['value'], 'action counter read')
+                if observed_count < 0:
+                    raise ValueError('action counter read is negative')
+                if context['hook'] is not None:
+                    key = hook_token(context['hook']['key'])
+                    expected = action_counts.get(key, 0)
+                    if observed_count != expected:
+                        raise ValueError('action counter read differs from measured action dispatches')
             elif action in ('missing_offset', 'null_property', 'null_foreach'):
                 _require_exact(value, {'missing': True}, 'native missing access')
             elif action == 'null_method':
@@ -4342,8 +4449,9 @@ def validate_transcript(streams, result):
                 context['value'] = outcome['value']
         return operation
 
+    scenario = result['scenario']
     _require_exact(take('php', 'start_root', None),
-        {'operation': SCENARIO, 'protocol': 2, 'request_generation': REQUEST}, 'root start')
+        {'operation': scenario, 'protocol': 2, 'request_generation': REQUEST}, 'root start')
     if effect(None) != 'run_script':
         raise ValueError('script effect missing')
     closed = False
@@ -4356,7 +4464,7 @@ def validate_transcript(streams, result):
         closed = operation == 'close_registry'
     if not closed:
         raise ValueError('missing registry close')
-    _require_exact(take('rust', 'return', None), {'operation': SCENARIO, 'status': 'ok'}, 'root Return')
+    _require_exact(take('rust', 'return', None), {'operation': scenario, 'status': 'ok'}, 'root Return')
     expected_final = {'status': 'ok', 'php_observation': result['php_observation'],
         'registry_observation': result['registry_observation'], 'transport': {
             'frames_sent': len(frames['php']) - 1, 'frames_received': len(frames['rust']),
@@ -4500,6 +4608,63 @@ TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_unwind_throwable_token', 'false_unwind_release_ack',
     'live_registry_close', 'wrong_transport', 'extra_frame', 'duplicate_decoded_key', 'unterminated_frame',
 )
+
+ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
+    'unknown_api', 'wrong_do_action_result', 'wrong_did_action_type',
+    'wrong_action_callback_args', 'wrong_script_observation', 'wrong_transport',
+)
+
+
+def reject_action_transcripts(streams, result):
+    """Check action-specific wire corruptions against the closed replay validator."""
+    validate_action_result(result)
+    validate_transcript(streams, result)
+    source = {key: [json.loads(line, object_pairs_hook=_unique_frame_object)
+                    for line in raw.splitlines()] for key, raw in streams.items()}
+
+    def locate(direction, predicate):
+        return next(i for i, item in enumerate(source[direction]) if predicate(item))
+
+    action_api = locate('php', lambda item: item.get('kind') == 'call_core'
+                        and item.get('payload', {}).get('api') == 'do_action')
+    did_action_api = locate('php', lambda item: item.get('kind') == 'call_core'
+                            and item.get('payload', {}).get('api') == 'did_action')
+    action_return = locate('rust', lambda item: item.get('kind') == 'return'
+                           and item.get('payload', {}).get('api') == 'do_action')
+    did_action_return = locate('rust', lambda item: item.get('kind') == 'return'
+                               and item.get('payload', {}).get('api') == 'did_action')
+    callback = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                      and item.get('payload', {}).get('operation') == 'callable')
+    script_resume = locate('php', lambda item: item.get('kind') == 'resume'
+                           and item.get('payload', {}).get('completion', {}).get('value') == result['php_observation'])
+    finished = locate('php', lambda item: item.get('kind') == 'request_finished')
+
+    def encode(frames):
+        return {direction: b''.join((json.dumps(item, separators=(',', ':')) + '\n').encode()
+                                    for item in items) for direction, items in frames.items()}
+
+    accepted = []
+    for name in ACTION_TRANSCRIPT_NEGATIVE_INVENTORY:
+        frames = json.loads(json.dumps(source))
+        if name == 'unknown_api':
+            frames['php'][action_api]['payload']['api'] = 'unknown_action_api'
+        elif name == 'wrong_do_action_result':
+            frames['rust'][action_return]['payload']['completion']['value'] = {'type': 'bool', 'value': True}
+        elif name == 'wrong_did_action_type':
+            frames['rust'][did_action_return]['payload']['completion']['value'] = {'type': 'bool', 'value': False}
+        elif name == 'wrong_action_callback_args':
+            frames['rust'][callback]['payload']['args'].append({'type': 'string', 'hex': '00'})
+        elif name == 'wrong_script_observation':
+            frames['php'][script_resume]['payload']['completion']['value'] = {}
+        elif name == 'wrong_transport':
+            frames['php'][finished]['payload']['transport']['frames_sent'] = 0
+        try:
+            validate_transcript(encode(frames), result)
+        except (ValueError, KeyError, TypeError, IndexError, StopIteration):
+            accepted.append(name)
+            continue
+        raise AssertionError('corrupted action transcript accepted: ' + name)
+    return accepted
 
 
 def reject_mutated_transcripts(streams, result):

@@ -58,6 +58,12 @@ remove_filterのpriority操作もWordPressの各PHP境界ごとにmap版を保�
 
 filter valueと引数はnull、bool、signed-64 int、IEEE float bit pattern、byte string、ordered arrayのmaterialized PODに限ります。PHP object、reference、resourceを含むfilter value/argumentは明示的に拒否します。hook名とpriorityにはnull／bool／int／float／byte stringを扱い、正規化済みの配列キーと元のscalarを分離します。current_filterとall listenerは元のscalar、doing_filterはPHPの厳密比較を使い、NaNは自分自身とも一致しません。priorityの安定したSORT_NUMERIC順と、実行中のmin／比較・厳密一致による反復位置の補正を区別します。配列／objectの不正なhook・priorityは該当するPHPアクセスから実TypeErrorを返します。成功するresource hook／priority、WordPress global変数の直接読書き、完全なPHP heap、production WP dispatcherとhook／Queryの受入はこのfixtureに含みません。registry closure前は全callback releaseを実行し、registry close後の利用を拒否します。
 
+### Action API family / isolated native and Wasm profile
+
+7つのAction API（add_action、remove_action、has_action、do_action、current_action、doing_action、did_action）は、Filter APIの別名と共有hook registry／callback dispatcherを使いますが、`action_api`という別scenario・別receiptで測定します。Action callbackの戻り値は破棄し、`do_action`は常にnullを返します。`$wp_actions`は`$wp_filters`と独立し、listenerがないhookでもcallback実行前に回数が増えます。all listenerはaccepted_argsにかかわらずhook名と全引数を受け取り、named callbackの引数切詰め・ゼロ引数時の空文字placeholderはWP_Hookの規則に従います。通常のnested dispatchと、root dispatchからのall／named callback Throwable・catch後のstale stackを別々に照合します。子Action Throwableを親callback内でcatchする追加ケースはRust unit regressionであり、WP／native／Wasmの共通fixture測定ではありません。
+
+Action fixtureは文字列hookを使い、固定WP 7.1.3、native PHP/Rust peer、PHP-WASIX/Rust peerで同じ観測を比較します。counter更新・読取りは実PHPの`$wp_actions`配列境界を呼び、Rust dispatcherのaction counterは更新成功後に進めます。`$wp_actions`配列のCOW再入はfilter counter COWから推測せず未検証です。非文字列hook keyの変換警告順もこのAction profileでは受入していません。現実装はdispatcher key lookupとPHP counter boundaryの両方でhook keyを評価するため、float hookの警告回数・Throwable位置をWPと同一と主張しません。
+
 ## 固定WordPress hook oracle
 
 固定WordPressとPHPを準備済みのrepository rootで実行します。CIのnative runnerはこのWordPress oracleを自動実行しません。

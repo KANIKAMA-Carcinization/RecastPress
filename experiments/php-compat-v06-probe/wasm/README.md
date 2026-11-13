@@ -182,3 +182,15 @@ All six profiles below ran against the frozen typed-Throwable hooks source. The 
 | trap | [passed](evidence/trap-20261112T175008.246021Z-success.json) | [101 inputs](evidence/wsl-trap-origin-20261112T175014.840259Z.json) |
 
 The hooks profile covers normal/catch/abort with 7/6, 7/6 and 5/4 PHP/Rust frames. The default bridge still covers surface/throwable and exit/partial-frame/pipe-close recovery; publish, handle lifetime, metered trap and owned CPU-loop recovery passed again. Build/host processes were reaped. These measurements do not establish product CPU budgets or worker reuse.
+
+## Isolated Action API and callable bridge profiles
+
+The shared callable peer now has two separate interactive profiles: the existing Filter profile (`--callables`) and the Action API profile (`--actions`). They run in separate guests so the filter's retained-Throwable stack observations do not leak into Action cases. Both use the pinned PHP 8.5.12 Wasm module and compare their PHP observations with the same Rust peer; the fixed WordPress oracle separately compares all 87 filter observations and the Action observation set.
+
+The Action profile exercises `add_action`, `remove_action`, `has_action`, `do_action`, `current_action`, `doing_action`, and `did_action`. Its current passing [Action receipt](evidence/actions-20261113T173415.715679Z-success.json) binds 109 source inputs and reports 174 API calls, 40 callbacks, 14 releases, 264 boundary effects, 133 argument-release batches, and 629/628 PHP/Rust frames. Six Action transcript mutations were rejected. Verify it with `python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --actions --verify-only`.
+
+The current passing [callable Filter receipt](evidence/callables-20261113T173724.965245Z-success.json) also binds 109 inputs and reports 1,503 API calls, 289 callbacks, 272 releases, 5,282 boundary effects, 1,438 argument-release batches, and 8,788/8,787 PHP/Rust frames. Forty-two transcript mutations were rejected. Verify it with `python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --callables --verify-only`.
+
+The current default [continuation bridge receipt](evidence/bridge-20261113T174210.189016Z-success.json) has been refreshed against the Action-enabled source and verifies with `python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py --verify-only`. These receipts were built and run from the repository mounted in WSL; the runner checked all 109 inputs before and after each run. They are development-host compatibility evidence, not production performance acceptance.
+
+The Action fixture currently uses string hook names. It does not claim `$wp_actions` copy-on-write reentry coverage or exact WordPress warning order for non-string hook keys; those remain separate PoC cases.

@@ -103,6 +103,18 @@ final class CallableApiAdapter
         return $this->api('add_filter', ['arguments' => $arguments], $handles);
     }
 
+    public function addAction($hookName, $callback, $priority = 10, $acceptedArgs = 1)
+    {
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
+            'priority' => $priority,
+            'accepted_args' => $acceptedArgs,
+        ]);
+
+        return $this->api('add_action', ['arguments' => $arguments], $handles);
+    }
+
     public function removeFilter($hookName, $callback, $priority = 10)
     {
         [$arguments, $handles] = $this->retainArguments([
@@ -114,6 +126,17 @@ final class CallableApiAdapter
         return $this->api('remove_filter', ['arguments' => $arguments], $handles);
     }
 
+    public function removeAction($hookName, $callback, $priority = 10)
+    {
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
+            'priority' => $priority,
+        ]);
+
+        return $this->api('remove_action', ['arguments' => $arguments], $handles);
+    }
+
     public function hasFilter($hookName, $callback = false, $priority = false)
     {
         $any = $callback === false;
@@ -123,6 +146,21 @@ final class CallableApiAdapter
         ]);
 
         return $this->api('has_filter', [
+            'arguments' => $arguments,
+            'any' => $any,
+            'priority' => is_int($priority) ? self::encodePod($priority) : null,
+        ], $handles);
+    }
+
+    public function hasAction($hookName, $callback = false, $priority = false)
+    {
+        $any = $callback === false;
+        [$arguments, $handles] = $this->retainArguments([
+            'hook' => $hookName,
+            'callback' => $callback,
+        ]);
+
+        return $this->api('has_action', [
             'arguments' => $arguments,
             'any' => $any,
             'priority' => is_int($priority) ? self::encodePod($priority) : null,
@@ -142,9 +180,25 @@ final class CallableApiAdapter
         ], $handles);
     }
 
+    public function doAction($hookName, ...$args)
+    {
+        $argumentNodes = array_map(self::encodePod(...), $args);
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
+        return $this->api('do_action', [
+            'arguments' => $arguments,
+            'args' => $argumentNodes,
+        ], $handles);
+    }
+
     public function currentFilter()
     {
         return $this->api('current_filter', []);
+    }
+
+    public function currentAction()
+    {
+        return $this->api('current_action', []);
     }
 
     public function doingFilter($hookName = null)
@@ -157,11 +211,28 @@ final class CallableApiAdapter
         ], $handles);
     }
 
+    public function doingAction($hookName = null)
+    {
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
+        return $this->api('doing_action', [
+            'arguments' => $arguments,
+            'any' => $hookName === null,
+        ], $handles);
+    }
+
     public function didFilter($hookName)
     {
         [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
 
         return $this->api('did_filter', ['arguments' => $arguments], $handles);
+    }
+
+    public function didAction($hookName)
+    {
+        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+
+        return $this->api('did_action', ['arguments' => $arguments], $handles);
     }
 
     public function handleTerminalInvoke(array $frame): void
@@ -312,6 +383,29 @@ final class CallableApiAdapter
 
     private function performBoundary(string $action, array $arguments): array
     {
+        if ($action === 'action_counter_increment' || $action === 'action_counter_read') {
+            expect_payload_keys(
+                ['payload' => $arguments],
+                ['handle'],
+                'callable_boundary_action_counter',
+            );
+            if (!is_array($arguments['handle'])) {
+                throw new RuntimeException('callable_boundary_action_counter_handle');
+            }
+
+            $hookName = $this->registry->resolve($arguments['handle'], 'argument');
+            if ($action === 'action_counter_increment') {
+                if (!isset($GLOBALS['wp_actions']) || !is_array($GLOBALS['wp_actions'])) {
+                    $GLOBALS['wp_actions'] = [];
+                }
+                $GLOBALS['wp_actions'][$hookName] = ($GLOBALS['wp_actions'][$hookName] ?? 0) + 1;
+                return self::encodePod($GLOBALS['wp_actions'][$hookName]);
+            }
+
+            $count = isset($GLOBALS['wp_actions'][$hookName]) ? $GLOBALS['wp_actions'][$hookName] : 0;
+            return self::encodePod($count);
+        }
+
         if ($action === 'array_key') {
             expect_payload_keys(
                 ['payload' => $arguments],
@@ -1028,9 +1122,19 @@ function add_filter($hook_name, $callback, $priority = 10, $accepted_args = 1)
     return callable_adapter()->addFilter($hook_name, $callback, $priority, $accepted_args);
 }
 
+function add_action($hook_name, $callback, $priority = 10, $accepted_args = 1)
+{
+    return callable_adapter()->addAction($hook_name, $callback, $priority, $accepted_args);
+}
+
 function remove_filter($hook_name, $callback, $priority = 10)
 {
     return callable_adapter()->removeFilter($hook_name, $callback, $priority);
+}
+
+function remove_action($hook_name, $callback, $priority = 10)
+{
+    return callable_adapter()->removeAction($hook_name, $callback, $priority);
 }
 
 function has_filter($hook_name, $callback = false, $priority = false)
@@ -1038,9 +1142,19 @@ function has_filter($hook_name, $callback = false, $priority = false)
     return callable_adapter()->hasFilter($hook_name, $callback, $priority);
 }
 
+function has_action($hook_name, $callback = false, $priority = false)
+{
+    return callable_adapter()->hasAction($hook_name, $callback, $priority);
+}
+
 function apply_filters($hook_name, $value, ...$args)
 {
     return callable_adapter()->applyFilters($hook_name, $value, ...$args);
+}
+
+function do_action($hook_name, ...$args)
+{
+    return callable_adapter()->doAction($hook_name, ...$args);
 }
 
 function current_filter()
@@ -1048,12 +1162,27 @@ function current_filter()
     return callable_adapter()->currentFilter();
 }
 
+function current_action()
+{
+    return callable_adapter()->currentAction();
+}
+
 function doing_filter($hook_name = null)
 {
     return callable_adapter()->doingFilter($hook_name);
 }
 
+function doing_action($hook_name = null)
+{
+    return callable_adapter()->doingAction($hook_name);
+}
+
 function did_filter($hook_name)
 {
     return callable_adapter()->didFilter($hook_name);
+}
+
+function did_action($hook_name)
+{
+    return callable_adapter()->didAction($hook_name);
 }

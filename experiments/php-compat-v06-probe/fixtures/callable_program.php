@@ -2578,6 +2578,116 @@ function callable_program_priority_cow_cases(): array
     ];
 }
 
+function callable_program_action_api_cases(): array
+{
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+
+    $hook = 'callable-action-api';
+    $events = [];
+    $observe = static function (string $label, array $args) use (&$events, $hook): void {
+        $events[] = ['event' => $label, 'args' => $args, 'current_action' => current_action(),
+            'doing_action' => doing_action(), 'doing_named' => doing_action($hook),
+            'did_action' => did_action($hook), 'did_filter' => did_filter($hook),
+            'wp_actions' => $GLOBALS['wp_actions'][$hook] ?? 0];
+    };
+    $first = static function (...$args) use ($observe): string { $observe('first', $args); return 'ignored-first-return'; };
+    $second = static function (...$args) use ($observe): bool { $observe('second', $args); return false; };
+    $added = add_action($hook, $first, 0, 99);
+    $addedSecond = add_action($hook, $second, 10, 99);
+    $aliases = ['add_action' => $added, 'add_action_second' => $addedSecond,
+        'has_action_any' => has_action($hook), 'has_action_zero_priority' => has_action($hook, $first),
+        'has_action_second_priority' => has_action($hook, $second),
+        'has_action_missing' => has_action($hook, static function (): void {}),
+        'has_action_wrong_priority' => has_action($hook, $first, 1),
+        'remove_action_wrong_priority' => remove_action($hook, $first, 1),
+        'remove_action_first' => remove_action($hook, $first, 0),
+        'has_action_after_remove' => has_action($hook)];
+    add_action($hook, $first, 0, 99);
+    $doReturn = do_action($hook, 'outer', 'tail');
+    $afterOuter = ['did_action' => did_action($hook), 'did_filter' => did_filter($hook),
+        'current_action' => current_action(), 'doing_action' => doing_action()];
+
+    $placeholderEvents = [];
+    add_action('callable-action-empty-args', static function (...$args) use (&$placeholderEvents): void { $placeholderEvents[] = ['accepted_args' => 1, 'args' => $args]; }, 10, 1);
+    add_action('callable-action-empty-args', static function (...$args) use (&$placeholderEvents): void { $placeholderEvents[] = ['accepted_args' => 0, 'args' => $args]; }, 20, 0);
+    $emptyReturn = do_action('callable-action-empty-args');
+
+    $allEvents = [];
+    $allObserve = static function (int $acceptedArgs, array $args) use (&$allEvents): void {
+        $hookName = $args[0] ?? '';
+        $allEvents[] = ['accepted_args' => $acceptedArgs, 'args' => $args,
+            'current_action' => current_action(), 'doing_action' => doing_action(),
+            'did_action' => did_action($hookName), 'wp_actions' => $GLOBALS['wp_actions'][$hookName] ?? 0];
+    };
+    add_action('all', static function (...$args) use ($allObserve): void { $allObserve(0, $args); }, 1, 0);
+    add_action('all', static function (...$args) use ($allObserve): void { $allObserve(1, $args); }, 2, 1);
+    add_action('callable-action-all-args', static function (...$args) use (&$allEvents): void { $allEvents[] = ['named' => true, 'args' => $args]; }, 10, 1);
+    $allReturn = do_action('callable-action-all-args', 'alpha', 'beta', 'gamma');
+    $allNoListenerReturn = do_action('callable-action-all-without-named-listener', 'solo', 'extra');
+
+    $sameNameBeforeFilter = ['did_action' => did_action($hook), 'did_filter' => did_filter($hook)];
+    apply_filters($hook, 'filter-seed');
+    $sameNameAfterFilter = ['did_action' => did_action($hook), 'did_filter' => did_filter($hook)];
+
+    $nestedEvents = [];
+    $nestedHook = 'callable-action-nested';
+    $nestedOnce = false;
+    $nested = static function (...$args) use (&$nestedEvents, &$nestedOnce, $nestedHook): void {
+        $nestedEvents[] = ['event' => 'outer-enter', 'args' => $args, 'count' => did_action($nestedHook), 'current_action' => current_action()];
+        if (!$nestedOnce) { $nestedOnce = true; do_action($nestedHook, 'inner'); do_action('callable-action-nested-child', 'child'); }
+        $nestedEvents[] = ['event' => 'outer-exit', 'count' => did_action($nestedHook), 'current_action' => current_action()];
+    };
+    add_action($nestedHook, $nested, 10, 9);
+    add_action('callable-action-nested-child', static function (...$args) use (&$nestedEvents, $nestedHook): void {
+        $nestedEvents[] = ['event' => 'child', 'args' => $args, 'current_action' => current_action(),
+            'doing_parent' => doing_action($nestedHook), 'doing_child' => doing_action('callable-action-nested-child')];
+    }, 10, 9);
+    $nestedReturn = do_action($nestedHook, 'outer');
+    $noListenerHook = 'callable-action-no-listener';
+    $noListenerBefore = did_action($noListenerHook);
+    $noListenerReturn = do_action($noListenerHook);
+    $noListenerAfter = did_action($noListenerHook);
+
+    $throwAllEvents = []; $throwAllHook = 'callable-action-throw-all'; $throwAllOnce = false;
+    add_action('all', static function (...$args) use (&$throwAllEvents, &$throwAllOnce, $throwAllHook): void {
+        if (($args[0] ?? null) !== $throwAllHook) { return; }
+        $throwAllEvents[] = ['event' => 'all-enter', 'args' => $args, 'count' => did_action($throwAllHook), 'current_action' => current_action(), 'doing' => doing_action()];
+        if (!$throwAllOnce) { $throwAllOnce = true; throw new RuntimeException('action all boom'); }
+        $throwAllEvents[] = ['event' => 'all-exit'];
+    }, 3, 0);
+    add_action($throwAllHook, static function (...$args) use (&$throwAllEvents): void { $throwAllEvents[] = ['event' => 'named-after-all', 'args' => $args]; }, 10, 9);
+    $throwAllCaught = null;
+    try { do_action($throwAllHook, 'first'); } catch (Throwable $throwable) { $throwAllCaught = ['class' => $throwable::class, 'message' => $throwable->getMessage()]; }
+    $throwAllAfterCatch = ['did_action' => did_action($throwAllHook), 'current_action' => current_action(), 'doing_action' => doing_action(), 'doing_named' => doing_action($throwAllHook)];
+    $throwAllFollowupReturn = do_action($throwAllHook, 'follow-up');
+    $throwAllAfterFollowup = ['did_action' => did_action($throwAllHook), 'current_action' => current_action(), 'doing_action' => doing_action(), 'doing_named' => doing_action($throwAllHook)];
+
+    $throwNamedEvents = []; $throwNamedHook = 'callable-action-throw-named'; $throwNamedOnce = false;
+    add_action($throwNamedHook, static function (...$args) use (&$throwNamedEvents, &$throwNamedOnce, $throwNamedHook): void {
+        $throwNamedEvents[] = ['event' => 'named-thrower', 'args' => $args, 'count' => did_action($throwNamedHook), 'current_action' => current_action(), 'doing' => doing_action()];
+        if (!$throwNamedOnce) { $throwNamedOnce = true; throw new RuntimeException('action named boom'); }
+    }, 10, 9);
+    add_action($throwNamedHook, static function (...$args) use (&$throwNamedEvents): void { $throwNamedEvents[] = ['event' => 'named-later-sibling', 'args' => $args]; }, 20, 9);
+    $throwNamedCaught = null;
+    try { do_action($throwNamedHook, 'first'); } catch (Throwable $throwable) { $throwNamedCaught = ['class' => $throwable::class, 'message' => $throwable->getMessage()]; }
+    $throwNamedAfterCatch = ['did_action' => did_action($throwNamedHook), 'current_action' => current_action(), 'doing_action' => doing_action(), 'doing_named' => doing_action($throwNamedHook)];
+    $throwNamedFollowupReturn = do_action($throwNamedHook, 'follow-up');
+    $throwNamedAfterFollowup = ['did_action' => did_action($throwNamedHook), 'current_action' => current_action(), 'doing_action' => doing_action(), 'doing_named' => doing_action($throwNamedHook)];
+
+    return ['aliases' => $aliases,
+        'do_action_returns' => ['populated' => $doReturn, 'empty_args' => $emptyReturn, 'all_args' => $allReturn, 'all_without_named' => $allNoListenerReturn, 'nested' => $nestedReturn, 'no_listener' => $noListenerReturn],
+        'callbacks' => $events, 'after_outer' => $afterOuter, 'empty_args' => $placeholderEvents,
+        'all_hook' => ['events' => $allEvents, 'did_action_without_named' => did_action('callable-action-all-without-named-listener')],
+        'counter_independence' => ['before_filter' => $sameNameBeforeFilter, 'after_filter' => $sameNameAfterFilter],
+        'nested' => ['events' => $nestedEvents, 'did_action' => did_action($nestedHook), 'current_action' => current_action(), 'doing_action' => doing_action()],
+        'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
+        'throw_all' => ['caught' => $throwAllCaught, 'events' => $throwAllEvents, 'after_catch' => $throwAllAfterCatch, 'followup_return' => $throwAllFollowupReturn, 'after_followup' => $throwAllAfterFollowup],
+        'throw_named' => ['caught' => $throwNamedCaught, 'events' => $throwNamedEvents, 'after_catch' => $throwNamedAfterCatch, 'followup_return' => $throwNamedFollowupReturn, 'after_followup' => $throwNamedAfterFollowup]];
+}
+
 function callable_program_run(): array
 {
     $coercions = callable_program_coercion_cases();
@@ -2598,4 +2708,9 @@ function callable_program_run(): array
         'remove_cow' => callable_program_remove_cow_cases(),
         'hook_unset_reentry' => callable_program_hook_unset_cases(),
     ];
+}
+
+function callable_program_run_action_api(): array
+{
+    return ['action_api' => callable_program_action_api_cases()];
 }

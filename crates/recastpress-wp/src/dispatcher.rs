@@ -519,6 +519,7 @@ pub enum DispatchStep {
 pub enum DispatchBoundary {
     FilterCounterWrite,
     FilterCounterIncrement,
+    ActionCounterIncrement,
     NamedHookIsset,
     NamedHookRead,
     MissingOffsetAll,
@@ -531,6 +532,7 @@ pub enum DispatchBoundary {
 enum DispatchPhase {
     CounterWrite,
     CounterIncrement,
+    ActionCounterIncrement,
     All,
     Named,
     NamedHookIsset,
@@ -561,6 +563,7 @@ struct ResumableDispatch {
     pending_throwable: Option<PhpHandle>,
     throwable_abandoned: bool,
     effectful: bool,
+    action: bool,
     binding_operand: Option<HookBindingOperand>,
 }
 
@@ -2424,6 +2427,7 @@ impl Dispatcher {
             pending_throwable: None,
             throwable_abandoned: false,
             effectful: false,
+            action: false,
             binding_operand: None,
         });
         Ok(ticket)
@@ -2484,6 +2488,7 @@ impl Dispatcher {
             pending_throwable: None,
             throwable_abandoned: false,
             effectful: true,
+            action: false,
             binding_operand: None,
         });
         Ok(ticket)
@@ -2548,6 +2553,99 @@ impl Dispatcher {
             pending_throwable: None,
             throwable_abandoned: false,
             effectful: true,
+            action: false,
+            binding_operand: None,
+        });
+        Ok(ticket)
+    }
+
+    /// Start an action after the caller has completed WordPress's `$wp_actions`
+    /// preincrement. The action has no filter value, and callback results are ignored.
+    pub fn begin_action_after_counter_typed(
+        &mut self,
+        name: &HookArgument,
+        args: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
+        self.begin_action_typed_inner(name, args, false)
+    }
+
+    /// Start an action and yield its `$wp_actions` preincrement as a PHP
+    /// boundary. The internal action count advances only after that boundary
+    /// completes successfully, before any `all` or named callback runs.
+    pub fn begin_action_effectful_typed(
+        &mut self,
+        name: &HookArgument,
+        args: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
+        self.begin_action_typed_inner(name, args, true)
+    }
+
+    fn begin_action_typed_inner(
+        &mut self,
+        name: &HookArgument,
+        args: &[PhpValue],
+        effectful: bool,
+    ) -> Result<DispatchTicket, HookError> {
+        if !self.resumable.is_empty()
+            && !self.resumable.last().is_some_and(|dispatch| {
+                (dispatch.waiting_for_php
+                    || dispatch.waiting_for_boundary
+                    || dispatch.waiting_for_release)
+                    && dispatch.pending_throwable.is_none()
+            })
+        {
+            return Err(HookError::DispatchParentNotPending);
+        }
+        if self.active_calls >= MAX_NESTING {
+            return Err(HookError::NestingLimit);
+        }
+        let sequence = self.next_ticket;
+        self.next_ticket = self
+            .next_ticket
+            .checked_add(1)
+            .ok_or(HookError::InvalidDispatchTicket)?;
+        let ticket = DispatchTicket {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        };
+        self.active_calls += 1;
+        if !effectful {
+            increment_key_counter(&mut self.actions, name.array_key.clone());
+        }
+        let all_slot = if effectful {
+            None
+        } else {
+            key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied()
+        };
+        let base_depth = self.current.len();
+        if !effectful && all_slot.is_some() {
+            self.current.push(name.original.clone());
+        }
+        self.resumable.push(ResumableDispatch {
+            ticket,
+            hook: name.clone(),
+            value: PhpValue::Null,
+            extra: args.to_vec(),
+            base_depth,
+            current_pushes: usize::from(!effectful && all_slot.is_some()),
+            phase: if effectful {
+                DispatchPhase::ActionCounterIncrement
+            } else if all_slot.is_some() {
+                DispatchPhase::All
+            } else {
+                DispatchPhase::Named
+            },
+            slot: all_slot,
+            frame_started: false,
+            waiting_for_php: false,
+            waiting_for_boundary: false,
+            waiting_for_release: false,
+            pending_releases: VecDeque::new(),
+            pending_release: None,
+            pending_throwable: None,
+            throwable_abandoned: false,
+            effectful,
+            action: true,
             binding_operand: None,
         });
         Ok(ticket)
@@ -2651,6 +2749,9 @@ impl Dispatcher {
             let boundary = match phase {
                 DispatchPhase::CounterWrite => Some(DispatchBoundary::FilterCounterWrite),
                 DispatchPhase::CounterIncrement => Some(DispatchBoundary::FilterCounterIncrement),
+                DispatchPhase::ActionCounterIncrement => {
+                    Some(DispatchBoundary::ActionCounterIncrement)
+                }
                 DispatchPhase::NamedHookIsset => Some(DispatchBoundary::NamedHookIsset),
                 DispatchPhase::NamedHookRead => Some(DispatchBoundary::NamedHookRead),
                 DispatchPhase::MissingOffsetAll => Some(DispatchBoundary::MissingOffsetAll),
@@ -2697,7 +2798,7 @@ impl Dispatcher {
             let Some(slot) = slot else {
                 if phase == DispatchPhase::All {
                     let dispatch = self.resumable.last_mut().expect("active dispatch");
-                    dispatch.phase = if dispatch.effectful {
+                    dispatch.phase = if dispatch.effectful && !dispatch.action {
                         DispatchPhase::NamedHookIsset
                     } else {
                         DispatchPhase::Named
@@ -2718,7 +2819,7 @@ impl Dispatcher {
                 if self
                     .resumable
                     .last()
-                    .is_some_and(|dispatch| dispatch.effectful)
+                    .is_some_and(|dispatch| dispatch.effectful && !dispatch.action)
                 {
                     self.pop_dispatch_hook_if_owned();
                 }
@@ -2731,7 +2832,7 @@ impl Dispatcher {
                     && !self
                         .resumable
                         .last()
-                        .is_some_and(|dispatch| dispatch.effectful)
+                        .is_some_and(|dispatch| dispatch.effectful && !dispatch.action)
                     && key_get(&self.bindings, &all_key).is_none()
                 {
                     self.current.push(hook.original.clone());
@@ -2740,14 +2841,29 @@ impl Dispatcher {
                         .expect("active dispatch")
                         .current_pushes += 1;
                 }
+                let action = self.resumable.last().expect("active dispatch").action;
                 let (frame_value, args, mode) = if phase == DispatchPhase::All {
-                    let mut args = vec![hook.original.as_php_value(), value.clone()];
+                    let mut args = vec![hook.original.as_php_value()];
+                    if !action {
+                        args.push(value.clone());
+                    }
                     args.extend(extra);
                     (PhpValue::Bytes(Vec::new()), args, Mode::All)
                 } else {
-                    let mut args = vec![value.clone()];
+                    let mut args = if action {
+                        Vec::new()
+                    } else {
+                        vec![value.clone()]
+                    };
                     args.extend(extra);
-                    (value.clone(), args, Mode::Filter)
+                    if action && args.is_empty() {
+                        args.push(PhpValue::Bytes(Vec::new()));
+                    }
+                    (
+                        value.clone(),
+                        args,
+                        if action { Mode::Action } else { Mode::Filter },
+                    )
                 };
                 let frame_started = match hooks::start(self, slot, frame_value, args, mode) {
                     Ok(started) => started,
@@ -2761,7 +2877,7 @@ impl Dispatcher {
                 dispatch.frame_started = frame_started;
                 if !frame_started {
                     if phase == DispatchPhase::All {
-                        dispatch.phase = if dispatch.effectful {
+                        dispatch.phase = if dispatch.effectful && !dispatch.action {
                             DispatchPhase::MissingOffsetAll
                         } else {
                             DispatchPhase::Named
@@ -2779,6 +2895,7 @@ impl Dispatcher {
                 .last()
                 .and_then(|dispatch| dispatch.slot)
                 .expect("started hook frame");
+            let action = self.resumable.last().expect("active dispatch").action;
             match hooks::advance(self, active_slot) {
                 Ok(HookStep::InvokePhp(mut invocation)) => {
                     invocation.hook = hook.original;
@@ -2804,7 +2921,7 @@ impl Dispatcher {
                     dispatch.frame_started = false;
                     dispatch.slot = None;
                     if phase == DispatchPhase::All {
-                        dispatch.phase = if dispatch.effectful {
+                        dispatch.phase = if dispatch.effectful && !dispatch.action {
                             DispatchPhase::NamedHookIsset
                         } else {
                             DispatchPhase::Named
@@ -2812,7 +2929,11 @@ impl Dispatcher {
                     } else {
                         self.pop_dispatch_hook_if_owned();
                         self.complete_top_dispatch();
-                        return Ok(DispatchStep::Complete(output));
+                        return Ok(DispatchStep::Complete(if action {
+                            PhpValue::Null
+                        } else {
+                            output
+                        }));
                     }
                 }
                 Err(error) => {
@@ -2993,6 +3114,22 @@ impl Dispatcher {
                     dispatch.slot = Some(slot);
                 } else {
                     dispatch.phase = DispatchPhase::NamedHookIsset;
+                }
+            }
+            DispatchPhase::ActionCounterIncrement => {
+                increment_key_counter(
+                    &mut self.actions,
+                    self.resumable.last().unwrap().hook.array_key.clone(),
+                );
+                let all_slot = key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied();
+                let dispatch = self.resumable.last_mut().expect("active dispatch");
+                if let Some(slot) = all_slot {
+                    self.current.push(dispatch.hook.original.clone());
+                    dispatch.current_pushes += 1;
+                    dispatch.phase = DispatchPhase::All;
+                    dispatch.slot = Some(slot);
+                } else {
+                    dispatch.phase = DispatchPhase::Named;
                 }
             }
             DispatchPhase::NamedHookIsset => {

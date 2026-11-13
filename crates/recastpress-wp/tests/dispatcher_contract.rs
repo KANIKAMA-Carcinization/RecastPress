@@ -3061,3 +3061,312 @@ fn counted_effectful_dispatch_does_not_increment_counter_twice() {
     );
     assert_eq!(dispatcher.did_filter("target"), 1);
 }
+
+#[test]
+fn effectful_action_preincrements_then_runs_all_and_named_with_void_semantics() {
+    let mut dispatcher = Dispatcher::new();
+    let name = HookArgument::bytes("action-contract");
+    let all_seen = Arc::new(Mutex::new(Vec::new()));
+    let all_callback_seen = Arc::clone(&all_seen);
+    dispatcher.add(
+        "all",
+        0,
+        DispatcherCallback::new(id("action_all"), 3, move |context, args| {
+            assert_eq!(context.did_action("action-contract"), 1);
+            assert_eq!(args[0], value("action-contract"));
+            all_callback_seen.lock().unwrap().push(args.to_vec());
+            Ok(value("ignored all result"))
+        }),
+    );
+    let named_seen = Arc::clone(&all_seen);
+    dispatcher.add(
+        "action-contract",
+        10,
+        DispatcherCallback::new(id("action_named"), 2, move |context, args| {
+            assert_eq!(context.did_action("action-contract"), 1);
+            assert_eq!(context.did_filter("action-contract"), 0);
+            named_seen.lock().unwrap().push(args.to_vec());
+            Ok(value("ignored named result"))
+        }),
+    );
+    let args = [value("first"), value("second")];
+    let ticket = dispatcher
+        .begin_action_effectful_typed(&name, &args)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    assert_eq!(dispatcher.did_action("action-contract"), 0);
+    dispatcher
+        .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+        .unwrap();
+    assert_eq!(drive_native_ticket(&mut dispatcher, ticket), PhpValue::Null);
+    assert_eq!(
+        *all_seen.lock().unwrap(),
+        vec![
+            vec![value("action-contract"), value("first"), value("second")],
+            vec![value("first"), value("second")],
+        ]
+    );
+    assert_eq!(dispatcher.did_action("action-contract"), 1);
+    assert_eq!(dispatcher.did_filter("action-contract"), 0);
+}
+
+#[test]
+fn action_empty_args_keep_the_named_placeholder_out_of_all_hook_arguments() {
+    let mut dispatcher = Dispatcher::new();
+    let all_seen = Arc::new(Mutex::new(Vec::new()));
+    let all_callback_seen = Arc::clone(&all_seen);
+    dispatcher.add(
+        "all",
+        0,
+        DispatcherCallback::new(id("empty_action_all"), 1, move |_, args| {
+            all_callback_seen.lock().unwrap().push(args.to_vec());
+            Ok(PhpValue::Null)
+        }),
+    );
+    let named_callback_seen = Arc::clone(&all_seen);
+    dispatcher.add(
+        "empty-action",
+        0,
+        DispatcherCallback::new(id("empty_action_named"), 1, move |_, args| {
+            named_callback_seen.lock().unwrap().push(args.to_vec());
+            Ok(PhpValue::Null)
+        }),
+    );
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&HookArgument::bytes("empty-action"), &[])
+        .unwrap();
+    assert_eq!(drive_native_ticket(&mut dispatcher, ticket), PhpValue::Null);
+    assert_eq!(
+        *all_seen.lock().unwrap(),
+        vec![
+            vec![value("empty-action")],
+            vec![PhpValue::Bytes(Vec::new())],
+        ]
+    );
+    assert_eq!(dispatcher.did_action("empty-action"), 1);
+    dispatcher.do_action("no-listeners", &[]).unwrap();
+    assert_eq!(dispatcher.did_action("no-listeners"), 1);
+}
+
+#[test]
+fn action_counter_boundary_throwable_cleans_up_and_does_not_preincrement() {
+    let mut dispatcher = Dispatcher::new();
+    let name = HookArgument::bytes("throwing-action-count");
+    let ticket = dispatcher.begin_action_effectful_typed(&name, &[]).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    let thrown = throwable_handle(821);
+    dispatcher
+        .resume_boundary(ticket, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::PhpThrowable(thrown)
+    );
+    assert_eq!(dispatcher.did_action("throwing-action-count"), 0);
+    let next = dispatcher
+        .begin_action_after_counter_typed(&HookArgument::bytes("next-action"), &[])
+        .unwrap();
+    assert_eq!(drive_native_ticket(&mut dispatcher, next), PhpValue::Null);
+}
+
+#[test]
+fn effectful_action_without_any_bindings_counts_once_per_completed_boundary() {
+    let mut dispatcher = Dispatcher::new();
+    let name = HookArgument::bytes("effectful-no-listeners");
+
+    for expected_count in [1, 2] {
+        let ticket = dispatcher.begin_action_effectful_typed(&name, &[]).unwrap();
+        assert_eq!(
+            dispatcher.advance(ticket).unwrap(),
+            DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+        );
+        assert_eq!(dispatcher.did_action_typed(&name), expected_count - 1);
+        dispatcher
+            .resume_boundary(
+                ticket,
+                Completion::Value(PhpValue::Integer(i64::try_from(expected_count).unwrap())),
+            )
+            .unwrap();
+        assert_eq!(
+            dispatcher.advance(ticket).unwrap(),
+            DispatchStep::Complete(PhpValue::Null)
+        );
+        assert_eq!(dispatcher.did_action_typed(&name), expected_count);
+        assert_eq!(dispatcher.did_filter_typed(&name), 0);
+        assert_eq!(dispatcher.hook_stack_depth(), 0);
+    }
+}
+
+#[test]
+fn nested_effectful_actions_dispatch_while_parent_php_callback_is_suspended() {
+    let mut dispatcher = Dispatcher::new();
+    let parent_callable = callable_handle(831);
+    dispatcher.add(
+        "parent-action",
+        0,
+        DispatcherCallback::php_callable(id("parent_action_php"), 1, parent_callable).unwrap(),
+    );
+    dispatcher.add(
+        "child-action",
+        0,
+        DispatcherCallback::new(id("child_action_native"), 1, |context, args| {
+            assert_eq!(context.did_action("parent-action"), 1);
+            assert_eq!(context.did_action("child-action"), 1);
+            assert_eq!(args[0], value("child argument"));
+            Ok(value("ignored"))
+        }),
+    );
+    let parent = dispatcher
+        .begin_action_effectful_typed(&HookArgument::bytes("parent-action"), &[value("p")])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(parent).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    dispatcher
+        .resume_boundary(parent, Completion::Value(value("1")))
+        .unwrap();
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(parent).unwrap() else {
+        panic!("expected the parent PHP callback")
+    };
+    assert_eq!(invocation.callback, id("parent_action_php"));
+
+    let child = dispatcher
+        .begin_action_effectful_typed(
+            &HookArgument::bytes("child-action"),
+            &[value("child argument")],
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(child).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    dispatcher
+        .resume_boundary(child, Completion::Value(value("1")))
+        .unwrap();
+    assert_eq!(drive_native_ticket(&mut dispatcher, child), PhpValue::Null);
+    dispatcher
+        .resume_php(parent, value("parent callback result"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(parent).unwrap(),
+        DispatchStep::Complete(PhpValue::Null)
+    );
+    assert_eq!(dispatcher.did_action("parent-action"), 1);
+    assert_eq!(dispatcher.did_action("child-action"), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn action_callback_throwable_keeps_preincrement_and_public_hook_stack() {
+    let mut dispatcher = Dispatcher::new();
+    let action_callable = callable_handle(832);
+    dispatcher.add(
+        "throwing-action",
+        0,
+        DispatcherCallback::php_callable(id("throwing_action_php"), 1, action_callable).unwrap(),
+    );
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&HookArgument::bytes("throwing-action"), &[value("x")])
+        .unwrap();
+    let DispatchStep::InvokePhp(_) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected the throwing PHP action callback")
+    };
+    let thrown = throwable_handle(833);
+    dispatcher
+        .resume_php_completion(ticket, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::PhpThrowable(thrown)
+    );
+    assert_eq!(dispatcher.did_action("throwing-action"), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 1);
+    assert_eq!(
+        dispatcher.current_hook_typed(),
+        Some(&HookScalar::Bytes(b"throwing-action".to_vec()))
+    );
+}
+
+#[test]
+fn caught_nested_action_throw_leaves_the_wp_stale_stack_tail_for_parent_pop() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "parent-action",
+        0,
+        DispatcherCallback::php_callable(
+            id("parent_action_catches_child"),
+            1,
+            callable_handle(841),
+        )
+        .unwrap(),
+    );
+    dispatcher.add(
+        "child-action",
+        0,
+        DispatcherCallback::php_callable(id("child_action_throws"), 1, callable_handle(842))
+            .unwrap(),
+    );
+
+    let parent = dispatcher
+        .begin_action_effectful_typed(&HookArgument::bytes("parent-action"), &[value("outer")])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(parent).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    dispatcher
+        .resume_boundary(parent, Completion::Value(PhpValue::Integer(1)))
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(parent).unwrap(),
+        DispatchStep::InvokePhp(_)
+    ));
+
+    let child = dispatcher
+        .begin_action_effectful_typed(&HookArgument::bytes("child-action"), &[value("inner")])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(child).unwrap(),
+        DispatchStep::Boundary(DispatchBoundary::ActionCounterIncrement)
+    );
+    dispatcher
+        .resume_boundary(child, Completion::Value(PhpValue::Integer(1)))
+        .unwrap();
+    assert!(matches!(
+        dispatcher.advance(child).unwrap(),
+        DispatchStep::InvokePhp(_)
+    ));
+    let thrown = throwable_handle(843);
+    dispatcher
+        .resume_php_completion(child, Completion::PhpThrowable(thrown))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(child).unwrap(),
+        DispatchStep::PhpThrowable(thrown)
+    );
+
+    // The parent PHP callback catches the child Throwable and returns normally.
+    // WordPress then pops one stack entry, which removes the child's stale tail
+    // entry and leaves the parent action stale on the public stack.
+    dispatcher.resume_php(parent, PhpValue::Null).unwrap();
+    assert_eq!(
+        dispatcher.advance(parent).unwrap(),
+        DispatchStep::Complete(PhpValue::Null)
+    );
+    assert_eq!(dispatcher.did_action("parent-action"), 1);
+    assert_eq!(dispatcher.did_action("child-action"), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 1);
+    assert_eq!(
+        dispatcher.current_hook_typed(),
+        Some(&HookScalar::Bytes(b"parent-action".to_vec()))
+    );
+    assert!(dispatcher.doing_hook(Some("parent-action")));
+    assert!(!dispatcher.doing_hook(Some("child-action")));
+}
