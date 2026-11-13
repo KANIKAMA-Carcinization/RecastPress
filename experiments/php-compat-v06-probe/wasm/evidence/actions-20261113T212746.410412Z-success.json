@@ -1,0 +1,2976 @@
+{
+  "schema": "recastpress.php-compat-v06-wasm-actions-run.v1",
+  "status": "passed",
+  "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+  "compiler_profile": "wasmer-7.2.0/cranelift-noopt",
+  "started_at_utc": "2026-11-13T21:25:42.581358Z",
+  "observed_at_utc": "2026-11-13T21:27:46.410412Z",
+  "os": {
+    "system": "Linux",
+    "release": "6.18.58.1-microsoft-standard-WSL2",
+    "machine": "x86_64"
+  },
+  "target_dir": "target/php-compat-v06-wasm-bridge-linux",
+  "phase": "host_result_validation",
+  "failure_class": null,
+  "owned_processes": {
+    "build": {
+      "pid": 633,
+      "returncode": 0,
+      "timed_out": false,
+      "output_limited": false,
+      "reaped": true,
+      "failure": null
+    },
+    "host": {
+      "pid": 639,
+      "returncode": 0,
+      "timed_out": false,
+      "output_limited": false,
+      "reaped": true,
+      "failure": null
+    },
+    "all_reaped": true
+  },
+  "source_bound_inputs_before": {
+    ".reference/php-wasix-8.5.12/php.wasm": {
+      "bytes": 39727549,
+      "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+    },
+    "Cargo.lock": {
+      "bytes": 39639,
+      "sha256": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251"
+    },
+    "Cargo.toml": {
+      "bytes": 338,
+      "sha256": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429"
+    },
+    "crates/recastpress-wp/Cargo.toml": {
+      "bytes": 2154,
+      "sha256": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": {
+      "bytes": 136977,
+      "sha256": "9805e0577d7b91d6608f70267845305fe8fa0fd7354fe03db89837711e72f64b"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": {
+      "bytes": 18563,
+      "sha256": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": {
+      "bytes": 61819,
+      "sha256": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": {
+      "bytes": 28886,
+      "sha256": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": {
+      "bytes": 24748,
+      "sha256": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca"
+    },
+    "crates/recastpress-wp/src/auth_cookie.rs": {
+      "bytes": 11459,
+      "sha256": "f1114600968267dd202f61bf6494a768a25b788f1e24bc330b8edf209df8cc97"
+    },
+    "crates/recastpress-wp/src/auth_cookie_parse.rs": {
+      "bytes": 3563,
+      "sha256": "a3f6578333abd6ddc7a85e24800ef49dcd12ba6ea616a74280a6d8840c31e248"
+    },
+    "crates/recastpress-wp/src/auth_cookie_verify.rs": {
+      "bytes": 11350,
+      "sha256": "a23ff10aa85582e3119355ee3f1e9f5323f371e960b0e678f2762a2816efb9c8"
+    },
+    "crates/recastpress-wp/src/auth_cookie_verify_contract.rs": {
+      "bytes": 13051,
+      "sha256": "8a7dd1c8b86e05a3a3199fabe177c5e3365c8d41e8abd448bc18107ce41436ca"
+    },
+    "crates/recastpress-wp/src/bad_protocol.rs": {
+      "bytes": 4082,
+      "sha256": "8cdb88b7bc4db1d7e2080c258adbafaa24e7933ba7c6d8069dfc64a8bb007b1f"
+    },
+    "crates/recastpress-wp/src/bad_protocol_once.rs": {
+      "bytes": 8894,
+      "sha256": "bc3dd6c19162347f9a5903b0343c0e268184bc152cbae75d07cfe31502e4ef85"
+    },
+    "crates/recastpress-wp/src/bad_protocol_outer.rs": {
+      "bytes": 4428,
+      "sha256": "a80f928577ad7977687c3f993731bc861edaa0856ec250cebf4135f093e83fac"
+    },
+    "crates/recastpress-wp/src/charset.rs": {
+      "bytes": 661,
+      "sha256": "c383382d88a34e9a958fb8e4c520e86bd8aa7e442d3d5fa9c63da7914030aeb5"
+    },
+    "crates/recastpress-wp/src/colors.rs": {
+      "bytes": 2273,
+      "sha256": "01c55e733c5c6dca8586ca6350b2e3c01b9c990c9a31e5007dad2f64a0872789"
+    },
+    "crates/recastpress-wp/src/continuation.rs": {
+      "bytes": 16579,
+      "sha256": "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849"
+    },
+    "crates/recastpress-wp/src/credential_input.rs": {
+      "bytes": 2764,
+      "sha256": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a"
+    },
+    "crates/recastpress-wp/src/credential_stage.rs": {
+      "bytes": 14172,
+      "sha256": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432"
+    },
+    "crates/recastpress-wp/src/dates.rs": {
+      "bytes": 812,
+      "sha256": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e"
+    },
+    "crates/recastpress-wp/src/dispatcher.rs": {
+      "bytes": 121012,
+      "sha256": "4455c0d0ee38aecf83745d3c05f2c6843ab0e2fb7ce4d69b8d720c974090c610"
+    },
+    "crates/recastpress-wp/src/email.rs": {
+      "bytes": 3687,
+      "sha256": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da"
+    },
+    "crates/recastpress-wp/src/empty_filter_escaping.rs": {
+      "bytes": 2428,
+      "sha256": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017"
+    },
+    "crates/recastpress-wp/src/entities.rs": {
+      "bytes": 8477,
+      "sha256": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5"
+    },
+    "crates/recastpress-wp/src/entity_decode.rs": {
+      "bytes": 5258,
+      "sha256": "cc7d3c18a1e0ee5d05eb12ebaf332e399ee82b38b4239d2b1f07eb1ec7267f99"
+    },
+    "crates/recastpress-wp/src/entity_names.rs": {
+      "bytes": 3657,
+      "sha256": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2"
+    },
+    "crates/recastpress-wp/src/filtered.rs": {
+      "bytes": 2913,
+      "sha256": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3"
+    },
+    "crates/recastpress-wp/src/form_attributes.rs": {
+      "bytes": 2833,
+      "sha256": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3"
+    },
+    "crates/recastpress-wp/src/hooks.rs": {
+      "bytes": 45202,
+      "sha256": "ee77adcba6c17de9475981963e80e2c9cb0b1dfe63d641ec7af76e8f3cc258a7"
+    },
+    "crates/recastpress-wp/src/hr_bytes.rs": {
+      "bytes": 2479,
+      "sha256": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980"
+    },
+    "crates/recastpress-wp/src/html.rs": {
+      "bytes": 1896,
+      "sha256": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a"
+    },
+    "crates/recastpress-wp/src/html_class.rs": {
+      "bytes": 1976,
+      "sha256": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763"
+    },
+    "crates/recastpress-wp/src/html_replacement.rs": {
+      "bytes": 2748,
+      "sha256": "2a975b7a9bae189c172f1bda3cb7347832a520b24a843b05c8ec5bec75f2a38a"
+    },
+    "crates/recastpress-wp/src/json_encode.rs": {
+      "bytes": 13105,
+      "sha256": "dbe3436c2ff1a0535e1f833f871aae2cf06aa061dfeb971b79fa824e6f6bd76f"
+    },
+    "crates/recastpress-wp/src/jsonp.rs": {
+      "bytes": 692,
+      "sha256": "e93e8879270cd099ce2ff086c381bb0e85087e74fb332921afc1f9c0e31ff476"
+    },
+    "crates/recastpress-wp/src/kses_slashes.rs": {
+      "bytes": 2449,
+      "sha256": "4f9f737b9bd4b8740abd74ed3858f201f3e0a4a7005be3eb8aaf15edbdaa6034"
+    },
+    "crates/recastpress-wp/src/lib.rs": {
+      "bytes": 13910,
+      "sha256": "893b7470c25046b8a566f949378d1ba60a9466fa10d9fe4ac03d5de943c5e3f5"
+    },
+    "crates/recastpress-wp/src/lists.rs": {
+      "bytes": 4337,
+      "sha256": "e26f57363e91b70025847ac34fe0964e3c7a16f8d285099df18acddd46e75315"
+    },
+    "crates/recastpress-wp/src/locale_mime.rs": {
+      "bytes": 1743,
+      "sha256": "4ce174eac38a77abeca85113fb80295267ec317dc647cda60263774ac6af6248"
+    },
+    "crates/recastpress-wp/src/media_type.rs": {
+      "bytes": 2629,
+      "sha256": "6d5280a30aa7cf703f767c54e501ba2ebef66350cda17ea3545b2c2786ec0fe8"
+    },
+    "crates/recastpress-wp/src/no_null.rs": {
+      "bytes": 3872,
+      "sha256": "3dafd0923bdaef9a03e7c9877fb404c156a13f3bf6719d0dcb56b5674ee431fe"
+    },
+    "crates/recastpress-wp/src/numbers.rs": {
+      "bytes": 2123,
+      "sha256": "52ca7e1c5847f0dec64ecc20b7a44eecf282a5794df3337ddba332a70e83ce90"
+    },
+    "crates/recastpress-wp/src/password_dispatch.rs": {
+      "bytes": 9318,
+      "sha256": "888002f6c38be72166e63ba869da222801f7f11c373c8e5fac3035ed0ccf0bbf"
+    },
+    "crates/recastpress-wp/src/password_hash.rs": {
+      "bytes": 8806,
+      "sha256": "4a12a0b9b8a48b0862f9da25885de19f7dafc40778ab0f4d0b9d4a8b7259cbad"
+    },
+    "crates/recastpress-wp/src/password_legacy.rs": {
+      "bytes": 10474,
+      "sha256": "767e27cb13a439fc85d5d7682985970c8f0b9bd7f9683ba85f73a4dd93750550"
+    },
+    "crates/recastpress-wp/src/password_rehash.rs": {
+      "bytes": 1712,
+      "sha256": "42c17d29ec1a7411568b67df52720ec257dd87344655f8c00c7e4ac92eff2ef0"
+    },
+    "crates/recastpress-wp/src/password_verify.rs": {
+      "bytes": 8141,
+      "sha256": "ea27d475386710169ac518b0023176e3d1a7dffd2d77f5ef894e7ea797ee6283"
+    },
+    "crates/recastpress-wp/src/post_meta_cached.rs": {
+      "bytes": 4569,
+      "sha256": "0ae3405f07dc26f5e03bd21ab0ef0fd1f94d8fd8c507006183eadce9a8329840"
+    },
+    "crates/recastpress-wp/src/post_slug_truncate.rs": {
+      "bytes": 4494,
+      "sha256": "a893dbfbc890cd23ae6088ac90d7e8d3478cb48f48251804ad29e93ff2eb03d4"
+    },
+    "crates/recastpress-wp/src/public_state.rs": {
+      "bytes": 5876,
+      "sha256": "d0f798aa5229ab8a20a3b1da286eadcebe188a52943786d8a54fd5b7ca9c5cc5"
+    },
+    "crates/recastpress-wp/src/query.rs": {
+      "bytes": 4826,
+      "sha256": "9d03c84c633ea848d7668b6d32d3380d9748e91d0a8cbcbe0fc9dca3499159dd"
+    },
+    "crates/recastpress-wp/src/remove_accents.rs": {
+      "bytes": 6601,
+      "sha256": "63ba089653a45cff2ab84add0a4d27536b7c6baafe601e64391da0a87292141d"
+    },
+    "crates/recastpress-wp/src/remove_accents_table.rs": {
+      "bytes": 9021,
+      "sha256": "7fcb730c309dc8cfe9f3b92956edb3c7c17a91ffb2cdad6c4923a8e0d5db6c83"
+    },
+    "crates/recastpress-wp/src/request_media.rs": {
+      "bytes": 2179,
+      "sha256": "7264bee2a170570baf735ccf96766ac9cce782ca4f0728c4c25c00b9e3a871f5"
+    },
+    "crates/recastpress-wp/src/sanitize_text.rs": {
+      "bytes": 6366,
+      "sha256": "041f1b739c93766ac2814487c28e078688e4ac5459b86e3ba54cbdda6f776609"
+    },
+    "crates/recastpress-wp/src/sanitize_title.rs": {
+      "bytes": 5106,
+      "sha256": "ed5bea63677bcd0d2b44b7fca813f063d2a17d5b5e31e2dc62b90aae4279fd21"
+    },
+    "crates/recastpress-wp/src/sanitize_user.rs": {
+      "bytes": 5492,
+      "sha256": "fc09bb062653e097776b1fb3f6801091aefe330f727b701855bcd3f938fe32e2"
+    },
+    "crates/recastpress-wp/src/serialization.rs": {
+      "bytes": 19663,
+      "sha256": "5414cedb546a8c74a84bb9ea16ab9246b4882a1e11c798a703f3fc295e1c86c3"
+    },
+    "crates/recastpress-wp/src/specialchars.rs": {
+      "bytes": 6463,
+      "sha256": "a7ba9faa09ea54af76b0c0b860ee08ce150065462a12fdc22855e57b7d419dc5"
+    },
+    "crates/recastpress-wp/src/strings.rs": {
+      "bytes": 7487,
+      "sha256": "a9a9a1b991f8be3f95326aca70bd1871d4949002317d4bfaf48caa9f429de384"
+    },
+    "crates/recastpress-wp/src/strip_all_tags.rs": {
+      "bytes": 3859,
+      "sha256": "f31e6e868b477bd390d566ed30777eed76bb39679fd111909cc23cc40c71a7ae"
+    },
+    "crates/recastpress-wp/src/texturize.rs": {
+      "bytes": 17378,
+      "sha256": "49b53194e3be821b11f0f2c3c9c3f7d0419a38a61493a1d4a9e1bb0fa465aa56"
+    },
+    "crates/recastpress-wp/src/texturize/primes.rs": {
+      "bytes": 7428,
+      "sha256": "33b534898d5ebd33ce59a23ff501d9614680aa7a583d3dfed63fe518ca17dbeb"
+    },
+    "crates/recastpress-wp/src/title.rs": {
+      "bytes": 6747,
+      "sha256": "ac62d59ce60a89b8ac0dae07ae692ba284f68e3000012dd859b36b3e5e33f9ae"
+    },
+    "crates/recastpress-wp/src/title_with_dashes.rs": {
+      "bytes": 10158,
+      "sha256": "0f3fe1ebd2375c06d6896c622ec9de0029b25c1a5ac8ac6dded2059898b2232d"
+    },
+    "crates/recastpress-wp/src/unicode.rs": {
+      "bytes": 760,
+      "sha256": "8595ffce4d4eb96e8a9c75d44307b215d59a4cec2e182a142da22d9058aed887"
+    },
+    "crates/recastpress-wp/src/unique_ids.rs": {
+      "bytes": 3469,
+      "sha256": "32679a7583119f19bef92186199678c92081c4577561c79634a6d2d66171260c"
+    },
+    "crates/recastpress-wp/src/url.rs": {
+      "bytes": 1332,
+      "sha256": "4d32b60d5c710439e5470aac4dfea4a4552fd2373e139112b823f334e532d817"
+    },
+    "crates/recastpress-wp/src/url_shorten.rs": {
+      "bytes": 2186,
+      "sha256": "eb63eea91af213beccf3150742c5b20be03ffe9961a3311407d58f0be984bca0"
+    },
+    "crates/recastpress-wp/src/utf8.rs": {
+      "bytes": 2198,
+      "sha256": "6739d6a1bacd3adbea170f4c85fde9f7e2c0ef8492be801360f3baca0aca4bc7"
+    },
+    "crates/recastpress-wp/src/utf8_uri_encode.rs": {
+      "bytes": 6012,
+      "sha256": "ce9b146d6e76a9134519ebf742dc67ddc71af6690cb31fc2e6945743b6234d30"
+    },
+    "crates/recastpress-wp/src/uuid.rs": {
+      "bytes": 1297,
+      "sha256": "0dafa10f607deadeb6ae8975f502a8a57f4cb9a80aa2489c6bf985e3aece1bf0"
+    },
+    "crates/recastpress-wp/src/value.rs": {
+      "bytes": 4253,
+      "sha256": "ee1d84f35bfb91a889f2711be1aee7622bfee1e0fafbe5520bfdcf6fb3af264e"
+    },
+    "crates/recastpress-wp/src/xml_entity_mapping.rs": {
+      "bytes": 7901,
+      "sha256": "011b9f19787e14889ac00b2cc5f2b8ca98501840daa84325b2431232dd680d23"
+    },
+    "crates/recastpress-wp/src/zeroise.rs": {
+      "bytes": 3122,
+      "sha256": "1f1e806cba9a6026469ac2128634d8809e2fa2ba16d7f48b823ed9ef4be0b57a"
+    },
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": {
+      "bytes": 118050,
+      "sha256": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db"
+    },
+    "crates/recastpress-wp/tests/hooks_contract.rs": {
+      "bytes": 15362,
+      "sha256": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3"
+    },
+    "experiments/php-compat-v06-probe/callable_contract.py": {
+      "bytes": 38176,
+      "sha256": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97"
+    },
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": {
+      "bytes": 339984,
+      "sha256": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": {
+      "bytes": 31199,
+      "sha256": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca"
+    },
+    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": {
+      "bytes": 8136,
+      "sha256": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": {
+      "bytes": 10146,
+      "sha256": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc"
+    },
+    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": {
+      "bytes": 19885,
+      "sha256": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": {
+      "bytes": 43544,
+      "sha256": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_driver.php": {
+      "bytes": 2397,
+      "sha256": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": {
+      "bytes": 127081,
+      "sha256": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": {
+      "bytes": 699,
+      "sha256": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304"
+    },
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": {
+      "bytes": 6359,
+      "sha256": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/handle_driver.php": {
+      "bytes": 20286,
+      "sha256": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db"
+    },
+    "experiments/php-compat-v06-probe/fixtures/handle_registry.php": {
+      "bytes": 9958,
+      "sha256": "bd15150985c3cf69e4346eae5826fa6b1ae7e39a97d68863c9cd95478c1c040f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": {
+      "bytes": 31731,
+      "sha256": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/publish_driver.php": {
+      "bytes": 14350,
+      "sha256": "7b7d623929a2fc2f8bd976d79e362f15e65d993f33d244783bce7b311ab8a194"
+    },
+    "experiments/php-compat-v06-probe/fixtures/recovery.php": {
+      "bytes": 1575,
+      "sha256": "a3a22d102002d6137d67b532a550f1c138b859cfff56b9dc4ccfa1609a6c49e7"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": {
+      "bytes": 4985,
+      "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": {
+      "bytes": 2764,
+      "sha256": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": {
+      "bytes": 1145,
+      "sha256": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/trap_recovery.php": {
+      "bytes": 820,
+      "sha256": "1db41ae0f59703078e0969e75ea74f26c5f970c01b5b5182b5520d9d36879f06"
+    },
+    "experiments/php-compat-v06-probe/handle_contract.py": {
+      "bytes": 4520,
+      "sha256": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2"
+    },
+    "experiments/php-compat-v06-probe/hook_contract.py": {
+      "bytes": 27207,
+      "sha256": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58"
+    },
+    "experiments/php-compat-v06-probe/publish_contract.py": {
+      "bytes": 7520,
+      "sha256": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": {
+      "bytes": 105806,
+      "sha256": "15e51535f2d479658b4af8a3a1a31b2433bbf8db4e9bf87b8e59e5f885a780c2"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": {
+      "bytes": 1351,
+      "sha256": "04081cb90430bb6266764bcecd0927457b8b9e140f4a76b0f7acfe96d39b7311"
+    },
+    "experiments/php-compat-v06-probe/wasm/bridge_check.py": {
+      "bytes": 49489,
+      "sha256": "6d932b8865ea119e1b6b79a6e120d7c3da8b296113ae604490cf6c83260a97d6"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/bin/bridge.rs": {
+      "bytes": 61791,
+      "sha256": "ff71a40c9cefee585c9c739c856b13c324a79240afb9819bcee2ce64aa3b2766"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": {
+      "bytes": 13438,
+      "sha256": "6f913646cd6abebbaf78c3b49306cfba3d65c1d5af1578175c10a92b35b37778"
+    },
+    "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": {
+      "bytes": 10971,
+      "sha256": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684"
+    },
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": {
+      "bytes": 12177,
+      "sha256": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff"
+    },
+    "scripts/owned_probe.py": {
+      "bytes": 16500,
+      "sha256": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4"
+    }
+  },
+  "source_bound_inputs_after": {
+    ".reference/php-wasix-8.5.12/php.wasm": {
+      "bytes": 39727549,
+      "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+    },
+    "Cargo.lock": {
+      "bytes": 39639,
+      "sha256": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251"
+    },
+    "Cargo.toml": {
+      "bytes": 338,
+      "sha256": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429"
+    },
+    "crates/recastpress-wp/Cargo.toml": {
+      "bytes": 2154,
+      "sha256": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": {
+      "bytes": 136977,
+      "sha256": "9805e0577d7b91d6608f70267845305fe8fa0fd7354fe03db89837711e72f64b"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": {
+      "bytes": 18563,
+      "sha256": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": {
+      "bytes": 61819,
+      "sha256": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": {
+      "bytes": 28886,
+      "sha256": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b"
+    },
+    "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": {
+      "bytes": 24748,
+      "sha256": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca"
+    },
+    "crates/recastpress-wp/src/auth_cookie.rs": {
+      "bytes": 11459,
+      "sha256": "f1114600968267dd202f61bf6494a768a25b788f1e24bc330b8edf209df8cc97"
+    },
+    "crates/recastpress-wp/src/auth_cookie_parse.rs": {
+      "bytes": 3563,
+      "sha256": "a3f6578333abd6ddc7a85e24800ef49dcd12ba6ea616a74280a6d8840c31e248"
+    },
+    "crates/recastpress-wp/src/auth_cookie_verify.rs": {
+      "bytes": 11350,
+      "sha256": "a23ff10aa85582e3119355ee3f1e9f5323f371e960b0e678f2762a2816efb9c8"
+    },
+    "crates/recastpress-wp/src/auth_cookie_verify_contract.rs": {
+      "bytes": 13051,
+      "sha256": "8a7dd1c8b86e05a3a3199fabe177c5e3365c8d41e8abd448bc18107ce41436ca"
+    },
+    "crates/recastpress-wp/src/bad_protocol.rs": {
+      "bytes": 4082,
+      "sha256": "8cdb88b7bc4db1d7e2080c258adbafaa24e7933ba7c6d8069dfc64a8bb007b1f"
+    },
+    "crates/recastpress-wp/src/bad_protocol_once.rs": {
+      "bytes": 8894,
+      "sha256": "bc3dd6c19162347f9a5903b0343c0e268184bc152cbae75d07cfe31502e4ef85"
+    },
+    "crates/recastpress-wp/src/bad_protocol_outer.rs": {
+      "bytes": 4428,
+      "sha256": "a80f928577ad7977687c3f993731bc861edaa0856ec250cebf4135f093e83fac"
+    },
+    "crates/recastpress-wp/src/charset.rs": {
+      "bytes": 661,
+      "sha256": "c383382d88a34e9a958fb8e4c520e86bd8aa7e442d3d5fa9c63da7914030aeb5"
+    },
+    "crates/recastpress-wp/src/colors.rs": {
+      "bytes": 2273,
+      "sha256": "01c55e733c5c6dca8586ca6350b2e3c01b9c990c9a31e5007dad2f64a0872789"
+    },
+    "crates/recastpress-wp/src/continuation.rs": {
+      "bytes": 16579,
+      "sha256": "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849"
+    },
+    "crates/recastpress-wp/src/credential_input.rs": {
+      "bytes": 2764,
+      "sha256": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a"
+    },
+    "crates/recastpress-wp/src/credential_stage.rs": {
+      "bytes": 14172,
+      "sha256": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432"
+    },
+    "crates/recastpress-wp/src/dates.rs": {
+      "bytes": 812,
+      "sha256": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e"
+    },
+    "crates/recastpress-wp/src/dispatcher.rs": {
+      "bytes": 121012,
+      "sha256": "4455c0d0ee38aecf83745d3c05f2c6843ab0e2fb7ce4d69b8d720c974090c610"
+    },
+    "crates/recastpress-wp/src/email.rs": {
+      "bytes": 3687,
+      "sha256": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da"
+    },
+    "crates/recastpress-wp/src/empty_filter_escaping.rs": {
+      "bytes": 2428,
+      "sha256": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017"
+    },
+    "crates/recastpress-wp/src/entities.rs": {
+      "bytes": 8477,
+      "sha256": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5"
+    },
+    "crates/recastpress-wp/src/entity_decode.rs": {
+      "bytes": 5258,
+      "sha256": "cc7d3c18a1e0ee5d05eb12ebaf332e399ee82b38b4239d2b1f07eb1ec7267f99"
+    },
+    "crates/recastpress-wp/src/entity_names.rs": {
+      "bytes": 3657,
+      "sha256": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2"
+    },
+    "crates/recastpress-wp/src/filtered.rs": {
+      "bytes": 2913,
+      "sha256": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3"
+    },
+    "crates/recastpress-wp/src/form_attributes.rs": {
+      "bytes": 2833,
+      "sha256": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3"
+    },
+    "crates/recastpress-wp/src/hooks.rs": {
+      "bytes": 45202,
+      "sha256": "ee77adcba6c17de9475981963e80e2c9cb0b1dfe63d641ec7af76e8f3cc258a7"
+    },
+    "crates/recastpress-wp/src/hr_bytes.rs": {
+      "bytes": 2479,
+      "sha256": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980"
+    },
+    "crates/recastpress-wp/src/html.rs": {
+      "bytes": 1896,
+      "sha256": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a"
+    },
+    "crates/recastpress-wp/src/html_class.rs": {
+      "bytes": 1976,
+      "sha256": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763"
+    },
+    "crates/recastpress-wp/src/html_replacement.rs": {
+      "bytes": 2748,
+      "sha256": "2a975b7a9bae189c172f1bda3cb7347832a520b24a843b05c8ec5bec75f2a38a"
+    },
+    "crates/recastpress-wp/src/json_encode.rs": {
+      "bytes": 13105,
+      "sha256": "dbe3436c2ff1a0535e1f833f871aae2cf06aa061dfeb971b79fa824e6f6bd76f"
+    },
+    "crates/recastpress-wp/src/jsonp.rs": {
+      "bytes": 692,
+      "sha256": "e93e8879270cd099ce2ff086c381bb0e85087e74fb332921afc1f9c0e31ff476"
+    },
+    "crates/recastpress-wp/src/kses_slashes.rs": {
+      "bytes": 2449,
+      "sha256": "4f9f737b9bd4b8740abd74ed3858f201f3e0a4a7005be3eb8aaf15edbdaa6034"
+    },
+    "crates/recastpress-wp/src/lib.rs": {
+      "bytes": 13910,
+      "sha256": "893b7470c25046b8a566f949378d1ba60a9466fa10d9fe4ac03d5de943c5e3f5"
+    },
+    "crates/recastpress-wp/src/lists.rs": {
+      "bytes": 4337,
+      "sha256": "e26f57363e91b70025847ac34fe0964e3c7a16f8d285099df18acddd46e75315"
+    },
+    "crates/recastpress-wp/src/locale_mime.rs": {
+      "bytes": 1743,
+      "sha256": "4ce174eac38a77abeca85113fb80295267ec317dc647cda60263774ac6af6248"
+    },
+    "crates/recastpress-wp/src/media_type.rs": {
+      "bytes": 2629,
+      "sha256": "6d5280a30aa7cf703f767c54e501ba2ebef66350cda17ea3545b2c2786ec0fe8"
+    },
+    "crates/recastpress-wp/src/no_null.rs": {
+      "bytes": 3872,
+      "sha256": "3dafd0923bdaef9a03e7c9877fb404c156a13f3bf6719d0dcb56b5674ee431fe"
+    },
+    "crates/recastpress-wp/src/numbers.rs": {
+      "bytes": 2123,
+      "sha256": "52ca7e1c5847f0dec64ecc20b7a44eecf282a5794df3337ddba332a70e83ce90"
+    },
+    "crates/recastpress-wp/src/password_dispatch.rs": {
+      "bytes": 9318,
+      "sha256": "888002f6c38be72166e63ba869da222801f7f11c373c8e5fac3035ed0ccf0bbf"
+    },
+    "crates/recastpress-wp/src/password_hash.rs": {
+      "bytes": 8806,
+      "sha256": "4a12a0b9b8a48b0862f9da25885de19f7dafc40778ab0f4d0b9d4a8b7259cbad"
+    },
+    "crates/recastpress-wp/src/password_legacy.rs": {
+      "bytes": 10474,
+      "sha256": "767e27cb13a439fc85d5d7682985970c8f0b9bd7f9683ba85f73a4dd93750550"
+    },
+    "crates/recastpress-wp/src/password_rehash.rs": {
+      "bytes": 1712,
+      "sha256": "42c17d29ec1a7411568b67df52720ec257dd87344655f8c00c7e4ac92eff2ef0"
+    },
+    "crates/recastpress-wp/src/password_verify.rs": {
+      "bytes": 8141,
+      "sha256": "ea27d475386710169ac518b0023176e3d1a7dffd2d77f5ef894e7ea797ee6283"
+    },
+    "crates/recastpress-wp/src/post_meta_cached.rs": {
+      "bytes": 4569,
+      "sha256": "0ae3405f07dc26f5e03bd21ab0ef0fd1f94d8fd8c507006183eadce9a8329840"
+    },
+    "crates/recastpress-wp/src/post_slug_truncate.rs": {
+      "bytes": 4494,
+      "sha256": "a893dbfbc890cd23ae6088ac90d7e8d3478cb48f48251804ad29e93ff2eb03d4"
+    },
+    "crates/recastpress-wp/src/public_state.rs": {
+      "bytes": 5876,
+      "sha256": "d0f798aa5229ab8a20a3b1da286eadcebe188a52943786d8a54fd5b7ca9c5cc5"
+    },
+    "crates/recastpress-wp/src/query.rs": {
+      "bytes": 4826,
+      "sha256": "9d03c84c633ea848d7668b6d32d3380d9748e91d0a8cbcbe0fc9dca3499159dd"
+    },
+    "crates/recastpress-wp/src/remove_accents.rs": {
+      "bytes": 6601,
+      "sha256": "63ba089653a45cff2ab84add0a4d27536b7c6baafe601e64391da0a87292141d"
+    },
+    "crates/recastpress-wp/src/remove_accents_table.rs": {
+      "bytes": 9021,
+      "sha256": "7fcb730c309dc8cfe9f3b92956edb3c7c17a91ffb2cdad6c4923a8e0d5db6c83"
+    },
+    "crates/recastpress-wp/src/request_media.rs": {
+      "bytes": 2179,
+      "sha256": "7264bee2a170570baf735ccf96766ac9cce782ca4f0728c4c25c00b9e3a871f5"
+    },
+    "crates/recastpress-wp/src/sanitize_text.rs": {
+      "bytes": 6366,
+      "sha256": "041f1b739c93766ac2814487c28e078688e4ac5459b86e3ba54cbdda6f776609"
+    },
+    "crates/recastpress-wp/src/sanitize_title.rs": {
+      "bytes": 5106,
+      "sha256": "ed5bea63677bcd0d2b44b7fca813f063d2a17d5b5e31e2dc62b90aae4279fd21"
+    },
+    "crates/recastpress-wp/src/sanitize_user.rs": {
+      "bytes": 5492,
+      "sha256": "fc09bb062653e097776b1fb3f6801091aefe330f727b701855bcd3f938fe32e2"
+    },
+    "crates/recastpress-wp/src/serialization.rs": {
+      "bytes": 19663,
+      "sha256": "5414cedb546a8c74a84bb9ea16ab9246b4882a1e11c798a703f3fc295e1c86c3"
+    },
+    "crates/recastpress-wp/src/specialchars.rs": {
+      "bytes": 6463,
+      "sha256": "a7ba9faa09ea54af76b0c0b860ee08ce150065462a12fdc22855e57b7d419dc5"
+    },
+    "crates/recastpress-wp/src/strings.rs": {
+      "bytes": 7487,
+      "sha256": "a9a9a1b991f8be3f95326aca70bd1871d4949002317d4bfaf48caa9f429de384"
+    },
+    "crates/recastpress-wp/src/strip_all_tags.rs": {
+      "bytes": 3859,
+      "sha256": "f31e6e868b477bd390d566ed30777eed76bb39679fd111909cc23cc40c71a7ae"
+    },
+    "crates/recastpress-wp/src/texturize.rs": {
+      "bytes": 17378,
+      "sha256": "49b53194e3be821b11f0f2c3c9c3f7d0419a38a61493a1d4a9e1bb0fa465aa56"
+    },
+    "crates/recastpress-wp/src/texturize/primes.rs": {
+      "bytes": 7428,
+      "sha256": "33b534898d5ebd33ce59a23ff501d9614680aa7a583d3dfed63fe518ca17dbeb"
+    },
+    "crates/recastpress-wp/src/title.rs": {
+      "bytes": 6747,
+      "sha256": "ac62d59ce60a89b8ac0dae07ae692ba284f68e3000012dd859b36b3e5e33f9ae"
+    },
+    "crates/recastpress-wp/src/title_with_dashes.rs": {
+      "bytes": 10158,
+      "sha256": "0f3fe1ebd2375c06d6896c622ec9de0029b25c1a5ac8ac6dded2059898b2232d"
+    },
+    "crates/recastpress-wp/src/unicode.rs": {
+      "bytes": 760,
+      "sha256": "8595ffce4d4eb96e8a9c75d44307b215d59a4cec2e182a142da22d9058aed887"
+    },
+    "crates/recastpress-wp/src/unique_ids.rs": {
+      "bytes": 3469,
+      "sha256": "32679a7583119f19bef92186199678c92081c4577561c79634a6d2d66171260c"
+    },
+    "crates/recastpress-wp/src/url.rs": {
+      "bytes": 1332,
+      "sha256": "4d32b60d5c710439e5470aac4dfea4a4552fd2373e139112b823f334e532d817"
+    },
+    "crates/recastpress-wp/src/url_shorten.rs": {
+      "bytes": 2186,
+      "sha256": "eb63eea91af213beccf3150742c5b20be03ffe9961a3311407d58f0be984bca0"
+    },
+    "crates/recastpress-wp/src/utf8.rs": {
+      "bytes": 2198,
+      "sha256": "6739d6a1bacd3adbea170f4c85fde9f7e2c0ef8492be801360f3baca0aca4bc7"
+    },
+    "crates/recastpress-wp/src/utf8_uri_encode.rs": {
+      "bytes": 6012,
+      "sha256": "ce9b146d6e76a9134519ebf742dc67ddc71af6690cb31fc2e6945743b6234d30"
+    },
+    "crates/recastpress-wp/src/uuid.rs": {
+      "bytes": 1297,
+      "sha256": "0dafa10f607deadeb6ae8975f502a8a57f4cb9a80aa2489c6bf985e3aece1bf0"
+    },
+    "crates/recastpress-wp/src/value.rs": {
+      "bytes": 4253,
+      "sha256": "ee1d84f35bfb91a889f2711be1aee7622bfee1e0fafbe5520bfdcf6fb3af264e"
+    },
+    "crates/recastpress-wp/src/xml_entity_mapping.rs": {
+      "bytes": 7901,
+      "sha256": "011b9f19787e14889ac00b2cc5f2b8ca98501840daa84325b2431232dd680d23"
+    },
+    "crates/recastpress-wp/src/zeroise.rs": {
+      "bytes": 3122,
+      "sha256": "1f1e806cba9a6026469ac2128634d8809e2fa2ba16d7f48b823ed9ef4be0b57a"
+    },
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": {
+      "bytes": 118050,
+      "sha256": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db"
+    },
+    "crates/recastpress-wp/tests/hooks_contract.rs": {
+      "bytes": 15362,
+      "sha256": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3"
+    },
+    "experiments/php-compat-v06-probe/callable_contract.py": {
+      "bytes": 38176,
+      "sha256": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97"
+    },
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": {
+      "bytes": 339984,
+      "sha256": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": {
+      "bytes": 31199,
+      "sha256": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca"
+    },
+    "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": {
+      "bytes": 8136,
+      "sha256": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": {
+      "bytes": 10146,
+      "sha256": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc"
+    },
+    "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": {
+      "bytes": 19885,
+      "sha256": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": {
+      "bytes": 43544,
+      "sha256": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_driver.php": {
+      "bytes": 2397,
+      "sha256": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": {
+      "bytes": 127081,
+      "sha256": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": {
+      "bytes": 699,
+      "sha256": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304"
+    },
+    "experiments/php-compat-v06-probe/fixtures/dispatcher.php": {
+      "bytes": 6359,
+      "sha256": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1"
+    },
+    "experiments/php-compat-v06-probe/fixtures/handle_driver.php": {
+      "bytes": 20286,
+      "sha256": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db"
+    },
+    "experiments/php-compat-v06-probe/fixtures/handle_registry.php": {
+      "bytes": 9958,
+      "sha256": "bd15150985c3cf69e4346eae5826fa6b1ae7e39a97d68863c9cd95478c1c040f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": {
+      "bytes": 31731,
+      "sha256": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f"
+    },
+    "experiments/php-compat-v06-probe/fixtures/publish_driver.php": {
+      "bytes": 14350,
+      "sha256": "7b7d623929a2fc2f8bd976d79e362f15e65d993f33d244783bce7b311ab8a194"
+    },
+    "experiments/php-compat-v06-probe/fixtures/recovery.php": {
+      "bytes": 1575,
+      "sha256": "a3a22d102002d6137d67b532a550f1c138b859cfff56b9dc4ccfa1609a6c49e7"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json.php": {
+      "bytes": 4985,
+      "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+    },
+    "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": {
+      "bytes": 2764,
+      "sha256": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": {
+      "bytes": 1145,
+      "sha256": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+    },
+    "experiments/php-compat-v06-probe/fixtures/trap_recovery.php": {
+      "bytes": 820,
+      "sha256": "1db41ae0f59703078e0969e75ea74f26c5f970c01b5b5182b5520d9d36879f06"
+    },
+    "experiments/php-compat-v06-probe/handle_contract.py": {
+      "bytes": 4520,
+      "sha256": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2"
+    },
+    "experiments/php-compat-v06-probe/hook_contract.py": {
+      "bytes": 27207,
+      "sha256": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58"
+    },
+    "experiments/php-compat-v06-probe/publish_contract.py": {
+      "bytes": 7520,
+      "sha256": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.lock": {
+      "bytes": 105806,
+      "sha256": "15e51535f2d479658b4af8a3a1a31b2433bbf8db4e9bf87b8e59e5f885a780c2"
+    },
+    "experiments/php-compat-v06-probe/wasm/Cargo.toml": {
+      "bytes": 1351,
+      "sha256": "04081cb90430bb6266764bcecd0927457b8b9e140f4a76b0f7acfe96d39b7311"
+    },
+    "experiments/php-compat-v06-probe/wasm/bridge_check.py": {
+      "bytes": 49489,
+      "sha256": "6d932b8865ea119e1b6b79a6e120d7c3da8b296113ae604490cf6c83260a97d6"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/bin/bridge.rs": {
+      "bytes": 61791,
+      "sha256": "ff71a40c9cefee585c9c739c856b13c324a79240afb9819bcee2ce64aa3b2766"
+    },
+    "experiments/php-compat-v06-probe/wasm/src/main.rs": {
+      "bytes": 13438,
+      "sha256": "6f913646cd6abebbaf78c3b49306cfba3d65c1d5af1578175c10a92b35b37778"
+    },
+    "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": {
+      "bytes": 10971,
+      "sha256": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684"
+    },
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": {
+      "bytes": 12177,
+      "sha256": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff"
+    },
+    "scripts/owned_probe.py": {
+      "bytes": 16500,
+      "sha256": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4"
+    }
+  },
+  "source_bound_inputs_unchanged": true,
+  "host_binary": {
+    "path": "target/php-compat-v06-wasm-bridge-linux/debug/recastpress-php-compat-v06-wasm-bridge",
+    "sha256": "8bc35e0e1d315b4059597ef270e89c272720d12564a9c85725c4377149cd55da",
+    "sha256_before_host": "8bc35e0e1d315b4059597ef270e89c272720d12564a9c85725c4377149cd55da",
+    "sha256_after_host": "8bc35e0e1d315b4059597ef270e89c272720d12564a9c85725c4377149cd55da",
+    "unchanged_during_host": true
+  },
+  "process_output": {
+    "build": {
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_bytes": 73,
+      "stderr_sha256": "c3dd801a0f2220e76662d16ff96af6894c0402b8a57b09b36cb26b226017e3af"
+    },
+    "host": {
+      "stdout_bytes": 28871,
+      "stdout_sha256": "056d937e9bb2a38073ed2b65a13852c84ae7c0245b909ca148f4441ba8ef51e4",
+      "stderr_bytes": 27197,
+      "stderr_sha256": "b7ce7385208c95a8d2d247265df019f9dd6fe1a288a92a0299c06c90a514c1f9"
+    }
+  },
+  "raw_capture": {
+    "build": {
+      "stdout": "target/php-compat-v06-wasm-bridge-linux/.bridge-runs/20261113T212542.587308Z-c3e0789d74144ca3a59af5caf15639ac/build.stdout.bin",
+      "stderr": "target/php-compat-v06-wasm-bridge-linux/.bridge-runs/20261113T212542.587308Z-c3e0789d74144ca3a59af5caf15639ac/build.stderr.bin"
+    },
+    "host": {
+      "stdout": "target/php-compat-v06-wasm-bridge-linux/.bridge-runs/20261113T212542.587308Z-c3e0789d74144ca3a59af5caf15639ac/host.stdout.bin",
+      "stderr": "target/php-compat-v06-wasm-bridge-linux/.bridge-runs/20261113T212542.587308Z-c3e0789d74144ca3a59af5caf15639ac/host.stderr.bin"
+    }
+  },
+  "callable_transcript_rejections": null,
+  "host_result": {
+    "artifact": {
+      "bytes": 39727549,
+      "path": ".reference/php-wasix-8.5.12/php.wasm",
+      "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+    },
+    "case": {
+      "guest_completed": true,
+      "peer": {
+        "api_counts": {
+          "add_action": 32,
+          "add_filter": 0,
+          "apply_filters": 1,
+          "current_action": 83,
+          "current_filter": 0,
+          "did_action": 114,
+          "did_filter": 7,
+          "do_action": 33,
+          "doing_action": 94,
+          "doing_filter": 0,
+          "has_action": 6,
+          "has_filter": 0,
+          "remove_action": 5,
+          "remove_filter": 0
+        },
+        "argument_release_effects": 292,
+        "boundary_effects": 706,
+        "callback_invocations": 126,
+        "continuation_depth_after": 0,
+        "continuation_peer": true,
+        "frames_from_php": 1535,
+        "frames_from_rust": 1534,
+        "late_call_rejected": true,
+        "late_resume_rejected": true,
+        "nested_caught_throw": {
+          "child_did_action": 1,
+          "current_action": "callable-action-nested-caught-parent",
+          "doing_child": false,
+          "doing_parent": true,
+          "parent_did_action": 1,
+          "parent_do_action_return": null,
+          "same_object": true,
+          "stack_depth": 1,
+          "trace": [
+            "parent-enter",
+            "child-enter",
+            "child-throw",
+            "parent-catch",
+            "parent-resume"
+          ]
+        },
+        "php_observation": {
+          "action_api": {
+            "after_outer": {
+              "current_action": false,
+              "did_action": 1,
+              "did_filter": 0,
+              "doing_action": false
+            },
+            "aliases": {
+              "add_action": true,
+              "add_action_second": true,
+              "has_action_after_remove": true,
+              "has_action_any": true,
+              "has_action_missing": false,
+              "has_action_second_priority": 10,
+              "has_action_wrong_priority": false,
+              "has_action_zero_priority": 0,
+              "remove_action_first": true,
+              "remove_action_wrong_priority": false
+            },
+            "all_hook": {
+              "did_action_without_named": 1,
+              "events": [
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-all-args",
+                    "alpha",
+                    "beta",
+                    "gamma"
+                  ],
+                  "current_action": "callable-action-all-args",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-all-args",
+                    "alpha",
+                    "beta",
+                    "gamma"
+                  ],
+                  "current_action": "callable-action-all-args",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "args": [
+                    "alpha"
+                  ],
+                  "named": true
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-all-without-named-listener",
+                    "solo",
+                    "extra"
+                  ],
+                  "current_action": "callable-action-all-without-named-listener",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-all-without-named-listener",
+                    "solo",
+                    "extra"
+                  ],
+                  "current_action": "callable-action-all-without-named-listener",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-api",
+                    "filter-seed"
+                  ],
+                  "current_action": "callable-action-api",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-api",
+                    "filter-seed"
+                  ],
+                  "current_action": "callable-action-api",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-nested",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-nested",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-nested",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-nested",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-nested",
+                    "inner"
+                  ],
+                  "current_action": "callable-action-nested",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-nested",
+                    "inner"
+                  ],
+                  "current_action": "callable-action-nested",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-nested-child",
+                    "child"
+                  ],
+                  "current_action": "callable-action-nested-child",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-nested-child",
+                    "child"
+                  ],
+                  "current_action": "callable-action-nested-child",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-nested-caught-parent",
+                    "parent-argument"
+                  ],
+                  "current_action": "callable-action-nested-caught-parent",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-nested-caught-parent",
+                    "parent-argument"
+                  ],
+                  "current_action": "callable-action-nested-caught-parent",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-nested-caught-child",
+                    "child-argument"
+                  ],
+                  "current_action": "callable-action-nested-caught-child",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-nested-caught-child",
+                    "child-argument"
+                  ],
+                  "current_action": "callable-action-nested-caught-child",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-no-listener"
+                  ],
+                  "current_action": "callable-action-no-listener",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-no-listener"
+                  ],
+                  "current_action": "callable-action-no-listener",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-bool-true",
+                    "first"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-bool-true",
+                  "did_action": true,
+                  "doing_action": true,
+                  "wp_actions": true
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-bool-true",
+                    "first"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-bool-true",
+                  "did_action": true,
+                  "doing_action": true,
+                  "wp_actions": true
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-bool-true",
+                    "second"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-bool-true",
+                  "did_action": true,
+                  "doing_action": true,
+                  "wp_actions": true
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-bool-true",
+                    "second"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-bool-true",
+                  "did_action": true,
+                  "doing_action": true,
+                  "wp_actions": true
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-alpha",
+                    "first"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-alpha",
+                  "did_action": "b",
+                  "doing_action": true,
+                  "wp_actions": "b"
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-alpha",
+                    "first"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-alpha",
+                  "did_action": "b",
+                  "doing_action": true,
+                  "wp_actions": "b"
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-alpha",
+                    "second"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-alpha",
+                  "did_action": "c",
+                  "doing_action": true,
+                  "wp_actions": "c"
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-diagnostic-alpha",
+                    "second"
+                  ],
+                  "current_action": "callable-action-counter-seed-diagnostic-alpha",
+                  "did_action": "c",
+                  "doing_action": true,
+                  "wp_actions": "c"
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-int-7"
+                  ],
+                  "current_action": "callable-action-counter-seed-int-7",
+                  "did_action": 8,
+                  "doing_action": true,
+                  "wp_actions": 8
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-int-7"
+                  ],
+                  "current_action": "callable-action-counter-seed-int-7",
+                  "did_action": 8,
+                  "doing_action": true,
+                  "wp_actions": 8
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-int-7"
+                  ],
+                  "current_action": "callable-action-counter-seed-int-7",
+                  "did_action": 9,
+                  "doing_action": true,
+                  "wp_actions": 9
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-int-7"
+                  ],
+                  "current_action": "callable-action-counter-seed-int-7",
+                  "did_action": 9,
+                  "doing_action": true,
+                  "wp_actions": 9
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-float-7-5"
+                  ],
+                  "current_action": "callable-action-counter-seed-float-7-5",
+                  "did_action": 8.5,
+                  "doing_action": true,
+                  "wp_actions": 8.5
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-float-7-5"
+                  ],
+                  "current_action": "callable-action-counter-seed-float-7-5",
+                  "did_action": 8.5,
+                  "doing_action": true,
+                  "wp_actions": 8.5
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-float-7-5"
+                  ],
+                  "current_action": "callable-action-counter-seed-float-7-5",
+                  "did_action": 9.5,
+                  "doing_action": true,
+                  "wp_actions": 9.5
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-float-7-5"
+                  ],
+                  "current_action": "callable-action-counter-seed-float-7-5",
+                  "did_action": 9.5,
+                  "doing_action": true,
+                  "wp_actions": 9.5
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-php-int-max"
+                  ],
+                  "current_action": "callable-action-counter-seed-php-int-max",
+                  "did_action": 9.223372036854776e+18,
+                  "doing_action": true,
+                  "wp_actions": 9.223372036854776e+18
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-php-int-max"
+                  ],
+                  "current_action": "callable-action-counter-seed-php-int-max",
+                  "did_action": 9.223372036854776e+18,
+                  "doing_action": true,
+                  "wp_actions": 9.223372036854776e+18
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-counter-seed-php-int-max"
+                  ],
+                  "current_action": "callable-action-counter-seed-php-int-max",
+                  "did_action": 9.223372036854776e+18,
+                  "doing_action": true,
+                  "wp_actions": 9.223372036854776e+18
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-counter-seed-php-int-max"
+                  ],
+                  "current_action": "callable-action-counter-seed-php-int-max",
+                  "did_action": 9.223372036854776e+18,
+                  "doing_action": true,
+                  "wp_actions": 9.223372036854776e+18
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-throw-all",
+                    "first"
+                  ],
+                  "current_action": "callable-action-throw-all",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-throw-all",
+                    "first"
+                  ],
+                  "current_action": "callable-action-throw-all",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-throw-all",
+                    "follow-up"
+                  ],
+                  "current_action": "callable-action-throw-all",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-throw-all",
+                    "follow-up"
+                  ],
+                  "current_action": "callable-action-throw-all",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-throw-named",
+                    "first"
+                  ],
+                  "current_action": "callable-action-throw-named",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-throw-named",
+                    "first"
+                  ],
+                  "current_action": "callable-action-throw-named",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "callable-action-throw-named",
+                    "follow-up"
+                  ],
+                  "current_action": "callable-action-throw-named",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "callable-action-throw-named",
+                    "follow-up"
+                  ],
+                  "current_action": "callable-action-throw-named",
+                  "did_action": 2,
+                  "doing_action": true,
+                  "wp_actions": 2
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "global-state-unset"
+                  ],
+                  "current_action": "global-state-unset",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "global-state-unset"
+                  ],
+                  "current_action": "global-state-unset",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "global-state-null"
+                  ],
+                  "current_action": "global-state-null",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "global-state-null"
+                  ],
+                  "current_action": "global-state-null",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "global-state-false"
+                  ],
+                  "current_action": "global-state-false",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "global-state-false"
+                  ],
+                  "current_action": "global-state-false",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 0,
+                  "args": [
+                    "global-state-array"
+                  ],
+                  "current_action": "global-state-array",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                },
+                {
+                  "accepted_args": 1,
+                  "args": [
+                    "global-state-array"
+                  ],
+                  "current_action": "global-state-array",
+                  "did_action": 1,
+                  "doing_action": true,
+                  "wp_actions": 1
+                }
+              ]
+            },
+            "callbacks": [
+              {
+                "args": [
+                  "outer",
+                  "tail"
+                ],
+                "current_action": "callable-action-api",
+                "did_action": 1,
+                "did_filter": 0,
+                "doing_action": true,
+                "doing_named": true,
+                "event": "first",
+                "wp_actions": 1
+              },
+              {
+                "args": [
+                  "outer",
+                  "tail"
+                ],
+                "current_action": "callable-action-api",
+                "did_action": 1,
+                "did_filter": 0,
+                "doing_action": true,
+                "doing_named": true,
+                "event": "second",
+                "wp_actions": 1
+              },
+              {
+                "args": [
+                  "filter-seed"
+                ],
+                "current_action": "callable-action-api",
+                "did_action": 1,
+                "did_filter": 1,
+                "doing_action": true,
+                "doing_named": true,
+                "event": "first",
+                "wp_actions": 1
+              },
+              {
+                "args": [
+                  "ignored-first-return"
+                ],
+                "current_action": "callable-action-api",
+                "did_action": 1,
+                "did_filter": 1,
+                "doing_action": true,
+                "doing_named": true,
+                "event": "second",
+                "wp_actions": 1
+              }
+            ],
+            "counter_independence": {
+              "after_filter": {
+                "did_action": 1,
+                "did_filter": 1
+              },
+              "before_filter": {
+                "did_action": 1,
+                "did_filter": 0
+              }
+            },
+            "counter_seed_diagnostics": {
+              "alpha": {
+                "after": {
+                  "hex": "63",
+                  "type": "string"
+                },
+                "diagnostics": [
+                  {
+                    "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                    "severity": 8192
+                  },
+                  {
+                    "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                    "severity": 8192
+                  }
+                ],
+                "returns": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "seed": {
+                  "hex": "61",
+                  "type": "string"
+                },
+                "trace": [
+                  {
+                    "dispatch": "first",
+                    "event": "diagnostic",
+                    "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                    "severity": 8192
+                  },
+                  {
+                    "args": [
+                      "callable-action-counter-seed-diagnostic-alpha",
+                      "first"
+                    ],
+                    "dispatch": "first",
+                    "event": "all"
+                  },
+                  {
+                    "args": [
+                      "first"
+                    ],
+                    "did_action": {
+                      "hex": "62",
+                      "type": "string"
+                    },
+                    "dispatch": "first",
+                    "event": "named",
+                    "wp_actions": {
+                      "hex": "62",
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "dispatch": "second",
+                    "event": "diagnostic",
+                    "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                    "severity": 8192
+                  },
+                  {
+                    "args": [
+                      "callable-action-counter-seed-diagnostic-alpha",
+                      "second"
+                    ],
+                    "dispatch": "second",
+                    "event": "all"
+                  },
+                  {
+                    "args": [
+                      "second"
+                    ],
+                    "did_action": {
+                      "hex": "63",
+                      "type": "string"
+                    },
+                    "dispatch": "second",
+                    "event": "named",
+                    "wp_actions": {
+                      "hex": "63",
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "bool_true": {
+                "after": {
+                  "type": "bool",
+                  "value": true
+                },
+                "diagnostics": [
+                  {
+                    "message_hex": "496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850",
+                    "severity": 2
+                  },
+                  {
+                    "message_hex": "496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850",
+                    "severity": 2
+                  }
+                ],
+                "returns": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "seed": {
+                  "type": "bool",
+                  "value": true
+                },
+                "trace": [
+                  {
+                    "dispatch": "first",
+                    "event": "diagnostic",
+                    "message_hex": "496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850",
+                    "severity": 2
+                  },
+                  {
+                    "args": [
+                      "callable-action-counter-seed-diagnostic-bool-true",
+                      "first"
+                    ],
+                    "dispatch": "first",
+                    "event": "all"
+                  },
+                  {
+                    "args": [
+                      "first"
+                    ],
+                    "did_action": {
+                      "type": "bool",
+                      "value": true
+                    },
+                    "dispatch": "first",
+                    "event": "named",
+                    "wp_actions": {
+                      "type": "bool",
+                      "value": true
+                    }
+                  },
+                  {
+                    "dispatch": "second",
+                    "event": "diagnostic",
+                    "message_hex": "496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850",
+                    "severity": 2
+                  },
+                  {
+                    "args": [
+                      "callable-action-counter-seed-diagnostic-bool-true",
+                      "second"
+                    ],
+                    "dispatch": "second",
+                    "event": "all"
+                  },
+                  {
+                    "args": [
+                      "second"
+                    ],
+                    "did_action": {
+                      "type": "bool",
+                      "value": true
+                    },
+                    "dispatch": "second",
+                    "event": "named",
+                    "wp_actions": {
+                      "type": "bool",
+                      "value": true
+                    }
+                  }
+                ]
+              }
+            },
+            "counter_seed_values": {
+              "float_7_5": {
+                "after": {
+                  "bits": "4023000000000000",
+                  "type": "float"
+                },
+                "before": {
+                  "bits": "401e000000000000",
+                  "type": "float"
+                },
+                "events": [
+                  {
+                    "did_action": {
+                      "bits": "4021000000000000",
+                      "type": "float"
+                    },
+                    "wp_actions": {
+                      "bits": "4021000000000000",
+                      "type": "float"
+                    }
+                  },
+                  {
+                    "did_action": {
+                      "bits": "4023000000000000",
+                      "type": "float"
+                    },
+                    "wp_actions": {
+                      "bits": "4023000000000000",
+                      "type": "float"
+                    }
+                  }
+                ],
+                "returns": [
+                  null,
+                  null
+                ]
+              },
+              "int_7": {
+                "after": {
+                  "type": "int",
+                  "value": "9"
+                },
+                "before": {
+                  "type": "int",
+                  "value": "7"
+                },
+                "events": [
+                  {
+                    "did_action": {
+                      "type": "int",
+                      "value": "8"
+                    },
+                    "wp_actions": {
+                      "type": "int",
+                      "value": "8"
+                    }
+                  },
+                  {
+                    "did_action": {
+                      "type": "int",
+                      "value": "9"
+                    },
+                    "wp_actions": {
+                      "type": "int",
+                      "value": "9"
+                    }
+                  }
+                ],
+                "returns": [
+                  null,
+                  null
+                ]
+              },
+              "php_int_max": {
+                "after": {
+                  "bits": "43e0000000000000",
+                  "type": "float"
+                },
+                "before": {
+                  "type": "int",
+                  "value": "9223372036854775807"
+                },
+                "events": [
+                  {
+                    "did_action": {
+                      "bits": "43e0000000000000",
+                      "type": "float"
+                    },
+                    "wp_actions": {
+                      "bits": "43e0000000000000",
+                      "type": "float"
+                    }
+                  },
+                  {
+                    "did_action": {
+                      "bits": "43e0000000000000",
+                      "type": "float"
+                    },
+                    "wp_actions": {
+                      "bits": "43e0000000000000",
+                      "type": "float"
+                    }
+                  }
+                ],
+                "returns": [
+                  null,
+                  null
+                ]
+              }
+            },
+            "do_action_returns": {
+              "all_args": null,
+              "all_without_named": null,
+              "empty_args": null,
+              "nested": null,
+              "no_listener": null,
+              "populated": null
+            },
+            "empty_args": [
+              {
+                "accepted_args": 1,
+                "args": [
+                  ""
+                ]
+              },
+              {
+                "accepted_args": 0,
+                "args": []
+              }
+            ],
+            "global_state": {
+              "array": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "entries": [],
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "array"
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "entries": [],
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "array"
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "entries": [],
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "array"
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "current_action": "global-state-array",
+                    "doing_action": true,
+                    "kind": "callback"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "null"
+                    }
+                  },
+                  {
+                    "callback_count": 1,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "entries": [
+                        {
+                          "key_hex": "676c6f62616c2d73746174652d6172726179",
+                          "value": {
+                            "type": "int",
+                            "value": "1"
+                          }
+                        }
+                      ],
+                      "hook_key_present": true,
+                      "present": true,
+                      "type": "array"
+                    }
+                  }
+                ]
+              },
+              "false": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": false
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": false
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": false
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "kind": "warning",
+                    "message_hex": "4175746f6d6174696320636f6e76657273696f6e206f662066616c736520746f2061727261792069732064657072656361746564",
+                    "severity": 8192
+                  },
+                  {
+                    "current_action": "global-state-false",
+                    "doing_action": true,
+                    "kind": "callback"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "null"
+                    }
+                  },
+                  {
+                    "callback_count": 1,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "entries": [
+                        {
+                          "key_hex": "676c6f62616c2d73746174652d66616c7365",
+                          "value": {
+                            "type": "int",
+                            "value": "1"
+                          }
+                        }
+                      ],
+                      "hook_key_present": true,
+                      "present": true,
+                      "type": "array"
+                    }
+                  }
+                ]
+              },
+              "float": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "float",
+                      "value": {
+                        "bits": "401e000000000000",
+                        "type": "float"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "float",
+                      "value": {
+                        "bits": "401e000000000000",
+                        "type": "float"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "float",
+                      "value": {
+                        "bits": "401e000000000000",
+                        "type": "float"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "class": "Error",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "float",
+                      "value": {
+                        "bits": "401e000000000000",
+                        "type": "float"
+                      }
+                    }
+                  }
+                ]
+              },
+              "int": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "int",
+                      "value": {
+                        "type": "int",
+                        "value": "7"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "int",
+                      "value": {
+                        "type": "int",
+                        "value": "7"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "int",
+                      "value": {
+                        "type": "int",
+                        "value": "7"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "class": "Error",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "int",
+                      "value": {
+                        "type": "int",
+                        "value": "7"
+                      }
+                    }
+                  }
+                ]
+              },
+              "null": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "null",
+                      "value": {
+                        "type": "null"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "null",
+                      "value": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "null",
+                      "value": {
+                        "type": "null"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "current_action": "global-state-null",
+                    "doing_action": true,
+                    "kind": "callback"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "null"
+                    }
+                  },
+                  {
+                    "callback_count": 1,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "entries": [
+                        {
+                          "key_hex": "676c6f62616c2d73746174652d6e756c6c",
+                          "value": {
+                            "type": "int",
+                            "value": "1"
+                          }
+                        }
+                      ],
+                      "hook_key_present": true,
+                      "present": true,
+                      "type": "array"
+                    }
+                  }
+                ]
+              },
+              "object": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "stdClass",
+                      "value": {
+                        "type": "stdClass"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "class": "Error",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "stdClass",
+                      "value": {
+                        "type": "stdClass"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "stdClass",
+                      "value": {
+                        "type": "stdClass"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "class": "Error",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "stdClass",
+                      "value": {
+                        "type": "stdClass"
+                      }
+                    }
+                  }
+                ]
+              },
+              "string": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "string",
+                      "value": {
+                        "hex": "73656564",
+                        "type": "string"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "string",
+                      "value": {
+                        "hex": "73656564",
+                        "type": "string"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "string",
+                      "value": {
+                        "hex": "73656564",
+                        "type": "string"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "class": "TypeError",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737472696e67206f6e20737472696e67"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "string",
+                      "value": {
+                        "hex": "73656564",
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              },
+              "true": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "class": "Error",
+                    "kind": "throwable",
+                    "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "bool",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    }
+                  }
+                ]
+              },
+              "unset": {
+                "did_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": false,
+                      "type": "unset",
+                      "value": {
+                        "type": "unset"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "did_action"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  },
+                  {
+                    "callback_count": 0,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "hook_key_present": false,
+                      "present": true,
+                      "type": "null",
+                      "value": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                ],
+                "do_action": [
+                  {
+                    "initial": {
+                      "hook_key_present": false,
+                      "present": false,
+                      "type": "unset",
+                      "value": {
+                        "type": "unset"
+                      }
+                    },
+                    "kind": "call",
+                    "operation": "do_action"
+                  },
+                  {
+                    "current_action": "global-state-unset",
+                    "doing_action": true,
+                    "kind": "callback"
+                  },
+                  {
+                    "kind": "result",
+                    "value": {
+                      "type": "null"
+                    }
+                  },
+                  {
+                    "callback_count": 1,
+                    "current_filter_stack": [],
+                    "kind": "final",
+                    "state": {
+                      "entries": [
+                        {
+                          "key_hex": "676c6f62616c2d73746174652d756e736574",
+                          "value": {
+                            "type": "int",
+                            "value": "1"
+                          }
+                        }
+                      ],
+                      "hook_key_present": true,
+                      "present": true,
+                      "type": "array"
+                    }
+                  }
+                ]
+              }
+            },
+            "nested": {
+              "current_action": "callable-action-throw-named",
+              "did_action": 2,
+              "doing_action": true,
+              "events": [
+                {
+                  "args": [
+                    "outer"
+                  ],
+                  "count": 1,
+                  "current_action": "callable-action-nested",
+                  "event": "outer-enter"
+                },
+                {
+                  "args": [
+                    "inner"
+                  ],
+                  "count": 2,
+                  "current_action": "callable-action-nested",
+                  "event": "outer-enter"
+                },
+                {
+                  "count": 2,
+                  "current_action": "callable-action-nested",
+                  "event": "outer-exit"
+                },
+                {
+                  "args": [
+                    "child"
+                  ],
+                  "current_action": "callable-action-nested-child",
+                  "doing_child": true,
+                  "doing_parent": true,
+                  "event": "child"
+                },
+                {
+                  "count": 2,
+                  "current_action": "callable-action-nested",
+                  "event": "outer-exit"
+                }
+              ]
+            },
+            "nested_caught_throw": {
+              "after": {
+                "child_count": 1,
+                "current_action": "callable-action-nested-caught-parent",
+                "doing_child": false,
+                "doing_parent": true,
+                "parent_count": 1,
+                "stack_depth": 1
+              },
+              "do_action_return": null,
+              "events": [
+                {
+                  "args": [
+                    "parent-argument"
+                  ],
+                  "child_count": 0,
+                  "current_action": "callable-action-nested-caught-parent",
+                  "doing_child": false,
+                  "doing_parent": true,
+                  "event": "parent-enter",
+                  "parent_count": 1
+                },
+                {
+                  "args": [
+                    "child-argument"
+                  ],
+                  "child_count": 1,
+                  "current_action": "callable-action-nested-caught-child",
+                  "doing_child": true,
+                  "doing_parent": true,
+                  "event": "child-enter",
+                  "parent_count": 1
+                },
+                {
+                  "child_count": 1,
+                  "class": "RuntimeException",
+                  "current_action": "callable-action-nested-caught-child",
+                  "doing_child": true,
+                  "doing_parent": true,
+                  "event": "child-throw",
+                  "message": "nested action child boom",
+                  "parent_count": 1
+                },
+                {
+                  "child_count": 1,
+                  "class": "RuntimeException",
+                  "current_action": "callable-action-nested-caught-child",
+                  "doing_child": true,
+                  "doing_parent": true,
+                  "event": "parent-catch",
+                  "message": "nested action child boom",
+                  "parent_count": 1,
+                  "same_throwable": true
+                },
+                {
+                  "child_count": 1,
+                  "current_action": "callable-action-nested-caught-child",
+                  "doing_child": true,
+                  "doing_parent": true,
+                  "event": "parent-resume",
+                  "parent_count": 1
+                }
+              ]
+            },
+            "no_listener_count": {
+              "after": 1,
+              "before": 0
+            },
+            "throw_all": {
+              "after_catch": {
+                "current_action": "callable-action-throw-all",
+                "did_action": 1,
+                "doing_action": true,
+                "doing_named": true
+              },
+              "after_followup": {
+                "current_action": "callable-action-throw-all",
+                "did_action": 2,
+                "doing_action": true,
+                "doing_named": true
+              },
+              "caught": {
+                "class": "RuntimeException",
+                "message": "action all boom"
+              },
+              "events": [
+                {
+                  "args": [
+                    "callable-action-throw-all",
+                    "first"
+                  ],
+                  "count": 1,
+                  "current_action": "callable-action-throw-all",
+                  "doing": true,
+                  "event": "all-enter"
+                },
+                {
+                  "args": [
+                    "callable-action-throw-all",
+                    "follow-up"
+                  ],
+                  "count": 2,
+                  "current_action": "callable-action-throw-all",
+                  "doing": true,
+                  "event": "all-enter"
+                },
+                {
+                  "event": "all-exit"
+                },
+                {
+                  "args": [
+                    "follow-up"
+                  ],
+                  "event": "named-after-all"
+                }
+              ],
+              "followup_return": null
+            },
+            "throw_named": {
+              "after_catch": {
+                "current_action": "callable-action-throw-named",
+                "did_action": 1,
+                "doing_action": true,
+                "doing_named": true
+              },
+              "after_followup": {
+                "current_action": "callable-action-throw-named",
+                "did_action": 2,
+                "doing_action": true,
+                "doing_named": true
+              },
+              "caught": {
+                "class": "RuntimeException",
+                "message": "action named boom"
+              },
+              "events": [
+                {
+                  "args": [
+                    "first"
+                  ],
+                  "count": 1,
+                  "current_action": "callable-action-throw-named",
+                  "doing": true,
+                  "event": "named-thrower"
+                },
+                {
+                  "args": [
+                    "follow-up"
+                  ],
+                  "count": 2,
+                  "current_action": "callable-action-throw-named",
+                  "doing": true,
+                  "event": "named-thrower"
+                },
+                {
+                  "args": [
+                    "follow-up"
+                  ],
+                  "event": "named-later-sibling"
+                }
+              ],
+              "followup_return": null
+            }
+          }
+        },
+        "registry_observation": {
+          "closed": true,
+          "closed_read_rejected": true,
+          "live_after_close": 0
+        },
+        "release_effects": 32,
+        "scenario": "action_api",
+        "state_after": "Finished"
+      },
+      "peer_elapsed_ms": 2003,
+      "php_exit_code": 0,
+      "status": "passed",
+      "thread_joined": true,
+      "wire": {
+        "php": {
+          "bytes": 425667,
+          "path": "target/php-compat-v06-wire/639-1794605255679200423/php.jsonl.bin",
+          "sha256": "ca5d6e7ca215baa71e128c3e13b827b3c0640cd1fe6422148b460e8843b2006a"
+        },
+        "rust": {
+          "bytes": 469198,
+          "path": "target/php-compat-v06-wire/639-1794605255679200423/rust.jsonl.bin",
+          "sha256": "71e634daf536d5bb1223e63645fcc6b3b2424abe84596d549fc4236571518023"
+        }
+      }
+    },
+    "compile_elapsed_ms": 87777,
+    "compiler_profile": "wasmer-7.2.0/cranelift-noopt",
+    "execution": "passed",
+    "execution_elapsed_ms": 2035,
+    "fixtures": [
+      [
+        "surface_oracle.php",
+        1145,
+        "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8"
+      ],
+      [
+        "dispatcher.php",
+        6359,
+        "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1"
+      ],
+      [
+        "strict_json.php",
+        4985,
+        "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+      ],
+      [
+        "strict_json_oracle.php",
+        2764,
+        "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8"
+      ],
+      [
+        "bridge_driver.php",
+        19885,
+        "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15"
+      ],
+      [
+        "recovery.php",
+        1575,
+        "a3a22d102002d6137d67b532a550f1c138b859cfff56b9dc4ccfa1609a6c49e7"
+      ],
+      [
+        "handle_registry.php",
+        9958,
+        "bd15150985c3cf69e4346eae5826fa6b1ae7e39a97d68863c9cd95478c1c040f"
+      ],
+      [
+        "callable_driver.php",
+        2397,
+        "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94"
+      ],
+      [
+        "callable_adapter.php",
+        43544,
+        "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874"
+      ],
+      [
+        "callable_program.php",
+        127081,
+        "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1"
+      ]
+    ],
+    "runtime": "PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+    "schema": "recastpress.php-compat-v06-wasm-actions.v1"
+  },
+  "build_timeout_seconds": 600,
+  "host_timeout_seconds": 300,
+  "scope": "PHP action API aliases, callback dispatch and ignored returns, shared action/filter stack, PHP-owned action counts, nested actions and Throwable propagation",
+  "action_transcript_rejections": [
+    "unknown_api",
+    "wrong_do_action_result",
+    "wrong_did_action_type",
+    "wrong_action_callback_args",
+    "wrong_counter_seed_increment_type",
+    "wrong_counter_seed_float_bits",
+    "wrong_counter_seed_overflow_progression",
+    "wrong_counter_seed_read_value",
+    "wrong_script_observation",
+    "wrong_transport",
+    "wrong_diagnostic_bool_increment_type",
+    "wrong_diagnostic_alpha_increment_value",
+    "wrong_diagnostic_bool_read_type",
+    "wrong_diagnostic_alpha_read_value",
+    "wrong_diagnostic_read_count",
+    "wrong_global_state_read_type",
+    "wrong_global_state_warning_order",
+    "wrong_global_state_throwable_result",
+    "wrong_global_state_all_hook_count"
+  ]
+}

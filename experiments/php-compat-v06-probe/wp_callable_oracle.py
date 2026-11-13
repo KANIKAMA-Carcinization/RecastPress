@@ -23,7 +23,8 @@ def digest(path):
 def fixed_inputs():
     inputs = hooks.fixed_inputs()
     for path in (Path(__file__), FIXTURE, HERE / 'fixtures/callable_program.php', HERE / 'run_check.py',
-                 HERE / 'callable_contract.py', HERE / 'callable_v2_contract.py'):
+                 HERE / 'callable_contract.py', HERE / 'callable_v2_contract.py',
+                 HERE / 'wp_action_global_state_poc.py'):
         inputs[path.relative_to(ROOT).as_posix()] = digest(path)
     return dict(sorted(inputs.items()))
 

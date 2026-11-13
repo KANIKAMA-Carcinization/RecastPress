@@ -586,6 +586,133 @@ function callable_program_scalar_view($value): array
     return ['type' => get_debug_type($value)];
 }
 
+function callable_program_action_global_state_snapshot(string $hook): array
+{
+    $present = array_key_exists('wp_actions', $GLOBALS);
+    $value = $present ? $GLOBALS['wp_actions'] : null;
+    $snapshot = [
+        'present' => $present,
+        'type' => $present ? get_debug_type($value) : 'unset',
+    ];
+    if (is_array($value)) {
+        $snapshot['entries'] = [];
+        foreach ($value as $key => $entry) {
+            $snapshot['entries'][] = [
+                'key_hex' => bin2hex((string) $key),
+                'value' => callable_program_scalar_view($entry),
+            ];
+        }
+    } else {
+        $snapshot['value'] = $present
+            ? callable_program_scalar_view($value)
+            : ['type' => 'unset'];
+    }
+    $snapshot['hook_key_present'] = is_array($value) && array_key_exists($hook, $value);
+
+    return $snapshot;
+}
+
+function callable_program_action_global_state_set(string $state): void
+{
+    unset($GLOBALS['wp_actions']);
+    switch ($state) {
+        case 'unset':
+            break;
+        case 'null':
+            $GLOBALS['wp_actions'] = null;
+            break;
+        case 'false':
+            $GLOBALS['wp_actions'] = false;
+            break;
+        case 'true':
+            $GLOBALS['wp_actions'] = true;
+            break;
+        case 'int':
+            $GLOBALS['wp_actions'] = 7;
+            break;
+        case 'float':
+            $GLOBALS['wp_actions'] = 7.5;
+            break;
+        case 'string':
+            $GLOBALS['wp_actions'] = 'seed';
+            break;
+        case 'array':
+            $GLOBALS['wp_actions'] = [];
+            break;
+        case 'object':
+            $GLOBALS['wp_actions'] = new stdClass();
+            break;
+        default:
+            throw new LogicException('unknown action global state');
+    }
+}
+
+function callable_program_action_global_state_leaf(string $state, string $operation): array
+{
+    $hook = 'global-state-' . $state . ($operation === 'did_action' ? '-did' : '');
+    unset($GLOBALS['wp_actions']);
+    $GLOBALS['wp_current_filter'] = [];
+    callable_program_action_global_state_set($state);
+
+    $log = [];
+    $callbackCount = 0;
+    if ($operation === 'do_action') {
+        add_action($hook, static function () use (&$log, &$callbackCount): void {
+            ++$callbackCount;
+            $log[] = [
+                'kind' => 'callback',
+                'current_action' => current_action(),
+                'doing_action' => doing_action(),
+            ];
+        });
+    }
+    $initial = callable_program_action_global_state_snapshot($hook);
+    set_error_handler(static function (int $severity, string $message) use (&$log): bool {
+        $log[] = [
+            'kind' => 'warning',
+            'severity' => $severity,
+            'message_hex' => bin2hex($message),
+        ];
+
+        return true;
+    });
+
+    $log[] = ['kind' => 'call', 'operation' => $operation, 'initial' => $initial];
+    try {
+        $result = $operation === 'do_action' ? do_action($hook) : did_action($hook);
+        $log[] = ['kind' => 'result', 'value' => callable_program_scalar_view($result)];
+    } catch (Throwable $throwable) {
+        $log[] = [
+            'kind' => 'throwable',
+            'class' => $throwable::class,
+            'message_hex' => bin2hex($throwable->getMessage()),
+        ];
+    } finally {
+        restore_error_handler();
+    }
+
+    $log[] = [
+        'kind' => 'final',
+        'state' => callable_program_action_global_state_snapshot($hook),
+        'callback_count' => $callbackCount,
+        'current_filter_stack' => array_values($GLOBALS['wp_current_filter'] ?? []),
+    ];
+
+    return $log;
+}
+
+function callable_program_action_global_state_cases(): array
+{
+    $observations = [];
+    foreach (['unset', 'null', 'false', 'true', 'int', 'float', 'string', 'array', 'object'] as $state) {
+        foreach (['do_action', 'did_action'] as $operation) {
+            $observations[$state][$operation] = callable_program_action_global_state_leaf($state, $operation);
+        }
+    }
+
+    return $observations;
+}
+
 function callable_program_hook_scalar_view($value): array
 {
     if (is_float($value) && is_nan($value)) {
@@ -2622,8 +2749,10 @@ function callable_program_action_api_cases(): array
             'current_action' => current_action(), 'doing_action' => doing_action(),
             'did_action' => did_action($hookName), 'wp_actions' => $GLOBALS['wp_actions'][$hookName] ?? 0];
     };
-    add_action('all', static function (...$args) use ($allObserve): void { $allObserve(0, $args); }, 1, 0);
-    add_action('all', static function (...$args) use ($allObserve): void { $allObserve(1, $args); }, 2, 1);
+    $allObserverZero = static function (...$args) use ($allObserve): void { $allObserve(0, $args); };
+    $allObserverOne = static function (...$args) use ($allObserve): void { $allObserve(1, $args); };
+    add_action('all', $allObserverZero, 1, 0);
+    add_action('all', $allObserverOne, 2, 1);
     add_action('callable-action-all-args', static function (...$args) use (&$allEvents): void { $allEvents[] = ['named' => true, 'args' => $args]; }, 10, 1);
     $allReturn = do_action('callable-action-all-args', 'alpha', 'beta', 'gamma');
     $allNoListenerReturn = do_action('callable-action-all-without-named-listener', 'solo', 'extra');
@@ -2872,6 +3001,22 @@ function callable_program_action_api_cases(): array
     $throwNamedFollowupReturn = do_action($throwNamedHook, 'follow-up');
     $throwNamedAfterFollowup = ['did_action' => did_action($throwNamedHook), 'current_action' => current_action(), 'doing_action' => doing_action(), 'doing_named' => doing_action($throwNamedHook)];
 
+    $savedActionGlobals = [];
+    foreach (['wp_filter', 'wp_actions', 'wp_filters', 'wp_current_filter'] as $globalName) {
+        $savedActionGlobals[$globalName] = [
+            'present' => array_key_exists($globalName, $GLOBALS),
+            'value' => $GLOBALS[$globalName] ?? null,
+        ];
+    }
+    $globalStateCases = callable_program_action_global_state_cases();
+    foreach ($savedActionGlobals as $globalName => $saved) {
+        if ($saved['present']) {
+            $GLOBALS[$globalName] = $saved['value'];
+        } else {
+            unset($GLOBALS[$globalName]);
+        }
+    }
+
     return ['aliases' => $aliases,
         'do_action_returns' => ['populated' => $doReturn, 'empty_args' => $emptyReturn, 'all_args' => $allReturn, 'all_without_named' => $allNoListenerReturn, 'nested' => $nestedReturn, 'no_listener' => $noListenerReturn],
         'callbacks' => $events, 'after_outer' => $afterOuter, 'empty_args' => $placeholderEvents,
@@ -2883,6 +3028,7 @@ function callable_program_action_api_cases(): array
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,
+        'global_state' => $globalStateCases,
         'throw_all' => ['caught' => $throwAllCaught, 'events' => $throwAllEvents, 'after_catch' => $throwAllAfterCatch, 'followup_return' => $throwAllFollowupReturn, 'after_followup' => $throwAllAfterFollowup],
         'throw_named' => ['caught' => $throwNamedCaught, 'events' => $throwNamedEvents, 'after_catch' => $throwNamedAfterCatch, 'followup_return' => $throwNamedFollowupReturn, 'after_followup' => $throwNamedAfterFollowup]];
 }

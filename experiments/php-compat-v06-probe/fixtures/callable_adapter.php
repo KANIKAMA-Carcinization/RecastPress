@@ -184,7 +184,6 @@ final class CallableApiAdapter
     {
         $argumentNodes = array_map(self::encodePod(...), $args);
         [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
-        $GLOBALS['wp_current_filter'][] = $hookName;
 
         $result = $this->api('do_action', [
             'arguments' => $arguments,
@@ -399,18 +398,19 @@ final class CallableApiAdapter
 
             $hookName = $this->registry->resolve($arguments['handle'], 'argument');
             if ($action === 'action_counter_increment') {
-                if (!isset($GLOBALS['wp_actions']) || !is_array($GLOBALS['wp_actions'])) {
-                    $GLOBALS['wp_actions'] = [];
-                }
                 if (!isset($GLOBALS['wp_actions'][$hookName])) {
                     $GLOBALS['wp_actions'][$hookName] = 1;
                 } else {
                     ++$GLOBALS['wp_actions'][$hookName];
                 }
+                // WordPress increments before pushing the current hook. Keep the
+                // public PHP stack aligned even when the counter boundary throws.
+                $GLOBALS['wp_current_filter'][] = $hookName;
                 return self::encodePod($GLOBALS['wp_actions'][$hookName]);
             }
 
-            $count = isset($GLOBALS['wp_actions'][$hookName]) ? $GLOBALS['wp_actions'][$hookName] : 0;
+            global $wp_actions;
+            $count = isset($wp_actions[$hookName]) ? $wp_actions[$hookName] : 0;
             return self::encodePod($count);
         }
 

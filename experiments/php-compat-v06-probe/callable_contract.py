@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import re
 
+from wp_action_global_state_poc import expected_observation as _action_global_state_oracle
+
 APIS = ('add_filter', 'remove_filter', 'has_filter', 'apply_filters',
         'current_filter', 'doing_filter', 'did_filter')
 SCENARIO = 'callable_api'
@@ -30,6 +32,7 @@ ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS = {
         {'type': 'string', 'hex': '63'},
     ],
 }
+ACTION_GLOBAL_STATE_EXPECTATIONS = _action_global_state_oracle()['observations']
 ACTION_COUNTER_SEED_EXPECTATIONS = {
     'int_7': {
         'before': {'type': 'int', 'value': '7'},

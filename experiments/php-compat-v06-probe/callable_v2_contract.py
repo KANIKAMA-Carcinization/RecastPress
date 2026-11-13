@@ -5,7 +5,8 @@ import json
 import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
-    ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer, validate_key, validate_pod)
+    ACTION_GLOBAL_STATE_EXPECTATIONS, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer,
+    validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
 REQUEST = '71'
@@ -3992,6 +3993,7 @@ EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_s
 
 
 EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
+EXPECTED_ACTION_API['global_state'] = ACTION_GLOBAL_STATE_EXPECTATIONS
 _BOOL_INCREMENT_DIAGNOSTIC = {
     'severity': 2,
     'message_hex': '496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850',
@@ -4097,6 +4099,19 @@ for _seed_case, _seed_hook in ACTION_COUNTER_SEED_HOOKS.items():
                 'wp_actions': _php_counter_value(_event['wp_actions']),
             })
 EXPECTED_ACTION_API['all_hook']['events'][27:27] = _seed_all_hook_events
+_global_state_all_hook_events = []
+for _state_name in ('unset', 'null', 'false', 'array'):
+    _global_state_hook = 'global-state-' + _state_name
+    for _accepted_args in (0, 1):
+        _global_state_all_hook_events.append({
+            'accepted_args': _accepted_args,
+            'args': [_global_state_hook],
+            'current_action': _global_state_hook,
+            'doing_action': True,
+            'did_action': 1,
+            'wp_actions': 1,
+        })
+EXPECTED_ACTION_API['all_hook']['events'].extend(_global_state_all_hook_events)
 
 
 def validate_action_observation(value):
@@ -4250,6 +4265,24 @@ def action_self_check():
                     if item.get('accepted_args') == 0 and item.get('args') == [diag_hook, 'first'])
     diag_row['wp_actions'] = False
     mutations.append(('diagnostic all-hook action counter', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    global_state_hook = 'global-state-false'
+    global_state_row = next(item for item in changed['all_hook']['events']
+                            if item.get('accepted_args') == 0 and item.get('args') == [global_state_hook])
+    global_state_row['did_action'] = 2
+    mutations.append(('non-array global state all-hook counter', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['global_state']['int']['do_action'][0]['initial']['value'] = {
+        'type': 'string', 'hex': '37'}
+    mutations.append(('non-array global initial type', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['global_state']['false']['do_action'][1], changed['global_state']['false']['do_action'][2] = (
+        changed['global_state']['false']['do_action'][2], changed['global_state']['false']['do_action'][1])
+    mutations.append(('global state warning order', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['global_state']['string']['do_action'][1] = {
+        'kind': 'result', 'value': {'type': 'null'}}
+    mutations.append(('global state throwable result', changed))
     for label, changed in mutations:
         try:
             validate_action_observation({'action_api': changed})
@@ -4913,7 +4946,9 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_counter_seed_read_value', 'wrong_script_observation', 'wrong_transport',
     'wrong_diagnostic_bool_increment_type', 'wrong_diagnostic_alpha_increment_value',
     'wrong_diagnostic_bool_read_type', 'wrong_diagnostic_alpha_read_value',
-    'wrong_diagnostic_read_count',
+    'wrong_diagnostic_read_count', 'wrong_global_state_read_type',
+    'wrong_global_state_warning_order', 'wrong_global_state_throwable_result',
+    'wrong_global_state_all_hook_count',
 )
 
 
@@ -4981,6 +5016,14 @@ def reject_action_transcripts(streams, result):
                 grouped[hook].append(index)
         return grouped
 
+    def global_state_boundary(indices, action, state):
+        hook = 'global-state-' + state + ('-did' if action == 'action_counter_read' else '')
+        for index in indices:
+            handle = source['rust'][index]['payload'].get('arguments', {}).get('handle')
+            if isinstance(handle, dict) and hook_names_by_handle.get(handle_id(handle)) == hook:
+                return index
+        raise ValueError(f'missing global-state {action} boundary for {state}')
+
     seeded_increments = seeded_boundaries(increment_boundaries)
     seeded_reads = seeded_boundaries(read_boundaries)
     if (any(len(seeded_increments[hook]) != 2 for hook in seeded_increments)
@@ -5032,6 +5075,25 @@ def reject_action_transcripts(streams, result):
             substitute = next(value for value, hook in hook_names_by_handle.items()
                               if hook == next(iter(ACTION_COUNTER_SEED_HOOKS.values())))
             frames['rust'][index]['payload']['arguments']['handle'] = json.loads(substitute)
+        elif name == 'wrong_global_state_read_type':
+            index = global_state_boundary(read_boundaries, 'action_counter_read', 'int')
+            resume = resume_index(index)
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'bool', 'value': False}
+        elif name == 'wrong_global_state_warning_order':
+            value = frames['php'][script_resume]['payload']['completion']['value']
+            log = value['action_api']['global_state']['false']['do_action']
+            log[1], log[2] = log[2], log[1]
+        elif name == 'wrong_global_state_throwable_result':
+            index = global_state_boundary(increment_boundaries, 'action_counter_increment', 'string')
+            resume = resume_index(index)
+            frames['php'][resume]['payload']['completion'] = {
+                'kind': 'value', 'value': {'type': 'int', 'value': '1'}}
+        elif name == 'wrong_global_state_all_hook_count':
+            value = frames['php'][script_resume]['payload']['completion']['value']
+            rows = value['action_api']['all_hook']['events']
+            row = next(item for item in rows
+                       if item.get('accepted_args') == 0 and item.get('args') == ['global-state-false'])
+            row['did_action'] = 2
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

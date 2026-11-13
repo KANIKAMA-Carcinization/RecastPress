@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-13T20:28:25.047692+00:00",
+  "observed_at_utc": "2026-11-13T21:34:11.295765+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -170,16 +170,16 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "a2671682187acd6b16b73ed3880dc8d2eef1740864939a65ea3784f3a97bbe5b",
-    "experiments/php-compat-v06-probe/callable_contract.py": "96c3fdcd00a977cb5738e4aaafa49e094308191286496eff67effd264ed044d6",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "ce4bd547f6d9245510b5a81811adb0a6f26161b1a0937723f60db5087125b87b",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "35e2a8eca1bf9c24277fc3311f162159a4cdeb2f2486e7eb40e1a332e9a8c188",
+    "experiments/php-compat-v06-probe/README.ja.md": "87db18457b74266901bcffe13e2e49eb5c04a810403e46228bea8bae2ccdf319",
+    "experiments/php-compat-v06-probe/callable_contract.py": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "9aa6f76df7e103e3ed066e9438071afd2211d917528140f1be003c3334dc7f02",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "aeb3804c25a093e06fb897618915c9bb31dcc2756e307900bb092ceb4d1a76c7",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -193,8 +193,9 @@
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
-    "experiments/php-compat-v06-probe/run_check.py": "326cf8914b5ab8d8a9747a5165c57bd8f3254bb75c7d869fd56c678d0f70ea67",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "978f376e996ad17ca971179856e751cb707f539b92c6b93fbd9f2a178f778a91",
+    "experiments/php-compat-v06-probe/run_check.py": "b6d2591d55d944a8b19b2ee1b735c9fa6dba25dcb3714415fdd7f84414abb6b8",
+    "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
@@ -365,16 +366,16 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "a2671682187acd6b16b73ed3880dc8d2eef1740864939a65ea3784f3a97bbe5b",
-    "experiments/php-compat-v06-probe/callable_contract.py": "96c3fdcd00a977cb5738e4aaafa49e094308191286496eff67effd264ed044d6",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "ce4bd547f6d9245510b5a81811adb0a6f26161b1a0937723f60db5087125b87b",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "35e2a8eca1bf9c24277fc3311f162159a4cdeb2f2486e7eb40e1a332e9a8c188",
+    "experiments/php-compat-v06-probe/README.ja.md": "87db18457b74266901bcffe13e2e49eb5c04a810403e46228bea8bae2ccdf319",
+    "experiments/php-compat-v06-probe/callable_contract.py": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "9aa6f76df7e103e3ed066e9438071afd2211d917528140f1be003c3334dc7f02",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "aeb3804c25a093e06fb897618915c9bb31dcc2756e307900bb092ceb4d1a76c7",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -388,40 +389,41 @@
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
-    "experiments/php-compat-v06-probe/run_check.py": "326cf8914b5ab8d8a9747a5165c57bd8f3254bb75c7d869fd56c678d0f70ea67",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "978f376e996ad17ca971179856e751cb707f539b92c6b93fbd9f2a178f778a91",
+    "experiments/php-compat-v06-probe/run_check.py": "b6d2591d55d944a8b19b2ee1b735c9fa6dba25dcb3714415fdd7f84414abb6b8",
+    "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 18096,
+    "pid": 27296,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 26880,
+    "pid": 21820,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T202825.028573Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-stdout.bin",
       "bytes": 120941,
       "sha256": "7783b1489fa9ef3183b51bfd22a5a6035f90d5940d3a078da36d30bef1cef506"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T202825.028573Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T202825.028573Z-action_stdout.bin",
-      "bytes": 17091,
-      "sha256": "95b0abc7b87bfb4e557c80357ab789a0ca9d6419de053c6677fbe9196b1e5f3d"
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-action_stdout.bin",
+      "bytes": 26109,
+      "sha256": "8c9e27f0223fbf5b1906008861d54f6b9ed817943a11568b185018e0684fad15"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T202825.028573Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -7707,6 +7709,86 @@
               "doing_action": true,
               "did_action": 2,
               "wp_actions": 2
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-unset"
+              ],
+              "current_action": "global-state-unset",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-unset"
+              ],
+              "current_action": "global-state-unset",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-null"
+              ],
+              "current_action": "global-state-null",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-null"
+              ],
+              "current_action": "global-state-null",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-false"
+              ],
+              "current_action": "global-state-false",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-false"
+              ],
+              "current_action": "global-state-false",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-array"
+              ],
+              "current_action": "global-state-array",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-array"
+              ],
+              "current_action": "global-state-array",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
             }
           ],
           "did_action_without_named": 1
@@ -8117,6 +8199,684 @@
               "type": "float",
               "bits": "43e0000000000000"
             }
+          }
+        },
+        "global_state": {
+          "unset": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": false,
+                  "type": "unset",
+                  "value": {
+                    "type": "unset"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-unset",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d756e736574",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": false,
+                  "type": "unset",
+                  "value": {
+                    "type": "unset"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "null": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-null",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d6e756c6c",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "false": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "warning",
+                "severity": 8192,
+                "message_hex": "4175746f6d6174696320636f6e76657273696f6e206f662066616c736520746f2061727261792069732064657072656361746564"
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-false",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d66616c7365",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "true": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "int": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "float": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "string": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737472696e67206f6e20737472696e67"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "array": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-array",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d6172726179",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "object": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
           }
         },
         "throw_all": {
@@ -8816,6 +9576,86 @@
               "doing_action": true,
               "did_action": 2,
               "wp_actions": 2
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-unset"
+              ],
+              "current_action": "global-state-unset",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-unset"
+              ],
+              "current_action": "global-state-unset",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-null"
+              ],
+              "current_action": "global-state-null",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-null"
+              ],
+              "current_action": "global-state-null",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-false"
+              ],
+              "current_action": "global-state-false",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-false"
+              ],
+              "current_action": "global-state-false",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 0,
+              "args": [
+                "global-state-array"
+              ],
+              "current_action": "global-state-array",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
+            },
+            {
+              "accepted_args": 1,
+              "args": [
+                "global-state-array"
+              ],
+              "current_action": "global-state-array",
+              "doing_action": true,
+              "did_action": 1,
+              "wp_actions": 1
             }
           ],
           "did_action_without_named": 1
@@ -9228,6 +10068,684 @@
             }
           }
         },
+        "global_state": {
+          "unset": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": false,
+                  "type": "unset",
+                  "value": {
+                    "type": "unset"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-unset",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d756e736574",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": false,
+                  "type": "unset",
+                  "value": {
+                    "type": "unset"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "null": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-null",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d6e756c6c",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "null",
+                  "value": {
+                    "type": "null"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "false": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "warning",
+                "severity": 8192,
+                "message_hex": "4175746f6d6174696320636f6e76657273696f6e206f662066616c736520746f2061727261792069732064657072656361746564"
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-false",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d66616c7365",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "true": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "bool",
+                  "value": {
+                    "type": "bool",
+                    "value": true
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "int": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "int",
+                  "value": {
+                    "type": "int",
+                    "value": "7"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "float": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f74207573652061207363616c61722076616c756520617320616e206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "float",
+                  "value": {
+                    "type": "float",
+                    "bits": "401e000000000000"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "string": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737472696e67206f6e20737472696e67"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "string",
+                  "value": {
+                    "type": "string",
+                    "hex": "73656564"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "array": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "callback",
+                "current_action": "global-state-array",
+                "doing_action": true
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "null"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [
+                    {
+                      "key_hex": "676c6f62616c2d73746174652d6172726179",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ],
+                  "hook_key_present": true
+                },
+                "callback_count": 1,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "result",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "array",
+                  "entries": [],
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          },
+          "object": {
+            "do_action": [
+              {
+                "kind": "call",
+                "operation": "do_action",
+                "initial": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ],
+            "did_action": [
+              {
+                "kind": "call",
+                "operation": "did_action",
+                "initial": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                }
+              },
+              {
+                "kind": "throwable",
+                "class": "Error",
+                "message_hex": "43616e6e6f7420757365206f626a656374206f66207479706520737464436c617373206173206172726179"
+              },
+              {
+                "kind": "final",
+                "state": {
+                  "present": true,
+                  "type": "stdClass",
+                  "value": {
+                    "type": "stdClass"
+                  },
+                  "hook_key_present": false
+                },
+                "callback_count": 0,
+                "current_filter_stack": []
+              }
+            ]
+          }
+        },
         "throw_all": {
           "caught": {
             "class": "RuntimeException",
@@ -9328,11 +10846,11 @@
   },
   "scope": "Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-13T20:28:35.668235+00:00",
+    "observed_at_utc": "2026-11-13T21:34:23.477324+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "50c21d75c7fa722be73e761c0ef6c7421b728a35fcc451d44591bef2875763df",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261113T202423.831819Z-success.json",
-    "wasm_receipt_sha256": "60accefb93ff9161e89a7ace55f1794e24f7a1ac1c79c73c59b1c98208175152",
+    "native_receipt_sha256": "7321e26876668341c112d9d99a7cd5d66041b0169ce7a440dde452fabe286632",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261113T213041.952324Z-success.json",
+    "wasm_receipt_sha256": "328d3cfb162028e65b446f5c48843d603023d1f1c330985fecb5aec4da0b1bf6",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -9425,11 +10943,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-13T20:29:15.893512+00:00",
+    "observed_at_utc": "2026-11-13T21:35:06.309822+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "50c21d75c7fa722be73e761c0ef6c7421b728a35fcc451d44591bef2875763df",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261113T202127.420464Z-success.json",
-    "wasm_receipt_sha256": "825ea628cef137ecaf0bff3e8c367096644f57c696b6d676293b4e910bc9d954",
+    "native_receipt_sha256": "7321e26876668341c112d9d99a7cd5d66041b0169ce7a440dde452fabe286632",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261113T212746.410412Z-success.json",
+    "wasm_receipt_sha256": "e2dc9ac027be7eae9e805303a96fcdbc5b6a06d91d60bfb8335f9bc630aec752",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",
@@ -9443,6 +10961,7 @@
       "action_api.no_listener_count",
       "action_api.counter_seed_diagnostics",
       "action_api.counter_seed_values",
+      "action_api.global_state",
       "action_api.throw_all",
       "action_api.throw_named"
     ],
