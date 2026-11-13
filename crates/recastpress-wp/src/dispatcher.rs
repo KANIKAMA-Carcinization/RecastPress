@@ -3,9 +3,9 @@
 use crate::{
     continuation::{Completion, PhpHandle, PhpHandleKind},
     hooks::{
-        self, CallbackId, Context, ContextCallback, HookArgument, HookDiagnostic, HookError,
-        HookPriority, HookScalar, HookStep, MAX_NESTING, Mode, PhpInvocation, PhpReleaseQueue,
-        Storage,
+        self, CallbackId, CallbackMap, Context, ContextCallback, HookArgument, HookDiagnostic,
+        HookError, HookPriority, HookScalar, HookStep, MAX_NESTING, Mode, PhpInvocation,
+        PhpReleaseQueue, Storage,
     },
     value::{PhpKey, PhpValue},
 };
@@ -53,6 +53,20 @@ fn increment_key_counter(entries: &mut Vec<(PhpKey, u64)>, key: PhpKey) {
     }
 }
 
+fn same_priority_capture(left: &HookPriority, right: &HookPriority) -> bool {
+    left.key() == right.key()
+        && match (&left.original, &right.original) {
+            (HookScalar::Null, HookScalar::Null) => true,
+            (HookScalar::Bool(left), HookScalar::Bool(right)) => left == right,
+            (HookScalar::Integer(left), HookScalar::Integer(right)) => left == right,
+            (HookScalar::Float(left), HookScalar::Float(right)) => {
+                left.to_bits() == right.to_bits()
+            }
+            (HookScalar::Bytes(left), HookScalar::Bytes(right)) => left == right,
+            _ => false,
+        }
+}
+
 pub type DispatcherCallback = ContextCallback<Dispatcher>;
 
 #[derive(Debug)]
@@ -73,6 +87,8 @@ pub struct Dispatcher {
     releases: PhpReleaseQueue,
     next_control: u64,
     control_stack: Vec<ActiveControl>,
+    priority_writes: Vec<PriorityWritePin>,
+    next_priority_write: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -315,12 +331,29 @@ pub struct HookTarget {
 }
 
 /// Captures `isset($target->callbacks[$priority])` after its PHP boundary effect.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PrioritySnapshot {
     dispatcher: u64,
     target_sequence: u64,
     priority_key: PhpKey,
     existed: bool,
+}
+
+/// Opaque single-use handle for the callback-map assignment operand captured
+/// after accepted-argument conversion and before priority-key conversion.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct PriorityWriteToken {
+    dispatcher: u64,
+    sequence: u64,
+}
+
+#[derive(Debug)]
+struct PriorityWritePin {
+    sequence: u64,
+    target_sequence: u64,
+    slot: usize,
+    priority: HookPriority,
+    detached: Option<Arc<CallbackMap<Dispatcher>>>,
 }
 
 /// Captures the callback `isset` result after its PHP boundary effect.
@@ -410,6 +443,27 @@ enum ControlFinish {
         operand: Option<FilterCounterOperand>,
         result: Option<FilterCounterResult>,
     },
+    PriorityExistence {
+        slot: usize,
+        target_sequence: u64,
+        operand: Option<Arc<CallbackMap<Dispatcher>>>,
+        priority: Option<HookPriority>,
+        result: Option<PrioritySnapshot>,
+    },
+    PriorityWrite {
+        slot: usize,
+        target_sequence: u64,
+        operand: Option<Arc<CallbackMap<Dispatcher>>>,
+        priority: Option<HookPriority>,
+        result: Option<PriorityWriteToken>,
+    },
+    PriorityWriteCommit {
+        slot: usize,
+        priority: HookPriority,
+        priority_existed: bool,
+        detached: bool,
+    },
+    PriorityWriteCancel,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -422,6 +476,10 @@ pub enum ControlResult {
     TargetReleased,
     HookBindingLookup(HookBindingLookupResult),
     FilterCounter(FilterCounterResult),
+    PrioritySnapshot(PrioritySnapshot),
+    PriorityWrite(PriorityWriteToken),
+    PriorityWriteCommitted,
+    PriorityWriteCancelled,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -514,6 +572,8 @@ impl Default for Dispatcher {
             releases: PhpReleaseQueue::default(),
             next_control: 1,
             control_stack: Vec::new(),
+            priority_writes: Vec::new(),
+            next_priority_write: 1,
         }
     }
 }
@@ -671,6 +731,8 @@ impl Dispatcher {
             &operation.finish,
             ControlFinish::HookBindingLookup { result: None, .. }
                 | ControlFinish::FilterCounterOperand { result: None, .. }
+                | ControlFinish::PriorityExistence { result: None, .. }
+                | ControlFinish::PriorityWrite { result: None, .. }
         ) && self
             .control_stack
             .last()
@@ -792,6 +854,28 @@ impl Dispatcher {
             ControlFinish::FilterCounterOperand { result, .. } => {
                 ControlResult::FilterCounter(result.ok_or(HookError::InvalidControlOperation)?)
             }
+            ControlFinish::PriorityExistence { result, .. } => ControlResult::PrioritySnapshot(
+                result.clone().ok_or(HookError::InvalidControlOperation)?,
+            ),
+            ControlFinish::PriorityWrite { result, .. } => {
+                ControlResult::PriorityWrite(result.ok_or(HookError::InvalidControlOperation)?)
+            }
+            ControlFinish::PriorityWriteCommit {
+                slot,
+                priority,
+                priority_existed,
+                detached,
+            } => {
+                if *detached {
+                    self.storage(*slot)
+                        .finish_add_detached(priority, *priority_existed);
+                } else {
+                    self.storage(*slot).finish_add(priority, *priority_existed);
+                }
+                self.capture_diagnostics(*slot);
+                ControlResult::PriorityWriteCommitted
+            }
+            ControlFinish::PriorityWriteCancel => ControlResult::PriorityWriteCancelled,
         };
         self.control_stack.pop();
         operation.completed = true;
@@ -829,6 +913,24 @@ impl Dispatcher {
             .expect("active control")
             .waiting_release = false;
         Ok(())
+    }
+
+    /// Return the Throwable currently suspended behind this control cursor's
+    /// release effect, if cleanup is already unwinding one.
+    pub fn pending_control_throwable(
+        &self,
+        operation: &ControlOperation,
+    ) -> Result<Option<PhpHandle>, HookError> {
+        self.check_control_top(operation)?;
+        if operation.pending_release.is_none()
+            || !self
+                .control_stack
+                .last()
+                .is_some_and(|control| control.waiting_release)
+        {
+            return Err(HookError::NoPhpReleasePending);
+        }
+        Ok(operation.pending_throwable)
     }
 
     /// Resume the PHP array-read checkpoint after a removed callback's release.
@@ -1153,6 +1255,10 @@ impl Dispatcher {
             ControlFinish::ReleaseTarget => Vec::new(),
             ControlFinish::HookBindingLookup { .. } => Vec::new(),
             ControlFinish::FilterCounterOperand { .. } => Vec::new(),
+            ControlFinish::PriorityExistence { slot, .. }
+            | ControlFinish::PriorityWrite { slot, .. }
+            | ControlFinish::PriorityWriteCommit { slot, .. } => vec![*slot],
+            ControlFinish::PriorityWriteCancel => Vec::new(),
             ControlFinish::Remove { .. } => Vec::new(),
         };
         self.control_stack.push(ActiveControl {
@@ -1366,6 +1472,317 @@ impl Dispatcher {
         })
     }
 
+    /// Capture the callbacks-map version before PHP converts an add priority.
+    /// The resulting snapshot preserves the line-101 `isset` result while PHP
+    /// warning handlers are free to replace the live map.
+    pub fn begin_priority_existence(
+        &mut self,
+        target: HookTarget,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (_, slot) = self.target_parts(target)?;
+        let operand = self.storage_ref(slot).callback_map();
+        let operation = self.new_control(ControlFinish::PriorityExistence {
+            slot,
+            target_sequence: target.sequence,
+            operand: Some(operand),
+            priority: None,
+            result: None,
+        })?;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = true;
+        Ok(operation)
+    }
+
+    /// Resolve the pre-conversion callback-map operand after PHP key conversion.
+    /// Releases from the old version are returned before `PrioritySnapshot`.
+    pub fn resume_priority_existence(
+        &mut self,
+        operation: &mut ControlOperation,
+        priority: HookPriority,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        let (slot, target_sequence, operand) = match &mut operation.finish {
+            ControlFinish::PriorityExistence {
+                slot,
+                target_sequence,
+                operand,
+                priority: stored_priority,
+                result,
+            } if result.is_none() => {
+                if stored_priority.is_some() {
+                    return Err(HookError::InvalidControlOperation);
+                }
+                (
+                    *slot,
+                    *target_sequence,
+                    operand.take().ok_or(HookError::InvalidControlOperation)?,
+                )
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        };
+        let existed = Storage::<Dispatcher>::map_has_priority(&operand, priority.key());
+        let snapshot = PrioritySnapshot {
+            dispatcher: self.dispatcher_id,
+            target_sequence,
+            priority_key: priority.key().clone(),
+            existed,
+        };
+        drop(operand);
+        if let ControlFinish::PriorityExistence {
+            priority: stored_priority,
+            result,
+            ..
+        } = &mut operation.finish
+        {
+            *stored_priority = Some(priority);
+            *result = Some(snapshot);
+        }
+        self.capture_diagnostics(slot);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    pub fn cancel_priority_existence(
+        &mut self,
+        operation: &mut ControlOperation,
+        thrown: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        match &mut operation.finish {
+            ControlFinish::PriorityExistence {
+                operand, result, ..
+            } if result.is_none() => {
+                drop(operand.take().ok_or(HookError::InvalidControlOperation)?);
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        }
+        operation.pending_throwable = Some(thrown);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    /// Capture the callback-map version after accepted-argument conversion but
+    /// before PHP converts the priority used by the assignment.
+    pub fn begin_priority_write(
+        &mut self,
+        target: HookTarget,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (_, slot) = self.target_parts(target)?;
+        let operand = self.storage_ref(slot).callback_map();
+        let operation = self.new_control(ControlFinish::PriorityWrite {
+            slot,
+            target_sequence: target.sequence,
+            operand: Some(operand),
+            priority: None,
+            result: None,
+        })?;
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = true;
+        Ok(operation)
+    }
+
+    /// Resolve the post-cast write operand. A stale operand gets a detached
+    /// single-use token so its callback assignment cannot leak into the live map.
+    pub fn resume_priority_write(
+        &mut self,
+        operation: &mut ControlOperation,
+        priority: HookPriority,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        let sequence = self.next_priority_write;
+        let next_sequence = sequence
+            .checked_add(1)
+            .ok_or(HookError::InvalidControlOperation)?;
+        let (slot, target_sequence, operand) = match &mut operation.finish {
+            ControlFinish::PriorityWrite {
+                slot,
+                target_sequence,
+                operand,
+                priority: stored_priority,
+                result,
+            } if result.is_none() => {
+                if stored_priority.is_some() {
+                    return Err(HookError::InvalidControlOperation);
+                }
+                (
+                    *slot,
+                    *target_sequence,
+                    operand.take().ok_or(HookError::InvalidControlOperation)?,
+                )
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        };
+        let detached = (!Arc::ptr_eq(&operand, &self.storage_ref(slot).callback_map()))
+            .then(|| Arc::clone(&operand));
+        drop(operand);
+        self.next_priority_write = next_sequence;
+        self.priority_writes.push(PriorityWritePin {
+            sequence,
+            target_sequence,
+            slot,
+            priority: priority.clone(),
+            detached,
+        });
+        let token = PriorityWriteToken {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        };
+        if let ControlFinish::PriorityWrite {
+            priority: stored_priority,
+            result,
+            ..
+        } = &mut operation.finish
+        {
+            *stored_priority = Some(priority);
+            *result = Some(token);
+        }
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    pub fn cancel_priority_write(
+        &mut self,
+        operation: &mut ControlOperation,
+        thrown: PhpHandle,
+    ) -> Result<(), HookError> {
+        self.check_control_top(operation)?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if !self
+            .control_stack
+            .last()
+            .is_some_and(|control| control.waiting_boundary)
+        {
+            return Err(HookError::NoPhpBoundaryPending);
+        }
+        match &mut operation.finish {
+            ControlFinish::PriorityWrite {
+                operand, result, ..
+            } if result.is_none() => {
+                drop(operand.take().ok_or(HookError::InvalidControlOperation)?);
+            }
+            _ => return Err(HookError::InvalidControlOperation),
+        }
+        operation.pending_throwable = Some(thrown);
+        self.control_stack
+            .last_mut()
+            .expect("active control")
+            .waiting_boundary = false;
+        Ok(())
+    }
+
+    pub fn begin_add_target_with_priority_write(
+        &mut self,
+        target: HookTarget,
+        priority: HookPriority,
+        snapshot: PrioritySnapshot,
+        token: PriorityWriteToken,
+        mut callback: DispatcherCallback,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        let (_, slot) = self.target_parts(target)?;
+        if snapshot.dispatcher != self.dispatcher_id
+            || snapshot.target_sequence != target.sequence
+            || snapshot.priority_key != *priority.key()
+            || token.dispatcher != self.dispatcher_id
+        {
+            return Err(HookError::InvalidHookTarget);
+        }
+        let Some(pin_index) = self.priority_writes.iter().position(|pin| {
+            pin.sequence == token.sequence
+                && pin.target_sequence == target.sequence
+                && pin.slot == slot
+                && same_priority_capture(&pin.priority, &priority)
+        }) else {
+            return Err(HookError::InvalidHookTarget);
+        };
+        let detached = self.priority_writes[pin_index].detached.is_some();
+        let operation = self.new_control(ControlFinish::PriorityWriteCommit {
+            slot,
+            priority: priority.clone(),
+            priority_existed: snapshot.existed,
+            detached,
+        })?;
+        let pin = self.priority_writes.remove(pin_index);
+        callback.attach_release_queue(&self.releases);
+        if let Some(mut detached) = pin.detached {
+            Storage::<Dispatcher>::add_entry_to_map(
+                Arc::make_mut(&mut detached),
+                &priority,
+                callback,
+            );
+            drop(detached);
+        } else {
+            self.storage(slot).add_entry(&priority, callback);
+        }
+        Ok(operation)
+    }
+
+    pub fn cancel_priority_write_token(
+        &mut self,
+        token: PriorityWriteToken,
+        thrown: PhpHandle,
+    ) -> Result<ControlOperation, HookError> {
+        self.begin_control_allowed()?;
+        if thrown.kind() != PhpHandleKind::Throwable {
+            return Err(HookError::InvalidPhpThrowableHandle);
+        }
+        if token.dispatcher != self.dispatcher_id {
+            return Err(HookError::InvalidHookTarget);
+        }
+        let Some(index) = self
+            .priority_writes
+            .iter()
+            .position(|pin| pin.sequence == token.sequence)
+        else {
+            return Err(HookError::InvalidHookTarget);
+        };
+        let mut operation = self.new_control(ControlFinish::PriorityWriteCancel)?;
+        drop(self.priority_writes.remove(index));
+        operation.pending_throwable = Some(thrown);
+        Ok(operation)
+    }
+
     /// Test the callbacks array on the pinned WP_Hook object, even if the global
     /// hook binding has since been replaced or removed.
     pub fn target_callbacks_empty(&self, target: HookTarget) -> Result<bool, HookError> {
@@ -1551,6 +1968,7 @@ impl Dispatcher {
                     .iter()
                     .any(|dispatch| dispatch.slot == Some(slot))
                 && !self.targets.iter().any(|pin| pin.slot == slot)
+                && !self.priority_writes.iter().any(|pin| pin.slot == slot)
                 && !self
                     .control_stack
                     .iter()
@@ -2201,6 +2619,23 @@ impl Dispatcher {
         dispatch.pending_release = None;
         dispatch.waiting_for_release = false;
         Ok(())
+    }
+
+    /// Return the Throwable currently suspended behind this ticket's release
+    /// effect, if cleanup is already unwinding one.
+    pub fn pending_dispatch_throwable(
+        &self,
+        ticket: DispatchTicket,
+    ) -> Result<Option<PhpHandle>, HookError> {
+        self.check_top_ticket(ticket)?;
+        if self.advancing == Some(ticket) {
+            return Err(HookError::DispatchTicketBusy);
+        }
+        let dispatch = self.resumable.last().expect("validated dispatch ticket");
+        if !dispatch.waiting_for_release || dispatch.pending_release.is_none() {
+            return Err(HookError::NoPhpReleasePending);
+        }
+        Ok(dispatch.pending_throwable)
     }
 
     /// Accept the full outcome of the PHP closure invocation pending on this ticket.

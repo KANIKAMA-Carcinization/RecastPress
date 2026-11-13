@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-12T22:38:26+00:00",
+  "recorded_at_utc": "2026-11-13T00:02:35+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "8be8f92a57be781f4fba43b2cb2e7be2812c158f4d6a7416f2722736fd44904e",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "8fea26ef7d1f29623d0115c4736f0efc231ac80aa7442355d2896d7ed62d1788",
-    "experiments/php-compat-v06-probe/README.ja.md": "1c8dde95a68fc99523961996542b001abcc157934922f3b2653168f389cda361",
+    "experiments/php-compat-v06-probe/README.ja.md": "9735cf16aa11032a4d6567854e20d3aab2b1dd2a9a346d1b8fcc91ab374e4a2b",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -24,18 +24,18 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
     "experiments/php-compat-v06-probe/callable_contract.py": "113f8d45c1706f091702e36eb49d127e64ed1416437dff42f2eac23d13b94ad3",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "034c95451e5b82867c75e37b6e6713f9e4750332adc48140514a9302c4221d9c",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "6626e753caf72d47c3904049dc16b17ed71bad546d3bc5eb004856c17c42d177",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "75f58a70039096c07d94a8c25339afd617b1253fead41d21bb7439a1903a7b9a",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "9623212dc320fafd0609551bc3e89df253ad26a1e5b2c66af2eb3c0fd75dff37",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "3f6eaaa06492dc45c4efe47ced04fc4bb557d467fb8f0ae0c16ac7d6228f279d",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "32bf91fb14e02a1b6a893f29dedfe5004fbe6a377ba6c5f5fb01c52f48896e83",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b38b9cb7b7b3a8e80028a951a7e24124cd3d5a09387d66114cf1fa24049409d9",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "1e39de17eb20a54bcea16a7a85383ebfa33ba92f4be3db9b874de71c575fdbeb",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "bae12c8ef1b071d35771ea005e2d650bc0b4dd26e96f2bec93cb11911948badd",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "c982e2adf2473ab1978e56a69e8c6171fa01ed8ba44b46811e31c990d92d3cfe",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "db5d7b8bb9e59ea7c253b16590ba61d40b0edf13225e0f6101c32548f079b684",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "391e78c626045beeed5d6230c0243b019df81659fb68ff8e91a0b33dde59f750",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
-    "crates/recastpress-wp/tests/dispatcher_contract.rs": "408c55b4a59805df8c344aeda89b4d0536fe2efbec1385e2709f392d0ee21554",
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": "899baab7873d5a996404df41880e782fca383e226ebe19f041dc2fae0b5e67cc",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
@@ -44,7 +44,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "728d1358ef3858ff25a268bc2a95421d0506e77edcc620f6b29ac1c3113c8fc1",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "edd5acbccdc3dd9180c83e8476726451a3e23f2951395ccf525d0b174a1b0818",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
@@ -60,7 +60,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "569923cbe1aa4726b8bf100064cae2d985e8cd806eada58b8aab85463921b404",
+    "crates/recastpress-wp/src/dispatcher.rs": "1ce73c4a68a4ba09a3b18bf9300ee334fefed2c7308ff75347264bf42e0956ca",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -68,7 +68,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "ca7c5e88f167b3a971b3d23286313660cff9e59b64a78eb2ca8ec9085ee3f8d2",
+    "crates/recastpress-wp/src/hooks.rs": "65180f3bba51af2bc60800e116710d4db84135bccae8e79f05ac0e02c8dddf3d",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -209,7 +209,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "f12c815caaafa1ffed5e84ec50588daae85852522c9d40e9f582bb35662f673f",
+  "adapter_binary_sha256": "87c3c517269437798e1afcad59a96a3192a84f812edafbc9e3c3a59d03f919fb",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -247,8 +247,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 19232,
-      "rust": 21888
+      "php": 29644,
+      "rust": 23428
     },
     "returncodes": {
       "php": 0,
@@ -305,12 +305,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-ffd1dccf943e4390b333a40e88fb0c33-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-ffd1dccf943e4390b333a40e88fb0c33-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-ffd1dccf943e4390b333a40e88fb0c33-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-ffd1dccf943e4390b333a40e88fb0c33-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-b5c6a89648bb466cbf326cd920fc86ed-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -330,8 +330,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 27432,
-      "rust": 21672
+      "php": 18356,
+      "rust": 21872
     },
     "returncodes": {
       "php": 0,
@@ -394,12 +394,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-4f8dea9628e44609bf1278b40052fa04-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-4f8dea9628e44609bf1278b40052fa04-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-4f8dea9628e44609bf1278b40052fa04-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-4f8dea9628e44609bf1278b40052fa04-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-55ce4d5695844cadaceb22524efe7ffc-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -419,8 +419,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 1228,
-      "rust": 11868
+      "php": 3608,
+      "rust": 29412
     },
     "returncodes": {
       "php": 0,
@@ -568,12 +568,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-7722a9dc95b843959f1fa435bcc50e9a-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-7722a9dc95b843959f1fa435bcc50e9a-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-7722a9dc95b843959f1fa435bcc50e9a-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-7722a9dc95b843959f1fa435bcc50e9a-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-36c4ceca2965421fb67daba07ed48bd6-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -594,8 +594,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 4464,
-        "rust": 10764
+        "php": 5676,
+        "rust": 29164
       },
       "returncodes": {
         "php": 0,
@@ -670,18 +670,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-227a31ee72894318b480a7a2962f9cc3-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-227a31ee72894318b480a7a2962f9cc3-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-227a31ee72894318b480a7a2962f9cc3-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-227a31ee72894318b480a7a2962f9cc3-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-1658c23134a541c39cf07cfe785d90d9-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "c6e2f77d9bca4f18411244ff22ce1edc84d3c26d2e6dcb553a6671d3b80daa50",
+          "stdout_sha256": "bffc4560ba1b717dd16f6ebd696b4ef9bb89aa8f1a33852207991ce950a57df0",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -695,8 +695,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 9348,
-        "rust": 24896
+        "php": 10940,
+        "rust": 25412
       },
       "returncodes": {
         "php": 0,
@@ -774,18 +774,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-fd10f0998acf4d9296f918890bbcde50-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-fd10f0998acf4d9296f918890bbcde50-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-fd10f0998acf4d9296f918890bbcde50-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-fd10f0998acf4d9296f918890bbcde50-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3ecf60ed9610469bb0c092752ecc63c3-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "7402cf6d2feef5d2cbac56f8ace7847a46ca62db80fa8c15fde5508ba2cb0c5f",
+          "stdout_sha256": "67e1072bca1dfb8711b3c503b7a292095f06556bd0c5ffdaf47f112339272949",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -800,8 +800,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 24728,
-      "rust": 13572
+      "php": 22596,
+      "rust": 29460
     },
     "returncodes": {
       "php": 0,
@@ -886,24 +886,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-b18a180e2c6c4e76a95b254fec6e3ad3-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-b18a180e2c6c4e76a95b254fec6e3ad3-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-b18a180e2c6c4e76a95b254fec6e3ad3-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-b18a180e2c6c4e76a95b254fec6e3ad3-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-d7d3dd494948418b9b2647f1e5af3ded-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "4292a181d87c308b5209f7ac546161b00bd6229ec7a5002ae151e02b0bfa0690",
+        "stdout_sha256": "1e973990622220575d79bf1ca9c074184acf7941876733727169b7c959747ffc",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "c2915756848760c931bbdc32683a52516a8357449b8c490e77761c3fbf3e0fdc",
+        "stdout_sha256": "c655cd892d0d83e5ab0ef253045b5439ca9546edbeb4d5f5ab0f088c251a806d",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -912,8 +912,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 23264,
-        "rust": 30040
+        "php": 29372,
+        "rust": 27764
       },
       "returncodes": {
         "php": 0,
@@ -1035,24 +1035,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-da2d1fe050b941d48ae5c7fe24d216a8-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-da2d1fe050b941d48ae5c7fe24d216a8-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-da2d1fe050b941d48ae5c7fe24d216a8-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-da2d1fe050b941d48ae5c7fe24d216a8-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-45eda3ae6d944425a1dad6e457a8414a-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "932c7301b5fa7bc5b3a7639303187bec3dc292e91f0946b81aaa62b891f48f03",
+          "stdout_sha256": "ffdbd59f7d9c0374c29ff479fe72a4fc5567f1ef5c9d5cd00554df845f437bf8",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "34eca1c5c8393829d3f24df1bd1089766438597ec5e0adb4e54056cc9bcd61ce",
+          "stdout_sha256": "c3a741d58be7926c585b5e5c186fa7be215da91a25443964fbae7fb83fd5c849",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1080,8 +1080,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 14396,
-        "rust": 27596
+        "php": 25808,
+        "rust": 19140
       },
       "returncodes": {
         "php": 0,
@@ -1105,7 +1105,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "f8408c903e375315"
+              "token": "15aa33a759df3f44"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1168,7 +1168,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "f8408c903e375315"
+              "token": "15aa33a759df3f44"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1242,26 +1242,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-162f4494cd104afeb0d4abaf56755519-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-162f4494cd104afeb0d4abaf56755519-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-162f4494cd104afeb0d4abaf56755519-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-162f4494cd104afeb0d4abaf56755519-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-5258fcf3614f4d6aa74f617c86a7b2b2-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "962115f4fd04593998e3336b86be977ac1a33dc69bce5dacc7343334d4df1bd6",
+          "stdout_sha256": "4c9cb6ede0a1c0568a331f651fe0c359f905a54477cd1db3a8f5548af58ec84a",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "7927fe2e80987cd8e0814f61447ab1b704a92cfbdee4f68f839a731770156ab9",
+          "stdout_sha256": "6247d55ab9d8d590ba3dd6e4cf1eb617b115e01449940c5bc08065ef75aa240b",
           "stderr_bytes": 1817,
-          "stderr_sha256": "660b82d219617819c015024a603f2bacd86104eaa757b556d87dec1b3fb08254"
+          "stderr_sha256": "b0405abf4477aa007cae7afb4243745771f54acce167402075922f79bdb3e722"
         }
       },
       "hook_transcript_rejections": [
@@ -1288,8 +1288,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 6724,
-      "rust": 29288
+      "php": 18124,
+      "rust": 28668
     },
     "returncodes": {
       "php": 0,
@@ -1297,9 +1297,9 @@
     },
     "scenario": "callable_api",
     "rust_marker": "V06_CALLABLES_OK continuation_peer=true",
-    "frames_from_php": 5284,
-    "frames_from_rust": 5283,
-    "relayed_bytes": 3298386,
+    "frames_from_php": 8092,
+    "frames_from_rust": 8091,
+    "relayed_bytes": 5160789,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -5248,30 +5248,1605 @@
               }
             }
           }
+        },
+        "priority_cow": {
+          "float_priority": {
+            "control": {
+              "warning_target": 0,
+              "mutation": "control",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "injection": null,
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:seed:victim:outer:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ]
+              }
+            },
+            "isset_add": {
+              "warning_target": 1,
+              "mutation": "add",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "injection": {
+                "warning_index": 1,
+                "add_result": true,
+                "nested_priority_after_add": 7
+              },
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": 7,
+                "nested": 7,
+                "outer": 7,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": 7,
+                "victim": 7,
+                "nested": 7,
+                "outer": 7,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:seed:victim:nested:outer:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "nested",
+                  "outer",
+                  "anchor"
+                ]
+              }
+            },
+            "isset_remove_bucket": {
+              "warning_target": 1,
+              "mutation": "remove_bucket",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "injection": {
+                "warning_index": 1,
+                "remove_seed_result": true,
+                "remove_victim_result": true,
+                "seed_priority_after_remove": false,
+                "victim_priority_after_remove": false
+              },
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:outer",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer"
+                ]
+              },
+              "after_second": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:anchor:outer",
+                "trace": [
+                  "anchor",
+                  "outer"
+                ]
+              }
+            },
+            "write_add": {
+              "warning_target": 2,
+              "mutation": "add",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "injection": {
+                "warning_index": 2,
+                "add_result": true,
+                "nested_priority_after_add": 7
+              },
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": 7,
+                "nested": 7,
+                "outer": false,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": 7,
+                "victim": 7,
+                "nested": 7,
+                "outer": false,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:seed:victim:nested:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "nested",
+                  "anchor"
+                ]
+              }
+            },
+            "write_remove_bucket": {
+              "warning_target": 2,
+              "mutation": "remove_bucket",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "injection": {
+                "warning_index": 2,
+                "remove_seed_result": true,
+                "remove_victim_result": true,
+                "seed_priority_after_remove": false,
+                "victim_priority_after_remove": false
+              },
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:anchor",
+                "trace": [
+                  "anchor"
+                ]
+              }
+            }
+          },
+          "accepted_args_partial_bucket": {
+            "control": {
+              "mutation": "control",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                }
+              ],
+              "injection": null,
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:seed:victim:outer:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ]
+              }
+            },
+            "add_remove_victim": {
+              "mutation": "add_remove_victim",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warnings": [
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                }
+              ],
+              "injection": {
+                "warning_index": 1,
+                "add_result": true,
+                "nested_priority_after_add": 7,
+                "remove_result": true,
+                "victim_priority_after_remove": false
+              },
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "any": true
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": false,
+                "nested": 7,
+                "outer": 7,
+                "any": true
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "after_second": {
+                "seed": 7,
+                "victim": false,
+                "nested": 7,
+                "outer": 7,
+                "any": true
+              },
+              "second_apply": {
+                "value": "seed:seed:nested:outer:anchor",
+                "trace": [
+                  "seed",
+                  "nested",
+                  "outer",
+                  "anchor"
+                ]
+              }
+            }
+          },
+          "accepted_args_reentry": {
+            "readonly": {
+              "warnings": [
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                }
+              ],
+              "handler": [],
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": true,
+                  "victim": true,
+                  "nested": false,
+                  "outer": false,
+                  "anchor": true
+                }
+              },
+              "after_first": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": true,
+                  "victim": true,
+                  "nested": false,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "after_add"
+                }
+              ],
+              "destructors_after_first": [],
+              "after_second": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": true,
+                  "victim": true,
+                  "nested": false,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "second_apply": {
+                "value": "seed:seed:victim:outer:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ]
+              },
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                }
+              ],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 4
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 4
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 4
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 4
+                }
+              ]
+            },
+            "remove_bucket": {
+              "warnings": [
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                }
+              ],
+              "handler": {
+                "before": {
+                  "seed_priority": 7,
+                  "victim_priority": 7
+                },
+                "remove_seed": true,
+                "remove_victim": true,
+                "after_remove": {
+                  "seed_alive": true,
+                  "victim_alive": true,
+                  "seed_priority": false,
+                  "victim_priority": false
+                }
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": true,
+                  "victim": true,
+                  "nested": false,
+                  "outer": false,
+                  "anchor": true
+                }
+              },
+              "after_first": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": false,
+                  "victim": false,
+                  "nested": false,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:outer",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer"
+                ]
+              },
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "after_add"
+                }
+              ],
+              "destructors_after_first": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                }
+              ],
+              "after_second": {
+                "seed": false,
+                "victim": false,
+                "nested": false,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": false,
+                  "victim": false,
+                  "nested": false,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "second_apply": {
+                "value": "seed:anchor:outer",
+                "trace": [
+                  "anchor",
+                  "outer"
+                ]
+              },
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                }
+              ],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                }
+              ]
+            },
+            "remove_recreate": {
+              "warnings": [
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                }
+              ],
+              "handler": {
+                "before": {
+                  "seed_priority": 7,
+                  "victim_priority": 7
+                },
+                "remove_seed": true,
+                "remove_victim": true,
+                "after_remove": {
+                  "seed_alive": true,
+                  "victim_alive": true,
+                  "seed_priority": false,
+                  "victim_priority": false
+                },
+                "recreate_result": true,
+                "after_recreate": {
+                  "nested_alive": true,
+                  "nested_priority": 7
+                }
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "before": {
+                "seed": 7,
+                "victim": 7,
+                "nested": false,
+                "outer": false,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": true,
+                  "victim": true,
+                  "nested": false,
+                  "outer": false,
+                  "anchor": true
+                }
+              },
+              "after_first": {
+                "seed": false,
+                "victim": false,
+                "nested": 7,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": false,
+                  "victim": false,
+                  "nested": true,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "first_apply": {
+                "value": "seed:seed:victim:anchor",
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ]
+              },
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "after_add"
+                }
+              ],
+              "destructors_after_first": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                }
+              ],
+              "after_second": {
+                "seed": false,
+                "victim": false,
+                "nested": 7,
+                "outer": 7,
+                "anchor": 10,
+                "any": true,
+                "weak_alive": {
+                  "seed": false,
+                  "victim": false,
+                  "nested": true,
+                  "outer": true,
+                  "anchor": true
+                }
+              },
+              "second_apply": {
+                "value": "seed:nested:outer:anchor",
+                "trace": [
+                  "nested",
+                  "outer",
+                  "anchor"
+                ]
+              },
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "nested",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                }
+              ],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "warnings_seen": 1,
+                  "trace_count": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "nested",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "warnings_seen": 1,
+                  "trace_count": 3
+                }
+              ]
+            }
+          },
+          "float_accepted_args_lifetime": {
+            "control": {
+              "warning_target": 0,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": null,
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "after_outer_add": {
+                "seed_alive": true,
+                "seed_priority": 7,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ],
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ]
+            },
+            "remove_at_isset": {
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "entry_outer_priority": false,
+                "remove_seed": true,
+                "after_remove_seed_alive": true,
+                "after_remove_seed_priority": false
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_enter",
+                  "seed_alive": true,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "handler_exit",
+                  "seed_alive": true,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "warnings_seen": 1,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ],
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "warnings_seen": 1,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ]
+            },
+            "remove_at_cast": {
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "entry_outer_priority": false,
+                "remove_seed": true,
+                "after_remove_seed_alive": false,
+                "after_remove_seed_priority": false
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_enter",
+                  "seed_alive": true,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_enter",
+                  "warnings_seen": 2,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "handler_exit",
+                  "seed_alive": false,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ],
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_enter",
+                  "warnings_seen": 2,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ]
+            },
+            "remove_at_write": {
+              "warning_target": 3,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 2,
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "entry_outer_priority": false,
+                "remove_seed": true,
+                "after_remove_seed_alive": true,
+                "after_remove_seed_priority": false
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": false,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "warning",
+                  "index": 3
+                },
+                {
+                  "kind": "handler_enter",
+                  "seed_alive": true,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "handler_exit",
+                  "seed_alive": true,
+                  "outer_priority": false
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ],
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "warnings_seen": 3,
+                  "trace_count": 0
+                }
+              ]
+            }
+          },
+          "throwable_cleanup": {
+            "isset_control": {
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "warning_index": 1,
+                "seed_alive_at_entry": true,
+                "seed_priority_at_entry": 7,
+                "outer_priority_at_entry": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_priority_after_alias_clear": false,
+                "outer_priority_before_throw_a": false
+              },
+              "outer_add_result": null,
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                "same_as_a": true,
+                "same_as_b": false,
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ]
+              },
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": false,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_exit",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "outer_caught",
+                  "class_hex": "52756e74696d65457863657074696f6e"
+                }
+              ]
+            },
+            "isset_throwing_destructor": {
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "warning_index": 1,
+                "seed_alive_at_entry": true,
+                "seed_priority_at_entry": 7,
+                "outer_priority_at_entry": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_priority_after_alias_clear": false,
+                "outer_priority_before_throw_a": false
+              },
+              "outer_add_result": null,
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "422066726f6d20736565642064657374727563746f72",
+                "same_as_a": false,
+                "same_as_b": true,
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "422066726f6d20736565642064657374727563746f72",
+                    "same_as_a": false,
+                    "same_as_b": true
+                  },
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ]
+              },
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": false,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 1
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_throw_b",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "outer_caught",
+                  "class_hex": "52756e74696d65457863657074696f6e"
+                }
+              ]
+            },
+            "write_control": {
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "warning_index": 2,
+                "seed_alive_at_entry": true,
+                "seed_priority_at_entry": 7,
+                "outer_priority_at_entry": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_priority_after_alias_clear": false,
+                "outer_priority_before_throw_a": false
+              },
+              "outer_add_result": null,
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                "same_as_a": true,
+                "same_as_b": false,
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ]
+              },
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": false,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_exit",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "outer_caught",
+                  "class_hex": "52756e74696d65457863657074696f6e"
+                }
+              ]
+            },
+            "write_throwing_destructor": {
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                },
+                {
+                  "severity": 8192,
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e"
+                }
+              ],
+              "handler": {
+                "warning_index": 2,
+                "seed_alive_at_entry": true,
+                "seed_priority_at_entry": 7,
+                "outer_priority_at_entry": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_priority_after_alias_clear": false,
+                "outer_priority_before_throw_a": false
+              },
+              "outer_add_result": null,
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "422066726f6d20736565642064657374727563746f72",
+                "same_as_a": false,
+                "same_as_b": true,
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "422066726f6d20736565642064657374727563746f72",
+                    "same_as_a": false,
+                    "same_as_b": true
+                  },
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ]
+              },
+              "after_outer_add": {
+                "seed_alive": false,
+                "seed_priority": false,
+                "outer_alive": true,
+                "outer_priority": false,
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true
+              },
+              "events": [
+                {
+                  "kind": "warning",
+                  "index": 1
+                },
+                {
+                  "kind": "warning",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_enter",
+                  "index": 2
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_throw_b",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "outer_caught",
+                  "class_hex": "52756e74696d65457863657074696f6e"
+                }
+              ]
+            }
+          }
         }
       }
     },
     "expected_frame_counts": {
-      "php": 5284,
-      "rust": 5283
+      "php": 8092,
+      "rust": 8091
     },
     "callable_result": {
       "api_counts": {
-        "add_filter": 192,
-        "apply_filters": 118,
+        "add_filter": 260,
+        "apply_filters": 138,
         "current_filter": 65,
         "did_filter": 92,
         "doing_filter": 339,
-        "has_filter": 145,
-        "remove_filter": 30
+        "has_filter": 419,
+        "remove_filter": 91
       },
-      "argument_release_effects": 916,
-      "boundary_effects": 2986,
-      "callback_invocations": 214,
+      "argument_release_effects": 1339,
+      "boundary_effects": 4821,
+      "callback_invocations": 277,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 5284,
-      "frames_from_rust": 5283,
+      "frames_from_php": 8092,
+      "frames_from_rust": 8091,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "php_observation": {
@@ -9216,6 +10791,1581 @@
               }
             }
           }
+        },
+        "priority_cow": {
+          "accepted_args_partial_bucket": {
+            "add_remove_victim": {
+              "after_first": {
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": 7,
+                "victim": false
+              },
+              "after_second": {
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": 7,
+                "victim": false
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": {
+                "add_result": true,
+                "nested_priority_after_add": 7,
+                "remove_result": true,
+                "victim_priority_after_remove": false,
+                "warning_index": 1
+              },
+              "mutation": "add_remove_victim",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "nested",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:seed:nested:outer:anchor"
+              },
+              "warnings": [
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                }
+              ]
+            },
+            "control": {
+              "after_first": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "after_second": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": null,
+              "mutation": "control",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:outer:anchor"
+              },
+              "warnings": [
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                }
+              ]
+            }
+          },
+          "accepted_args_reentry": {
+            "readonly": {
+              "after_first": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": true,
+                  "seed": true,
+                  "victim": true
+                }
+              },
+              "after_second": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": true,
+                  "seed": true,
+                  "victim": true
+                }
+              },
+              "before": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": false,
+                  "seed": true,
+                  "victim": true
+                }
+              },
+              "destructors_after_first": [],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "trace_count": 4,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "cleanup",
+                  "trace_count": 4,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 4,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "trace_count": 4,
+                  "warnings_seen": 1
+                }
+              ],
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "after_add"
+                }
+              ],
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                }
+              ],
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "handler": [],
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:outer:anchor"
+              },
+              "warnings": [
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                }
+              ]
+            },
+            "remove_bucket": {
+              "after_first": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": false,
+                "victim": false,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": true,
+                  "seed": false,
+                  "victim": false
+                }
+              },
+              "after_second": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": false,
+                "victim": false,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": true,
+                  "seed": false,
+                  "victim": false
+                }
+              },
+              "before": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": false,
+                  "seed": true,
+                  "victim": true
+                }
+              },
+              "destructors_after_first": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                }
+              ],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                }
+              ],
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "after_add"
+                }
+              ],
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                }
+              ],
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer"
+                ],
+                "value": "seed:seed:victim:outer"
+              },
+              "handler": {
+                "after_remove": {
+                  "seed_alive": true,
+                  "seed_priority": false,
+                  "victim_alive": true,
+                  "victim_priority": false
+                },
+                "before": {
+                  "seed_priority": 7,
+                  "victim_priority": 7
+                },
+                "remove_seed": true,
+                "remove_victim": true
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "anchor",
+                  "outer"
+                ],
+                "value": "seed:anchor:outer"
+              },
+              "warnings": [
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                }
+              ]
+            },
+            "remove_recreate": {
+              "after_first": {
+                "anchor": 10,
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": false,
+                "victim": false,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": true,
+                  "outer": true,
+                  "seed": false,
+                  "victim": false
+                }
+              },
+              "after_second": {
+                "anchor": 10,
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": false,
+                "victim": false,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": true,
+                  "outer": true,
+                  "seed": false,
+                  "victim": false
+                }
+              },
+              "before": {
+                "anchor": 10,
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7,
+                "weak_alive": {
+                  "anchor": true,
+                  "nested": false,
+                  "outer": false,
+                  "seed": true,
+                  "victim": true
+                }
+              },
+              "destructors_after_first": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                }
+              ],
+              "destructors_final": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "nested",
+                  "phase": "cleanup",
+                  "trace_count": 3,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 3,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "anchor",
+                  "phase": "cleanup",
+                  "trace_count": 3,
+                  "warnings_seen": 1
+                }
+              ],
+              "events_after_first": [
+                {
+                  "kind": "invoke",
+                  "label": "seed",
+                  "phase": "first_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "victim",
+                  "phase": "after_add"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "victim",
+                  "phase": "after_add",
+                  "trace_count": 2,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "after_add"
+                }
+              ],
+              "events_after_second": [
+                {
+                  "kind": "invoke",
+                  "label": "nested",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "outer",
+                  "phase": "second_apply"
+                },
+                {
+                  "kind": "invoke",
+                  "label": "anchor",
+                  "phase": "second_apply"
+                }
+              ],
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "handler": {
+                "after_recreate": {
+                  "nested_alive": true,
+                  "nested_priority": 7
+                },
+                "after_remove": {
+                  "seed_alive": true,
+                  "seed_priority": false,
+                  "victim_alive": true,
+                  "victim_priority": false
+                },
+                "before": {
+                  "seed_priority": 7,
+                  "victim_priority": 7
+                },
+                "recreate_result": true,
+                "remove_seed": true,
+                "remove_victim": true
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "nested",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:nested:outer:anchor"
+              },
+              "warnings": [
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                }
+              ]
+            }
+          },
+          "float_accepted_args_lifetime": {
+            "control": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "seed_alive": true,
+                "seed_priority": 7
+              },
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "handler": null,
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warning_target": 0,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "remove_at_cast": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_enter",
+                  "trace_count": 0,
+                  "warnings_seen": 2
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "handler_enter",
+                  "outer_priority": false,
+                  "seed_alive": true
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_enter",
+                  "trace_count": 0,
+                  "warnings_seen": 2
+                },
+                {
+                  "kind": "handler_exit",
+                  "outer_priority": false,
+                  "seed_alive": false
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "handler": {
+                "after_remove_seed_alive": false,
+                "after_remove_seed_priority": false,
+                "entry_outer_priority": false,
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "remove_seed": true
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "remove_at_isset": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": 7,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "trace_count": 0,
+                  "warnings_seen": 1
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "handler_enter",
+                  "outer_priority": false,
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "outer_priority": false,
+                  "seed_alive": true
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "trace_count": 0,
+                  "warnings_seen": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "handler": {
+                "after_remove_seed_alive": true,
+                "after_remove_seed_priority": false,
+                "entry_outer_priority": false,
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "remove_seed": true
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "remove_at_write": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": false,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "destructors": [
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 3,
+                  "kind": "warning"
+                },
+                {
+                  "kind": "handler_enter",
+                  "outer_priority": false,
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_exit",
+                  "outer_priority": false,
+                  "seed_alive": true
+                },
+                {
+                  "kind": "destruct",
+                  "label": "seed",
+                  "phase": "handler_after_remove",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                },
+                {
+                  "kind": "destruct",
+                  "label": "outer",
+                  "phase": "cleanup",
+                  "trace_count": 0,
+                  "warnings_seen": 3
+                }
+              ],
+              "handler": {
+                "after_remove_seed_alive": true,
+                "after_remove_seed_priority": false,
+                "entry_outer_priority": false,
+                "entry_seed_alive": true,
+                "entry_seed_priority": 7,
+                "remove_seed": true
+              },
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "warning_target": 3,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "4f626a656374206f6620636c61737320737464436c61737320636f756c64206e6f7420626520636f6e76657274656420746f20696e74",
+                  "severity": 2
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            }
+          },
+          "float_priority": {
+            "control": {
+              "after_first": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "after_second": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": null,
+              "mutation": "control",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:outer:anchor"
+              },
+              "warning_target": 0,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "isset_add": {
+              "after_first": {
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "after_second": {
+                "any": true,
+                "nested": 7,
+                "outer": 7,
+                "seed": 7,
+                "victim": 7
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": {
+                "add_result": true,
+                "nested_priority_after_add": 7,
+                "warning_index": 1
+              },
+              "mutation": "add",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "nested",
+                  "outer",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:nested:outer:anchor"
+              },
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "isset_remove_bucket": {
+              "after_first": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": false,
+                "victim": false
+              },
+              "after_second": {
+                "any": true,
+                "nested": false,
+                "outer": 7,
+                "seed": false,
+                "victim": false
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "outer"
+                ],
+                "value": "seed:seed:victim:outer"
+              },
+              "injection": {
+                "remove_seed_result": true,
+                "remove_victim_result": true,
+                "seed_priority_after_remove": false,
+                "victim_priority_after_remove": false,
+                "warning_index": 1
+              },
+              "mutation": "remove_bucket",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "anchor",
+                  "outer"
+                ],
+                "value": "seed:anchor:outer"
+              },
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "write_add": {
+              "after_first": {
+                "any": true,
+                "nested": 7,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "after_second": {
+                "any": true,
+                "nested": 7,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": {
+                "add_result": true,
+                "nested_priority_after_add": 7,
+                "warning_index": 2
+              },
+              "mutation": "add",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "nested",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:nested:anchor"
+              },
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "write_remove_bucket": {
+              "after_first": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": false,
+                "victim": false
+              },
+              "after_second": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": false,
+                "victim": false
+              },
+              "before": {
+                "any": true,
+                "nested": false,
+                "outer": false,
+                "seed": 7,
+                "victim": 7
+              },
+              "first_apply": {
+                "trace": [
+                  "seed",
+                  "victim",
+                  "anchor"
+                ],
+                "value": "seed:seed:victim:anchor"
+              },
+              "injection": {
+                "remove_seed_result": true,
+                "remove_victim_result": true,
+                "seed_priority_after_remove": false,
+                "victim_priority_after_remove": false,
+                "warning_index": 2
+              },
+              "mutation": "remove_bucket",
+              "outer_add_result": true,
+              "outer_throwable": null,
+              "second_apply": {
+                "trace": [
+                  "anchor"
+                ],
+                "value": "seed:anchor"
+              },
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            }
+          },
+          "throwable_cleanup": {
+            "isset_control": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": false,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ],
+                "same_as_a": true,
+                "same_as_b": false
+              },
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_exit",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "class_hex": "52756e74696d65457863657074696f6e",
+                  "kind": "outer_caught"
+                }
+              ],
+              "handler": {
+                "outer_priority_at_entry": false,
+                "outer_priority_before_throw_a": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_alive_at_entry": true,
+                "seed_priority_after_alias_clear": false,
+                "seed_priority_at_entry": 7,
+                "warning_index": 1
+              },
+              "outer_add_result": null,
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "isset_throwing_destructor": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": false,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "422066726f6d20736565642064657374727563746f72",
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "422066726f6d20736565642064657374727563746f72",
+                    "same_as_a": false,
+                    "same_as_b": true
+                  },
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ],
+                "same_as_a": false,
+                "same_as_b": true
+              },
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 1,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_throw_b",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "class_hex": "52756e74696d65457863657074696f6e",
+                  "kind": "outer_caught"
+                }
+              ],
+              "handler": {
+                "outer_priority_at_entry": false,
+                "outer_priority_before_throw_a": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_alive_at_entry": true,
+                "seed_priority_after_alias_clear": false,
+                "seed_priority_at_entry": 7,
+                "warning_index": 1
+              },
+              "outer_add_result": null,
+              "warning_target": 1,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "write_control": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": false,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ],
+                "same_as_a": true,
+                "same_as_b": false
+              },
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_exit",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "class_hex": "52756e74696d65457863657074696f6e",
+                  "kind": "outer_caught"
+                }
+              ],
+              "handler": {
+                "outer_priority_at_entry": false,
+                "outer_priority_before_throw_a": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_alive_at_entry": true,
+                "seed_priority_after_alias_clear": false,
+                "seed_priority_at_entry": 7,
+                "warning_index": 2
+              },
+              "outer_add_result": null,
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            },
+            "write_throwing_destructor": {
+              "after_outer_add": {
+                "anchor_alive": true,
+                "anchor_priority": 10,
+                "any": true,
+                "outer_alive": true,
+                "outer_priority": false,
+                "seed_alive": false,
+                "seed_priority": false
+              },
+              "caught": {
+                "class_hex": "52756e74696d65457863657074696f6e",
+                "message_hex": "422066726f6d20736565642064657374727563746f72",
+                "previous_chain": [
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "422066726f6d20736565642064657374727563746f72",
+                    "same_as_a": false,
+                    "same_as_b": true
+                  },
+                  {
+                    "class_hex": "52756e74696d65457863657074696f6e",
+                    "message_hex": "412066726f6d207761726e696e672068616e646c6572",
+                    "same_as_a": true,
+                    "same_as_b": false
+                  }
+                ],
+                "same_as_a": false,
+                "same_as_b": true
+              },
+              "events": [
+                {
+                  "index": 1,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "warning"
+                },
+                {
+                  "index": 2,
+                  "kind": "handler_enter"
+                },
+                {
+                  "kind": "handler_before_throw_a",
+                  "seed_alive": true
+                },
+                {
+                  "kind": "handler_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_enter",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "kind": "seed_destructor_throw_b",
+                  "phase": "handler_before_throw_a"
+                },
+                {
+                  "class_hex": "52756e74696d65457863657074696f6e",
+                  "kind": "outer_caught"
+                }
+              ],
+              "handler": {
+                "outer_priority_at_entry": false,
+                "outer_priority_before_throw_a": false,
+                "remove_seed": true,
+                "seed_alive_after_alias_clear": true,
+                "seed_alive_at_entry": true,
+                "seed_priority_after_alias_clear": false,
+                "seed_priority_at_entry": 7,
+                "warning_index": 2
+              },
+              "outer_add_result": null,
+              "warning_target": 2,
+              "warnings": [
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                },
+                {
+                  "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420372e3520746f20696e74206c6f73657320707265636973696f6e",
+                  "severity": 8192
+                }
+              ]
+            }
+          }
         }
       },
       "registry_observation": {
@@ -9223,32 +12373,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 183,
+      "release_effects": 247,
       "scenario": "callable_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-dead5e896a2e49aeb86e305baf7ceec7-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-dead5e896a2e49aeb86e305baf7ceec7-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-dead5e896a2e49aeb86e305baf7ceec7-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-dead5e896a2e49aeb86e305baf7ceec7-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-8c31c5cccab04083bbdf4e7d4a148171-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 1660132,
-        "stdout_sha256": "977596b9ca2d70890a605dde53bb8b7c9e4a67efc12a58d22c5d2b4a2f3a30d6",
+        "stdout_bytes": 2620362,
+        "stdout_sha256": "71a088311b7309f4eb190d1622ab81c2e6ce681becadb923b32172adbab6156b",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 1638254,
-        "stdout_sha256": "cecc3bc93972ffe0275214b5dd8cb67dd1f4aa8e8ddb9a5e9fb93a8b38584da8",
-        "stderr_bytes": 77616,
-        "stderr_sha256": "54dcbea357035198c4e820b46dd3908a98d4a1011cdaabfa583dd6b26a4d713b"
+        "stdout_bytes": 2540427,
+        "stdout_sha256": "1a8b880420992119cc36a1491ca6e3c2d834867a50a082c493953c16712bdfe6",
+        "stderr_bytes": 101620,
+        "stderr_sha256": "284700c367bc11770173643ff85b21707ea97a61c19f28d4509fa30445efb230"
       }
     },
     "callable_transcript_rejections": [
@@ -9284,6 +12434,11 @@
       "wrong_api_result_type",
       "wrong_resume_effect",
       "wrong_script_observation",
+      "wrong_unwind_payload_fields",
+      "wrong_unwind_callable_handle",
+      "wrong_unwind_throwable_kind",
+      "wrong_unwind_throwable_token",
+      "false_unwind_release_ack",
       "live_registry_close",
       "wrong_transport",
       "extra_frame",
@@ -9316,72 +12471,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 27840,
+        "pid": 20948,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25476,
+        "pid": 15480,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 18400,
+        "pid": 24100,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 19708,
+        "pid": 14724,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 28176,
+        "pid": 8184,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 29252,
+        "pid": 27044,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 29456,
+        "pid": 25496,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 7852,
+        "pid": 14684,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 30144,
+        "pid": 24868,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27948,
+        "pid": 21896,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25460,
+        "pid": 888,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 22340,
+        "pid": 26364,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 23660,
+        "pid": 28936,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 23880,
+        "pid": 24620,
         "returncode": 0,
         "reaped": true
       }

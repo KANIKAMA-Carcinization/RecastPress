@@ -1135,6 +1135,10 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             Ok(None) => Completion::Value(PhpValue::Bool(true)),
             Ok(Some(id)) => {
                 let priority_handle = self.current_argument("priority")?;
+                let mut existence = self
+                    .dispatcher
+                    .begin_priority_existence(target)
+                    .map_err(|error| format!("add_priority_existence:{error:?}"))?;
                 let (priority_original, priority_key) = match self.boundary_array_key(
                     priority_handle,
                     "isset",
@@ -1144,9 +1148,25 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     "add_priority_isset",
                 )? {
                     Err(handle) => {
+                        self.dispatcher
+                            .cancel_priority_existence(&mut existence, handle)
+                            .map_err(|error| format!("add_cancel_priority_existence:{error:?}"))?;
+                        let completion = match self.run_control(
+                            &mut existence,
+                            operation,
+                            parent_wire,
+                            "add_cancel_priority_existence",
+                        )? {
+                            ControlOutcome::Throwable(observed) => {
+                                Completion::PhpThrowable(observed)
+                            }
+                            ControlOutcome::Result(_) => {
+                                return Err("add_priority_existence_cancel_completed".into());
+                            }
+                        };
                         return self.finish_target(
                             target,
-                            Completion::PhpThrowable(handle),
+                            completion,
                             operation,
                             parent_wire,
                             "add_filter",
@@ -1155,19 +1175,17 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     Ok(priority) => priority,
                 };
                 let priority = HookPriority::new(priority_original, priority_key);
-                let snapshot = self
-                    .dispatcher
-                    .capture_priority_snapshot(target, &priority)
-                    .map_err(|error| format!("add_priority_snapshot:{error:?}"))?;
-                match self.boundary_array_key(
-                    priority_handle,
-                    "write",
-                    true,
+                self.dispatcher
+                    .resume_priority_existence(&mut existence, priority.clone())
+                    .map_err(|error| format!("add_resume_priority_existence:{error:?}"))?;
+                let snapshot = match self.run_control(
+                    &mut existence,
                     operation,
                     parent_wire,
-                    "add_priority_write",
+                    "add_priority_existence",
                 )? {
-                    Err(handle) => {
+                    ControlOutcome::Result(ControlResult::PrioritySnapshot(snapshot)) => snapshot,
+                    ControlOutcome::Throwable(handle) => {
                         return self.finish_target(
                             target,
                             Completion::PhpThrowable(handle),
@@ -1176,14 +1194,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                             "add_filter",
                         );
                     }
-                    Ok((write_original, write_key)) => {
-                        if !same_scalar_representation(&write_original, &priority.original)
-                            || write_key != *priority.key()
-                        {
-                            return Err("add_priority_write_changed".into());
-                        }
-                    }
-                }
+                    _ => return Err("add_priority_existence_result".into()),
+                };
                 let accepted_handle = self.current_argument("accepted_args")?;
                 let accepted = match self.boundary_accepted_args(
                     accepted_handle,
@@ -1202,6 +1214,72 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     }
                     Ok(accepted) => accepted,
                 };
+                let mut write = self
+                    .dispatcher
+                    .begin_priority_write(target)
+                    .map_err(|error| format!("add_priority_write:{error:?}"))?;
+                match self.boundary_array_key(
+                    priority_handle,
+                    "write",
+                    true,
+                    operation,
+                    parent_wire,
+                    "add_priority_write",
+                )? {
+                    Err(handle) => {
+                        self.dispatcher
+                            .cancel_priority_write(&mut write, handle)
+                            .map_err(|error| format!("add_cancel_priority_write:{error:?}"))?;
+                        let completion = match self.run_control(
+                            &mut write,
+                            operation,
+                            parent_wire,
+                            "add_cancel_priority_write",
+                        )? {
+                            ControlOutcome::Throwable(observed) => {
+                                Completion::PhpThrowable(observed)
+                            }
+                            ControlOutcome::Result(_) => {
+                                return Err("add_priority_write_cancel_completed".into());
+                            }
+                        };
+                        return self.finish_target(
+                            target,
+                            completion,
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    Ok((write_original, write_key)) => {
+                        if !same_scalar_representation(&write_original, &priority.original)
+                            || write_key != *priority.key()
+                        {
+                            return Err("add_priority_write_changed".into());
+                        }
+                    }
+                }
+                self.dispatcher
+                    .resume_priority_write(&mut write, priority.clone())
+                    .map_err(|error| format!("add_resume_priority_write:{error:?}"))?;
+                let token = match self.run_control(
+                    &mut write,
+                    operation,
+                    parent_wire,
+                    "add_priority_write",
+                )? {
+                    ControlOutcome::Result(ControlResult::PriorityWrite(token)) => token,
+                    ControlOutcome::Throwable(handle) => {
+                        return self.finish_target(
+                            target,
+                            Completion::PhpThrowable(handle),
+                            operation,
+                            parent_wire,
+                            "add_filter",
+                        );
+                    }
+                    _ => return Err("add_priority_write_result".into()),
+                };
                 let handle = match self.boundary_retain_callable(
                     callback_handle,
                     operation,
@@ -1209,9 +1287,28 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     "add_retain_callable",
                 )? {
                     Err(handle) => {
+                        let mut cancel = self
+                            .dispatcher
+                            .cancel_priority_write_token(token, handle)
+                            .map_err(|error| {
+                                format!("add_cancel_priority_write_token:{error:?}")
+                            })?;
+                        let completion = match self.run_control(
+                            &mut cancel,
+                            operation,
+                            parent_wire,
+                            "add_cancel_priority_write_token",
+                        )? {
+                            ControlOutcome::Throwable(observed) => {
+                                Completion::PhpThrowable(observed)
+                            }
+                            ControlOutcome::Result(_) => {
+                                return Err("add_priority_write_token_cancel_completed".into());
+                            }
+                        };
                         return self.finish_target(
                             target,
-                            Completion::PhpThrowable(handle),
+                            completion,
                             operation,
                             parent_wire,
                             "add_filter",
@@ -1223,14 +1320,16 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     .map_err(|error| format!("add_callback:{error:?}"))?;
                 let mut control = self
                     .dispatcher
-                    .begin_add_target_with_snapshot(target, priority, snapshot, callback)
+                    .begin_add_target_with_priority_write(
+                        target, priority, snapshot, token, callback,
+                    )
                     .map_err(|error| format!("begin_add_target:{error:?}"))?;
                 self.registration_epoch = self
                     .registration_epoch
                     .checked_add(1)
                     .ok_or("registration_epoch_overflow")?;
                 match self.run_control(&mut control, operation, parent_wire, "add_filter")? {
-                    ControlOutcome::Result(ControlResult::Added(true)) => {
+                    ControlOutcome::Result(ControlResult::PriorityWriteCommitted) => {
                         Completion::Value(PhpValue::Bool(true))
                     }
                     ControlOutcome::Throwable(handle) => Completion::PhpThrowable(handle),
@@ -1839,7 +1938,19 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .map_err(|error| format!("resume_callback:{error:?}"))?;
                 }
                 DispatchStep::ReleasePhp(handle) => {
-                    let completion = self.release_effect(handle, operation, Some(caller_wire))?;
+                    let pending = self
+                        .dispatcher
+                        .pending_dispatch_throwable(ticket)
+                        .map_err(|error| format!("pending_dispatch_throwable:{error:?}"))?;
+                    let completion = match pending {
+                        Some(throwable) => self.release_effect_unwind(
+                            handle,
+                            throwable,
+                            operation,
+                            Some(caller_wire),
+                        )?,
+                        None => self.release_effect(handle, operation, Some(caller_wire))?,
+                    };
                     self.dispatcher
                         .resume_php_release_completion(ticket, handle, completion)
                         .map_err(|error| format!("resume_filter_release:{error:?}"))?;
@@ -1956,7 +2067,19 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 .map_err(|error| format!("{label}_advance_control:{error:?}"))?
             {
                 ControlStep::ReleasePhp(handle) => {
-                    let completion = self.release_effect(handle, operation, Some(caller_wire))?;
+                    let pending = self
+                        .dispatcher
+                        .pending_control_throwable(operation_cursor)
+                        .map_err(|error| format!("{label}_pending_throwable:{error:?}"))?;
+                    let completion = match pending {
+                        Some(throwable) => self.release_effect_unwind(
+                            handle,
+                            throwable,
+                            operation,
+                            Some(caller_wire),
+                        )?,
+                        None => self.release_effect(handle, operation, Some(caller_wire))?,
+                    };
                     self.dispatcher
                         .resume_control_release_completion(operation_cursor, handle, completion)
                         .map_err(|error| format!("{label}_resume_release:{error:?}"))?;
@@ -2317,10 +2440,36 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         operation: OperationId,
         caller_wire: Option<&str>,
     ) -> Result<Completion<PhpValue>, String> {
+        self.release_effect_inner(handle, None, operation, caller_wire)
+    }
+
+    fn release_effect_unwind(
+        &mut self,
+        handle: PhpHandle,
+        throwable: PhpHandle,
+        operation: OperationId,
+        caller_wire: Option<&str>,
+    ) -> Result<Completion<PhpValue>, String> {
+        self.release_effect_inner(handle, Some(throwable), operation, caller_wire)
+    }
+
+    fn release_effect_inner(
+        &mut self,
+        handle: PhpHandle,
+        pending_throwable: Option<PhpHandle>,
+        operation: OperationId,
+        caller_wire: Option<&str>,
+    ) -> Result<Completion<PhpValue>, String> {
         if handle.kind() != PhpHandleKind::Callable
             || self.handles.get(&handle) != Some(&HandleState::Active)
         {
             return Err("release_handle_not_active_callable".into());
+        }
+        if pending_throwable.is_some_and(|throwable| {
+            throwable.kind() != PhpHandleKind::Throwable
+                || self.handles.get(&throwable) != Some(&HandleState::Throwable)
+        }) {
+            return Err("release_unwind_throwable_not_registered".into());
         }
         self.handles.insert(handle, HandleState::ReleasePending);
         self.release_effects = self
@@ -2332,7 +2481,20 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .invoke_php(operation)
             .map_err(|error| format!("invoke_release:{error:?}"))?;
         let effect_wire = self.fresh_effect("release");
-        self.wire.send("invoke_php", caller_wire, json!({"operation":"release_callable","effect_id":effect_wire,"handle":descriptor(handle)}))?;
+        let payload = match pending_throwable {
+            Some(throwable) => json!({
+                "operation":"release_callable_unwind",
+                "effect_id":effect_wire,
+                "handle":descriptor(handle),
+                "throwable":descriptor(throwable),
+            }),
+            None => json!({
+                "operation":"release_callable",
+                "effect_id":effect_wire,
+                "handle":descriptor(handle),
+            }),
+        };
+        self.wire.send("invoke_php", caller_wire, payload)?;
         let completion = self.drive_effect(
             &effect_wire,
             effect,
@@ -2484,12 +2646,18 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
                     .map_err(|error| format!("cleanup_advance:{error:?}"))?
                 {
                     ControlStep::ReleasePhp(handle) => {
-                        let completion = peer.release_effect(handle, root, None)?;
-                        if !matches!(completion, Completion::Value(_)) {
-                            return Err("cleanup_release_throwable".into());
-                        }
+                        let pending = peer
+                            .dispatcher
+                            .pending_control_throwable(&control)
+                            .map_err(|error| format!("cleanup_pending_throwable:{error:?}"))?;
+                        let completion = match pending {
+                            Some(throwable) => {
+                                peer.release_effect_unwind(handle, throwable, root, None)?
+                            }
+                            None => peer.release_effect(handle, root, None)?,
+                        };
                         peer.dispatcher
-                            .resume_control_release(&mut control, handle)
+                            .resume_control_release_completion(&mut control, handle, completion)
                             .map_err(|error| format!("cleanup_resume_release:{error:?}"))?;
                     }
                     ControlStep::PhpThrowable(_) => return Err("cleanup_control_throwable".into()),

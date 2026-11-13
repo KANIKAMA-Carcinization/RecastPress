@@ -5,7 +5,7 @@ use recastpress_wp::{
         FilterCounterLookup, FilterCounterMutation, FilterCounterOperandAccess,
         FilterCounterResult,
     },
-    hooks::{CallbackId, HookArgument, HookError, HookScalar},
+    hooks::{CallbackId, HookArgument, HookError, HookPriority, HookScalar},
     value::{PhpArray, PhpKey, PhpValue},
 };
 use std::sync::{Arc, Mutex};
@@ -1609,7 +1609,7 @@ fn parent_control_cleanup_does_not_unbind_reentrant_replacement_slot() {
 }
 
 #[test]
-fn callable_removed_during_invocation_releases_after_snapshot_finishes() {
+fn callable_removed_during_invocation_releases_after_bucket_snapshot_finishes() {
     use recastpress_wp::dispatcher::{ControlResult, ControlStep};
     use recastpress_wp::hooks::PhpCallMode;
 
@@ -1638,6 +1638,16 @@ fn callable_removed_during_invocation_releases_after_snapshot_finishes() {
         dispatcher.advance_control(&mut add_next).unwrap(),
         ControlStep::Complete(ControlResult::Added(true))
     );
+    let next_priority_ran = Arc::new(Mutex::new(false));
+    let native_ran = Arc::clone(&next_priority_ran);
+    dispatcher.add(
+        "snapshot-hook",
+        10,
+        DispatcherCallback::new(id("next-priority-native"), 1, move |_, args| {
+            *native_ran.lock().unwrap() = true;
+            Ok(args[0].clone())
+        }),
+    );
     let ticket = dispatcher
         .begin_filter("snapshot-hook", value("seed"), &[])
         .unwrap();
@@ -1656,11 +1666,24 @@ fn callable_removed_during_invocation_releases_after_snapshot_finishes() {
     );
     assert!(dispatcher.has_callbacks("snapshot-hook"));
     dispatcher.resume_php(ticket, value("returned")).unwrap();
+    assert_eq!(dispatcher.current_priority("snapshot-hook"), Some(5));
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::InvokePhp(recastpress_wp::hooks::PhpInvocation {
+            callback: id("next-snapshot-callable"),
+            handle: callable_handle(912),
+            hook: HookScalar::Bytes(b"snapshot-hook".to_vec()),
+            priority: PhpKey::Integer(5),
+            call_mode: PhpCallMode::Array,
+            args: vec![value("returned")],
+        })
+    );
+    assert!(!*next_priority_ran.lock().unwrap());
+    dispatcher.resume_php(ticket, value("next-result")).unwrap();
     assert_eq!(
         dispatcher.advance(ticket).unwrap(),
         DispatchStep::ReleasePhp(callable)
     );
-    assert_eq!(dispatcher.current_priority("snapshot-hook"), Some(5));
     assert_eq!(
         dispatcher.resume_php_release(ticket, callable_handle(999)),
         Err(HookError::InvalidPhpCallableHandle)
@@ -1674,15 +1697,11 @@ fn callable_removed_during_invocation_releases_after_snapshot_finishes() {
         dispatcher.resume_php_release(ticket, callable),
         Err(HookError::NoPhpReleasePending)
     );
-    let DispatchStep::InvokePhp(next) = dispatcher.advance(ticket).unwrap() else {
-        panic!("expected next snapshot callback")
-    };
-    assert_eq!(next.handle, callable_handle(912));
-    dispatcher.resume_php(ticket, value("next-result")).unwrap();
     assert_eq!(
         dispatcher.advance(ticket).unwrap(),
         DispatchStep::Complete(value("next-result"))
     );
+    assert!(*next_priority_ran.lock().unwrap());
 }
 
 #[test]
@@ -1813,6 +1832,13 @@ fn callable_release_throwable_abandons_dispatch_but_preserves_wp_frame_state() {
         ControlStep::Complete(ControlResult::Removed(true))
     );
     dispatcher.resume_php(ticket, value("returned")).unwrap();
+    let DispatchStep::InvokePhp(second) = dispatcher.advance(ticket).unwrap() else {
+        panic!("the remaining foreach snapshot callback must run before cleanup")
+    };
+    assert_eq!(second.handle, callable_handle(942));
+    dispatcher
+        .resume_php(ticket, value("second-result"))
+        .unwrap();
     assert_eq!(
         dispatcher.advance(ticket).unwrap(),
         DispatchStep::ReleasePhp(first)
@@ -1981,6 +2007,446 @@ fn filter_counter_operand_reads_null_after_sole_guard_is_invalidated() {
         ))
     );
     assert_eq!(dispatcher.did_filter("target"), 1);
+}
+
+#[test]
+fn priority_cow_keeps_precheck_snapshot_and_discards_postcast_stale_assignment() {
+    let name = HookArgument::bytes("priority-cow");
+    let p5 = HookPriority::integer(5);
+    let p7 = HookPriority::integer(7);
+    let p10 = HookPriority::integer(10);
+    let seed_handle = closure_handle(701);
+    let outer_handle = closure_handle(702);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &name,
+        p7.clone(),
+        DispatcherCallback::php(id("seed"), 1, seed_handle).unwrap(),
+    );
+    let trace = Arc::new(Mutex::new(Vec::new()));
+    let anchor_trace = Arc::clone(&trace);
+    dispatcher.add_typed(
+        &name,
+        p10,
+        DispatcherCallback::new(id("anchor"), 1, move |_, args| {
+            anchor_trace.lock().unwrap().push("anchor");
+            Ok(args[0].clone())
+        }),
+    );
+    let target = dispatcher.capture_target(&name, false).unwrap().unwrap();
+
+    let mut existence = dispatcher.begin_priority_existence(target).unwrap();
+    dispatcher.remove_all_typed(&name, Some(p7.clone()));
+    dispatcher
+        .resume_priority_existence(&mut existence, p7.clone())
+        .unwrap();
+    let snapshot = loop {
+        match dispatcher.advance_control(&mut existence).unwrap() {
+            ControlStep::ReleasePhp(handle) => {
+                assert_eq!(handle, seed_handle);
+                dispatcher
+                    .resume_control_release(&mut existence, handle)
+                    .unwrap();
+            }
+            ControlStep::Complete(ControlResult::PrioritySnapshot(snapshot)) => break snapshot,
+            step => panic!("unexpected priority existence step: {step:?}"),
+        }
+    };
+
+    let mut write = dispatcher.begin_priority_write(target).unwrap();
+    let nested_trace = Arc::clone(&trace);
+    dispatcher
+        .add_target(
+            target,
+            p5.clone(),
+            DispatcherCallback::new(id("nested"), 1, move |_, args| {
+                nested_trace.lock().unwrap().push("nested");
+                Ok(args[0].clone())
+            }),
+        )
+        .unwrap();
+    dispatcher
+        .resume_priority_write(&mut write, p7.clone())
+        .unwrap();
+    let token = match finish_control(&mut dispatcher, &mut write) {
+        ControlResult::PriorityWrite(token) => token,
+        result => panic!("unexpected priority write result: {result:?}"),
+    };
+
+    let mut foreign = Dispatcher::new();
+    let foreign_target = foreign.capture_target(&name, true).unwrap().unwrap();
+    assert_eq!(
+        foreign
+            .begin_add_target_with_priority_write(
+                foreign_target,
+                p7.clone(),
+                snapshot.clone(),
+                token,
+                DispatcherCallback::php(id("outer"), 1, outer_handle).unwrap(),
+            )
+            .unwrap_err(),
+        HookError::InvalidHookTarget
+    );
+
+    let mut commit = dispatcher
+        .begin_add_target_with_priority_write(
+            target,
+            p7.clone(),
+            snapshot.clone(),
+            token,
+            DispatcherCallback::php(id("outer"), 1, outer_handle).unwrap(),
+        )
+        .unwrap();
+    loop {
+        match dispatcher.advance_control(&mut commit).unwrap() {
+            ControlStep::ReleasePhp(handle) => {
+                assert_eq!(handle, outer_handle);
+                dispatcher
+                    .resume_control_release(&mut commit, handle)
+                    .unwrap();
+            }
+            ControlStep::Complete(ControlResult::PriorityWriteCommitted) => break,
+            step => panic!("unexpected priority commit step: {step:?}"),
+        }
+    }
+    assert_eq!(
+        dispatcher
+            .begin_add_target_with_priority_write(
+                target,
+                p7,
+                snapshot,
+                token,
+                DispatcherCallback::php(id("outer"), 1, outer_handle).unwrap(),
+            )
+            .unwrap_err(),
+        HookError::InvalidHookTarget
+    );
+    assert!(
+        !dispatcher
+            .has_at_target(target, &HookPriority::integer(7), &id("outer"))
+            .unwrap()
+    );
+    assert!(
+        dispatcher
+            .has_at_target(target, &p5, &id("nested"))
+            .unwrap()
+    );
+
+    dispatcher
+        .apply_filters_typed(&name, value("seed"), &[])
+        .unwrap();
+    assert_eq!(*trace.lock().unwrap(), ["nested", "anchor"]);
+    dispatcher.release_target(target).unwrap();
+    foreign.release_target(foreign_target).unwrap();
+}
+
+#[test]
+fn priority_cow_throwable_cancels_precheck_operand_and_rejects_replay() {
+    let name = HookArgument::bytes("priority-cow-cancel");
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &name,
+        HookPriority::integer(7),
+        DispatcherCallback::new(id("existing"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&name, false).unwrap().unwrap();
+    let mut existence = dispatcher.begin_priority_existence(target).unwrap();
+    let original = throwable_handle(703);
+    assert_eq!(
+        dispatcher.cancel_priority_existence(&mut existence, closure_handle(704)),
+        Err(HookError::InvalidPhpThrowableHandle)
+    );
+    dispatcher
+        .cancel_priority_existence(&mut existence, original)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut existence),
+        Ok(ControlStep::PhpThrowable(original))
+    );
+    assert_eq!(
+        dispatcher.advance_control(&mut existence),
+        Err(HookError::InvalidControlOperation)
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn priority_write_token_round_trips_nan_original_priority() {
+    let name = HookArgument::bytes("priority-nan");
+    let priority = HookPriority::new(HookScalar::Float(f64::NAN), PhpKey::Integer(0));
+    let mut dispatcher = Dispatcher::new();
+    let target = dispatcher.capture_target(&name, true).unwrap().unwrap();
+    let mut existence = dispatcher.begin_priority_existence(target).unwrap();
+    dispatcher
+        .resume_priority_existence(&mut existence, priority.clone())
+        .unwrap();
+    let snapshot = match finish_control(&mut dispatcher, &mut existence) {
+        ControlResult::PrioritySnapshot(snapshot) => snapshot,
+        result => panic!("unexpected priority existence result: {result:?}"),
+    };
+    let mut write = dispatcher.begin_priority_write(target).unwrap();
+    dispatcher
+        .resume_priority_write(&mut write, priority.clone())
+        .unwrap();
+    let token = match finish_control(&mut dispatcher, &mut write) {
+        ControlResult::PriorityWrite(token) => token,
+        result => panic!("unexpected priority write result: {result:?}"),
+    };
+    let mut commit = dispatcher
+        .begin_add_target_with_priority_write(
+            target,
+            priority,
+            snapshot,
+            token,
+            DispatcherCallback::new(id("nan"), 1, |_, args| Ok(args[0].clone())),
+        )
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut commit),
+        ControlResult::PriorityWriteCommitted
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn removed_seed_and_victim_leases_release_after_bucket_before_reinserted_outer() {
+    // WP_Hook foreach keeps the full current-bucket array alive until traversal
+    // ends, even when its live bucket is removed and an outer row is reinserted.
+    let name = HookArgument::bytes("priority-bucket-lease");
+    let priority = HookPriority::integer(7);
+    let seed = callable_handle(711);
+    let victim = callable_handle(712);
+    let outer = callable_handle(713);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &name,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("seed"), 1, seed).unwrap(),
+    );
+    dispatcher.add_typed(
+        &name,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("victim"), 1, victim).unwrap(),
+    );
+    dispatcher.add(
+        "priority-bucket-lease",
+        10,
+        DispatcherCallback::new(id("anchor"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let target = dispatcher.capture_target(&name, false).unwrap().unwrap();
+    let ticket = dispatcher
+        .begin_filter_typed(&name, value("seed"), &[])
+        .unwrap();
+    let DispatchStep::InvokePhp(first) = dispatcher.advance(ticket).unwrap() else {
+        panic!("expected seed invocation")
+    };
+    assert_eq!(first.handle, seed);
+
+    let mut existence = dispatcher.begin_priority_existence(target).unwrap();
+    assert!(dispatcher.remove("priority-bucket-lease", 7, &id("seed")));
+    assert!(dispatcher.remove("priority-bucket-lease", 7, &id("victim")));
+    dispatcher
+        .resume_priority_existence(&mut existence, priority.clone())
+        .unwrap();
+    let snapshot = match finish_control(&mut dispatcher, &mut existence) {
+        ControlResult::PrioritySnapshot(snapshot) => snapshot,
+        result => panic!("unexpected priority snapshot result: {result:?}"),
+    };
+    let mut write = dispatcher.begin_priority_write(target).unwrap();
+    dispatcher
+        .resume_priority_write(&mut write, priority.clone())
+        .unwrap();
+    let token = match finish_control(&mut dispatcher, &mut write) {
+        ControlResult::PriorityWrite(token) => token,
+        result => panic!("unexpected priority write token: {result:?}"),
+    };
+    let mut commit = dispatcher
+        .begin_add_target_with_priority_write(
+            target,
+            priority.clone(),
+            snapshot,
+            token,
+            DispatcherCallback::php_callable(id("outer"), 1, outer).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut commit),
+        ControlResult::PriorityWriteCommitted
+    );
+    dispatcher.resume_php(ticket, value("after-seed")).unwrap();
+    let DispatchStep::InvokePhp(second) = dispatcher.advance(ticket).unwrap() else {
+        panic!("the retained bucket snapshot must still invoke victim")
+    };
+    assert_eq!(second.handle, victim);
+
+    dispatcher
+        .resume_php(ticket, value("after-victim"))
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(seed)
+    );
+    dispatcher.resume_php_release(ticket, seed).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(victim)
+    );
+    dispatcher.resume_php_release(ticket, victim).unwrap();
+    let next = dispatcher.advance(ticket).unwrap();
+    let DispatchStep::InvokePhp(third) = next else {
+        panic!("release effects must finish before the reinserted outer callback: {next:?}")
+    };
+    assert_eq!(third.handle, outer);
+    dispatcher.resume_php(ticket, value("final")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(value("final"))
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn priority_write_cancellation_drains_old_map_before_forwarding_throwable() {
+    let name = HookArgument::bytes("priority-write-cancel");
+    let priority = HookPriority::integer(7);
+    let existing = callable_handle(721);
+    let thrown = throwable_handle(722);
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &name,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("existing"), 1, existing).unwrap(),
+    );
+    let target = dispatcher.capture_target(&name, false).unwrap().unwrap();
+    let mut write = dispatcher.begin_priority_write(target).unwrap();
+    assert_eq!(
+        dispatcher.cancel_priority_write(&mut write, closure_handle(723)),
+        Err(HookError::InvalidPhpThrowableHandle)
+    );
+    dispatcher
+        .cancel_priority_write(&mut write, thrown)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut write),
+        Ok(ControlStep::PhpThrowable(thrown))
+    );
+
+    let mut next_write = dispatcher.begin_priority_write(target).unwrap();
+    assert!(dispatcher.remove("priority-write-cancel", 7, &id("existing")));
+    dispatcher
+        .resume_priority_write(&mut next_write, priority)
+        .unwrap();
+    let token = match finish_control(&mut dispatcher, &mut next_write) {
+        ControlResult::PriorityWrite(token) => token,
+        result => panic!("unexpected priority write token: {result:?}"),
+    };
+    let mut cancelled = dispatcher
+        .cancel_priority_write_token(token, thrown)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut cancelled).unwrap(),
+        ControlStep::ReleasePhp(existing)
+    );
+    dispatcher
+        .resume_control_release(&mut cancelled, existing)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut cancelled).unwrap(),
+        ControlStep::PhpThrowable(thrown)
+    );
+    assert_eq!(
+        dispatcher
+            .cancel_priority_write_token(token, thrown)
+            .unwrap_err(),
+        HookError::InvalidHookTarget
+    );
+    dispatcher.release_target(target).unwrap();
+}
+
+#[test]
+fn release_effect_getters_expose_unwinding_throwable_and_cleanup_throwable_wins() {
+    let name = HookArgument::bytes("release-throwable-cow");
+    let priority = HookPriority::integer(7);
+    let callable = callable_handle(731);
+    let original = throwable_handle(732);
+    let destructor_throwable = throwable_handle(733);
+
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add_typed(
+        &name,
+        priority.clone(),
+        DispatcherCallback::php_callable(id("control-callable"), 1, callable).unwrap(),
+    );
+    let target = dispatcher.capture_target(&name, false).unwrap().unwrap();
+    let mut write = dispatcher.begin_priority_write(target).unwrap();
+    assert!(dispatcher.remove("release-throwable-cow", 7, &id("control-callable")));
+    dispatcher
+        .resume_priority_write(&mut write, priority)
+        .unwrap();
+    let token = match finish_control(&mut dispatcher, &mut write) {
+        ControlResult::PriorityWrite(token) => token,
+        result => panic!("unexpected priority write result: {result:?}"),
+    };
+    let mut cancelled = dispatcher
+        .cancel_priority_write_token(token, original)
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut cancelled).unwrap(),
+        ControlStep::ReleasePhp(callable)
+    );
+    assert_eq!(
+        dispatcher.pending_control_throwable(&cancelled).unwrap(),
+        Some(original)
+    );
+    dispatcher
+        .resume_control_release_completion(
+            &mut cancelled,
+            callable,
+            Completion::PhpThrowable(destructor_throwable),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance_control(&mut cancelled).unwrap(),
+        ControlStep::PhpThrowable(destructor_throwable)
+    );
+    dispatcher.release_target(target).unwrap();
+
+    let mut dispatch = Dispatcher::new();
+    dispatch.add_typed(
+        &name,
+        HookPriority::integer(7),
+        DispatcherCallback::php_callable(id("dispatch-callable"), 1, callable_handle(734)).unwrap(),
+    );
+    let ticket = dispatch
+        .begin_filter_typed(&name, value("seed"), &[])
+        .unwrap();
+    assert!(matches!(
+        dispatch.advance(ticket),
+        Ok(DispatchStep::InvokePhp(_))
+    ));
+    assert!(dispatch.remove("release-throwable-cow", 7, &id("dispatch-callable")));
+    dispatch
+        .resume_php_completion(ticket, Completion::PhpThrowable(original))
+        .unwrap();
+    let release = match dispatch.advance(ticket).unwrap() {
+        DispatchStep::ReleasePhp(handle) => handle,
+        step => panic!("expected frame-release effect: {step:?}"),
+    };
+    assert_eq!(
+        dispatch.pending_dispatch_throwable(ticket).unwrap(),
+        Some(original)
+    );
+    dispatch
+        .resume_php_release_completion(
+            ticket,
+            release,
+            Completion::PhpThrowable(destructor_throwable),
+        )
+        .unwrap();
+    assert_eq!(
+        dispatch.advance(ticket),
+        Ok(DispatchStep::PhpThrowable(destructor_throwable))
+    );
 }
 
 #[test]

@@ -104,6 +104,78 @@ final class CallableLifetimeFixture
     }
 }
 
+final class CallablePriorityCowListener
+{
+    private $state;
+
+    public function __construct(
+        private string $label,
+        array &$state,
+        private ?Closure $onCall = null,
+    ) {
+        $this->state =& $state;
+    }
+
+    public function __invoke(mixed $value): mixed
+    {
+        $this->state['trace'][] = $this->label;
+        $this->state['events'][] = ['kind' => 'invoke', 'label' => $this->label, 'phase' => $this->state['phase']];
+        if ($this->onCall !== null) {
+            ($this->onCall)();
+        }
+
+        return $value . ':' . $this->label;
+    }
+
+    public function __destruct()
+    {
+        $event = [
+            'kind' => 'destruct',
+            'label' => $this->label,
+            'phase' => $this->state['phase'],
+            'warnings_seen' => count($this->state['warnings']),
+            'trace_count' => count($this->state['trace']),
+        ];
+        $this->state['events'][] = $event;
+        $this->state['destructors'][] = $event;
+    }
+}
+
+final class CallablePriorityThrowableSeed
+{
+    private $state;
+
+    public function __construct(array &$state, private bool $throwDestructor)
+    {
+        $this->state =& $state;
+    }
+
+    public function __invoke(mixed $value): mixed
+    {
+        return $value . ':seed';
+    }
+
+    public function __destruct()
+    {
+        $this->state['events'][] = ['kind' => 'seed_destructor_enter', 'phase' => $this->state['phase']];
+        if ($this->throwDestructor) {
+            $throwable = new RuntimeException('B from seed destructor');
+            $this->state['throwable_b'] = WeakReference::create($throwable);
+            $this->state['events'][] = ['kind' => 'seed_destructor_throw_b', 'phase' => $this->state['phase']];
+            throw $throwable;
+        }
+        $this->state['events'][] = ['kind' => 'seed_destructor_exit', 'phase' => $this->state['phase']];
+    }
+}
+
+final class CallablePriorityThrowableAnchor
+{
+    public function __invoke(mixed $value): mixed
+    {
+        return $value . ':anchor';
+    }
+}
+
 function callable_program_function(string $value): string
 {
     $current = current_filter();
@@ -1500,6 +1572,694 @@ function callable_program_coercion_cases(): array
     return $result;
 }
 
+function callable_program_priority_float_leaf(string $case): array
+{
+    $hook = 'callable-priority-cow-float-' . $case;
+    $state = [
+        'trace' => [],
+        'warnings' => [],
+        'injection' => null,
+        'outer_attempted' => false,
+        'outer_add_result' => null,
+        'outer_throwable' => null,
+    ];
+    $nested = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'nested';
+        return $value . ':nested';
+    };
+    $victim = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'victim';
+        return $value . ':victim';
+    };
+    $outer = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'outer';
+        return $value . ':outer';
+    };
+    $anchor = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'anchor';
+        return $value . ':anchor';
+    };
+    $warningTarget = match ($case) {
+        'isset_add', 'isset_remove_bucket' => 1,
+        'write_add', 'write_remove_bucket' => 2,
+        default => 0,
+    };
+    $mutation = str_ends_with($case, '_add') ? 'add' :
+        (str_ends_with($case, '_remove_bucket') ? 'remove_bucket' : 'control');
+    $seed = null;
+    $seed = static function (string $value) use (
+        &$state,
+        $hook,
+        $nested,
+        $victim,
+        $outer,
+        &$seed,
+        $warningTarget,
+        $mutation,
+    ): string {
+        $state['trace'][] = 'seed';
+        if (!$state['outer_attempted']) {
+            $state['outer_attempted'] = true;
+            $warningIndex = 0;
+            set_error_handler(static function (int $severity, string $message) use (
+                &$state,
+                &$warningIndex,
+                $hook,
+                $nested,
+                $victim,
+                &$seed,
+                $warningTarget,
+                $mutation,
+            ): bool {
+                $warningIndex++;
+                $state['warnings'][] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+                if ($warningTarget > 0 && $warningIndex === $warningTarget && $state['injection'] === null) {
+                    $state['injection'] = ['warning_index' => $warningIndex];
+                    if ($mutation === 'add') {
+                        $state['injection']['add_result'] = add_filter($hook, $nested, 7, 1);
+                        $state['injection']['nested_priority_after_add'] = has_filter($hook, $nested);
+                    } elseif ($mutation === 'remove_bucket') {
+                        $state['injection']['remove_seed_result'] = remove_filter($hook, $seed, 7);
+                        $state['injection']['remove_victim_result'] = remove_filter($hook, $victim, 7);
+                        $state['injection']['seed_priority_after_remove'] = has_filter($hook, $seed);
+                        $state['injection']['victim_priority_after_remove'] = has_filter($hook, $victim);
+                    }
+                }
+
+                return true;
+            });
+            try {
+                $state['outer_add_result'] = add_filter($hook, $outer, 7.5, 1);
+            } catch (Throwable $throwable) {
+                $state['outer_throwable'] = [
+                    'class_hex' => bin2hex($throwable::class),
+                    'message_hex' => bin2hex($throwable->getMessage()),
+                ];
+            } finally {
+                restore_error_handler();
+            }
+        }
+
+        return $value . ':seed';
+    };
+    add_filter($hook, $seed, 7, 1);
+    add_filter($hook, $victim, 7, 1);
+    add_filter($hook, $anchor, 10, 1);
+    $status = static fn (): array => [
+        'seed' => has_filter($hook, $seed),
+        'victim' => has_filter($hook, $victim),
+        'nested' => has_filter($hook, $nested),
+        'outer' => has_filter($hook, $outer),
+        'any' => has_filter($hook),
+    ];
+    $before = $status();
+    $firstValue = apply_filters($hook, 'seed');
+    $firstTrace = $state['trace'];
+    $afterFirst = $status();
+    $state['trace'] = [];
+    $secondValue = apply_filters($hook, 'seed');
+    $secondTrace = $state['trace'];
+    $afterSecond = $status();
+    foreach ([$nested, $victim, $outer, $seed, $anchor] as $callback) {
+        $priority = has_filter($hook, $callback);
+        if ($priority !== false) {
+            remove_filter($hook, $callback, $priority);
+        }
+    }
+
+    return [
+        'warning_target' => $warningTarget,
+        'mutation' => $mutation,
+        'outer_add_result' => $state['outer_add_result'],
+        'outer_throwable' => $state['outer_throwable'],
+        'warnings' => $state['warnings'],
+        'injection' => $state['injection'],
+        'before' => $before,
+        'after_first' => $afterFirst,
+        'first_apply' => ['value' => $firstValue, 'trace' => $firstTrace],
+        'after_second' => $afterSecond,
+        'second_apply' => ['value' => $secondValue, 'trace' => $secondTrace],
+    ];
+}
+
+function callable_program_priority_accepted_args_partial_leaf(string $case): array
+{
+    $hook = 'callable-priority-cow-accepted-partial-' . $case;
+    $state = [
+        'trace' => [],
+        'warnings' => [],
+        'injection' => null,
+        'outer_attempted' => false,
+        'outer_add_result' => null,
+        'outer_throwable' => null,
+    ];
+    $nested = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'nested';
+        return $value . ':nested';
+    };
+    $victim = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'victim';
+        return $value . ':victim';
+    };
+    $outer = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'outer';
+        return $value . ':outer';
+    };
+    $anchor = static function (string $value) use (&$state): string {
+        $state['trace'][] = 'anchor';
+        return $value . ':anchor';
+    };
+    $mutate = $case === 'add_remove_victim';
+    $seed = null;
+    $seed = static function (string $value) use (&$state, $hook, $nested, $victim, $outer, &$seed, $mutate): string {
+        $state['trace'][] = 'seed';
+        if (!$state['outer_attempted']) {
+            $state['outer_attempted'] = true;
+            $warningIndex = 0;
+            set_error_handler(static function (int $severity, string $message) use (
+                &$state,
+                &$warningIndex,
+                $hook,
+                $nested,
+                $victim,
+                $mutate,
+            ): bool {
+                $warningIndex++;
+                $state['warnings'][] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+                if ($mutate && $warningIndex === 1 && $state['injection'] === null) {
+                    $state['injection'] = ['warning_index' => $warningIndex];
+                    $state['injection']['add_result'] = add_filter($hook, $nested, 7, 1);
+                    $state['injection']['nested_priority_after_add'] = has_filter($hook, $nested);
+                    $state['injection']['remove_result'] = remove_filter($hook, $victim, 7);
+                    $state['injection']['victim_priority_after_remove'] = has_filter($hook, $victim);
+                }
+
+                return true;
+            });
+            try {
+                $state['outer_add_result'] = add_filter($hook, $outer, 7, new stdClass());
+            } catch (Throwable $throwable) {
+                $state['outer_throwable'] = [
+                    'class_hex' => bin2hex($throwable::class),
+                    'message_hex' => bin2hex($throwable->getMessage()),
+                ];
+            } finally {
+                restore_error_handler();
+            }
+        }
+
+        return $value . ':seed';
+    };
+    add_filter($hook, $seed, 7, 1);
+    add_filter($hook, $victim, 7, 1);
+    add_filter($hook, $anchor, 10, 1);
+    $status = static fn (): array => [
+        'seed' => has_filter($hook, $seed),
+        'victim' => has_filter($hook, $victim),
+        'nested' => has_filter($hook, $nested),
+        'outer' => has_filter($hook, $outer),
+        'any' => has_filter($hook),
+    ];
+    $before = $status();
+    $firstValue = apply_filters($hook, 'seed');
+    $firstTrace = $state['trace'];
+    $afterFirst = $status();
+    $state['trace'] = [];
+    $secondValue = apply_filters($hook, 'seed');
+    $secondTrace = $state['trace'];
+    $afterSecond = $status();
+    foreach ([$nested, $victim, $outer, $seed, $anchor] as $callback) {
+        $priority = has_filter($hook, $callback);
+        if ($priority !== false) {
+            remove_filter($hook, $callback, $priority);
+        }
+    }
+
+    return [
+        'mutation' => $case,
+        'outer_add_result' => $state['outer_add_result'],
+        'outer_throwable' => $state['outer_throwable'],
+        'warnings' => $state['warnings'],
+        'injection' => $state['injection'],
+        'before' => $before,
+        'after_first' => $afterFirst,
+        'first_apply' => ['value' => $firstValue, 'trace' => $firstTrace],
+        'after_second' => $afterSecond,
+        'second_apply' => ['value' => $secondValue, 'trace' => $secondTrace],
+    ];
+}
+
+function callable_program_priority_accepted_args_reentry_leaf(string $case): array
+{
+    $hook = 'callable-priority-cow-accepted-reentry-' . $case;
+    $state = [
+        'phase' => 'setup',
+        'trace' => [],
+        'events' => [],
+        'warnings' => [],
+        'destructors' => [],
+        'handler' => null,
+        'outer_add_result' => null,
+        'outer_throwable' => null,
+    ];
+    $seedWeak = null;
+    $victimWeak = null;
+    $nestedWeak = null;
+    $outerWeak = null;
+    $anchorWeak = null;
+
+    $operation = static function () use (&$state, $hook, $case, &$seedWeak, &$victimWeak, &$nestedWeak, &$outerWeak): void {
+        $warningIndex = 0;
+        set_error_handler(static function (int $severity, string $message) use (
+            &$state,
+            &$warningIndex,
+            $hook,
+            $case,
+            &$seedWeak,
+            &$victimWeak,
+            &$nestedWeak,
+        ): bool {
+            $warningIndex++;
+            $state['warnings'][] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+            $state['phase'] = 'warning_handler';
+            if ($case !== 'readonly' && $warningIndex === 1) {
+                $seedObject = $seedWeak->get();
+                $victimObject = $victimWeak->get();
+                $state['handler']['before'] = [
+                    'seed_priority' => $seedObject === null ? false : has_filter($hook, [$seedObject, '__invoke']),
+                    'victim_priority' => $victimObject === null ? false : has_filter($hook, [$victimObject, '__invoke']),
+                ];
+                $state['handler']['remove_seed'] = $seedObject === null
+                    ? false
+                    : remove_filter($hook, [$seedObject, '__invoke'], 7);
+                unset($seedObject);
+                $state['handler']['remove_victim'] = $victimObject === null
+                    ? false
+                    : remove_filter($hook, [$victimObject, '__invoke'], 7);
+                unset($victimObject);
+                $state['handler']['after_remove'] = [
+                    'seed_alive' => $seedWeak->get() !== null,
+                    'victim_alive' => $victimWeak->get() !== null,
+                    'seed_priority' => $seedWeak->get() === null ? false : has_filter($hook, [$seedWeak->get(), '__invoke']),
+                    'victim_priority' => $victimWeak->get() === null ? false : has_filter($hook, [$victimWeak->get(), '__invoke']),
+                ];
+                if ($case === 'remove_recreate') {
+                    $nested = new CallablePriorityCowListener('nested', $state);
+                    $nestedWeak = WeakReference::create($nested);
+                    $state['handler']['recreate_result'] = add_filter($hook, [$nested, '__invoke'], 7, 1);
+                    unset($nested);
+                    $state['handler']['after_recreate'] = [
+                        'nested_alive' => $nestedWeak->get() !== null,
+                        'nested_priority' => $nestedWeak->get() === null ? false : has_filter($hook, [$nestedWeak->get(), '__invoke']),
+                    ];
+                }
+            }
+
+            return true;
+        });
+        $outer = new CallablePriorityCowListener('outer', $state);
+        $outerWeak = WeakReference::create($outer);
+        try {
+            $state['outer_add_result'] = add_filter($hook, [$outer, '__invoke'], 7, new stdClass());
+        } catch (Throwable $throwable) {
+            $state['outer_throwable'] = [
+                'class_hex' => bin2hex($throwable::class),
+                'message_hex' => bin2hex($throwable->getMessage()),
+            ];
+        } finally {
+            restore_error_handler();
+        }
+        unset($outer);
+        $state['phase'] = 'after_add';
+    };
+    $seedOnCall = static function () use (&$state, $operation): void {
+        if ($state['handler'] === null && $state['outer_add_result'] === null && $state['outer_throwable'] === null) {
+            $state['handler'] = [];
+            $operation();
+        }
+    };
+    $seed = new CallablePriorityCowListener('seed', $state, $seedOnCall);
+    $victim = new CallablePriorityCowListener('victim', $state);
+    $anchor = new CallablePriorityCowListener('anchor', $state);
+    $seedWeak = WeakReference::create($seed);
+    $victimWeak = WeakReference::create($victim);
+    $anchorWeak = WeakReference::create($anchor);
+    add_filter($hook, [$seed, '__invoke'], 7, 1);
+    add_filter($hook, [$victim, '__invoke'], 7, 1);
+    add_filter($hook, [$anchor, '__invoke'], 10, 1);
+    unset($seed, $victim, $anchor);
+
+    $status = static function () use ($hook, &$seedWeak, &$victimWeak, &$nestedWeak, &$outerWeak, &$anchorWeak): array {
+        $seedObject = $seedWeak->get();
+        $victimObject = $victimWeak->get();
+        $nestedObject = $nestedWeak?->get();
+        $outerObject = $outerWeak?->get();
+        $anchorObject = $anchorWeak->get();
+        return [
+            'seed' => $seedObject === null ? false : has_filter($hook, [$seedObject, '__invoke']),
+            'victim' => $victimObject === null ? false : has_filter($hook, [$victimObject, '__invoke']),
+            'nested' => $nestedObject === null ? false : has_filter($hook, [$nestedObject, '__invoke']),
+            'outer' => $outerObject === null ? false : has_filter($hook, [$outerObject, '__invoke']),
+            'anchor' => $anchorObject === null ? false : has_filter($hook, [$anchorObject, '__invoke']),
+            'any' => has_filter($hook),
+            'weak_alive' => [
+                'seed' => $seedObject !== null,
+                'victim' => $victimObject !== null,
+                'nested' => $nestedObject !== null,
+                'outer' => $outerObject !== null,
+                'anchor' => $anchorObject !== null,
+            ],
+        ];
+    };
+    $before = $status();
+    $state['phase'] = 'first_apply';
+    $firstValue = apply_filters($hook, 'seed');
+    $firstTrace = $state['trace'];
+    $firstEvents = $state['events'];
+    $afterFirst = $status();
+    $state['phase'] = 'second_apply';
+    $state['trace'] = [];
+    $secondValue = apply_filters($hook, 'seed');
+    $secondTrace = $state['trace'];
+    $secondEvents = array_slice($state['events'], count($firstEvents));
+    $afterSecond = $status();
+    $state['phase'] = 'cleanup';
+    foreach ([$seedWeak, $victimWeak, $nestedWeak, $outerWeak, $anchorWeak] as $reference) {
+        $object = $reference?->get();
+        if ($object !== null) {
+            $priority = has_filter($hook, [$object, '__invoke']);
+            if ($priority !== false) {
+                remove_filter($hook, [$object, '__invoke'], $priority);
+            }
+            unset($object);
+        }
+    }
+    unset($status, $operation, $seedOnCall);
+    $state['phase'] = 'request_end';
+
+    return [
+        'warnings' => $state['warnings'],
+        'handler' => $state['handler'],
+        'outer_add_result' => $state['outer_add_result'],
+        'outer_throwable' => $state['outer_throwable'],
+        'before' => $before,
+        'after_first' => $afterFirst,
+        'first_apply' => ['value' => $firstValue, 'trace' => $firstTrace],
+        'events_after_first' => $firstEvents,
+        'destructors_after_first' => array_values(array_filter(
+            $state['destructors'],
+            static fn (array $item): bool => $item['phase'] !== 'cleanup',
+        )),
+        'after_second' => $afterSecond,
+        'second_apply' => ['value' => $secondValue, 'trace' => $secondTrace],
+        'events_after_second' => $secondEvents,
+        'destructors_final' => $state['destructors'],
+    ];
+}
+
+function callable_program_priority_float_accepted_args_lifetime_leaf(string $case): array
+{
+    $hook = 'callable-priority-cow-float-accepted-lifetime-' . $case;
+    $trigger = match ($case) {
+        'remove_at_isset' => 1,
+        'remove_at_cast' => 2,
+        'remove_at_write' => 3,
+        default => 0,
+    };
+    $state = [
+        'phase' => 'setup',
+        'trace' => [],
+        'events' => [],
+        'warnings' => [],
+        'destructors' => [],
+        'handler_observation' => null,
+        'outer_add_result' => null,
+        'outer_throwable' => null,
+    ];
+    $seedObject = new CallablePriorityCowListener('seed', $state);
+    $seedWeak = WeakReference::create($seedObject);
+    $anchorObject = new CallablePriorityCowListener('anchor', $state);
+    $anchorWeak = WeakReference::create($anchorObject);
+    $outerObject = new CallablePriorityCowListener('outer', $state);
+    $outerWeak = WeakReference::create($outerObject);
+    add_filter($hook, [$seedObject, '__invoke'], 7, 1);
+    add_filter($hook, [$anchorObject, '__invoke'], 10, 1);
+    $state['phase'] = 'before_outer_add';
+
+    $warningIndex = 0;
+    set_error_handler(static function (int $severity, string $message) use (
+        &$state,
+        &$warningIndex,
+        &$seedObject,
+        $seedWeak,
+        $outerWeak,
+        $hook,
+        $trigger,
+    ): bool {
+        $warningIndex++;
+        $state['warnings'][] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+        $state['events'][] = ['kind' => 'warning', 'index' => $warningIndex];
+        if ($trigger > 0 && $warningIndex === $trigger) {
+            $state['phase'] = 'handler_enter';
+            $target = $seedWeak->get();
+            $outerTarget = $outerWeak->get();
+            $state['handler_observation'] = [
+                'entry_seed_alive' => $target !== null,
+                'entry_seed_priority' => $target === null ? false : has_filter($hook, [$target, '__invoke']),
+                'entry_outer_priority' => $outerTarget === null ? false : has_filter($hook, [$outerTarget, '__invoke']),
+            ];
+            $state['events'][] = [
+                'kind' => 'handler_enter',
+                'seed_alive' => $target !== null,
+                'outer_priority' => $outerTarget === null ? false : has_filter($hook, [$outerTarget, '__invoke']),
+            ];
+            $state['handler_observation']['remove_seed'] = $target === null
+                ? false
+                : remove_filter($hook, [$target, '__invoke'], 7);
+            unset($target);
+            $seedObject = null;
+            $state['phase'] = 'handler_after_remove';
+            $state['handler_observation']['after_remove_seed_alive'] = $seedWeak->get() !== null;
+            $state['handler_observation']['after_remove_seed_priority'] = $seedWeak->get() === null
+                ? false
+                : has_filter($hook, [$seedWeak->get(), '__invoke']);
+            $state['events'][] = [
+                'kind' => 'handler_exit',
+                'seed_alive' => $seedWeak->get() !== null,
+                'outer_priority' => $outerTarget === null ? false : has_filter($hook, [$outerTarget, '__invoke']),
+            ];
+            unset($outerTarget);
+        }
+
+        return true;
+    });
+    try {
+        $state['outer_add_result'] = add_filter($hook, [$outerObject, '__invoke'], 7.5, new stdClass());
+    } catch (Throwable $throwable) {
+        $state['outer_throwable'] = [
+            'class_hex' => bin2hex($throwable::class),
+            'message_hex' => bin2hex($throwable->getMessage()),
+        ];
+    } finally {
+        restore_error_handler();
+    }
+    $state['phase'] = 'after_outer_add';
+    $status = [
+        'seed_alive' => $seedWeak->get() !== null,
+        'seed_priority' => $seedWeak->get() === null ? false : has_filter($hook, [$seedWeak->get(), '__invoke']),
+        'outer_alive' => $outerWeak->get() !== null,
+        'outer_priority' => $outerWeak->get() === null ? false : has_filter($hook, [$outerWeak->get(), '__invoke']),
+        'anchor_alive' => $anchorWeak->get() !== null,
+        'anchor_priority' => $anchorWeak->get() === null ? false : has_filter($hook, [$anchorWeak->get(), '__invoke']),
+        'any' => has_filter($hook),
+    ];
+    foreach ([[$seedWeak, 7], [$outerWeak, 7], [$anchorWeak, 10]] as [$reference, $priority]) {
+        $object = $reference->get();
+        if ($object !== null && has_filter($hook, [$object, '__invoke']) !== false) {
+            remove_filter($hook, [$object, '__invoke'], $priority);
+        }
+    }
+    $state['phase'] = 'cleanup';
+    unset($seedObject, $outerObject, $anchorObject);
+
+    return [
+        'warning_target' => $trigger,
+        'warnings' => $state['warnings'],
+        'handler' => $state['handler_observation'],
+        'outer_add_result' => $state['outer_add_result'],
+        'outer_throwable' => $state['outer_throwable'],
+        'after_outer_add' => $status,
+        'events' => $state['events'],
+        'destructors' => $state['destructors'],
+    ];
+}
+
+function callable_program_priority_throwable_cleanup_leaf(string $case): array
+{
+    $hook = 'callable-priority-throwable-cleanup-' . $case;
+    $trigger = str_starts_with($case, 'isset_') ? 1 : 2;
+    $throwDestructor = str_ends_with($case, 'throwing_destructor');
+    $state = [
+        'phase' => 'setup',
+        'warnings' => [],
+        'events' => [],
+        'throwable_a' => null,
+        'throwable_b' => null,
+        'handler' => null,
+        'outer_add_result' => null,
+        'caught' => null,
+    ];
+    $seed = new CallablePriorityThrowableSeed($state, $throwDestructor);
+    $seedWeak = WeakReference::create($seed);
+    $anchor = new CallablePriorityThrowableAnchor();
+    $anchorWeak = WeakReference::create($anchor);
+    $outer = static fn (mixed $value): mixed => $value . ':outer';
+    $outerWeak = WeakReference::create($outer);
+    add_filter($hook, [$seed, '__invoke'], 7, 1);
+    add_filter($hook, [$anchor, '__invoke'], 10, 1);
+    $state['phase'] = 'before_outer_add';
+
+    $warningIndex = 0;
+    set_error_handler(static function (int $severity, string $message) use (
+        &$state,
+        &$warningIndex,
+        &$seed,
+        $seedWeak,
+        $outerWeak,
+        $hook,
+        $trigger,
+    ): bool {
+        $warningIndex++;
+        $state['warnings'][] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+        $state['events'][] = ['kind' => 'warning', 'index' => $warningIndex];
+        if ($warningIndex === $trigger) {
+            $state['phase'] = 'handler_enter';
+            $seedObject = $seedWeak->get();
+            $outerObject = $outerWeak->get();
+            $state['handler'] = [
+                'warning_index' => $warningIndex,
+                'seed_alive_at_entry' => $seedObject !== null,
+                'seed_priority_at_entry' => $seedObject === null ? false : has_filter($hook, [$seedObject, '__invoke']),
+                'outer_priority_at_entry' => $outerObject === null ? false : has_filter($hook, $outerObject),
+                'remove_seed' => $seedObject === null ? false : remove_filter($hook, [$seedObject, '__invoke'], 7),
+            ];
+            $state['events'][] = ['kind' => 'handler_enter', 'index' => $warningIndex];
+            unset($seedObject);
+            $seed = null;
+            $state['phase'] = 'handler_before_throw_a';
+            $state['handler']['seed_alive_after_alias_clear'] = $seedWeak->get() !== null;
+            $state['handler']['seed_priority_after_alias_clear'] = $seedWeak->get() === null
+                ? false
+                : has_filter($hook, [$seedWeak->get(), '__invoke']);
+            $state['events'][] = [
+                'kind' => 'handler_before_throw_a',
+                'seed_alive' => $seedWeak->get() !== null,
+            ];
+            $throwable = new RuntimeException('A from warning handler');
+            $state['throwable_a'] = WeakReference::create($throwable);
+            $state['handler']['outer_priority_before_throw_a'] = $outerObject === null
+                ? false
+                : has_filter($hook, $outerObject);
+            $state['events'][] = ['kind' => 'handler_throw_a'];
+            unset($outerObject);
+            throw $throwable;
+        }
+        return true;
+    });
+
+    try {
+        $state['outer_add_result'] = add_filter($hook, $outer, 7.5, 1);
+        $state['phase'] = 'after_outer_add';
+    } catch (Throwable $throwable) {
+        $state['caught'] = $throwable;
+        $state['phase'] = 'caught';
+        $state['events'][] = ['kind' => 'outer_caught', 'class_hex' => bin2hex($throwable::class)];
+    } finally {
+        restore_error_handler();
+    }
+
+    $caught = $state['caught'];
+    $chain = [];
+    for ($current = $caught, $depth = 0; $current !== null && $depth < 8; $current = $current->getPrevious(), $depth++) {
+        $chain[] = [
+            'class_hex' => bin2hex($current::class),
+            'message_hex' => bin2hex($current->getMessage()),
+            'same_as_a' => $state['throwable_a']?->get() === $current,
+            'same_as_b' => $state['throwable_b']?->get() === $current,
+        ];
+    }
+    $after = [
+        'seed_alive' => $seedWeak->get() !== null,
+        'seed_priority' => $seedWeak->get() === null ? false : has_filter($hook, [$seedWeak->get(), '__invoke']),
+        'outer_alive' => $outerWeak->get() !== null,
+        'outer_priority' => $outerWeak->get() === null ? false : has_filter($hook, $outerWeak->get()),
+        'anchor_alive' => $anchorWeak->get() !== null,
+        'anchor_priority' => $anchorWeak->get() === null ? false : has_filter($hook, [$anchorWeak->get(), '__invoke']),
+        'any' => has_filter($hook),
+    ];
+
+    foreach ([[$seedWeak, '__invoke', 7], [$outerWeak, null, 7], [$anchorWeak, '__invoke', 10]] as [$reference, $method, $priority]) {
+        $object = $reference->get();
+        if ($object !== null) {
+            $callback = $method === null ? $object : [$object, $method];
+            if (has_filter($hook, $callback) !== false) {
+                remove_filter($hook, $callback, $priority);
+            }
+        }
+    }
+    unset($seed, $outer, $anchor, $object, $callback);
+
+    return [
+        'warning_target' => $trigger,
+        'warnings' => $state['warnings'],
+        'handler' => $state['handler'],
+        'outer_add_result' => $state['outer_add_result'],
+        'caught' => $caught === null ? null : [
+            'class_hex' => bin2hex($caught::class),
+            'message_hex' => bin2hex($caught->getMessage()),
+            'same_as_a' => $state['throwable_a']?->get() === $caught,
+            'same_as_b' => $state['throwable_b']?->get() === $caught,
+            'previous_chain' => $chain,
+        ],
+        'after_outer_add' => $after,
+        'events' => $state['events'],
+    ];
+}
+
+function callable_program_priority_cow_cases(): array
+{
+    return [
+        'float_priority' => [
+            'control' => callable_program_priority_float_leaf('control'),
+            'isset_add' => callable_program_priority_float_leaf('isset_add'),
+            'isset_remove_bucket' => callable_program_priority_float_leaf('isset_remove_bucket'),
+            'write_add' => callable_program_priority_float_leaf('write_add'),
+            'write_remove_bucket' => callable_program_priority_float_leaf('write_remove_bucket'),
+        ],
+        'accepted_args_partial_bucket' => [
+            'control' => callable_program_priority_accepted_args_partial_leaf('control'),
+            'add_remove_victim' => callable_program_priority_accepted_args_partial_leaf('add_remove_victim'),
+        ],
+        'accepted_args_reentry' => [
+            'readonly' => callable_program_priority_accepted_args_reentry_leaf('readonly'),
+            'remove_bucket' => callable_program_priority_accepted_args_reentry_leaf('remove_bucket'),
+            'remove_recreate' => callable_program_priority_accepted_args_reentry_leaf('remove_recreate'),
+        ],
+        'float_accepted_args_lifetime' => [
+            'control' => callable_program_priority_float_accepted_args_lifetime_leaf('control'),
+            'remove_at_isset' => callable_program_priority_float_accepted_args_lifetime_leaf('remove_at_isset'),
+            'remove_at_cast' => callable_program_priority_float_accepted_args_lifetime_leaf('remove_at_cast'),
+            'remove_at_write' => callable_program_priority_float_accepted_args_lifetime_leaf('remove_at_write'),
+        ],
+        'throwable_cleanup' => [
+            'isset_control' => callable_program_priority_throwable_cleanup_leaf('isset_control'),
+            'isset_throwing_destructor' => callable_program_priority_throwable_cleanup_leaf('isset_throwing_destructor'),
+            'write_control' => callable_program_priority_throwable_cleanup_leaf('write_control'),
+            'write_throwing_destructor' => callable_program_priority_throwable_cleanup_leaf('write_throwing_destructor'),
+        ],
+    ];
+}
+
 function callable_program_run(): array
 {
     $coercions = callable_program_coercion_cases();
@@ -1510,5 +2270,12 @@ function callable_program_run(): array
     $counterCow['nested_read_owners']['inner_increment']['control'] = callable_program_counter_cow_nested_read_leaf('control', 102201.5);
     $counterCow['nested_read_owners']['inner_increment']['nested_write'] = callable_program_counter_cow_nested_read_leaf('nested_write', 102202.5);
 
-    return ['base' => $base, 'coercions' => $coercions, 'counter_cow' => $counterCow];
+    $priorityCow = callable_program_priority_cow_cases();
+
+    return [
+        'base' => $base,
+        'coercions' => $coercions,
+        'counter_cow' => $counterCow,
+        'priority_cow' => $priorityCow,
+    ];
 }

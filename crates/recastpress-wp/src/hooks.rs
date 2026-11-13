@@ -323,7 +323,7 @@ struct Frame<C> {
     iteration: Vec<PhpKey>,
     cursor: usize,
     running_priority: Option<PhpKey>,
-    bucket: Option<Vec<Option<ContextCallback<C>>>>,
+    bucket: Option<Vec<ContextCallback<C>>>,
     bucket_priority: Option<PhpKey>,
     callback_cursor: usize,
     value: PhpValue,
@@ -385,8 +385,10 @@ pub enum HookStep {
     Complete(PhpValue),
 }
 
+pub(crate) type CallbackMap<C> = Vec<(PhpKey, Vec<ContextCallback<C>>)>;
+
 pub(crate) struct Storage<C> {
-    callbacks: Vec<(PhpKey, Vec<ContextCallback<C>>)>,
+    callbacks: Arc<CallbackMap<C>>,
     priorities: Vec<PhpKey>,
     frames: Vec<Frame<C>>,
     doing_action: bool,
@@ -396,7 +398,7 @@ pub(crate) struct Storage<C> {
 impl<C> Default for Storage<C> {
     fn default() -> Self {
         Self {
-            callbacks: Vec::new(),
+            callbacks: Arc::new(Vec::new()),
             priorities: Vec::new(),
             frames: Vec::new(),
             doing_action: false,
@@ -425,11 +427,6 @@ impl<C> Storage<C> {
             .map(|index| &self.callbacks[index].1)
     }
 
-    fn callback_bucket_mut(&mut self, priority: &PhpKey) -> Option<&mut Vec<ContextCallback<C>>> {
-        let index = self.callback_index(priority)?;
-        Some(&mut self.callbacks[index].1)
-    }
-
     pub(crate) fn cancel_frame(&mut self) {
         self.frames.pop();
         if self.frames.is_empty() {
@@ -442,12 +439,22 @@ impl<C> Storage<C> {
         priority: &HookPriority,
         callback: ContextCallback<C>,
     ) -> bool {
-        let existed = self.callback_index(&priority.key).is_some();
+        Self::add_entry_to_map(Arc::make_mut(&mut self.callbacks), priority, callback)
+    }
+
+    pub(crate) fn add_entry_to_map(
+        map: &mut CallbackMap<C>,
+        priority: &HookPriority,
+        callback: ContextCallback<C>,
+    ) -> bool {
+        let existed = map.iter().any(|(key, _)| key == &priority.key);
         if !existed {
-            self.callbacks.push((priority.key.clone(), Vec::new()));
+            map.push((priority.key.clone(), Vec::new()));
         }
-        let callbacks = self
-            .callback_bucket_mut(&priority.key)
+        let callbacks = map
+            .iter_mut()
+            .find(|(key, _)| key == &priority.key)
+            .map(|(_, callbacks)| callbacks)
             .expect("priority bucket was inserted");
         if let Some(existing) = callbacks
             .iter_mut()
@@ -467,23 +474,39 @@ impl<C> Storage<C> {
     }
 
     pub(crate) fn finish_add(&mut self, priority: &HookPriority, priority_existed: bool) {
-        if !self.priorities.iter().any(|key| key == &priority.key) {
-            self.priorities.push(priority.key.clone());
+        if !priority_existed && self.callbacks.len() > 1 {
+            Arc::make_mut(&mut self.callbacks)
+                .sort_by(|(left, _), (right, _)| php_sort_numeric_order(left, right));
         }
-        if !priority_existed && self.priorities.len() > 1 {
-            self.priorities.sort_by(php_sort_numeric_order);
+        self.priorities = self.callbacks.iter().map(|(key, _)| key.clone()).collect();
+        self.resort_active(Some(priority), priority_existed);
+    }
+
+    /// Complete the live side of WP_Hook::add_filter after an assignment whose
+    /// captured callback-map operand had been detached by warning-handler COW.
+    /// The callback row itself is not copied into the live map, but WP still
+    /// rebuilds priorities and resorts the active iteration from live callbacks.
+    pub(crate) fn finish_add_detached(&mut self, priority: &HookPriority, priority_existed: bool) {
+        if !priority_existed && self.callbacks.len() > 1 {
+            Arc::make_mut(&mut self.callbacks)
+                .sort_by(|(left, _), (right, _)| php_sort_numeric_order(left, right));
         }
+        self.priorities = self.callbacks.iter().map(|(key, _)| key.clone()).collect();
         self.resort_active(Some(priority), priority_existed);
     }
 
     pub(crate) fn remove_entry(&mut self, priority: &HookPriority, id: &CallbackId) -> bool {
-        let Some(callbacks) = self.callback_bucket_mut(&priority.key) else {
+        let Some(index) = self
+            .callback_bucket(&priority.key)
+            .and_then(|callbacks| callbacks.iter().position(|callback| callback.id == *id))
+        else {
             return false;
         };
-        let Some(index) = callbacks.iter().position(|callback| callback.id == *id) else {
-            return false;
-        };
-        drop(callbacks.remove(index));
+        let callbacks = Arc::make_mut(&mut self.callbacks)
+            .iter_mut()
+            .find(|(key, _)| key == &priority.key)
+            .expect("priority bucket exists");
+        drop(callbacks.1.remove(index));
         true
     }
 
@@ -505,7 +528,7 @@ impl<C> Storage<C> {
     /// untouched until WP_Hook's later array_keys/resort phase.
     pub(crate) fn unset_priority_bucket(&mut self, priority: &HookPriority) -> bool {
         if let Some(index) = self.callback_index(&priority.key) {
-            drop(self.callbacks.remove(index));
+            drop(Arc::make_mut(&mut self.callbacks).remove(index));
             true
         } else {
             false
@@ -526,11 +549,11 @@ impl<C> Storage<C> {
         }
         if let Some(priority) = priority {
             if let Some(index) = self.callback_index(&priority.key) {
-                drop(self.callbacks.remove(index));
+                drop(Arc::make_mut(&mut self.callbacks).remove(index));
             }
             self.priorities.retain(|key| key != &priority.key);
         } else {
-            drop(std::mem::take(&mut self.callbacks));
+            drop(std::mem::replace(&mut self.callbacks, Arc::new(Vec::new())));
             self.priorities.clear();
         }
         true
@@ -539,7 +562,7 @@ impl<C> Storage<C> {
     pub(crate) fn finish_remove_all(&mut self) {
         self.priorities
             .retain(|key| self.callbacks.iter().any(|(candidate, _)| candidate == key));
-        for (key, _) in &self.callbacks {
+        for (key, _) in self.callbacks.iter() {
             if !self.priorities.iter().any(|candidate| candidate == key) {
                 self.priorities.push(key.clone());
             }
@@ -560,6 +583,12 @@ impl<C> Storage<C> {
     }
     pub(crate) fn callbacks_empty(&self) -> bool {
         self.callbacks.is_empty()
+    }
+    pub(crate) fn callback_map(&self) -> Arc<CallbackMap<C>> {
+        Arc::clone(&self.callbacks)
+    }
+    pub(crate) fn map_has_priority(map: &CallbackMap<C>, priority: &PhpKey) -> bool {
+        map.iter().any(|(key, _)| key == priority)
     }
     pub(crate) fn has_priority(&self, priority: &PhpKey) -> bool {
         self.callback_index(priority).is_some()
@@ -956,7 +985,7 @@ pub(crate) fn advance<C: Context>(context: &mut C, slot: usize) -> Result<HookSt
                         .find(|(key, _)| key == &priority)
                         .map(|(_, callbacks)| callbacks.clone())
                         .unwrap_or_default();
-                    frame.bucket = Some(snapshot.into_iter().map(Some).collect());
+                    frame.bucket = Some(snapshot);
                     frame.bucket_priority = Some(priority.clone());
                     frame.callback_cursor = 0;
                 }
@@ -969,10 +998,7 @@ pub(crate) fn advance<C: Context>(context: &mut C, slot: usize) -> Result<HookSt
                     if frame.current_callback_cursor != Some(cursor) {
                         frame.current_callback = None;
                         frame.current_callback_cursor = None;
-                        let callback = bucket[cursor]
-                            .as_ref()
-                            .expect("unvisited snapshot callback")
-                            .clone();
+                        let callback = bucket[cursor].clone();
                         frame.current_callback = Some(callback);
                         frame.current_callback_cursor = Some(cursor);
                     }
@@ -1043,9 +1069,6 @@ pub(crate) fn advance<C: Context>(context: &mut C, slot: usize) -> Result<HookSt
                     .last_mut()
                     .expect("active hook frame");
                 frame.value = output;
-                if let Some(bucket) = frame.bucket.as_mut() {
-                    bucket[frame.callback_cursor] = None;
-                }
                 frame.callback_cursor += 1;
             }
         }
@@ -1066,11 +1089,12 @@ pub(crate) fn resume<C: Context>(
         return Err(HookError::NoPhpCallbackPending);
     }
     frame.value = value;
-    if let Some(bucket) = frame.bucket.as_mut() {
-        let callback = bucket
-            .get_mut(frame.callback_cursor)
-            .ok_or(HookError::InvalidDispatchTicket)?;
-        *callback = None;
+    if frame
+        .bucket
+        .as_ref()
+        .is_some_and(|bucket| frame.callback_cursor >= bucket.len())
+    {
+        return Err(HookError::InvalidDispatchTicket);
     }
     frame.waiting_for_php = false;
     frame.callback_cursor += 1;

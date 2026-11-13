@@ -195,6 +195,11 @@ final class CallableApiAdapter
             return;
         }
 
+        if ($operation === 'release_callable_unwind') {
+            $this->handleCallableUnwindRelease($frame, null);
+            return;
+        }
+
         if ($operation === 'close_registry') {
             expect_payload_keys($frame, ['effect_id', 'operation'], 'callable_close_registry');
             $effectId = $payload['effect_id'];
@@ -711,7 +716,69 @@ final class CallableApiAdapter
             return;
         }
 
+        if ($operation === 'release_callable_unwind') {
+            $this->handleCallableUnwindRelease($frame, $expectedParent);
+            return;
+        }
+
         throw new RuntimeException('callable_unknown_invoke_operation');
+    }
+
+    private function handleCallableUnwindRelease(array $frame, ?string $parentEffect): void
+    {
+        expect_payload_keys(
+            $frame,
+            ['operation', 'effect_id', 'handle', 'throwable'],
+            $parentEffect === null ? 'callable_root_unwind_release' : 'callable_unwind_release',
+        );
+        $payload = $frame['payload'];
+        $effectId = $payload['effect_id'];
+        if (!is_string($effectId) || $effectId === '') {
+            throw new RuntimeException('callable_unwind_release_effect_id');
+        }
+        if (!is_array($payload['handle']) || !is_array($payload['throwable'])) {
+            throw new RuntimeException('callable_unwind_release_handles');
+        }
+
+        // Resolve both descriptors before releasing anything. Registry::resolve
+        // checks the complete descriptor shape, token, generation, and kind.
+        $this->registry->resolve($payload['handle'], 'callable');
+        $original = $this->registry->resolve($payload['throwable'], 'throwable');
+        if (!$original instanceof Throwable) {
+            throw new RuntimeException('callable_unwind_release_throwable');
+        }
+
+        $completion = null;
+        $this->withEffect($effectId, function () use ($payload, $original, &$completion): void {
+            $releaseCompletedNormally = false;
+            try {
+                try {
+                    throw $original;
+                } finally {
+                    // This is the actual final lease release. PHP may run the
+                    // callback destructor here and replace $original with its
+                    // Throwable, attaching $original as getPrevious().
+                    if (!$this->registry->release($payload['handle'])) {
+                        throw new RuntimeException('callable_unwind_release_not_final');
+                    }
+                    $releaseCompletedNormally = true;
+                }
+            } catch (Throwable $error) {
+                if ($releaseCompletedNormally && $error === $original) {
+                    $completion = ['kind' => 'value', 'value' => ['released' => true]];
+                } else {
+                    $completion = $this->throwableCompletion($error);
+                }
+            }
+        });
+
+        if (!is_array($completion)) {
+            throw new RuntimeException('callable_unwind_release_completion');
+        }
+        $this->wire->send('resume', [
+            'effect_id' => $effectId,
+            'completion' => $completion,
+        ], $parentEffect);
     }
 
     private function decodeCompletion($completion)

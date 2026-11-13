@@ -115,6 +115,9 @@ def bridge_comparison(report):
             + ['counter_cow.' + group + '.' + phase + '.' + mode
                for group, phases in report['oracle']['cases']['counter_cow'].items()
                for phase, modes in phases.items() for mode in modes]
+            + ['priority_cow.' + group + '.' + case
+               for group, cases in report['oracle']['cases']['priority_cow'].items()
+               for case in cases]
         ), 'all_program_observations_matched': True}
 
 def main():
