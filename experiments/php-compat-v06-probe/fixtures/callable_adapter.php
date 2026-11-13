@@ -184,11 +184,15 @@ final class CallableApiAdapter
     {
         $argumentNodes = array_map(self::encodePod(...), $args);
         [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+        $GLOBALS['wp_current_filter'][] = $hookName;
 
-        return $this->api('do_action', [
+        $result = $this->api('do_action', [
             'arguments' => $arguments,
             'args' => $argumentNodes,
         ], $handles);
+        array_pop($GLOBALS['wp_current_filter']);
+
+        return $result;
     }
 
     public function currentFilter()

@@ -44,6 +44,8 @@ const API_NAMES: [&str; 14] = [
     "did_action",
 ];
 const MAX_RELEASE_PASSES: usize = 64;
+const NESTED_CAUGHT_PARENT_HOOK: &str = "callable-action-nested-caught-parent";
+const NESTED_CAUGHT_CHILD_HOOK: &str = "callable-action-nested-caught-child";
 
 fn decode_hex(value: &str, label: &str) -> Result<Vec<u8>, String> {
     if !value.len().is_multiple_of(2)
@@ -401,6 +403,7 @@ struct CallablePeer<'a, R, W> {
     handles: HashMap<PhpHandle, HandleState>,
     slot_generation_high_water: HashMap<u32, u32>,
     throwable_diagnostics: HashMap<PhpHandle, (String, String)>,
+    nested_caught_child_throwable: Option<PhpHandle>,
     effect_ids: HashMap<String, EffectId>,
     api_arguments: Vec<HashMap<String, PhpHandle>>,
     hook_names: Vec<HookArgument>,
@@ -1996,7 +1999,49 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .dispatcher
             .begin_action_effectful_typed(&hook, &args)
             .map_err(|error| format!("begin_action:{error:?}"))?;
-        self.drive_dispatch(ticket, &hook, operation, parent_wire)
+        let completion = self.drive_dispatch(ticket, &hook, operation, parent_wire)?;
+        if hook.original == HookScalar::Bytes(NESTED_CAUGHT_CHILD_HOOK.as_bytes().to_vec()) {
+            let Completion::PhpThrowable(handle) = completion else {
+                return Err("nested_caught_child_did_not_throw".into());
+            };
+            if handle.kind() != PhpHandleKind::Throwable
+                || self.handles.get(&handle) != Some(&HandleState::Throwable)
+                || self.nested_caught_child_throwable.replace(handle).is_some()
+            {
+                return Err("nested_caught_child_throwable_handle_mismatch".into());
+            }
+            return Ok(Completion::PhpThrowable(handle));
+        }
+        if hook.original == HookScalar::Bytes(NESTED_CAUGHT_PARENT_HOOK.as_bytes().to_vec()) {
+            if completion != Completion::Value(PhpValue::Null) {
+                return Err("nested_caught_parent_did_not_return_null".into());
+            }
+            self.validate_nested_caught_dispatch_state()?;
+        }
+        Ok(completion)
+    }
+
+    fn validate_nested_caught_dispatch_state(&self) -> Result<(), String> {
+        let parent = HookArgument::bytes(NESTED_CAUGHT_PARENT_HOOK);
+        let child = HookArgument::bytes(NESTED_CAUGHT_CHILD_HOOK);
+        if self.nested_caught_child_throwable.is_none()
+            || self.dispatcher.did_action_typed(&parent) != 1
+            || self.dispatcher.did_action_typed(&child) != 1
+            || self.dispatcher.current_hook_typed()
+                != Some(&HookScalar::Bytes(
+                    NESTED_CAUGHT_PARENT_HOOK.as_bytes().to_vec(),
+                ))
+            || !self.dispatcher.doing_hook_typed(Some(&HookScalar::Bytes(
+                NESTED_CAUGHT_PARENT_HOOK.as_bytes().to_vec(),
+            )))
+            || self.dispatcher.doing_hook_typed(Some(&HookScalar::Bytes(
+                NESTED_CAUGHT_CHILD_HOOK.as_bytes().to_vec(),
+            )))
+            || self.dispatcher.hook_stack_depth() != 1
+        {
+            return Err("nested_caught_dispatch_state_mismatch".into());
+        }
+        Ok(())
     }
 
     fn api_apply(
@@ -2813,6 +2858,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         handles: HashMap::new(),
         slot_generation_high_water: HashMap::new(),
         throwable_diagnostics: HashMap::new(),
+        nested_caught_child_throwable: None,
         effect_ids: HashMap::new(),
         api_arguments: Vec::new(),
         hook_names: Vec::new(),
@@ -3050,6 +3096,11 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
             .map(|(key, value)| (key.clone(), json!(value)))
             .collect(),
     );
+    let nested_caught_throw = if scenario == "action_api" {
+        Some(nested_caught_throw_summary(&observation)?)
+    } else {
+        None
+    };
     let summary = json!({
         "scenario":scenario,"continuation_peer":true,
         "frames_from_php":peer.wire.in_seq,"frames_from_rust":peer.wire.out_seq,
@@ -3058,6 +3109,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         "boundary_effects":peer.boundary_effects,"argument_release_effects":peer.argument_release_effects,
         "late_call_rejected":late_call_rejected,"continuation_depth_after":peer.continuation.depth(),
         "state_after":format!("{:?}",peer.continuation.state()),"php_observation":observation,
+        "nested_caught_throw":nested_caught_throw,
         "registry_observation":registry_observation,
     });
     if peer.continuation.depth() != 0 || peer.continuation.state() != &RequestState::Finished {
@@ -3071,6 +3123,80 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         eprintln!("V06_CALLABLES_OK continuation_peer=true");
     }
     Ok(summary)
+}
+
+fn nested_caught_throw_summary(observation: &Value) -> Result<Value, String> {
+    let nested = observation
+        .pointer("/action_api/nested_caught_throw")
+        .ok_or("nested_caught_throw_observation_missing")?;
+    exact_keys(
+        nested,
+        &["events", "do_action_return", "after"],
+        "nested_caught_throw_observation",
+    )?;
+    let events = nested
+        .get("events")
+        .and_then(Value::as_array)
+        .ok_or("nested_caught_throw_events")?;
+    let trace = events
+        .iter()
+        .map(|event| string(event, "event"))
+        .collect::<Result<Vec<_>, _>>()?;
+    let expected_trace = [
+        "parent-enter",
+        "child-enter",
+        "child-throw",
+        "parent-catch",
+        "parent-resume",
+    ];
+    if trace != expected_trace {
+        return Err("nested_caught_throw_trace_mismatch".into());
+    }
+    let parent_catch = events
+        .iter()
+        .find(|event| event.get("event").and_then(Value::as_str) == Some("parent-catch"))
+        .ok_or("nested_caught_throw_parent_catch_missing")?;
+    if parent_catch.get("same_throwable") != Some(&Value::Bool(true)) {
+        return Err("nested_caught_throw_identity_mismatch".into());
+    }
+    if nested.get("do_action_return") != Some(&Value::Null) {
+        return Err("nested_caught_throw_parent_return_mismatch".into());
+    }
+    let after = nested
+        .get("after")
+        .ok_or("nested_caught_throw_after_missing")?;
+    exact_keys(
+        after,
+        &[
+            "current_action",
+            "doing_parent",
+            "doing_child",
+            "parent_count",
+            "child_count",
+            "stack_depth",
+        ],
+        "nested_caught_throw_after",
+    )?;
+    if string(after, "current_action")? != NESTED_CAUGHT_PARENT_HOOK
+        || after.get("doing_parent") != Some(&Value::Bool(true))
+        || after.get("doing_child") != Some(&Value::Bool(false))
+        || after.get("parent_count").and_then(Value::as_u64) != Some(1)
+        || after.get("child_count").and_then(Value::as_u64) != Some(1)
+        || after.get("stack_depth").and_then(Value::as_u64) != Some(1)
+    {
+        return Err("nested_caught_throw_after_state_mismatch".into());
+    }
+    Ok(json!({
+        "trace":trace,
+        "same_object":true,
+        "parent_do_action_return":null,
+        "parent_did_action":1,
+        "child_did_action":1,
+        "current_action":after["current_action"],
+        "doing_parent":true,
+        "doing_child":false,
+        "stack_depth":1,
+    }))
 }
 
 fn remove_result_after_unbind(
@@ -3103,6 +3229,7 @@ mod tests {
             handles: HashMap::new(),
             slot_generation_high_water: HashMap::new(),
             throwable_diagnostics: HashMap::new(),
+            nested_caught_child_throwable: None,
             effect_ids: HashMap::new(),
             api_arguments: Vec::new(),
             hook_names: Vec::new(),
@@ -3219,6 +3346,54 @@ mod tests {
         assert_eq!(
             peer.register_handle(&descriptor, PhpHandleKind::Throwable, "repeat"),
             Ok(handle)
+        );
+    }
+
+    #[test]
+    fn summarizes_nested_caught_action_throwable_and_rejects_state_changes() {
+        let observation = json!({
+            "action_api": {
+                "nested_caught_throw": {
+                    "events": [
+                        {"event":"parent-enter"},
+                        {"event":"child-enter"},
+                        {"event":"child-throw"},
+                        {"event":"parent-catch","same_throwable":true},
+                        {"event":"parent-resume"}
+                    ],
+                    "do_action_return":null,
+                    "after": {
+                        "current_action":NESTED_CAUGHT_PARENT_HOOK,
+                        "doing_parent":true,
+                        "doing_child":false,
+                        "parent_count":1,
+                        "child_count":1,
+                        "stack_depth":1
+                    }
+                }
+            }
+        });
+        assert_eq!(
+            nested_caught_throw_summary(&observation).unwrap(),
+            json!({
+                "trace":["parent-enter","child-enter","child-throw","parent-catch","parent-resume"],
+                "same_object":true,
+                "parent_do_action_return":null,
+                "parent_did_action":1,
+                "child_did_action":1,
+                "current_action":NESTED_CAUGHT_PARENT_HOOK,
+                "doing_parent":true,
+                "doing_child":false,
+                "stack_depth":1
+            })
+        );
+
+        let mut changed = observation;
+        changed["action_api"]["nested_caught_throw"]["events"][3]["same_throwable"] =
+            Value::Bool(false);
+        assert_eq!(
+            nested_caught_throw_summary(&changed).unwrap_err(),
+            "nested_caught_throw_identity_mismatch"
         );
     }
 

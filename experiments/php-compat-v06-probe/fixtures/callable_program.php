@@ -2646,6 +2646,91 @@ function callable_program_action_api_cases(): array
             'doing_parent' => doing_action($nestedHook), 'doing_child' => doing_action('callable-action-nested-child')];
     }, 10, 9);
     $nestedReturn = do_action($nestedHook, 'outer');
+    $nestedCaughtParentHook = 'callable-action-nested-caught-parent';
+    $nestedCaughtChildHook = 'callable-action-nested-caught-child';
+    $nestedCaughtEvents = [];
+    $nestedCaughtThrowable = null;
+    $nestedCaughtParent = static function (...$args) use (
+        &$nestedCaughtEvents,
+        &$nestedCaughtThrowable,
+        $nestedCaughtParentHook,
+        $nestedCaughtChildHook
+    ): void {
+        $nestedCaughtEvents[] = [
+            'event' => 'parent-enter',
+            'args' => $args,
+            'current_action' => current_action(),
+            'doing_parent' => doing_action($nestedCaughtParentHook),
+            'doing_child' => doing_action($nestedCaughtChildHook),
+            'parent_count' => did_action($nestedCaughtParentHook),
+            'child_count' => did_action($nestedCaughtChildHook),
+        ];
+        try {
+            do_action($nestedCaughtChildHook, 'child-argument');
+        } catch (RuntimeException $throwable) {
+            if ($throwable::class !== RuntimeException::class
+                || $throwable->getMessage() !== 'nested action child boom') {
+                throw $throwable;
+            }
+            $nestedCaughtEvents[] = [
+                'event' => 'parent-catch',
+                'same_throwable' => $throwable === $nestedCaughtThrowable,
+                'class' => $throwable::class,
+                'message' => $throwable->getMessage(),
+                'current_action' => current_action(),
+                'doing_parent' => doing_action($nestedCaughtParentHook),
+                'doing_child' => doing_action($nestedCaughtChildHook),
+                'parent_count' => did_action($nestedCaughtParentHook),
+                'child_count' => did_action($nestedCaughtChildHook),
+            ];
+        }
+        $nestedCaughtEvents[] = [
+            'event' => 'parent-resume',
+            'current_action' => current_action(),
+            'doing_parent' => doing_action($nestedCaughtParentHook),
+            'doing_child' => doing_action($nestedCaughtChildHook),
+            'parent_count' => did_action($nestedCaughtParentHook),
+            'child_count' => did_action($nestedCaughtChildHook),
+        ];
+    };
+    add_action($nestedCaughtParentHook, $nestedCaughtParent, 10, 9);
+    add_action($nestedCaughtChildHook, static function (...$args) use (
+        &$nestedCaughtEvents,
+        &$nestedCaughtThrowable,
+        $nestedCaughtParentHook,
+        $nestedCaughtChildHook
+    ): void {
+        $nestedCaughtEvents[] = [
+            'event' => 'child-enter',
+            'args' => $args,
+            'current_action' => current_action(),
+            'doing_parent' => doing_action($nestedCaughtParentHook),
+            'doing_child' => doing_action($nestedCaughtChildHook),
+            'parent_count' => did_action($nestedCaughtParentHook),
+            'child_count' => did_action($nestedCaughtChildHook),
+        ];
+        $nestedCaughtThrowable = new RuntimeException('nested action child boom');
+        $nestedCaughtEvents[] = [
+            'event' => 'child-throw',
+            'class' => $nestedCaughtThrowable::class,
+            'message' => $nestedCaughtThrowable->getMessage(),
+            'current_action' => current_action(),
+            'doing_parent' => doing_action($nestedCaughtParentHook),
+            'doing_child' => doing_action($nestedCaughtChildHook),
+            'parent_count' => did_action($nestedCaughtParentHook),
+            'child_count' => did_action($nestedCaughtChildHook),
+        ];
+        throw $nestedCaughtThrowable;
+    }, 10, 9);
+    $nestedCaughtReturn = do_action($nestedCaughtParentHook, 'parent-argument');
+    $nestedCaughtAfter = [
+        'current_action' => current_action(),
+        'doing_parent' => doing_action($nestedCaughtParentHook),
+        'doing_child' => doing_action($nestedCaughtChildHook),
+        'parent_count' => did_action($nestedCaughtParentHook),
+        'child_count' => did_action($nestedCaughtChildHook),
+        'stack_depth' => count($GLOBALS['wp_current_filter']),
+    ];
     $noListenerHook = 'callable-action-no-listener';
     $noListenerBefore = did_action($noListenerHook);
     $noListenerReturn = do_action($noListenerHook);
@@ -2711,6 +2796,8 @@ function callable_program_action_api_cases(): array
         'all_hook' => ['events' => $allEvents, 'did_action_without_named' => did_action('callable-action-all-without-named-listener')],
         'counter_independence' => ['before_filter' => $sameNameBeforeFilter, 'after_filter' => $sameNameAfterFilter],
         'nested' => ['events' => $nestedEvents, 'did_action' => did_action($nestedHook), 'current_action' => current_action(), 'doing_action' => doing_action()],
+        'nested_caught_throw' => ['events' => $nestedCaughtEvents, 'do_action_return' => $nestedCaughtReturn,
+            'after' => $nestedCaughtAfter],
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_values' => $counterSeedValues,
         'throw_all' => ['caught' => $throwAllCaught, 'events' => $throwAllEvents, 'after_catch' => $throwAllAfterCatch, 'followup_return' => $throwAllFollowupReturn, 'after_followup' => $throwAllAfterFollowup],
