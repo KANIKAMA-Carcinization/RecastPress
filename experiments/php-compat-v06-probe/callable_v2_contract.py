@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
-from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex,
-    canonical_integer, validate_key, validate_pod)
+import struct
+from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
+    ACTION_COUNTER_SEED_HOOKS, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer, validate_key,
+    validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
 REQUEST = '71'
@@ -3976,6 +3978,29 @@ EXPECTED_HOOK_UNSET_REENTRY = json.loads(r'''{"control":{"case":"control","hook_
 EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_second":true,"has_action_any":true,"has_action_zero_priority":0,"has_action_second_priority":10,"has_action_missing":false,"has_action_wrong_priority":false,"remove_action_wrong_priority":false,"remove_action_first":true,"has_action_after_remove":true},"do_action_returns":{"populated":null,"empty_args":null,"all_args":null,"all_without_named":null,"nested":null,"no_listener":null},"callbacks":[{"event":"first","args":["outer","tail"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":0,"wp_actions":1},{"event":"second","args":["outer","tail"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":0,"wp_actions":1},{"event":"first","args":["filter-seed"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":1,"wp_actions":1},{"event":"second","args":["ignored-first-return"],"current_action":"callable-action-api","doing_action":true,"doing_named":true,"did_action":1,"did_filter":1,"wp_actions":1}],"after_outer":{"did_action":1,"did_filter":0,"current_action":false,"doing_action":false},"empty_args":[{"accepted_args":1,"args":[""]},{"accepted_args":0,"args":[]}],"all_hook":{"events":[{"accepted_args":0,"args":["callable-action-all-args","alpha","beta","gamma"],"current_action":"callable-action-all-args","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-all-args","alpha","beta","gamma"],"current_action":"callable-action-all-args","doing_action":true,"did_action":1,"wp_actions":1},{"named":true,"args":["alpha"]},{"accepted_args":0,"args":["callable-action-all-without-named-listener","solo","extra"],"current_action":"callable-action-all-without-named-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-all-without-named-listener","solo","extra"],"current_action":"callable-action-all-without-named-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-api","filter-seed"],"current_action":"callable-action-api","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-api","filter-seed"],"current_action":"callable-action-api","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-nested","outer"],"current_action":"callable-action-nested","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-nested","outer"],"current_action":"callable-action-nested","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-nested","inner"],"current_action":"callable-action-nested","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-nested","inner"],"current_action":"callable-action-nested","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":0,"args":["callable-action-nested-child","child"],"current_action":"callable-action-nested-child","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-nested-child","child"],"current_action":"callable-action-nested-child","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-no-listener"],"current_action":"callable-action-no-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-no-listener"],"current_action":"callable-action-no-listener","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-all","first"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-throw-all","first"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-all","follow-up"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-throw-all","follow-up"],"current_action":"callable-action-throw-all","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":0,"args":["callable-action-throw-named","first"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":1,"args":["callable-action-throw-named","first"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":1,"wp_actions":1},{"accepted_args":0,"args":["callable-action-throw-named","follow-up"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":2,"wp_actions":2},{"accepted_args":1,"args":["callable-action-throw-named","follow-up"],"current_action":"callable-action-throw-named","doing_action":true,"did_action":2,"wp_actions":2}],"did_action_without_named":1},"counter_independence":{"before_filter":{"did_action":1,"did_filter":0},"after_filter":{"did_action":1,"did_filter":1}},"nested":{"events":[{"event":"outer-enter","args":["outer"],"count":1,"current_action":"callable-action-nested"},{"event":"outer-enter","args":["inner"],"count":2,"current_action":"callable-action-nested"},{"event":"outer-exit","count":2,"current_action":"callable-action-nested"},{"event":"child","args":["child"],"current_action":"callable-action-nested-child","doing_parent":true,"doing_child":true},{"event":"outer-exit","count":2,"current_action":"callable-action-nested"}],"did_action":2,"current_action":"callable-action-throw-named","doing_action":true},"no_listener_count":{"before":0,"after":1},"throw_all":{"caught":{"class":"RuntimeException","message":"action all boom"},"events":[{"event":"all-enter","args":["callable-action-throw-all","first"],"count":1,"current_action":"callable-action-throw-all","doing":true},{"event":"all-enter","args":["callable-action-throw-all","follow-up"],"count":2,"current_action":"callable-action-throw-all","doing":true},{"event":"all-exit"},{"event":"named-after-all","args":["follow-up"]}],"after_catch":{"did_action":1,"current_action":"callable-action-throw-all","doing_action":true,"doing_named":true},"followup_return":null,"after_followup":{"did_action":2,"current_action":"callable-action-throw-all","doing_action":true,"doing_named":true}},"throw_named":{"caught":{"class":"RuntimeException","message":"action named boom"},"events":[{"event":"named-thrower","args":["first"],"count":1,"current_action":"callable-action-throw-named","doing":true},{"event":"named-thrower","args":["follow-up"],"count":2,"current_action":"callable-action-throw-named","doing":true},{"event":"named-later-sibling","args":["follow-up"]}],"after_catch":{"did_action":1,"current_action":"callable-action-throw-named","doing_action":true,"doing_named":true},"followup_return":null,"after_followup":{"did_action":2,"current_action":"callable-action-throw-named","doing_action":true,"doing_named":true}}}''')
 
 
+EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
+_seed_all_hook_events = []
+for _seed_case, _seed_hook in ACTION_COUNTER_SEED_HOOKS.items():
+    for _event in ACTION_COUNTER_SEED_EXPECTATIONS[_seed_case]['events']:
+        def _php_counter_value(value):
+            if value['type'] == 'int':
+                return int(value['value'])
+            if value['type'] == 'float':
+                return struct.unpack('>d', bytes.fromhex(value['bits']))[0]
+            raise ValueError('unsupported action counter seed scalar')
+
+        for _accepted_args in (0, 1):
+            _seed_all_hook_events.append({
+                'accepted_args': _accepted_args,
+                'args': [_seed_hook],
+                'current_action': _seed_hook,
+                'doing_action': True,
+                'did_action': _php_counter_value(_event['did_action']),
+                'wp_actions': _php_counter_value(_event['wp_actions']),
+            })
+EXPECTED_ACTION_API['all_hook']['events'][15:15] = _seed_all_hook_events
+
+
 def validate_action_observation(value):
     exact(value, ('action_api',), 'action API program observation')
     if EXPECTED_ACTION_API is None:
@@ -4048,13 +4073,31 @@ def action_self_check():
     if EXPECTED_ACTION_API is None:
         raise ValueError('pinned WordPress action API observation has not been frozen')
     validate_action_observation({'action_api': EXPECTED_ACTION_API})
+    mutations = []
     changed = json.loads(json.dumps(EXPECTED_ACTION_API))
     changed['do_action_returns']['populated'] = True
-    try:
-        validate_action_observation({'action_api': changed})
-    except ValueError:
-        return True
-    raise AssertionError('changed action API observation accepted')
+    mutations.append(('do_action return', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_values']['int_7']['events'][0]['did_action'] = {'type': 'float', 'bits': '4020000000000000'}
+    mutations.append(('seeded counter wrong type', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_values']['float_7_5']['events'][0]['did_action']['bits'] = '4023000000000000'
+    mutations.append(('seeded counter wrong bits', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_values']['php_int_max']['events'][0]['wp_actions'] = {
+        'type': 'float', 'bits': '43dfffffffffffff'}
+    mutations.append(('PHP_INT_MAX overflow progression', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_values']['php_int_max']['events'][1]['did_action'] = {
+        'type': 'float', 'bits': '43dfffffffffffff'}
+    mutations.append(('seeded did_action read', changed))
+    for label, changed in mutations:
+        try:
+            validate_action_observation({'action_api': changed})
+        except ValueError:
+            continue
+        raise AssertionError('changed action API observation accepted: ' + label)
+    return True
 
 
 def _bounded_nodes(value):
@@ -4104,10 +4147,24 @@ def validate_transcript(streams, result):
     normalized_arguments = {}
     issued_generations = {}
     action_counts = {}
+    action_seed_dispatches = {}
+    action_seed_reads = {}
+    action_seed_keys = {
+        ('string', hook.encode('ascii').hex()): case
+        for case, hook in ACTION_COUNTER_SEED_HOOKS.items()
+    }
 
     def hook_token(key):
         validate_key(key)
         return key['type'], key['hex']
+
+    def action_counter_expected(key):
+        seed_case = action_seed_keys.get(key)
+        if seed_case is not None:
+            progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
+            progress.extend(event['did_action'] for event in ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['events'])
+            return progress[action_seed_dispatches.get(key, 0)]
+        return {'type': 'int', 'value': str(action_counts.get(key, 0))}
 
     def take(direction, kind, parent):
         index = cursor[direction]
@@ -4214,8 +4271,16 @@ def validate_transcript(streams, result):
                     raise ValueError('has API search result differs')
             if name == 'did_filter':
                 validate_did_filter_result(node)
-            if name == 'did_action' and (kind != 'int' or canonical_integer(node['value'], 'did_action') < 0):
-                raise ValueError('did_action result differs')
+            if name == 'did_action':
+                validate_pod(node)
+                seed_key = hook_token(context['hook']['key']) if context['hook'] is not None else None
+                if seed_key in action_seed_keys:
+                    _require_exact(node, action_counter_expected(seed_key), 'seeded did_action result')
+                elif kind == 'int':
+                    if canonical_integer(node['value'], 'did_action') < 0:
+                        raise ValueError('did_action result differs')
+                else:
+                    raise ValueError('did_action result differs')
             if name == 'do_action' and node != {'type': 'null'}:
                 raise ValueError('do_action result is not null')
         if name in ('apply_filters', 'do_action'):
@@ -4404,25 +4469,40 @@ def validate_transcript(streams, result):
                     raise ValueError('unsupported scalar was substituted')
             elif action == 'action_counter_increment':
                 validate_pod(value)
-                if value['type'] != 'int':
-                    raise ValueError('action counter increment result is not an integer')
                 key = hook_token(context['hook']['key'])
-                expected = action_counts.get(key, 0) + 1
-                if canonical_integer(value['value'], 'action counter increment') != expected:
-                    raise ValueError('action counter increment differs from the measured dispatch count')
-                action_counts[key] = expected
+                seed_case = action_seed_keys.get(key)
+                if seed_case is not None:
+                    step = action_seed_dispatches.get(key, 0)
+                    progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
+                    progress.extend(event['did_action'] for event in ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['events'])
+                    if step >= 2:
+                        raise ValueError('seeded action counter dispatched too many times')
+                    expected = progress[step + 1]
+                    _require_exact(value, expected, 'seeded action counter increment')
+                    action_seed_dispatches[key] = step + 1
+                else:
+                    if value['type'] != 'int':
+                        raise ValueError('action counter increment result is not an integer')
+                    expected = action_counts.get(key, 0) + 1
+                    if canonical_integer(value['value'], 'action counter increment') != expected:
+                        raise ValueError('action counter increment differs from the measured dispatch count')
+                    action_counts[key] = expected
             elif action == 'action_counter_read':
                 validate_pod(value)
-                if value['type'] != 'int':
-                    raise ValueError('action counter read is not an integer')
-                observed_count = canonical_integer(value['value'], 'action counter read')
-                if observed_count < 0:
-                    raise ValueError('action counter read is negative')
                 if context['hook'] is not None:
                     key = hook_token(context['hook']['key'])
-                    expected = action_counts.get(key, 0)
-                    if observed_count != expected:
-                        raise ValueError('action counter read differs from measured action dispatches')
+                    if key in action_seed_keys:
+                        _require_exact(value, action_counter_expected(key), 'seeded action counter read')
+                        action_seed_reads[key] = action_seed_reads.get(key, 0) + 1
+                    else:
+                        if value['type'] != 'int':
+                            raise ValueError('action counter read is not an integer')
+                        observed_count = canonical_integer(value['value'], 'action counter read')
+                        if observed_count < 0:
+                            raise ValueError('action counter read is negative')
+                        expected = action_counts.get(key, 0)
+                        if observed_count != expected:
+                            raise ValueError('action counter read differs from measured action dispatches')
             elif action in ('missing_offset', 'null_property', 'null_foreach'):
                 _require_exact(value, {'missing': True}, 'native missing access')
             elif action == 'null_method':
@@ -4474,6 +4554,12 @@ def validate_transcript(streams, result):
         raise ValueError('wire EOF/frame counts differ')
     if counts != result['api_counts'] or any(observed[key] != result[key] for key in observed):
         raise ValueError('observed effect/API counts differ')
+    if result['scenario'] == ACTION_SCENARIO:
+        for case, hook in ACTION_COUNTER_SEED_HOOKS.items():
+            key = ('string', hook.encode('ascii').hex())
+            if (action_seed_dispatches.get(key, 0) != 2
+                    or action_seed_reads.get(key, 0) != 8):
+                raise ValueError('seeded action counter dispatch/read inventory differs: ' + case)
 
 
 def self_check():
@@ -4611,7 +4697,9 @@ TRANSCRIPT_NEGATIVE_INVENTORY = (
 
 ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'unknown_api', 'wrong_do_action_result', 'wrong_did_action_type',
-    'wrong_action_callback_args', 'wrong_script_observation', 'wrong_transport',
+    'wrong_action_callback_args', 'wrong_counter_seed_increment_type',
+    'wrong_counter_seed_float_bits', 'wrong_counter_seed_overflow_progression',
+    'wrong_counter_seed_read_value', 'wrong_script_observation', 'wrong_transport',
 )
 
 
@@ -4638,6 +4726,51 @@ def reject_action_transcripts(streams, result):
     script_resume = locate('php', lambda item: item.get('kind') == 'resume'
                            and item.get('payload', {}).get('completion', {}).get('value') == result['php_observation'])
     finished = locate('php', lambda item: item.get('kind') == 'request_finished')
+    increment_boundaries = [i for i, item in enumerate(source['rust'])
+                            if item.get('kind') == 'invoke_php'
+                            and item.get('payload', {}).get('operation') == 'boundary'
+                            and item.get('payload', {}).get('action') == 'action_counter_increment']
+    read_boundaries = [i for i, item in enumerate(source['rust'])
+                       if item.get('kind') == 'invoke_php'
+                       and item.get('payload', {}).get('operation') == 'boundary'
+                       and item.get('payload', {}).get('action') == 'action_counter_read']
+
+    def resume_index(boundary_index):
+        effect_id = source['rust'][boundary_index]['payload']['effect_id']
+        return locate('php', lambda item: item.get('kind') == 'resume'
+                      and item.get('payload', {}).get('effect_id') == effect_id)
+
+    def handle_id(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+    hook_names_by_handle = {}
+    for boundary_index, item in enumerate(source['rust']):
+        payload = item.get('payload', {})
+        if (item.get('kind') != 'invoke_php' or payload.get('operation') != 'boundary'
+                or payload.get('action') != 'array_key'):
+            continue
+        handle = payload.get('arguments', {}).get('handle')
+        if not isinstance(handle, dict):
+            continue
+        resume = source['php'][resume_index(boundary_index)]
+        original = resume.get('payload', {}).get('completion', {}).get('value', {}).get('original')
+        if isinstance(original, dict) and original.get('type') == 'string':
+            hook_names_by_handle[handle_id(handle)] = bytes.fromhex(original['hex']).decode('ascii')
+
+    def seeded_boundaries(indices):
+        grouped = {hook: [] for hook in ACTION_COUNTER_SEED_HOOKS.values()}
+        for index in indices:
+            handle = source['rust'][index]['payload'].get('arguments', {}).get('handle')
+            hook = hook_names_by_handle.get(handle_id(handle)) if isinstance(handle, dict) else None
+            if hook in grouped:
+                grouped[hook].append(index)
+        return grouped
+
+    seeded_increments = seeded_boundaries(increment_boundaries)
+    seeded_reads = seeded_boundaries(read_boundaries)
+    if (any(len(seeded_increments[hook]) != 2 for hook in seeded_increments)
+            or any(len(seeded_reads[hook]) != 8 for hook in seeded_reads)):
+        raise ValueError('seeded action counter boundary inventory is incomplete')
 
     def encode(frames):
         return {direction: b''.join((json.dumps(item, separators=(',', ':')) + '\n').encode()
@@ -4654,6 +4787,18 @@ def reject_action_transcripts(streams, result):
             frames['rust'][did_action_return]['payload']['completion']['value'] = {'type': 'bool', 'value': False}
         elif name == 'wrong_action_callback_args':
             frames['rust'][callback]['payload']['args'].append({'type': 'string', 'hex': '00'})
+        elif name == 'wrong_counter_seed_increment_type':
+            resume = resume_index(seeded_increments[ACTION_COUNTER_SEED_HOOKS['float_7_5']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'int', 'value': '8'}
+        elif name == 'wrong_counter_seed_float_bits':
+            resume = resume_index(seeded_increments[ACTION_COUNTER_SEED_HOOKS['float_7_5']][1])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'float', 'bits': '4021000000000000'}
+        elif name == 'wrong_counter_seed_overflow_progression':
+            resume = resume_index(seeded_increments[ACTION_COUNTER_SEED_HOOKS['php_int_max']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'float', 'bits': '43dfffffffffffff'}
+        elif name == 'wrong_counter_seed_read_value':
+            resume = resume_index(seeded_reads[ACTION_COUNTER_SEED_HOOKS['php_int_max']][-1])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'float', 'bits': '43dfffffffffffff'}
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

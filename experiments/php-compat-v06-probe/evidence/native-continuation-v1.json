@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-13T17:30:03+00:00",
+  "recorded_at_utc": "2026-11-13T18:51:27+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "326cf8914b5ab8d8a9747a5165c57bd8f3254bb75c7d869fd56c678d0f70ea67",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
-    "experiments/php-compat-v06-probe/README.ja.md": "54be81b6369b675354d63131bb739030ffd7d4cdd09cccf08d885af628b5177f",
+    "experiments/php-compat-v06-probe/README.ja.md": "89844cd786a6d7cf30d3bb8ab29daf7d536be79dce7ac1c2ac23b6b2d5bbb795",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -23,14 +23,14 @@
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "5ec831db48e80cb981e1c4d1d392ba3f3f10aa845af6d11fbce53b73d6a3c142",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "8b395086b6dd0bc9c081cb13459300147e67c03df24fbac277df7e3035b45240",
+    "experiments/php-compat-v06-probe/callable_contract.py": "292293be170ec3f280b8689e51e2a20737d5c2d894e9660ea4a6f02020960fd4",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "f4fb7283c1bf82740721e7924685836f3ba299a5083fe26df56bbcecd47b5cda",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "978f376e996ad17ca971179856e751cb707f539b92c6b93fbd9f2a178f778a91",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "891ed395c766f602e25210c194ec5440604c895f32e1983eafc78d7398cf17be",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "41a35286695aa0c84a0186eefed9a091d8c09f8dafa71b4856f3a6e2220f15d9",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "f76f8ea75a2a2fe329f4a45d0655a9b1d6c4b23e340200f17e0578809d2ca197",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6426e59a15de0ce03a6f754307e779e247260b1dc78bb42e2a3ea56b3ef468ab",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "9e4e1a11e52ef35548b46ca2b128060a978cc490d683906656503f4867683cef",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "d5f4e5e7a8a8cfddf9580764c6bdb58baca4f6ecaa24944803ddbcbd540999f5",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
@@ -44,7 +44,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "1759409fc8bda16b88f9a8e406f227fe566ca9de558c9e0f939b3b33de4f3d0a",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "aad3b79f2191215688e96775b5e195a51b9f60b268920b80b9335ec0b9c13d29",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
@@ -209,7 +209,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "501444cc9f40d8182897fce969149b6d5c564b66f2f96c4be09a2e733164002c",
+  "adapter_binary_sha256": "a39a443f37b9404e46ada9ccd2aa1414f779cfea2e16a48c8e20b1b552e28dcf",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -247,8 +247,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 28908,
-      "rust": 8864
+      "php": 13248,
+      "rust": 2176
     },
     "returncodes": {
       "php": 0,
@@ -305,12 +305,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-2c3d11c6974c4422a82b86185032ad08-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-2c3d11c6974c4422a82b86185032ad08-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-e8778de585594a49916ad7e221753c4b-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-e8778de585594a49916ad7e221753c4b-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-2c3d11c6974c4422a82b86185032ad08-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-2c3d11c6974c4422a82b86185032ad08-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-e8778de585594a49916ad7e221753c4b-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-e8778de585594a49916ad7e221753c4b-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -330,8 +330,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 26340,
-      "rust": 29036
+      "php": 21792,
+      "rust": 31352
     },
     "returncodes": {
       "php": 0,
@@ -394,12 +394,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-24a7fd1b4dc04acf8cec088b62dc40de-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-24a7fd1b4dc04acf8cec088b62dc40de-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-9442975efe584d29b4f577ec83571b20-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-9442975efe584d29b4f577ec83571b20-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-24a7fd1b4dc04acf8cec088b62dc40de-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-24a7fd1b4dc04acf8cec088b62dc40de-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-9442975efe584d29b4f577ec83571b20-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-9442975efe584d29b4f577ec83571b20-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -419,8 +419,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 31520,
-      "rust": 31676
+      "php": 23516,
+      "rust": 11532
     },
     "returncodes": {
       "php": 0,
@@ -568,12 +568,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-50585d7c5c38419a88d120781c0e74e5-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-50585d7c5c38419a88d120781c0e74e5-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-801dfa50da804e6f803408bbd065ce87-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-801dfa50da804e6f803408bbd065ce87-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-50585d7c5c38419a88d120781c0e74e5-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-50585d7c5c38419a88d120781c0e74e5-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-801dfa50da804e6f803408bbd065ce87-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-801dfa50da804e6f803408bbd065ce87-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -594,8 +594,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 23640,
-        "rust": 25508
+        "php": 30440,
+        "rust": 25504
       },
       "returncodes": {
         "php": 0,
@@ -670,18 +670,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-7a07cd473768489faf85cc767f2a3f06-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-7a07cd473768489faf85cc767f2a3f06-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-7a9a2e230d2f4facbc969aa0a07fe979-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-7a9a2e230d2f4facbc969aa0a07fe979-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-7a07cd473768489faf85cc767f2a3f06-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-7a07cd473768489faf85cc767f2a3f06-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-7a9a2e230d2f4facbc969aa0a07fe979-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-7a9a2e230d2f4facbc969aa0a07fe979-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "6bb3ecc347e3dc27bd2a29ae2d5fb9ad582b9e683f2128000f82712e4d7a73e3",
+          "stdout_sha256": "3a00751a765bcc4769ac5dac15bdd9f02d6af04c84ad7332246917e18326ffe9",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -695,8 +695,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 26940,
-        "rust": 15820
+        "php": 30516,
+        "rust": 31532
       },
       "returncodes": {
         "php": 0,
@@ -774,18 +774,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3a689606c1954da98db7488262102b10-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3a689606c1954da98db7488262102b10-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-a1fe1e3fdea649cab05548cad49f52c6-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-a1fe1e3fdea649cab05548cad49f52c6-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-3a689606c1954da98db7488262102b10-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-3a689606c1954da98db7488262102b10-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-a1fe1e3fdea649cab05548cad49f52c6-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-a1fe1e3fdea649cab05548cad49f52c6-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "102ad801f8146a0ffc313127d39f4374dd0397e2d8a1d99f0cbb36152698e59a",
+          "stdout_sha256": "ff2d848afc6f7dea2a89544f755628a642dbb2080dddf9f53b9e6fe4c3c19443",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -800,8 +800,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 25236,
-      "rust": 24700
+      "php": 5804,
+      "rust": 26000
     },
     "returncodes": {
       "php": 0,
@@ -886,24 +886,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-3f810734c46e4b02bc9578254b9ca0b1-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-3f810734c46e4b02bc9578254b9ca0b1-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-78861d3cac3d42e896772f3aa2d1ee1a-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-78861d3cac3d42e896772f3aa2d1ee1a-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-3f810734c46e4b02bc9578254b9ca0b1-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-3f810734c46e4b02bc9578254b9ca0b1-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-78861d3cac3d42e896772f3aa2d1ee1a-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-78861d3cac3d42e896772f3aa2d1ee1a-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "1de9729a7f21fe4085b97b8e4e42101cd1ea9ad37382af62ee90526e1ffb576b",
+        "stdout_sha256": "249db4c1c65bb4f688cfcd451cde4db083c19010a8e5033006da592e1f5ed7b7",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "123d004e8ac988c6037bf4316684e9bcad9f77e27d44bba341a522d94960a202",
+        "stdout_sha256": "70b7184f545e134ffea233c718d7ef10509b8990cacab62370a4c6f5d630ada7",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -912,8 +912,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 14840,
-        "rust": 20720
+        "php": 7448,
+        "rust": 18036
       },
       "returncodes": {
         "php": 0,
@@ -1035,24 +1035,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-4bbc1632694f44999333193643f282b8-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-4bbc1632694f44999333193643f282b8-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-566800ebb6084fd280966f5dab430a9f-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-566800ebb6084fd280966f5dab430a9f-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-4bbc1632694f44999333193643f282b8-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-4bbc1632694f44999333193643f282b8-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-566800ebb6084fd280966f5dab430a9f-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-566800ebb6084fd280966f5dab430a9f-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "2054d083b20ecfc17ed881322c49b487ca6573e6dbcb53897a0effc824c67a57",
+          "stdout_sha256": "d34f6b114db68de2a9d4c1a47d443d857c859c3c23e8bd127ec60266d8994295",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "f305ac55a6ac277a948aa29f0b091cc74947aa9765ae98d27c391733fa3588db",
+          "stdout_sha256": "3d9a35cc0e5fd9ae773234bd2ceea6ef3a4dd09217b7e3ee68c4a01b80d94b4e",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1080,8 +1080,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 25684,
-        "rust": 31508
+        "php": 19904,
+        "rust": 25580
       },
       "returncodes": {
         "php": 0,
@@ -1105,7 +1105,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "760349cded856aba"
+              "token": "2dce96d97996d9a0"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1168,7 +1168,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "760349cded856aba"
+              "token": "2dce96d97996d9a0"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1242,26 +1242,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-97c8a4c499024b579249d20b34179248-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-97c8a4c499024b579249d20b34179248-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-e315abb7263c4ef897c324d696b76bd1-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-e315abb7263c4ef897c324d696b76bd1-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-97c8a4c499024b579249d20b34179248-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-97c8a4c499024b579249d20b34179248-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-e315abb7263c4ef897c324d696b76bd1-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-e315abb7263c4ef897c324d696b76bd1-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "ceb5630f56c2f5d7062aa35dd0d5e8a60c55520cfee07cda6b40cb202672b52a",
+          "stdout_sha256": "865b2f44250886facd5f33385f66db4489a3e09ac63a59021389e5f178856a6d",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "ae5960323375748443a9296a449918b6780ae654048012d907a39ca77d5efcd2",
+          "stdout_sha256": "2b03e015e17c42b30440c0dd0cc7796f860ffd09831e32229d8741baae4aec55",
           "stderr_bytes": 1817,
-          "stderr_sha256": "b49232a6bc8172b4dd5a92235daef8a5cd92ba94f08f561e6c3c140a7b2933b4"
+          "stderr_sha256": "d1c60f0a9780c62f483490f51e3f2eb315e94d501dddbb32d36bb883d2d17716"
         }
       },
       "hook_transcript_rejections": [
@@ -1288,8 +1288,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 28084,
-      "rust": 24144
+      "php": 23600,
+      "rust": 9108
     },
     "returncodes": {
       "php": 0,
@@ -14709,24 +14709,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-2db035bb7e334b2bb74da58dea2708a9-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-2db035bb7e334b2bb74da58dea2708a9-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-43381cb10793447abc489800974ef5b9-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-43381cb10793447abc489800974ef5b9-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-2db035bb7e334b2bb74da58dea2708a9-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-2db035bb7e334b2bb74da58dea2708a9-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-43381cb10793447abc489800974ef5b9-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-43381cb10793447abc489800974ef5b9-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "63436ed43f85f645a92b90c0452544d4aebcf49851581a853a1e743acda6d946",
+        "stdout_sha256": "10f28c311cff4cdf354aa09925e655d7eea41e246d500bcc2b4e295f275c3ab6",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2763476,
-        "stdout_sha256": "70496a6afb449bd3de5a67ec44006406209582bc24d69eea056b3e79ef542e40",
+        "stdout_sha256": "8903c9a84d991c7caf7f385b42574827bd98b2fe7454f9f187886b3453ce916e",
         "stderr_bytes": 121532,
         "stderr_sha256": "32c7aa3773904deb3b26b800bdaead965e3a19d2d3b23ae9f5de4e9377ccb72f"
       }
@@ -14778,8 +14778,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 3032,
-      "rust": 10176
+      "php": 28248,
+      "rust": 25684
     },
     "returncodes": {
       "php": 0,
@@ -14787,9 +14787,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 629,
-    "frames_from_rust": 628,
-    "relayed_bytes": 345140,
+    "frames_from_php": 926,
+    "frames_from_rust": 925,
+    "relayed_bytes": 522672,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -15057,6 +15057,126 @@
               {
                 "accepted_args": 0,
                 "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "doing_action": true,
+                "did_action": 8,
+                "wp_actions": 8
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "doing_action": true,
+                "did_action": 8,
+                "wp_actions": 8
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "doing_action": true,
+                "did_action": 9,
+                "wp_actions": 9
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "doing_action": true,
+                "did_action": 9,
+                "wp_actions": 9
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "doing_action": true,
+                "did_action": 8.5,
+                "wp_actions": 8.5
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "doing_action": true,
+                "did_action": 8.5,
+                "wp_actions": 8.5
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "doing_action": true,
+                "did_action": 9.5,
+                "wp_actions": 9.5
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "doing_action": true,
+                "did_action": 9.5,
+                "wp_actions": 9.5
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "doing_action": true,
+                "did_action": 9.223372036854776e+18,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "doing_action": true,
+                "did_action": 9.223372036854776e+18,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "doing_action": true,
+                "did_action": 9.223372036854776e+18,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "doing_action": true,
+                "did_action": 9.223372036854776e+18,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 0,
+                "args": [
                   "callable-action-throw-all",
                   "first"
                 ],
@@ -15201,6 +15321,116 @@
             "before": 0,
             "after": 1
           },
+          "counter_seed_values": {
+            "int_7": {
+              "before": {
+                "type": "int",
+                "value": "7"
+              },
+              "returns": [
+                null,
+                null
+              ],
+              "events": [
+                {
+                  "did_action": {
+                    "type": "int",
+                    "value": "8"
+                  },
+                  "wp_actions": {
+                    "type": "int",
+                    "value": "8"
+                  }
+                },
+                {
+                  "did_action": {
+                    "type": "int",
+                    "value": "9"
+                  },
+                  "wp_actions": {
+                    "type": "int",
+                    "value": "9"
+                  }
+                }
+              ],
+              "after": {
+                "type": "int",
+                "value": "9"
+              }
+            },
+            "float_7_5": {
+              "before": {
+                "type": "float",
+                "bits": "401e000000000000"
+              },
+              "returns": [
+                null,
+                null
+              ],
+              "events": [
+                {
+                  "did_action": {
+                    "type": "float",
+                    "bits": "4021000000000000"
+                  },
+                  "wp_actions": {
+                    "type": "float",
+                    "bits": "4021000000000000"
+                  }
+                },
+                {
+                  "did_action": {
+                    "type": "float",
+                    "bits": "4023000000000000"
+                  },
+                  "wp_actions": {
+                    "type": "float",
+                    "bits": "4023000000000000"
+                  }
+                }
+              ],
+              "after": {
+                "type": "float",
+                "bits": "4023000000000000"
+              }
+            },
+            "php_int_max": {
+              "before": {
+                "type": "int",
+                "value": "9223372036854775807"
+              },
+              "returns": [
+                null,
+                null
+              ],
+              "events": [
+                {
+                  "did_action": {
+                    "type": "float",
+                    "bits": "43e0000000000000"
+                  },
+                  "wp_actions": {
+                    "type": "float",
+                    "bits": "43e0000000000000"
+                  }
+                },
+                {
+                  "did_action": {
+                    "type": "float",
+                    "bits": "43e0000000000000"
+                  },
+                  "wp_actions": {
+                    "type": "float",
+                    "bits": "43e0000000000000"
+                  }
+                }
+              ],
+              "after": {
+                "type": "float",
+                "bits": "43e0000000000000"
+              }
+            }
+          },
           "throw_all": {
             "caught": {
               "class": "RuntimeException",
@@ -15300,33 +15530,33 @@
       }
     },
     "expected_frame_counts": {
-      "php": 629,
-      "rust": 628
+      "php": 926,
+      "rust": 925
     },
     "action_result": {
       "api_counts": {
-        "add_action": 14,
+        "add_action": 17,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 41,
+        "current_action": 53,
         "current_filter": 0,
-        "did_action": 45,
+        "did_action": 69,
         "did_filter": 7,
-        "do_action": 12,
-        "doing_action": 46,
+        "do_action": 18,
+        "doing_action": 58,
         "doing_filter": 0,
         "has_action": 6,
         "has_filter": 0,
-        "remove_action": 2,
+        "remove_action": 5,
         "remove_filter": 0
       },
-      "argument_release_effects": 133,
-      "boundary_effects": 264,
-      "callback_invocations": 40,
+      "argument_release_effects": 181,
+      "boundary_effects": 432,
+      "callback_invocations": 58,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 629,
-      "frames_from_rust": 628,
+      "frames_from_php": 926,
+      "frames_from_rust": 925,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "php_observation": {
@@ -15519,6 +15749,126 @@
               {
                 "accepted_args": 0,
                 "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "did_action": 8,
+                "doing_action": true,
+                "wp_actions": 8
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "did_action": 8,
+                "doing_action": true,
+                "wp_actions": 8
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "did_action": 9,
+                "doing_action": true,
+                "wp_actions": 9
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-int-7"
+                ],
+                "current_action": "callable-action-counter-seed-int-7",
+                "did_action": 9,
+                "doing_action": true,
+                "wp_actions": 9
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "did_action": 8.5,
+                "doing_action": true,
+                "wp_actions": 8.5
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "did_action": 8.5,
+                "doing_action": true,
+                "wp_actions": 8.5
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "did_action": 9.5,
+                "doing_action": true,
+                "wp_actions": 9.5
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-float-7-5"
+                ],
+                "current_action": "callable-action-counter-seed-float-7-5",
+                "did_action": 9.5,
+                "doing_action": true,
+                "wp_actions": 9.5
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "did_action": 9.223372036854776e+18,
+                "doing_action": true,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "did_action": 9.223372036854776e+18,
+                "doing_action": true,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 0,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "did_action": 9.223372036854776e+18,
+                "doing_action": true,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 1,
+                "args": [
+                  "callable-action-counter-seed-php-int-max"
+                ],
+                "current_action": "callable-action-counter-seed-php-int-max",
+                "did_action": 9.223372036854776e+18,
+                "doing_action": true,
+                "wp_actions": 9.223372036854776e+18
+              },
+              {
+                "accepted_args": 0,
+                "args": [
                   "callable-action-throw-all",
                   "first"
                 ],
@@ -15666,6 +16016,116 @@
             "before_filter": {
               "did_action": 1,
               "did_filter": 0
+            }
+          },
+          "counter_seed_values": {
+            "float_7_5": {
+              "after": {
+                "bits": "4023000000000000",
+                "type": "float"
+              },
+              "before": {
+                "bits": "401e000000000000",
+                "type": "float"
+              },
+              "events": [
+                {
+                  "did_action": {
+                    "bits": "4021000000000000",
+                    "type": "float"
+                  },
+                  "wp_actions": {
+                    "bits": "4021000000000000",
+                    "type": "float"
+                  }
+                },
+                {
+                  "did_action": {
+                    "bits": "4023000000000000",
+                    "type": "float"
+                  },
+                  "wp_actions": {
+                    "bits": "4023000000000000",
+                    "type": "float"
+                  }
+                }
+              ],
+              "returns": [
+                null,
+                null
+              ]
+            },
+            "int_7": {
+              "after": {
+                "type": "int",
+                "value": "9"
+              },
+              "before": {
+                "type": "int",
+                "value": "7"
+              },
+              "events": [
+                {
+                  "did_action": {
+                    "type": "int",
+                    "value": "8"
+                  },
+                  "wp_actions": {
+                    "type": "int",
+                    "value": "8"
+                  }
+                },
+                {
+                  "did_action": {
+                    "type": "int",
+                    "value": "9"
+                  },
+                  "wp_actions": {
+                    "type": "int",
+                    "value": "9"
+                  }
+                }
+              ],
+              "returns": [
+                null,
+                null
+              ]
+            },
+            "php_int_max": {
+              "after": {
+                "bits": "43e0000000000000",
+                "type": "float"
+              },
+              "before": {
+                "type": "int",
+                "value": "9223372036854775807"
+              },
+              "events": [
+                {
+                  "did_action": {
+                    "bits": "43e0000000000000",
+                    "type": "float"
+                  },
+                  "wp_actions": {
+                    "bits": "43e0000000000000",
+                    "type": "float"
+                  }
+                },
+                {
+                  "did_action": {
+                    "bits": "43e0000000000000",
+                    "type": "float"
+                  },
+                  "wp_actions": {
+                    "bits": "43e0000000000000",
+                    "type": "float"
+                  }
+                }
+              ],
+              "returns": [
+                null,
+                null
+              ]
             }
           },
           "do_action_returns": {
@@ -15836,32 +16296,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 14,
+      "release_effects": 17,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-9e7c08ce83fc46ac91b962bfad93a7f8-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-9e7c08ce83fc46ac91b962bfad93a7f8-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-1fdc954e97df49a59c7f9769a244dc1c-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-1fdc954e97df49a59c7f9769a244dc1c-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-9e7c08ce83fc46ac91b962bfad93a7f8-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-9e7c08ce83fc46ac91b962bfad93a7f8-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-1fdc954e97df49a59c7f9769a244dc1c-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-1fdc954e97df49a59c7f9769a244dc1c-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 159975,
-        "stdout_sha256": "b0c8ad8275d0a1d890a286d5a8a0ab3d5b3356d325dd7ac2fa132c08ae0d265c",
+        "stdout_bytes": 245843,
+        "stdout_sha256": "65cce9c6d949c2434fc983a194b0c9f2995ac8a22fc8e8a42508262269ba1813",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 185165,
-        "stdout_sha256": "0df3f63151f11fc6967a2a3b47195e0e6c07b13ce7ec9912b91ea9f655fa397c",
-        "stderr_bytes": 7777,
-        "stderr_sha256": "8deec08107ea04c0828b9261afb3365a410a3c1a10ecb4c37988d8867ceefd66"
+        "stdout_bytes": 276829,
+        "stdout_sha256": "7e47674ad2d48c046733abdec413ed8b5c97c6848a4ba1973407c635df42121f",
+        "stderr_bytes": 11135,
+        "stderr_sha256": "1a43d4f1220d9399c11f432c89827ef0c00324cea28014e5c3a474d25b5b32b2"
       }
     },
     "action_transcript_rejections": [
@@ -15869,6 +16329,10 @@
       "wrong_do_action_result",
       "wrong_did_action_type",
       "wrong_action_callback_args",
+      "wrong_counter_seed_increment_type",
+      "wrong_counter_seed_float_bits",
+      "wrong_counter_seed_overflow_progression",
+      "wrong_counter_seed_read_value",
       "wrong_script_observation",
       "wrong_transport"
     ]
@@ -15898,72 +16362,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 19640,
+        "pid": 22424,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 23444,
+        "pid": 23484,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25920,
+        "pid": 19076,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 17404,
+        "pid": 22000,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 6888,
+        "pid": 27912,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 15792,
+        "pid": 8344,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27640,
+        "pid": 18856,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27536,
+        "pid": 28780,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 20280,
+        "pid": 24700,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 17056,
+        "pid": 28204,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 7920,
+        "pid": 11564,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 28328,
+        "pid": 22840,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 10168,
+        "pid": 28468,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 27208,
+        "pid": 9132,
         "returncode": 0,
         "reaped": true
       }

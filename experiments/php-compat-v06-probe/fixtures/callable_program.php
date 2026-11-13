@@ -2651,6 +2651,34 @@ function callable_program_action_api_cases(): array
     $noListenerReturn = do_action($noListenerHook);
     $noListenerAfter = did_action($noListenerHook);
 
+    $counterSeedValues = [];
+    foreach ([
+        'int_7' => ['hook' => 'callable-action-counter-seed-int-7', 'seed' => 7],
+        'float_7_5' => ['hook' => 'callable-action-counter-seed-float-7-5', 'seed' => 7.5],
+        'php_int_max' => ['hook' => 'callable-action-counter-seed-php-int-max', 'seed' => PHP_INT_MAX],
+    ] as $label => $case) {
+        $counterSeedHook = $case['hook'];
+        $GLOBALS['wp_actions'][$counterSeedHook] = $case['seed'];
+        $counterSeedBefore = callable_program_scalar_view(did_action($counterSeedHook));
+        $counterSeedEvents = [];
+        $counterSeedCallback = static function () use (&$counterSeedEvents, $counterSeedHook): void {
+            $counterSeedEvents[] = [
+                'did_action' => callable_program_scalar_view(did_action($counterSeedHook)),
+                'wp_actions' => callable_program_scalar_view($GLOBALS['wp_actions'][$counterSeedHook] ?? null),
+            ];
+        };
+        add_action($counterSeedHook, $counterSeedCallback, 10, 0);
+        $counterSeedReturns = [do_action($counterSeedHook), do_action($counterSeedHook)];
+        $counterSeedAfter = callable_program_scalar_view(did_action($counterSeedHook));
+        remove_action($counterSeedHook, $counterSeedCallback, 10);
+        $counterSeedValues[$label] = [
+            'before' => $counterSeedBefore,
+            'returns' => $counterSeedReturns,
+            'events' => $counterSeedEvents,
+            'after' => $counterSeedAfter,
+        ];
+    }
+
     $throwAllEvents = []; $throwAllHook = 'callable-action-throw-all'; $throwAllOnce = false;
     add_action('all', static function (...$args) use (&$throwAllEvents, &$throwAllOnce, $throwAllHook): void {
         if (($args[0] ?? null) !== $throwAllHook) { return; }
@@ -2684,6 +2712,7 @@ function callable_program_action_api_cases(): array
         'counter_independence' => ['before_filter' => $sameNameBeforeFilter, 'after_filter' => $sameNameAfterFilter],
         'nested' => ['events' => $nestedEvents, 'did_action' => did_action($nestedHook), 'current_action' => current_action(), 'doing_action' => doing_action()],
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
+        'counter_seed_values' => $counterSeedValues,
         'throw_all' => ['caught' => $throwAllCaught, 'events' => $throwAllEvents, 'after_catch' => $throwAllAfterCatch, 'followup_return' => $throwAllFollowupReturn, 'after_followup' => $throwAllAfterFollowup],
         'throw_named' => ['caught' => $throwNamedCaught, 'events' => $throwNamedEvents, 'after_catch' => $throwNamedAfterCatch, 'followup_return' => $throwNamedFollowupReturn, 'after_followup' => $throwNamedAfterFollowup]];
 }

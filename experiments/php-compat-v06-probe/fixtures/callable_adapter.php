@@ -398,7 +398,11 @@ final class CallableApiAdapter
                 if (!isset($GLOBALS['wp_actions']) || !is_array($GLOBALS['wp_actions'])) {
                     $GLOBALS['wp_actions'] = [];
                 }
-                $GLOBALS['wp_actions'][$hookName] = ($GLOBALS['wp_actions'][$hookName] ?? 0) + 1;
+                if (!isset($GLOBALS['wp_actions'][$hookName])) {
+                    $GLOBALS['wp_actions'][$hookName] = 1;
+                } else {
+                    ++$GLOBALS['wp_actions'][$hookName];
+                }
                 return self::encodePod($GLOBALS['wp_actions'][$hookName]);
             }
 

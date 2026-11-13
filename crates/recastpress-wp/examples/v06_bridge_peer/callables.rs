@@ -1931,7 +1931,19 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<Completion<PhpValue>, String> {
         exact_keys(payload, &["api", "arguments"], "did_action_call")?;
         let handle = self.current_argument("hook")?;
-        self.check_argument(handle, "did_action_hook")?;
+        let (hook, array_key) = match self.boundary_array_key(
+            handle,
+            "isset",
+            false,
+            operation,
+            parent_wire,
+            "did_action_hook_key",
+        )? {
+            Ok(result) => result,
+            Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+        };
+        let hook = HookArgument::new(hook, array_key);
+        self.remember_hook(hook);
         let value = match self.boundary_value(
             "action_counter_read",
             json!({"handle":descriptor(handle)}),
@@ -1944,8 +1956,10 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         };
         let count = parse_pod(&value, "did_action_count")?;
         match count {
-            PhpValue::Integer(count) => Ok(Completion::Value(PhpValue::Integer(count))),
-            _ => Err("did_action_count_not_integer".into()),
+            count @ PhpValue::Integer(_) => Ok(Completion::Value(count)),
+            count @ PhpValue::Float(value) if value.is_finite() => Ok(Completion::Value(count)),
+            PhpValue::Float(_) => Err("did_action_count_not_finite".into()),
+            _ => Err("did_action_count_not_number".into()),
         }
     }
 
@@ -2151,8 +2165,19 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                                 Ok(value) => {
                                     let count =
                                         parse_pod(&value, "action_counter_increment_count")?;
-                                    if !matches!(count, PhpValue::Integer(_)) {
-                                        return Err("action_counter_increment_not_integer".into());
+                                    match count {
+                                        PhpValue::Integer(_) => {}
+                                        PhpValue::Float(value) if value.is_finite() => {}
+                                        PhpValue::Float(_) => {
+                                            return Err(
+                                                "action_counter_increment_not_finite".into()
+                                            );
+                                        }
+                                        _ => {
+                                            return Err(
+                                                "action_counter_increment_not_number".into()
+                                            );
+                                        }
                                     }
                                     Completion::Value(PhpValue::Null)
                                 }

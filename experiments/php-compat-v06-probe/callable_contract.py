@@ -9,6 +9,44 @@ SCENARIO = 'callable_api'
 ACTION_APIS = ('add_action', 'remove_action', 'has_action', 'do_action',
                'current_action', 'doing_action', 'did_action')
 ACTION_SCENARIO = 'action_api'
+ACTION_COUNTER_SEED_HOOKS = {
+    'int_7': 'callable-action-counter-seed-int-7',
+    'float_7_5': 'callable-action-counter-seed-float-7-5',
+    'php_int_max': 'callable-action-counter-seed-php-int-max',
+}
+ACTION_COUNTER_SEED_EXPECTATIONS = {
+    'int_7': {
+        'before': {'type': 'int', 'value': '7'},
+        'returns': [None, None],
+        'events': [
+            {'did_action': {'type': 'int', 'value': '8'}, 'wp_actions': {'type': 'int', 'value': '8'}},
+            {'did_action': {'type': 'int', 'value': '9'}, 'wp_actions': {'type': 'int', 'value': '9'}},
+        ],
+        'after': {'type': 'int', 'value': '9'},
+    },
+    'float_7_5': {
+        'before': {'type': 'float', 'bits': '401e000000000000'},
+        'returns': [None, None],
+        'events': [
+            {'did_action': {'type': 'float', 'bits': '4021000000000000'},
+             'wp_actions': {'type': 'float', 'bits': '4021000000000000'}},
+            {'did_action': {'type': 'float', 'bits': '4023000000000000'},
+             'wp_actions': {'type': 'float', 'bits': '4023000000000000'}},
+        ],
+        'after': {'type': 'float', 'bits': '4023000000000000'},
+    },
+    'php_int_max': {
+        'before': {'type': 'int', 'value': '9223372036854775807'},
+        'returns': [None, None],
+        'events': [
+            {'did_action': {'type': 'float', 'bits': '43e0000000000000'},
+             'wp_actions': {'type': 'float', 'bits': '43e0000000000000'}},
+            {'did_action': {'type': 'float', 'bits': '43e0000000000000'},
+             'wp_actions': {'type': 'float', 'bits': '43e0000000000000'}},
+        ],
+        'after': {'type': 'float', 'bits': '43e0000000000000'},
+    },
+}
 ALL_APIS = APIS + ACTION_APIS
 HEX = re.compile(r'[0-9a-f]*\Z')
 INTEGER = re.compile(r'(?:0|-?[1-9][0-9]*)\Z')
