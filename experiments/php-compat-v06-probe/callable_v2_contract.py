@@ -5,7 +5,8 @@ import json
 import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
-    ACTION_GLOBAL_STATE_EXPECTATIONS, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer,
+    ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ALL_APIS, EXPECTED_OBSERVATION,
+    ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
     validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
@@ -3994,6 +3995,16 @@ EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_s
 
 EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
 EXPECTED_ACTION_API['global_state'] = ACTION_GLOBAL_STATE_EXPECTATIONS
+EXPECTED_ACTION_API['counter_cow'] = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
+EXPECTED_ACTION_API['process_warnings'] = []
+for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
+    _target_cow_hook = 'counter-cow-' + _cow_mode
+    _bridge_cow_hook = ACTION_COUNTER_COW_HOOKS[_cow_mode]
+    for _cow_event in _cow_case['events']:
+        if _cow_event.get('current_action') == _target_cow_hook:
+            _cow_event['current_action'] = _bridge_cow_hook
+        if _cow_event.get('args', [None])[0] == _target_cow_hook:
+            _cow_event['args'][0] = _bridge_cow_hook
 _BOOL_INCREMENT_DIAGNOSTIC = {
     'severity': 2,
     'message_hex': '496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850',
@@ -4112,14 +4123,30 @@ for _state_name in ('unset', 'null', 'false', 'array'):
             'wp_actions': 1,
         })
 EXPECTED_ACTION_API['all_hook']['events'].extend(_global_state_all_hook_events)
+def _wp_callable_action_cow_expectations():
+    result = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
+    for mode, case in result.items():
+        hook = ACTION_COUNTER_COW_HOOKS[mode]
+        for event in case['events']:
+            if event.get('current_action') == 'counter-cow-' + mode:
+                event['current_action'] = hook
+            if event.get('args', [None])[0] == 'counter-cow-' + mode:
+                event['args'][0] = hook
+    return result
 
 
 def validate_action_observation(value):
     exact(value, ('action_api',), 'action API program observation')
     if EXPECTED_ACTION_API is None:
         raise ValueError('pinned WordPress action API observation has not been frozen')
-    _require_exact(value['action_api'], EXPECTED_ACTION_API, 'measured action API group')
-
+    actual = value['action_api']
+    expected = json.loads(json.dumps(EXPECTED_ACTION_API))
+    expected.pop('counter_cow')
+    expected.pop('process_warnings')
+    if 'process_warnings' in actual:
+        expected['process_warnings'] = EXPECTED_ACTION_API['process_warnings']
+    expected['counter_cow'] = _wp_callable_action_cow_expectations()
+    _require_exact(actual, expected, 'measured action API group')
 
 def validate_observation(value):
     if isinstance(value, dict) and set(value) == {'action_api'}:
@@ -4189,7 +4216,9 @@ def action_self_check():
     """Check the isolated action observation is frozen and rejects drift."""
     if EXPECTED_ACTION_API is None:
         raise ValueError('pinned WordPress action API observation has not been frozen')
-    validate_action_observation({'action_api': EXPECTED_ACTION_API})
+    sample_action_api = json.loads(json.dumps(EXPECTED_ACTION_API))
+    sample_action_api['counter_cow'] = _wp_callable_action_cow_expectations()
+    validate_action_observation({'action_api': sample_action_api})
     action_result = {
         'scenario': ACTION_SCENARIO, 'continuation_peer': True,
         'frames_from_php': 4, 'frames_from_rust': 3,
@@ -4197,89 +4226,102 @@ def action_self_check():
         'callback_invocations': 0, 'release_effects': 0, 'boundary_effects': 0,
         'argument_release_effects': 0, 'late_resume_rejected': True,
         'late_call_rejected': True, 'continuation_depth_after': 0,
-        'state_after': 'Finished', 'php_observation': {'action_api': EXPECTED_ACTION_API},
+        'state_after': 'Finished', 'php_observation': {'action_api': sample_action_api},
         'registry_observation': {'closed': True, 'live_after_close': 0, 'closed_read_rejected': True},
         'nested_caught_throw': dict(EXPECTED_NESTED_CAUGHT_THROW_RESULT),
     }
     validate_action_result(action_result)
     mutations = []
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['do_action_returns']['populated'] = True
     mutations.append(('do_action return', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_values']['int_7']['events'][0]['did_action'] = {'type': 'float', 'bits': '4020000000000000'}
     mutations.append(('seeded counter wrong type', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_values']['float_7_5']['events'][0]['did_action']['bits'] = '4023000000000000'
     mutations.append(('seeded counter wrong bits', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_values']['php_int_max']['events'][0]['wp_actions'] = {
         'type': 'float', 'bits': '43dfffffffffffff'}
     mutations.append(('PHP_INT_MAX overflow progression', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_values']['php_int_max']['events'][1]['did_action'] = {
         'type': 'float', 'bits': '43dfffffffffffff'}
     mutations.append(('seeded did_action read', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['events'][3]['event'] = 'parent-resume'
     mutations.append(('nested caught throw ordering', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['events'][3]['same_throwable'] = False
     mutations.append(('nested caught throwable identity', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['do_action_return'] = {'type': 'null'}
     mutations.append(('nested parent do_action return', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['events'][1]['child_count'] = 2
     mutations.append(('nested child action count', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['events'][3]['current_action'] = 'callable-action-nested-caught-parent'
     mutations.append(('nested caught current action', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['after']['doing_child'] = True
     mutations.append(('nested caught child doing state', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['nested_caught_throw']['after']['stack_depth'] = 2
     mutations.append(('nested caught action stack depth', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['bool_true']['after']['value'] = False
     mutations.append(('bool action counter unchanged', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['alpha']['trace'][2]['wp_actions']['hex'] = '63'
     mutations.append(('alpha action counter progression', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['bool_true']['diagnostics'][0]['severity'] = 8192
     mutations.append(('bool increment diagnostic severity', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['alpha']['diagnostics'][1]['message_hex'] = '00'
     mutations.append(('alpha increment diagnostic message', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['bool_true']['returns'][1] = {'type': 'bool', 'value': False}
     mutations.append(('diagnostic dispatch normal return', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['counter_seed_diagnostics']['alpha']['trace'][3]['event'] = 'all'
     mutations.append(('diagnostic trace order', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     diag_hook = _ACTION_COUNTER_DIAGNOSTIC_CASES['bool_true']['hook']
     diag_row = next(item for item in changed['all_hook']['events']
                     if item.get('accepted_args') == 0 and item.get('args') == [diag_hook, 'first'])
     diag_row['wp_actions'] = False
     mutations.append(('diagnostic all-hook action counter', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     global_state_hook = 'global-state-false'
     global_state_row = next(item for item in changed['all_hook']['events']
                             if item.get('accepted_args') == 0 and item.get('args') == [global_state_hook])
     global_state_row['did_action'] = 2
     mutations.append(('non-array global state all-hook counter', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['counter_cow']['snapshot']['events'][2]['snapshot'] = {'type': 'string', 'hex': '62'}
+    mutations.append(('action counter COW snapshot value', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['counter_cow']['live']['events'][1]['live'] = {'type': 'string', 'hex': '62'}
+    mutations.append(('action counter COW live value', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['counter_cow']['live']['events'][0], changed['counter_cow']['live']['events'][1] = (
+        changed['counter_cow']['live']['events'][1], changed['counter_cow']['live']['events'][0])
+    mutations.append(('action counter COW warning order', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['counter_cow']['live']['events'][2]['live'] = {'type': 'string', 'hex': '63'}
+    mutations.append(('action counter COW increment observation', changed))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['int']['do_action'][0]['initial']['value'] = {
         'type': 'string', 'hex': '37'}
     mutations.append(('non-array global initial type', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['false']['do_action'][1], changed['global_state']['false']['do_action'][2] = (
         changed['global_state']['false']['do_action'][2], changed['global_state']['false']['do_action'][1])
     mutations.append(('global state warning order', changed))
-    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['string']['do_action'][1] = {
         'kind': 'result', 'value': {'type': 'null'}}
     mutations.append(('global state throwable result', changed))
@@ -4384,6 +4426,12 @@ def validate_transcript(streams, result):
         ('string', hook.encode('ascii').hex()): case
         for case, hook in ACTION_COUNTER_DIAGNOSTIC_HOOKS.items()
     }
+    action_counter_cow_keys = {
+        ('string', hook.encode('ascii').hex()): mode
+        for mode, hook in ACTION_COUNTER_COW_HOOKS.items()
+    }
+    action_counter_cow_dispatches = {}
+    action_counter_cow_reads = {}
 
     def hook_token(key):
         validate_key(key)
@@ -4511,6 +4559,11 @@ def validate_transcript(streams, result):
                 seed_key = hook_token(context['hook']['key']) if context['hook'] is not None else None
                 if seed_key in action_seed_keys or seed_key in action_diagnostic_seed_keys:
                     _require_exact(node, action_counter_expected(seed_key), 'seeded did_action result')
+                elif seed_key in action_counter_cow_keys:
+                    # did_action's own read is verified at action_counter_read.
+                    # This outer completion reflects the value captured before
+                    # callbacks and may be stale after nested dispatch.
+                    validate_pod(node)
                 elif kind == 'int':
                     if canonical_integer(node['value'], 'did_action') < 0:
                         raise ValueError('did_action result differs')
@@ -4707,7 +4760,15 @@ def validate_transcript(streams, result):
                 key = hook_token(context['hook']['key'])
                 seed_case = action_seed_keys.get(key)
                 diagnostic_case = action_diagnostic_seed_keys.get(key)
-                if seed_case is not None or diagnostic_case is not None:
+                cow_mode = action_counter_cow_keys.get(key)
+                if cow_mode is not None:
+                    _require_exact(value, {'type': 'string', 'hex': '62'},
+                                   'PHP action counter COW increment result')
+                    step = action_counter_cow_dispatches.get(key, 0)
+                    if step >= 2:
+                        raise ValueError('action counter COW dispatched too many times')
+                    action_counter_cow_dispatches[key] = step + 1
+                elif seed_case is not None or diagnostic_case is not None:
                     step = action_seed_dispatches.get(key, 0)
                     if seed_case is not None:
                         progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
@@ -4730,7 +4791,15 @@ def validate_transcript(streams, result):
                 validate_pod(value)
                 if context['hook'] is not None:
                     key = hook_token(context['hook']['key'])
-                    if key in action_seed_keys or key in action_diagnostic_seed_keys:
+                    cow_mode = action_counter_cow_keys.get(key)
+                    if cow_mode is not None:
+                        progress = action_counter_cow_read_expectations(cow_mode)
+                        step = action_counter_cow_reads.get(key, 0)
+                        if step >= len(progress):
+                            raise ValueError('action counter COW read count exceeded')
+                        _require_exact(value, progress[step], 'PHP action counter COW read progression')
+                        action_counter_cow_reads[key] = step + 1
+                    elif key in action_seed_keys or key in action_diagnostic_seed_keys:
                         _require_exact(value, action_counter_expected(key), 'seeded action counter read')
                         action_seed_reads[key] = action_seed_reads.get(key, 0) + 1
                     else:
@@ -4804,6 +4873,11 @@ def validate_transcript(streams, result):
             if (action_seed_dispatches.get(key, 0) != 2
                     or action_seed_reads.get(key, 0) != 6):
                 raise ValueError('diagnostic action counter dispatch/read inventory differs: ' + case)
+        for mode, hook in ACTION_COUNTER_COW_HOOKS.items():
+            key = ('string', hook.encode('ascii').hex())
+            if (action_counter_cow_dispatches.get(key, 0) != 2
+                    or action_counter_cow_reads.get(key, 0) != len(action_counter_cow_read_expectations(mode))):
+                raise ValueError('Action counter COW dispatch/read inventory differs: ' + mode)
 
 
 def self_check():
@@ -4948,7 +5022,9 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_diagnostic_bool_read_type', 'wrong_diagnostic_alpha_read_value',
     'wrong_diagnostic_read_count', 'wrong_global_state_read_type',
     'wrong_global_state_warning_order', 'wrong_global_state_throwable_result',
-    'wrong_global_state_all_hook_count',
+    'wrong_global_state_all_hook_count', 'wrong_action_counter_cow_snapshot',
+    'wrong_action_counter_cow_live', 'wrong_action_counter_cow_warning_order',
+    'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
 )
 
 
@@ -5024,6 +5100,14 @@ def reject_action_transcripts(streams, result):
                 return index
         raise ValueError(f'missing global-state {action} boundary for {state}')
 
+    def action_counter_cow_boundary(indices, mode):
+        hook = ACTION_COUNTER_COW_HOOKS[mode]
+        for index in indices:
+            handle = source['rust'][index]['payload'].get('arguments', {}).get('handle')
+            if isinstance(handle, dict) and hook_names_by_handle.get(handle_id(handle)) == hook:
+                return index
+        raise ValueError(f'missing action counter COW boundary for {mode}')
+
     seeded_increments = seeded_boundaries(increment_boundaries)
     seeded_reads = seeded_boundaries(read_boundaries)
     if (any(len(seeded_increments[hook]) != 2 for hook in seeded_increments)
@@ -5094,6 +5178,28 @@ def reject_action_transcripts(streams, result):
             row = next(item for item in rows
                        if item.get('accepted_args') == 0 and item.get('args') == ['global-state-false'])
             row['did_action'] = 2
+        elif name == 'wrong_action_counter_cow_snapshot':
+            value = frames['php'][script_resume]['payload']['completion']['value']
+            value['action_api']['counter_cow']['snapshot']['events'][2]['snapshot'] = {
+                'type': 'string', 'hex': '62'}
+        elif name == 'wrong_action_counter_cow_live':
+            value = frames['php'][script_resume]['payload']['completion']['value']
+            value['action_api']['counter_cow']['live']['events'][1]['live'] = {
+                'type': 'string', 'hex': '62'}
+        elif name == 'wrong_action_counter_cow_warning_order':
+            value = frames['php'][script_resume]['payload']['completion']['value']
+            events = value['action_api']['counter_cow']['live']['events']
+            events[0], events[1] = events[1], events[0]
+        elif name == 'wrong_action_counter_cow_result':
+            index = action_counter_cow_boundary(increment_boundaries, 'live')
+            resume = resume_index(index)
+            frames['php'][resume]['payload']['completion']['value'] = {
+                'type': 'string', 'hex': '63'}
+        elif name == 'wrong_action_counter_cow_read':
+            index = action_counter_cow_boundary(read_boundaries, 'live')
+            resume = resume_index(index)
+            frames['php'][resume]['payload']['completion']['value'] = {
+                'type': 'string', 'hex': '62'}
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':
@@ -5209,3 +5315,4 @@ def reject_mutated_transcripts(streams, result):
             continue
         raise AssertionError('corrupted v2 transcript accepted: ' + name)
     return list(TRANSCRIPT_NEGATIVE_INVENTORY)
+

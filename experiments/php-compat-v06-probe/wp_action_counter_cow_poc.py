@@ -10,8 +10,6 @@ from pathlib import Path
 import sys
 import tarfile
 
-import run_check as native
-
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 FIXTURE = HERE / 'fixtures/wp_action_counter_cow_poc.php'
@@ -81,6 +79,8 @@ def expected_oracle() -> dict:
 
 
 def fixed_inputs() -> dict[str, str]:
+    import run_check as native
+
     php_manifest = native.check_php_manifest()
     if php_manifest.get('archive_sha256') != PHP_ARCHIVE_SHA256:
         raise ValueError('pinned PHP distribution identity differs')
@@ -138,6 +138,8 @@ def verify_receipt() -> dict:
 
 
 def record() -> None:
+    import run_check as native
+
     before = fixed_inputs()
     child = native.captured([str(PHP), '-n', str(FIXTURE), str(WP_ROOT)], timeout=30)
     if child.returncode != 0 or child.stderr:

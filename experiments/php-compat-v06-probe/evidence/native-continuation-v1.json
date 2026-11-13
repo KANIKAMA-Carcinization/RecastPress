@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-13T21:25:24+00:00",
+  "recorded_at_utc": "2026-11-13T23:33:07+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "b6d2591d55d944a8b19b2ee1b735c9fa6dba25dcb3714415fdd7f84414abb6b8",
+    "experiments/php-compat-v06-probe/run_check.py": "542f2d2f0772c5f81702ea504f11619cb457d5455377280a7dda07275957f70f",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
-    "experiments/php-compat-v06-probe/README.ja.md": "87db18457b74266901bcffe13e2e49eb5c04a810403e46228bea8bae2ccdf319",
+    "experiments/php-compat-v06-probe/README.ja.md": "2f910cdcc89e1cd5943d0e24ce9915f79bfba0179c8be1bdfc645451457e5e86",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -23,13 +23,15 @@
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff",
+    "experiments/php-compat-v06-probe/callable_contract.py": "f7279866b07b597a574753e5878739685816a7ebb4fcfd1ea03b31ae9f9f30cd",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "3f420dac5095c098779951e8bffb8ecb592d9d796514c0497f34c28897602158",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "fe0b6e2ec6bc0d77d4539ef4bd0a4b92cbc847ea18024c56fd29f256224037cf",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
+    "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "865596aab10a3e941e23399f32e012ce58c73e15d90e53205a6f87183e82d1e5",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -248,8 +250,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 31492,
-      "rust": 25028
+      "php": 16256,
+      "rust": 11340
     },
     "returncodes": {
       "php": 0,
@@ -306,12 +308,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-75a73ea016874516a007ce1e3bc3a99b-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-75a73ea016874516a007ce1e3bc3a99b-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-c49eb5a20ae44b998bf6f09f169487e8-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-c49eb5a20ae44b998bf6f09f169487e8-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-75a73ea016874516a007ce1e3bc3a99b-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-75a73ea016874516a007ce1e3bc3a99b-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-c49eb5a20ae44b998bf6f09f169487e8-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-c49eb5a20ae44b998bf6f09f169487e8-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -331,8 +333,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 11556,
-      "rust": 23080
+      "php": 8616,
+      "rust": 20132
     },
     "returncodes": {
       "php": 0,
@@ -395,12 +397,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-02f473fd747e434396410fbde6071c8e-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-02f473fd747e434396410fbde6071c8e-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-e1dfd39ead9e44bab7e9a0afcc4cc2aa-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-e1dfd39ead9e44bab7e9a0afcc4cc2aa-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-02f473fd747e434396410fbde6071c8e-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-02f473fd747e434396410fbde6071c8e-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-e1dfd39ead9e44bab7e9a0afcc4cc2aa-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-e1dfd39ead9e44bab7e9a0afcc4cc2aa-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -420,8 +422,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 28028,
-      "rust": 19604
+      "php": 20596,
+      "rust": 2900
     },
     "returncodes": {
       "php": 0,
@@ -569,12 +571,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-bdd8348a7f5540bbb0958bdcf3b4f309-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-bdd8348a7f5540bbb0958bdcf3b4f309-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-670749340c7d44e48fc83d33ed86efbf-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-670749340c7d44e48fc83d33ed86efbf-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-bdd8348a7f5540bbb0958bdcf3b4f309-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-bdd8348a7f5540bbb0958bdcf3b4f309-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-670749340c7d44e48fc83d33ed86efbf-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-670749340c7d44e48fc83d33ed86efbf-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -595,8 +597,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 28276,
-        "rust": 26096
+        "php": 2464,
+        "rust": 15864
       },
       "returncodes": {
         "php": 0,
@@ -671,18 +673,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-1d4aa05431d349d4ba0a4ff5ef83d053-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-1d4aa05431d349d4ba0a4ff5ef83d053-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-2635b42d34f64b12a091e023b3299d47-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-2635b42d34f64b12a091e023b3299d47-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-1d4aa05431d349d4ba0a4ff5ef83d053-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-1d4aa05431d349d4ba0a4ff5ef83d053-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-2635b42d34f64b12a091e023b3299d47-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-2635b42d34f64b12a091e023b3299d47-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "71f5f689f56e4c2680f7c5b3cce2e0b2ae2955744942771579a1e8583c6f75a2",
+          "stdout_sha256": "49d1f429bc5e0a126a9185df3e50ae7dc1bcede3a37091767b29c0ca33acd262",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -696,8 +698,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 2184,
-        "rust": 9724
+        "php": 8648,
+        "rust": 19336
       },
       "returncodes": {
         "php": 0,
@@ -775,18 +777,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-e3f66919e01a4550864304a449f6f4a9-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-e3f66919e01a4550864304a449f6f4a9-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-330d8dbc5a404fb0824e90f5b02a1d44-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-330d8dbc5a404fb0824e90f5b02a1d44-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-e3f66919e01a4550864304a449f6f4a9-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-e3f66919e01a4550864304a449f6f4a9-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-330d8dbc5a404fb0824e90f5b02a1d44-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-330d8dbc5a404fb0824e90f5b02a1d44-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "7786def4456f793718321483349fd261e9c66eae7f7a8fee53547a09c156b1fa",
+          "stdout_sha256": "06196ac3e9670306f09f49ac793143c25079facd7cda2cef9587dac1d17c15e5",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -801,8 +803,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 18576,
-      "rust": 24128
+      "php": 13004,
+      "rust": 19832
     },
     "returncodes": {
       "php": 0,
@@ -887,24 +889,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-3ece4520b0594c3aaa8a5cb234ebec63-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-3ece4520b0594c3aaa8a5cb234ebec63-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e4c012239aeb4210a3b3250ecb44ec63-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e4c012239aeb4210a3b3250ecb44ec63-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-3ece4520b0594c3aaa8a5cb234ebec63-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-3ece4520b0594c3aaa8a5cb234ebec63-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-e4c012239aeb4210a3b3250ecb44ec63-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-e4c012239aeb4210a3b3250ecb44ec63-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "1a3c4f47fb79551a9bee29f1e6d1f71d9766f684a8c56c357b137920863c0cc8",
+        "stdout_sha256": "32426cf15343b1c7ae7f0e0c8340081e39ae470bb82ee61230519b11d5f2a7b2",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "d2937baf8e299c6634b27b10d328c8d8595e4091b7ebb79c9f66dcc24789a3a1",
+        "stdout_sha256": "e0facae78cda710af3240f4b2580251637182d001b0d522f8abdedad0182c694",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -913,8 +915,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 28976,
-        "rust": 13684
+        "php": 10768,
+        "rust": 10904
       },
       "returncodes": {
         "php": 0,
@@ -1036,24 +1038,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-22b8ce654be44bc4a04a96dc84cda402-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-22b8ce654be44bc4a04a96dc84cda402-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-713028500af44442af3038e2ce664f1c-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-713028500af44442af3038e2ce664f1c-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-22b8ce654be44bc4a04a96dc84cda402-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-22b8ce654be44bc4a04a96dc84cda402-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-713028500af44442af3038e2ce664f1c-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-713028500af44442af3038e2ce664f1c-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "04a9acbf064095929c08591d8902939d98338cdd8c928af8ac83fc279055b884",
+          "stdout_sha256": "706b7214dc7a3941eea960bd6cb1488f59ea7306f7c90e5023af6b42bca2289b",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "08c394a0801640939874e232f789779181851f2421147b2870bf5f96f4125850",
+          "stdout_sha256": "1fe271f0a8f7df04fe870783b524a561735c8d04f20450a85e98a691393ee9cd",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1081,8 +1083,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 24272,
-        "rust": 2064
+        "php": 20800,
+        "rust": 11472
       },
       "returncodes": {
         "php": 0,
@@ -1106,7 +1108,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "68ae59726b6a41f4"
+              "token": "82b5993825d59d76"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1169,7 +1171,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "68ae59726b6a41f4"
+              "token": "82b5993825d59d76"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1243,26 +1245,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-b5de583562c34357aae733e805c16d8b-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-b5de583562c34357aae733e805c16d8b-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-101a9bfba4e74e8990c946b890f8b8e3-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-101a9bfba4e74e8990c946b890f8b8e3-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-b5de583562c34357aae733e805c16d8b-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-b5de583562c34357aae733e805c16d8b-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-101a9bfba4e74e8990c946b890f8b8e3-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-101a9bfba4e74e8990c946b890f8b8e3-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "be5e7f2e0cd1868d04cb024a9bd8f6e554d7c369e2c3cf74ae35ef901a43dabb",
+          "stdout_sha256": "6973594b47047356ec73ca7f0715cb9602dd36b8cf45f73a58e91a5d6bf7eaf6",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "df59b4a0c44ccdb950f08bd288df6de753c7b929cf33de6620020566aba19dc2",
+          "stdout_sha256": "4db2f5b0fa5bf43a0abd07b2e281bccb19285d80b2bd6fd6cb125550fcc781f2",
           "stderr_bytes": 1817,
-          "stderr_sha256": "167a5ff10200f7bfefee25a6c762ac745b2feed804af661337c9d909c061a1d7"
+          "stderr_sha256": "55288517485217f33eb4dad8a55ab61b87317f210a608150fce39698480e2413"
         }
       },
       "hook_transcript_rejections": [
@@ -1289,8 +1291,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 21312,
-      "rust": 26940
+      "php": 2296,
+      "rust": 19428
     },
     "returncodes": {
       "php": 0,
@@ -14711,24 +14713,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-798a3bccdce747e6bb6edf3b0062de3c-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-798a3bccdce747e6bb6edf3b0062de3c-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-fd698ede59094e60ae06008789ff3e2c-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-fd698ede59094e60ae06008789ff3e2c-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-798a3bccdce747e6bb6edf3b0062de3c-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-798a3bccdce747e6bb6edf3b0062de3c-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-fd698ede59094e60ae06008789ff3e2c-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-fd698ede59094e60ae06008789ff3e2c-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "d2f696a56cbfc7083d557768973c713ada1b2f06298e125aada7002ad9bfc3ba",
+        "stdout_sha256": "f980b63617a53f230c1554e9acf2e24ec77dcb35f68c0cd83aedd75443d2c180",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2763476,
-        "stdout_sha256": "933be164e22db948e727dcdf925630144f976e45853a3c92333029cfe210c37f",
+        "stdout_sha256": "8341c661e6ef2cefd28d9cf0c2be4b570334c759078b9b27850bb0fbda6909d1",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14780,8 +14782,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 18700,
-      "rust": 28432
+      "php": 8860,
+      "rust": 18096
     },
     "returncodes": {
       "php": 0,
@@ -14789,9 +14791,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 1535,
-    "frames_from_rust": 1534,
-    "relayed_bytes": 894865,
+    "frames_from_php": 1795,
+    "frames_from_rust": 1794,
+    "relayed_bytes": 1054197,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -16659,38 +16661,387 @@
               "doing_action": true,
               "doing_named": true
             }
-          }
+          },
+          "counter_cow": {
+            "live": {
+              "mode": "live",
+              "snapshot_kept": false,
+              "before": {
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              "events": [
+                {
+                  "event": "warning-before-nested",
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "61"
+                  }
+                },
+                {
+                  "event": "warning-nested",
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "61"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    "callable-action-counter-cow-live",
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "warning-after-nested",
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    "callable-action-counter-cow-live",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": null,
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                }
+              ],
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment"
+                }
+              ],
+              "after": {
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              "current_filter_stack": []
+            },
+            "snapshot": {
+              "mode": "snapshot",
+              "snapshot_kept": true,
+              "before": {
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              "events": [
+                {
+                  "event": "warning-before-nested",
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "61"
+                  }
+                },
+                {
+                  "event": "warning-nested",
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "61"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    "callable-action-counter-cow-snapshot",
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "warning-after-nested",
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "61"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    "callable-action-counter-cow-snapshot",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "doing_action": true,
+                  "live": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "snapshot": {
+                    "type": "string",
+                    "hex": "62"
+                  },
+                  "did_action": {
+                    "type": "string",
+                    "hex": "62"
+                  }
+                }
+              ],
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment"
+                },
+                {
+                  "index": 2,
+                  "severity": 8192,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment"
+                }
+              ],
+              "after": {
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              "current_filter_stack": []
+            }
+          },
+          "process_warnings": []
         }
       }
     },
     "expected_frame_counts": {
-      "php": 1535,
-      "rust": 1534
+      "php": 1795,
+      "rust": 1794
     },
     "action_result": {
       "api_counts": {
-        "add_action": 32,
+        "add_action": 38,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 83,
+        "current_action": 91,
         "current_filter": 0,
-        "did_action": 114,
+        "did_action": 132,
         "did_filter": 7,
-        "do_action": 33,
-        "doing_action": 94,
+        "do_action": 37,
+        "doing_action": 102,
         "doing_filter": 0,
         "has_action": 6,
         "has_filter": 0,
-        "remove_action": 5,
+        "remove_action": 11,
         "remove_filter": 0
       },
-      "argument_release_effects": 292,
-      "boundary_effects": 706,
-      "callback_invocations": 126,
+      "argument_release_effects": 334,
+      "boundary_effects": 856,
+      "callback_invocations": 138,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 1535,
-      "frames_from_rust": 1534,
+      "frames_from_php": 1795,
+      "frames_from_rust": 1794,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -17371,6 +17722,354 @@
               "wp_actions": 1
             }
           ],
+          "counter_cow": {
+            "live": {
+              "after": {
+                "did_action": {
+                  "hex": "62",
+                  "type": "string"
+                },
+                "live": {
+                  "hex": "62",
+                  "type": "string"
+                },
+                "snapshot": null
+              },
+              "before": {
+                "did_action": {
+                  "hex": "61",
+                  "type": "string"
+                },
+                "live": {
+                  "hex": "61",
+                  "type": "string"
+                },
+                "snapshot": null
+              },
+              "current_filter_stack": [],
+              "events": [
+                {
+                  "did_action": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "event": "warning-before-nested",
+                  "index": 1,
+                  "live": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192,
+                  "snapshot": null
+                },
+                {
+                  "did_action": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "event": "warning-nested",
+                  "index": 2,
+                  "live": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "severity": 8192,
+                  "snapshot": null
+                },
+                {
+                  "args": [
+                    "callable-action-counter-cow-live",
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "all",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": null
+                },
+                {
+                  "args": [
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "named",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": null
+                },
+                {
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "event": "warning-after-nested",
+                  "index": 1,
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192,
+                  "snapshot": null
+                },
+                {
+                  "args": [
+                    "callable-action-counter-cow-live",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "all",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": null
+                },
+                {
+                  "args": [
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-live",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "named",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": null
+                }
+              ],
+              "mode": "live",
+              "snapshot_kept": false,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "severity": 8192
+                }
+              ]
+            },
+            "snapshot": {
+              "after": {
+                "did_action": {
+                  "hex": "62",
+                  "type": "string"
+                },
+                "live": {
+                  "hex": "62",
+                  "type": "string"
+                },
+                "snapshot": {
+                  "hex": "62",
+                  "type": "string"
+                }
+              },
+              "before": {
+                "did_action": {
+                  "hex": "61",
+                  "type": "string"
+                },
+                "live": {
+                  "hex": "61",
+                  "type": "string"
+                },
+                "snapshot": null
+              },
+              "current_filter_stack": [],
+              "events": [
+                {
+                  "did_action": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "event": "warning-before-nested",
+                  "index": 1,
+                  "live": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192,
+                  "snapshot": {
+                    "hex": "61",
+                    "type": "string"
+                  }
+                },
+                {
+                  "did_action": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "event": "warning-nested",
+                  "index": 2,
+                  "live": {
+                    "hex": "61",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "severity": 8192,
+                  "snapshot": {
+                    "hex": "61",
+                    "type": "string"
+                  }
+                },
+                {
+                  "args": [
+                    "callable-action-counter-cow-snapshot",
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "all",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": {
+                    "hex": "61",
+                    "type": "string"
+                  }
+                },
+                {
+                  "args": [
+                    "nested"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "named",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": {
+                    "hex": "61",
+                    "type": "string"
+                  }
+                },
+                {
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "event": "warning-after-nested",
+                  "index": 1,
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192,
+                  "snapshot": {
+                    "hex": "61",
+                    "type": "string"
+                  }
+                },
+                {
+                  "args": [
+                    "callable-action-counter-cow-snapshot",
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "all",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": {
+                    "hex": "62",
+                    "type": "string"
+                  }
+                },
+                {
+                  "args": [
+                    "outer"
+                  ],
+                  "current_action": "callable-action-counter-cow-snapshot",
+                  "did_action": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "doing_action": true,
+                  "event": "named",
+                  "live": {
+                    "hex": "62",
+                    "type": "string"
+                  },
+                  "snapshot": {
+                    "hex": "62",
+                    "type": "string"
+                  }
+                }
+              ],
+              "mode": "snapshot",
+              "snapshot_kept": true,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "outer_increment",
+                  "severity": 8192
+                },
+                {
+                  "index": 2,
+                  "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                  "phase": "nested_increment",
+                  "severity": 8192
+                }
+              ]
+            }
+          },
           "counter_independence": {
             "after_filter": {
               "did_action": 1,
@@ -18477,6 +19176,7 @@
             "after": 1,
             "before": 0
           },
+          "process_warnings": [],
           "throw_all": {
             "after_catch": {
               "current_action": "callable-action-throw-all",
@@ -18579,32 +19279,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 32,
+      "release_effects": 38,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-3bd999facd16427a89f882a33a2d014e-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-3bd999facd16427a89f882a33a2d014e-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-caf488b24e494e4d9089eb2f0c000105-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-caf488b24e494e4d9089eb2f0c000105-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-3bd999facd16427a89f882a33a2d014e-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-3bd999facd16427a89f882a33a2d014e-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-caf488b24e494e4d9089eb2f0c000105-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-caf488b24e494e4d9089eb2f0c000105-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 425667,
-        "stdout_sha256": "bbcc261c6b3eb07eca384dbafe2e5b8e1122115ec685110efbaeb15525db9225",
+        "stdout_bytes": 503671,
+        "stdout_sha256": "4458e1b13c639479e9936ecaf60357bac16427c8d5dd7871ac430f7f6f2ab0fe",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 469198,
-        "stdout_sha256": "c3d641b6e2432de8a3e0bf4f421593f14109db58762e953d4130ae8a98bf6da1",
-        "stderr_bytes": 27111,
-        "stderr_sha256": "0deb3c2cdfb7d3d61055163c020ae84934bd5370a2fe5c7b5869b9a358c3dc94"
+        "stdout_bytes": 550526,
+        "stdout_sha256": "a3f7dec1ae7dd796a297f13dad5dc1e2b9bdfd50db709d8921f70dfe25caf90a",
+        "stderr_bytes": 32660,
+        "stderr_sha256": "69cc15c069f0f9209962582a6a530a4ef85276d1312a10f4954c7a954c0d127f"
       }
     },
     "action_transcript_rejections": [
@@ -18626,7 +19326,12 @@
       "wrong_global_state_read_type",
       "wrong_global_state_warning_order",
       "wrong_global_state_throwable_result",
-      "wrong_global_state_all_hook_count"
+      "wrong_global_state_all_hook_count",
+      "wrong_action_counter_cow_snapshot",
+      "wrong_action_counter_cow_live",
+      "wrong_action_counter_cow_warning_order",
+      "wrong_action_counter_cow_result",
+      "wrong_action_counter_cow_read"
     ]
   },
   "negative_vectors_rejected_by_rust": [
@@ -18654,72 +19359,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 14896,
+        "pid": 15876,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 12848,
+        "pid": 6780,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 8808,
+        "pid": 10016,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 7624,
+        "pid": 5192,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 29588,
+        "pid": 10348,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28976,
+        "pid": 20144,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 16808,
+        "pid": 6968,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 12376,
+        "pid": 13144,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 21152,
+        "pid": 6664,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 15832,
+        "pid": 16440,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 12844,
+        "pid": 9972,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 27460,
+        "pid": 21288,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 9608,
+        "pid": 2204,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25228,
+        "pid": 18072,
         "returncode": 0,
         "reaped": true
       }

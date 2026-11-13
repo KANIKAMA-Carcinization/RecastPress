@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-13T21:34:11.295765+00:00",
+  "observed_at_utc": "2026-11-13T23:42:59.245703+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -170,16 +170,16 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "87db18457b74266901bcffe13e2e49eb5c04a810403e46228bea8bae2ccdf319",
-    "experiments/php-compat-v06-probe/callable_contract.py": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1",
+    "experiments/php-compat-v06-probe/README.ja.md": "2f910cdcc89e1cd5943d0e24ce9915f79bfba0179c8be1bdfc645451457e5e86",
+    "experiments/php-compat-v06-probe/callable_contract.py": "f7279866b07b597a574753e5878739685816a7ebb4fcfd1ea03b31ae9f9f30cd",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "3f420dac5095c098779951e8bffb8ecb592d9d796514c0497f34c28897602158",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "865596aab10a3e941e23399f32e012ce58c73e15d90e53205a6f87183e82d1e5",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -190,12 +190,14 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
-    "experiments/php-compat-v06-probe/run_check.py": "b6d2591d55d944a8b19b2ee1b735c9fa6dba25dcb3714415fdd7f84414abb6b8",
+    "experiments/php-compat-v06-probe/run_check.py": "542f2d2f0772c5f81702ea504f11619cb457d5455377280a7dda07275957f70f",
+    "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "fe0b6e2ec6bc0d77d4539ef4bd0a4b92cbc847ea18024c56fd29f256224037cf",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
@@ -366,16 +368,16 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "87db18457b74266901bcffe13e2e49eb5c04a810403e46228bea8bae2ccdf319",
-    "experiments/php-compat-v06-probe/callable_contract.py": "f2f9a28c38257f3b7d143ae630f32cf76844365bb2e07fbe04ac123c7a98ff97",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2f9540819310b4ac538f74794868764070fedf2ddacab2812c1d27eb2c8295c1",
+    "experiments/php-compat-v06-probe/README.ja.md": "2f910cdcc89e1cd5943d0e24ce9915f79bfba0179c8be1bdfc645451457e5e86",
+    "experiments/php-compat-v06-probe/callable_contract.py": "f7279866b07b597a574753e5878739685816a7ebb4fcfd1ea03b31ae9f9f30cd",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "3f420dac5095c098779951e8bffb8ecb592d9d796514c0497f34c28897602158",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "4d29e2d92e7cb91db8664d7c8f316043870b6e9bd0f0dca97ccd121fac363dca",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d7596d6244720d6c9f46f134f0600f42ff2bcbff4bdc93ec1ec647e83e16f874",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "88a58a8f8448364cf145a9d9638727d07cb20aebe2007c1fbdfecd031f0d3fa1",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "865596aab10a3e941e23399f32e012ce58c73e15d90e53205a6f87183e82d1e5",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -386,44 +388,46 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
-    "experiments/php-compat-v06-probe/run_check.py": "b6d2591d55d944a8b19b2ee1b735c9fa6dba25dcb3714415fdd7f84414abb6b8",
+    "experiments/php-compat-v06-probe/run_check.py": "542f2d2f0772c5f81702ea504f11619cb457d5455377280a7dda07275957f70f",
+    "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e96bf935eda4aa6429b88facf74e81482fb4aa71163e6311a9d71d82cd62baff",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "fe0b6e2ec6bc0d77d4539ef4bd0a4b92cbc847ea18024c56fd29f256224037cf",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 27296,
+    "pid": 24116,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 21820,
+    "pid": 24460,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T234259.160764Z-stdout.bin",
       "bytes": 120941,
       "sha256": "7783b1489fa9ef3183b51bfd22a5a6035f90d5940d3a078da36d30bef1cef506"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T234259.160764Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-action_stdout.bin",
-      "bytes": 26109,
-      "sha256": "8c9e27f0223fbf5b1906008861d54f6b9ed817943a11568b185018e0684fad15"
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T234259.160764Z-action_stdout.bin",
+      "bytes": 31656,
+      "sha256": "f2589642002ff2966cedaaf47ec6762251073db0e41c846569f7df6b45c672e8"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261113T213411.275782Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261113T234259.160764Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -8973,7 +8977,356 @@
             "doing_action": true,
             "doing_named": true
           }
-        }
+        },
+        "counter_cow": {
+          "live": {
+            "mode": "live",
+            "snapshot_kept": false,
+            "before": {
+              "live": {
+                "type": "string",
+                "hex": "61"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "61"
+              }
+            },
+            "events": [
+              {
+                "event": "warning-before-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "warning-nested",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-live",
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "warning-after-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-live",
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment"
+              }
+            ],
+            "after": {
+              "live": {
+                "type": "string",
+                "hex": "62"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "62"
+              }
+            },
+            "current_filter_stack": []
+          },
+          "snapshot": {
+            "mode": "snapshot",
+            "snapshot_kept": true,
+            "before": {
+              "live": {
+                "type": "string",
+                "hex": "61"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "61"
+              }
+            },
+            "events": [
+              {
+                "event": "warning-before-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "warning-nested",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-snapshot",
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "warning-after-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-snapshot",
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment"
+              }
+            ],
+            "after": {
+              "live": {
+                "type": "string",
+                "hex": "62"
+              },
+              "snapshot": {
+                "type": "string",
+                "hex": "62"
+              },
+              "did_action": {
+                "type": "string",
+                "hex": "62"
+              }
+            },
+            "current_filter_stack": []
+          }
+        },
+        "process_warnings": []
       }
     }
   },
@@ -10840,17 +11193,366 @@
             "doing_action": true,
             "doing_named": true
           }
-        }
+        },
+        "counter_cow": {
+          "live": {
+            "mode": "live",
+            "snapshot_kept": false,
+            "before": {
+              "live": {
+                "type": "string",
+                "hex": "61"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "61"
+              }
+            },
+            "events": [
+              {
+                "event": "warning-before-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "warning-nested",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-live",
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "warning-after-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-live",
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-live",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": null,
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment"
+              }
+            ],
+            "after": {
+              "live": {
+                "type": "string",
+                "hex": "62"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "62"
+              }
+            },
+            "current_filter_stack": []
+          },
+          "snapshot": {
+            "mode": "snapshot",
+            "snapshot_kept": true,
+            "before": {
+              "live": {
+                "type": "string",
+                "hex": "61"
+              },
+              "snapshot": null,
+              "did_action": {
+                "type": "string",
+                "hex": "61"
+              }
+            },
+            "events": [
+              {
+                "event": "warning-before-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "warning-nested",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "61"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-snapshot",
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "nested"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "warning-after-nested",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment",
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "61"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  "callable-action-counter-cow-snapshot",
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  "outer"
+                ],
+                "current_action": "callable-action-counter-cow-snapshot",
+                "doing_action": true,
+                "live": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "snapshot": {
+                  "type": "string",
+                  "hex": "62"
+                },
+                "did_action": {
+                  "type": "string",
+                  "hex": "62"
+                }
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "outer_increment"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164",
+                "phase": "nested_increment"
+              }
+            ],
+            "after": {
+              "live": {
+                "type": "string",
+                "hex": "62"
+              },
+              "snapshot": {
+                "type": "string",
+                "hex": "62"
+              },
+              "did_action": {
+                "type": "string",
+                "hex": "62"
+              }
+            },
+            "current_filter_stack": []
+          }
+        },
+        "process_warnings": []
       }
     }
   },
   "scope": "Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-13T21:34:23.477324+00:00",
+    "observed_at_utc": "2026-11-13T23:44:59.549485+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "7321e26876668341c112d9d99a7cd5d66041b0169ce7a440dde452fabe286632",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261113T213041.952324Z-success.json",
-    "wasm_receipt_sha256": "328d3cfb162028e65b446f5c48843d603023d1f1c330985fecb5aec4da0b1bf6",
+    "native_receipt_sha256": "9422bddbe8e3acd579374af975727a4c837893bea8b53006c1f1038f66ac4664",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261113T234016.953436Z-success.json",
+    "wasm_receipt_sha256": "6ddd052521a4daf2c96174a368338151d1c6991ef6b10f1cd3aea46ba3959b9b",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -10943,11 +11645,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-13T21:35:06.309822+00:00",
+    "observed_at_utc": "2026-11-13T23:45:55.200867+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "7321e26876668341c112d9d99a7cd5d66041b0169ce7a440dde452fabe286632",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261113T212746.410412Z-success.json",
-    "wasm_receipt_sha256": "e2dc9ac027be7eae9e805303a96fcdbc5b6a06d91d60bfb8335f9bc630aec752",
+    "native_receipt_sha256": "9422bddbe8e3acd579374af975727a4c837893bea8b53006c1f1038f66ac4664",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261113T233706.123355Z-success.json",
+    "wasm_receipt_sha256": "6ccf75dfe95b4947bdba92481d1696a9d30997671913ff19969f72ba28473855",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",
@@ -10963,7 +11665,9 @@
       "action_api.counter_seed_values",
       "action_api.global_state",
       "action_api.throw_all",
-      "action_api.throw_named"
+      "action_api.throw_named",
+      "action_api.counter_cow",
+      "action_api.process_warnings"
     ],
     "all_action_observations_matched": true
   }

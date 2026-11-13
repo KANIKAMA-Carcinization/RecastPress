@@ -75,6 +75,7 @@ def source_files() -> dict[str, str]:
         HERE / "hook_contract.py", FIXTURES / "hooks_driver.php",
         HERE / "callable_contract.py", HERE / "callable_v2_contract.py", HERE / "wp_callable_oracle.py",
         HERE / "wp_action_global_state_poc.py",
+        HERE / "wp_action_counter_cow_poc.py", FIXTURES / "wp_action_counter_cow_poc.php",
         *(FIXTURES / name for name in ("callable_adapter.php", "callable_driver.php", "callable_program.php", "callable_wp_oracle.php", "CALLABLE_API_CONTRACT.md")),
         HERE / "wp_hooks_oracle.py", FIXTURES / "hooks_wp_oracle.php",
         FIXTURES / "HOOKS_THROWABLE_CONTRACT.md",

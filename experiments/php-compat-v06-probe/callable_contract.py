@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 from wp_action_global_state_poc import expected_observation as _action_global_state_oracle
+from wp_action_counter_cow_poc import expected_oracle as _action_counter_cow_oracle
 
 APIS = ('add_filter', 'remove_filter', 'has_filter', 'apply_filters',
         'current_filter', 'doing_filter', 'did_filter')
@@ -33,6 +34,20 @@ ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS = {
     ],
 }
 ACTION_GLOBAL_STATE_EXPECTATIONS = _action_global_state_oracle()['observations']
+ACTION_COUNTER_COW_EXPECTATIONS = _action_counter_cow_oracle()['cases']
+ACTION_COUNTER_COW_HOOKS = {
+    mode: 'callable-action-counter-cow-' + mode for mode in ('live', 'snapshot')
+}
+
+
+def action_counter_cow_read_expectations(mode: str) -> list[dict]:
+    """Return the exact did_action boundary values for the isolated COW case."""
+    case = ACTION_COUNTER_COW_EXPECTATIONS[mode]
+    reads = [case['before']['did_action']]
+    for event in case['events']:
+        reads.append(event['did_action'])
+    reads.append(case['after']['did_action'])
+    return reads
 ACTION_COUNTER_SEED_EXPECTATIONS = {
     'int_7': {
         'before': {'type': 'int', 'value': '7'},

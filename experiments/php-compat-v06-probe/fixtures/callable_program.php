@@ -713,6 +713,154 @@ function callable_program_action_global_state_cases(): array
     return $observations;
 }
 
+function callable_program_action_counter_cow_leaf(bool $keepSnapshot): array
+{
+    $mode = $keepSnapshot ? 'snapshot' : 'live';
+    $hook = 'callable-action-counter-cow-' . $mode;
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $noopAll = static function (...$args): void {
+        if (!array_key_exists(0, $args)) {
+            return;
+        }
+    };
+    add_action('all', $noopAll, 0, 0);
+    $GLOBALS['wp_actions'][$hook] = 'a';
+    $state = [
+        'warnings' => [],
+        'events' => [],
+        'snapshot' => null,
+        'nested_started' => false,
+    ];
+
+    $read = static function (?array $snapshot) use (&$state, $hook): array {
+        return [
+            'live' => callable_program_scalar_view($GLOBALS['wp_actions'][$hook] ?? null),
+            'snapshot' => $snapshot === null
+                ? null
+                : callable_program_scalar_view($snapshot[$hook] ?? null),
+            'did_action' => callable_program_scalar_view(did_action($hook)),
+        ];
+    };
+    $capture = static function (string $event, array $args) use (&$state, $hook, $read): void {
+        $state['events'][] = [
+            'event' => $event,
+            'args' => $args,
+            'current_action' => current_action(),
+            'doing_action' => doing_action($hook),
+            ...$read($state['snapshot']),
+        ];
+    };
+
+    set_error_handler(static function (int $severity, string $message) use (
+        &$state,
+        $hook,
+        $keepSnapshot,
+        $read
+    ): bool {
+        $index = count($state['warnings']) + 1;
+        $warning = [
+            'index' => $index,
+            'severity' => $severity,
+            'message_hex' => bin2hex($message),
+            'phase' => $index === 1 ? 'outer_increment' : 'nested_increment',
+        ];
+        $state['warnings'][] = $warning;
+
+        if ($index === 1) {
+            if ($keepSnapshot) {
+                $state['snapshot'] = $GLOBALS['wp_actions'];
+            }
+            $state['events'][] = [
+                'event' => 'warning-before-nested',
+                ...$warning,
+                ...$read($state['snapshot']),
+            ];
+            $state['nested_started'] = true;
+            set_error_handler(static function (int $nestedSeverity, string $nestedMessage) use (
+                &$state,
+                $read
+            ): bool {
+                $nestedWarning = [
+                    'index' => count($state['warnings']) + 1,
+                    'severity' => $nestedSeverity,
+                    'message_hex' => bin2hex($nestedMessage),
+                    'phase' => 'nested_increment',
+                ];
+                $state['warnings'][] = $nestedWarning;
+                $state['events'][] = [
+                    'event' => 'warning-nested',
+                    ...$nestedWarning,
+                    ...$read($state['snapshot']),
+                ];
+
+                return true;
+            });
+            try {
+                do_action($hook, 'nested');
+            } finally {
+                restore_error_handler();
+            }
+            $state['events'][] = [
+                'event' => 'warning-after-nested',
+                ...$warning,
+                ...$read($state['snapshot']),
+            ];
+        }
+
+        return true;
+    });
+
+    $allObserver = static function (...$args) use ($capture, $hook): void {
+        if (($args[0] ?? null) === $hook) {
+            $capture('all', $args);
+        }
+    };
+    $namedObserver = static function (...$args) use ($capture): void {
+        $capture('named', $args);
+    };
+    add_action('all', $allObserver, 3, 0);
+    add_action($hook, $namedObserver, 10, 99);
+
+    $before = [
+        'live' => callable_program_scalar_view($GLOBALS['wp_actions'][$hook] ?? null),
+        'snapshot' => null,
+        'did_action' => callable_program_scalar_view(did_action($hook)),
+    ];
+    do_action($hook, 'outer');
+    $after = [
+        'live' => callable_program_scalar_view($GLOBALS['wp_actions'][$hook] ?? null),
+        'snapshot' => $state['snapshot'] === null
+            ? null
+            : callable_program_scalar_view($state['snapshot'][$hook] ?? null),
+        'did_action' => callable_program_scalar_view(did_action($hook)),
+    ];
+    $stack = array_values($GLOBALS['wp_current_filter'] ?? []);
+    remove_action($hook, $namedObserver, 10);
+    remove_action('all', $allObserver, 3);
+    remove_action('all', $noopAll, 0);
+    restore_error_handler();
+
+    return [
+        'mode' => $mode,
+        'snapshot_kept' => $keepSnapshot,
+        'before' => $before,
+        'events' => $state['events'],
+        'warnings' => $state['warnings'],
+        'after' => $after,
+        'current_filter_stack' => $stack,
+    ];
+}
+
+function callable_program_action_counter_cow_cases(): array
+{
+    return [
+        'live' => callable_program_action_counter_cow_leaf(false),
+        'snapshot' => callable_program_action_counter_cow_leaf(true),
+    ];
+}
+
 function callable_program_hook_scalar_view($value): array
 {
     if (is_float($value) && is_nan($value)) {
@@ -3016,7 +3164,6 @@ function callable_program_action_api_cases(): array
             unset($GLOBALS[$globalName]);
         }
     }
-
     return ['aliases' => $aliases,
         'do_action_returns' => ['populated' => $doReturn, 'empty_args' => $emptyReturn, 'all_args' => $allReturn, 'all_without_named' => $allNoListenerReturn, 'nested' => $nestedReturn, 'no_listener' => $noListenerReturn],
         'callbacks' => $events, 'after_outer' => $afterOuter, 'empty_args' => $placeholderEvents,
@@ -3057,5 +3204,15 @@ function callable_program_run(): array
 
 function callable_program_run_action_api(): array
 {
-    return ['action_api' => callable_program_action_api_cases()];
+    $processWarnings = [];
+    set_error_handler(static function (int $severity, string $message) use (&$processWarnings): bool {
+        $processWarnings[] = ['severity' => $severity, 'message_hex' => bin2hex($message)];
+        return true;
+    });
+    $counterCowCases = callable_program_action_counter_cow_cases();
+    $actionApi = callable_program_action_api_cases();
+    restore_error_handler();
+    $actionApi['counter_cow'] = $counterCowCases;
+    $actionApi['process_warnings'] = $processWarnings;
+    return ['action_api' => $actionApi];
 }
