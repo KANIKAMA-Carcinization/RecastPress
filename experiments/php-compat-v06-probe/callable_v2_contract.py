@@ -4,8 +4,8 @@ from __future__ import annotations
 import json
 import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
-    ACTION_COUNTER_SEED_HOOKS, ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer, validate_key,
-    validate_pod)
+    ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
+    ALL_APIS, EXPECTED_OBSERVATION, canonical_hex, canonical_integer, validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
 REQUEST = '71'
@@ -3992,6 +3992,76 @@ EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_s
 
 
 EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
+_BOOL_INCREMENT_DIAGNOSTIC = {
+    'severity': 2,
+    'message_hex': '496e6372656d656e74206f6e207479706520626f6f6c20686173206e6f206566666563742c20746869732077696c6c206368616e676520696e20746865206e657874206d616a6f722076657273696f6e206f6620504850',
+}
+_ALPHA_INCREMENT_DIAGNOSTIC = {
+    'severity': 8192,
+    'message_hex': '496e6372656d656e74206f6e206e6f6e2d6e756d6572696320737472696e6720697320646570726563617465642c20757365207374725f696e6372656d656e74282920696e7374656164',
+}
+_ACTION_COUNTER_DIAGNOSTIC_CASES = {
+    'bool_true': {
+        'hook': 'callable-action-counter-seed-diagnostic-bool-true',
+        'seed': {'type': 'bool', 'value': True},
+        'after': {'type': 'bool', 'value': True},
+        'warning': _BOOL_INCREMENT_DIAGNOSTIC,
+        'reads': [
+            {'type': 'bool', 'value': True},
+            {'type': 'bool', 'value': True},
+        ],
+    },
+    'alpha': {
+        'hook': 'callable-action-counter-seed-diagnostic-alpha',
+        'seed': {'type': 'string', 'hex': '61'},
+        'after': {'type': 'string', 'hex': '63'},
+        'warning': _ALPHA_INCREMENT_DIAGNOSTIC,
+        'reads': [
+            {'type': 'string', 'hex': '62'},
+            {'type': 'string', 'hex': '63'},
+        ],
+    },
+}
+
+def _diagnostic_native_value(value):
+    if value['type'] == 'bool':
+        return value['value']
+    if value['type'] == 'string':
+        return bytes.fromhex(value['hex']).decode('ascii')
+    raise ValueError('unsupported diagnostic action counter scalar')
+
+EXPECTED_ACTION_API['counter_seed_diagnostics'] = {}
+_diagnostic_all_hook_events = []
+for _diagnostic_name, _diagnostic_case in _ACTION_COUNTER_DIAGNOSTIC_CASES.items():
+    _diagnostic_hook = _diagnostic_case['hook']
+    _diagnostic_warning = _diagnostic_case['warning']
+    _diagnostic_trace = []
+    for _dispatch_index, _dispatch in enumerate(('first', 'second')):
+        _diagnostic_trace.extend([
+            {'event': 'diagnostic', 'dispatch': _dispatch, **_diagnostic_warning},
+            {'event': 'all', 'dispatch': _dispatch,
+             'args': [_diagnostic_hook, _dispatch]},
+            {'event': 'named', 'dispatch': _dispatch,
+             'args': [_dispatch], 'did_action': _diagnostic_case['reads'][_dispatch_index],
+             'wp_actions': _diagnostic_case['reads'][_dispatch_index]},
+        ])
+        for _accepted_args in (0, 1):
+            _diagnostic_all_hook_events.append({
+                'accepted_args': _accepted_args,
+                'args': [_diagnostic_hook, _dispatch],
+                'current_action': _diagnostic_hook,
+                'doing_action': True,
+                'did_action': _diagnostic_native_value(_diagnostic_case['reads'][_dispatch_index]),
+                'wp_actions': _diagnostic_native_value(_diagnostic_case['reads'][_dispatch_index]),
+            })
+    EXPECTED_ACTION_API['counter_seed_diagnostics'][_diagnostic_name] = {
+        'seed': _diagnostic_case['seed'],
+        'returns': [{'type': 'null'}, {'type': 'null'}],
+        'diagnostics': [_diagnostic_warning, _diagnostic_warning],
+        'trace': _diagnostic_trace,
+        'after': _diagnostic_case['after'],
+    }
+EXPECTED_ACTION_API['all_hook']['events'][15:15] = _diagnostic_all_hook_events
 _nested_caught_hook_events = []
 for _hook, _args in (
     ('callable-action-nested-caught-parent', ['callable-action-nested-caught-parent', 'parent-argument']),
@@ -4026,7 +4096,7 @@ for _seed_case, _seed_hook in ACTION_COUNTER_SEED_HOOKS.items():
                 'did_action': _php_counter_value(_event['did_action']),
                 'wp_actions': _php_counter_value(_event['wp_actions']),
             })
-EXPECTED_ACTION_API['all_hook']['events'][19:19] = _seed_all_hook_events
+EXPECTED_ACTION_API['all_hook']['events'][27:27] = _seed_all_hook_events
 
 
 def validate_action_observation(value):
@@ -4156,6 +4226,30 @@ def action_self_check():
     changed = json.loads(json.dumps(EXPECTED_ACTION_API))
     changed['nested_caught_throw']['after']['stack_depth'] = 2
     mutations.append(('nested caught action stack depth', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['bool_true']['after']['value'] = False
+    mutations.append(('bool action counter unchanged', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['alpha']['trace'][2]['wp_actions']['hex'] = '63'
+    mutations.append(('alpha action counter progression', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['bool_true']['diagnostics'][0]['severity'] = 8192
+    mutations.append(('bool increment diagnostic severity', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['alpha']['diagnostics'][1]['message_hex'] = '00'
+    mutations.append(('alpha increment diagnostic message', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['bool_true']['returns'][1] = {'type': 'bool', 'value': False}
+    mutations.append(('diagnostic dispatch normal return', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    changed['counter_seed_diagnostics']['alpha']['trace'][3]['event'] = 'all'
+    mutations.append(('diagnostic trace order', changed))
+    changed = json.loads(json.dumps(EXPECTED_ACTION_API))
+    diag_hook = _ACTION_COUNTER_DIAGNOSTIC_CASES['bool_true']['hook']
+    diag_row = next(item for item in changed['all_hook']['events']
+                    if item.get('accepted_args') == 0 and item.get('args') == [diag_hook, 'first'])
+    diag_row['wp_actions'] = False
+    mutations.append(('diagnostic all-hook action counter', changed))
     for label, changed in mutations:
         try:
             validate_action_observation({'action_api': changed})
@@ -4253,6 +4347,10 @@ def validate_transcript(streams, result):
         ('string', hook.encode('ascii').hex()): case
         for case, hook in ACTION_COUNTER_SEED_HOOKS.items()
     }
+    action_diagnostic_seed_keys = {
+        ('string', hook.encode('ascii').hex()): case
+        for case, hook in ACTION_COUNTER_DIAGNOSTIC_HOOKS.items()
+    }
 
     def hook_token(key):
         validate_key(key)
@@ -4263,6 +4361,10 @@ def validate_transcript(streams, result):
         if seed_case is not None:
             progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
             progress.extend(event['did_action'] for event in ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['events'])
+            return progress[action_seed_dispatches.get(key, 0)]
+        diagnostic_case = action_diagnostic_seed_keys.get(key)
+        if diagnostic_case is not None:
+            progress = ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS[diagnostic_case]
             return progress[action_seed_dispatches.get(key, 0)]
         return {'type': 'int', 'value': str(action_counts.get(key, 0))}
 
@@ -4374,7 +4476,7 @@ def validate_transcript(streams, result):
             if name == 'did_action':
                 validate_pod(node)
                 seed_key = hook_token(context['hook']['key']) if context['hook'] is not None else None
-                if seed_key in action_seed_keys:
+                if seed_key in action_seed_keys or seed_key in action_diagnostic_seed_keys:
                     _require_exact(node, action_counter_expected(seed_key), 'seeded did_action result')
                 elif kind == 'int':
                     if canonical_integer(node['value'], 'did_action') < 0:
@@ -4571,10 +4673,14 @@ def validate_transcript(streams, result):
                 validate_pod(value)
                 key = hook_token(context['hook']['key'])
                 seed_case = action_seed_keys.get(key)
-                if seed_case is not None:
+                diagnostic_case = action_diagnostic_seed_keys.get(key)
+                if seed_case is not None or diagnostic_case is not None:
                     step = action_seed_dispatches.get(key, 0)
-                    progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
-                    progress.extend(event['did_action'] for event in ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['events'])
+                    if seed_case is not None:
+                        progress = [ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['before']]
+                        progress.extend(event['did_action'] for event in ACTION_COUNTER_SEED_EXPECTATIONS[seed_case]['events'])
+                    else:
+                        progress = ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS[diagnostic_case]
                     if step >= 2:
                         raise ValueError('seeded action counter dispatched too many times')
                     expected = progress[step + 1]
@@ -4591,7 +4697,7 @@ def validate_transcript(streams, result):
                 validate_pod(value)
                 if context['hook'] is not None:
                     key = hook_token(context['hook']['key'])
-                    if key in action_seed_keys:
+                    if key in action_seed_keys or key in action_diagnostic_seed_keys:
                         _require_exact(value, action_counter_expected(key), 'seeded action counter read')
                         action_seed_reads[key] = action_seed_reads.get(key, 0) + 1
                     else:
@@ -4660,6 +4766,11 @@ def validate_transcript(streams, result):
             if (action_seed_dispatches.get(key, 0) != 2
                     or action_seed_reads.get(key, 0) != 8):
                 raise ValueError('seeded action counter dispatch/read inventory differs: ' + case)
+        for case, hook in ACTION_COUNTER_DIAGNOSTIC_HOOKS.items():
+            key = ('string', hook.encode('ascii').hex())
+            if (action_seed_dispatches.get(key, 0) != 2
+                    or action_seed_reads.get(key, 0) != 6):
+                raise ValueError('diagnostic action counter dispatch/read inventory differs: ' + case)
 
 
 def self_check():
@@ -4800,6 +4911,9 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_action_callback_args', 'wrong_counter_seed_increment_type',
     'wrong_counter_seed_float_bits', 'wrong_counter_seed_overflow_progression',
     'wrong_counter_seed_read_value', 'wrong_script_observation', 'wrong_transport',
+    'wrong_diagnostic_bool_increment_type', 'wrong_diagnostic_alpha_increment_value',
+    'wrong_diagnostic_bool_read_type', 'wrong_diagnostic_alpha_read_value',
+    'wrong_diagnostic_read_count',
 )
 
 
@@ -4858,7 +4972,8 @@ def reject_action_transcripts(streams, result):
             hook_names_by_handle[handle_id(handle)] = bytes.fromhex(original['hex']).decode('ascii')
 
     def seeded_boundaries(indices):
-        grouped = {hook: [] for hook in ACTION_COUNTER_SEED_HOOKS.values()}
+        grouped = {hook: [] for hook in (
+            *ACTION_COUNTER_SEED_HOOKS.values(), *ACTION_COUNTER_DIAGNOSTIC_HOOKS.values())}
         for index in indices:
             handle = source['rust'][index]['payload'].get('arguments', {}).get('handle')
             hook = hook_names_by_handle.get(handle_id(handle)) if isinstance(handle, dict) else None
@@ -4869,7 +4984,8 @@ def reject_action_transcripts(streams, result):
     seeded_increments = seeded_boundaries(increment_boundaries)
     seeded_reads = seeded_boundaries(read_boundaries)
     if (any(len(seeded_increments[hook]) != 2 for hook in seeded_increments)
-            or any(len(seeded_reads[hook]) != 8 for hook in seeded_reads)):
+            or any(len(seeded_reads[hook]) != 8 for hook in ACTION_COUNTER_SEED_HOOKS.values())
+            or any(len(seeded_reads[hook]) != 6 for hook in ACTION_COUNTER_DIAGNOSTIC_HOOKS.values())):
         raise ValueError('seeded action counter boundary inventory is incomplete')
 
     def encode(frames):
@@ -4899,6 +5015,23 @@ def reject_action_transcripts(streams, result):
         elif name == 'wrong_counter_seed_read_value':
             resume = resume_index(seeded_reads[ACTION_COUNTER_SEED_HOOKS['php_int_max']][-1])
             frames['php'][resume]['payload']['completion']['value'] = {'type': 'float', 'bits': '43dfffffffffffff'}
+        elif name == 'wrong_diagnostic_bool_increment_type':
+            resume = resume_index(seeded_increments[ACTION_COUNTER_DIAGNOSTIC_HOOKS['bool_true']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'int', 'value': '1'}
+        elif name == 'wrong_diagnostic_alpha_increment_value':
+            resume = resume_index(seeded_increments[ACTION_COUNTER_DIAGNOSTIC_HOOKS['alpha']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'string', 'hex': '61'}
+        elif name == 'wrong_diagnostic_bool_read_type':
+            resume = resume_index(seeded_reads[ACTION_COUNTER_DIAGNOSTIC_HOOKS['bool_true']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'int', 'value': '1'}
+        elif name == 'wrong_diagnostic_alpha_read_value':
+            resume = resume_index(seeded_reads[ACTION_COUNTER_DIAGNOSTIC_HOOKS['alpha']][0])
+            frames['php'][resume]['payload']['completion']['value'] = {'type': 'string', 'hex': '63'}
+        elif name == 'wrong_diagnostic_read_count':
+            index = seeded_reads[ACTION_COUNTER_DIAGNOSTIC_HOOKS['alpha']][0]
+            substitute = next(value for value, hook in hook_names_by_handle.items()
+                              if hook == next(iter(ACTION_COUNTER_SEED_HOOKS.values())))
+            frames['rust'][index]['payload']['arguments']['handle'] = json.loads(substitute)
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

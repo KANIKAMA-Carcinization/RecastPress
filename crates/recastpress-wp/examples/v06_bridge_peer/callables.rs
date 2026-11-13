@@ -85,6 +85,20 @@ fn signed_decimal(value: &Value, label: &str) -> Result<i64, String> {
     Ok(parsed)
 }
 
+fn validate_action_counter_value(value: PhpValue, label: &str) -> Result<PhpValue, String> {
+    match value {
+        count @ (PhpValue::Integer(_) | PhpValue::Bool(_) | PhpValue::Bytes(_)) => Ok(count),
+        count @ PhpValue::Float(value) if value.is_finite() => Ok(count),
+        PhpValue::Float(_) => Err(format!("{label}_not_finite")),
+        _ => Err(format!("{label}_not_number")),
+    }
+}
+
+fn action_counter_increment_ack(value: PhpValue) -> Result<Completion<PhpValue>, String> {
+    validate_action_counter_value(value, "action_counter_increment")?;
+    Ok(Completion::Value(PhpValue::Null))
+}
+
 fn parse_pod(value: &Value, label: &str) -> Result<PhpValue, String> {
     let tag = string(value, "type")?;
     match tag {
@@ -1958,12 +1972,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             Err(handle) => return Ok(Completion::PhpThrowable(handle)),
         };
         let count = parse_pod(&value, "did_action_count")?;
-        match count {
-            count @ PhpValue::Integer(_) => Ok(Completion::Value(count)),
-            count @ PhpValue::Float(value) if value.is_finite() => Ok(Completion::Value(count)),
-            PhpValue::Float(_) => Err("did_action_count_not_finite".into()),
-            _ => Err("did_action_count_not_number".into()),
-        }
+        validate_action_counter_value(count, "did_action_count").map(Completion::Value)
     }
 
     fn api_do_action(
@@ -2210,21 +2219,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                                 Ok(value) => {
                                     let count =
                                         parse_pod(&value, "action_counter_increment_count")?;
-                                    match count {
-                                        PhpValue::Integer(_) => {}
-                                        PhpValue::Float(value) if value.is_finite() => {}
-                                        PhpValue::Float(_) => {
-                                            return Err(
-                                                "action_counter_increment_not_finite".into()
-                                            );
-                                        }
-                                        _ => {
-                                            return Err(
-                                                "action_counter_increment_not_number".into()
-                                            );
-                                        }
-                                    }
-                                    Completion::Value(PhpValue::Null)
+                                    action_counter_increment_ack(count)?
                                 }
                             }
                         }
@@ -3394,6 +3389,45 @@ mod tests {
         assert_eq!(
             nested_caught_throw_summary(&changed).unwrap_err(),
             "nested_caught_throw_identity_mismatch"
+        );
+    }
+
+    #[test]
+    fn action_counter_accepts_bool_and_byte_string_scalars_without_changing_dispatch_ack() {
+        for value in [
+            PhpValue::Bool(true),
+            PhpValue::Bytes(b"b".to_vec()),
+            PhpValue::Bytes(b"c".to_vec()),
+        ] {
+            assert_eq!(
+                validate_action_counter_value(value.clone(), "did_action_count"),
+                Ok(value.clone())
+            );
+            assert_eq!(
+                action_counter_increment_ack(value),
+                Ok(Completion::Value(PhpValue::Null))
+            );
+        }
+    }
+
+    #[test]
+    fn action_counter_still_rejects_unsupported_values_and_nonfinite_floats() {
+        assert_eq!(
+            validate_action_counter_value(PhpValue::Null, "did_action_count").unwrap_err(),
+            "did_action_count_not_number"
+        );
+        assert_eq!(
+            validate_action_counter_value(PhpValue::Float(f64::NAN), "did_action_count")
+                .unwrap_err(),
+            "did_action_count_not_finite"
+        );
+        assert_eq!(
+            action_counter_increment_ack(PhpValue::Null).unwrap_err(),
+            "action_counter_increment_not_number"
+        );
+        assert_eq!(
+            action_counter_increment_ack(PhpValue::Float(f64::INFINITY)).unwrap_err(),
+            "action_counter_increment_not_finite"
         );
     }
 

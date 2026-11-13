@@ -14,6 +14,22 @@ ACTION_COUNTER_SEED_HOOKS = {
     'float_7_5': 'callable-action-counter-seed-float-7-5',
     'php_int_max': 'callable-action-counter-seed-php-int-max',
 }
+ACTION_COUNTER_DIAGNOSTIC_HOOKS = {
+    'bool_true': 'callable-action-counter-seed-diagnostic-bool-true',
+    'alpha': 'callable-action-counter-seed-diagnostic-alpha',
+}
+ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS = {
+    'bool_true': [
+        {'type': 'bool', 'value': True},
+        {'type': 'bool', 'value': True},
+        {'type': 'bool', 'value': True},
+    ],
+    'alpha': [
+        {'type': 'string', 'hex': '61'},
+        {'type': 'string', 'hex': '62'},
+        {'type': 'string', 'hex': '63'},
+    ],
+}
 ACTION_COUNTER_SEED_EXPECTATIONS = {
     'int_7': {
         'before': {'type': 'int', 'value': '7'},

@@ -2736,6 +2736,88 @@ function callable_program_action_api_cases(): array
     $noListenerReturn = do_action($noListenerHook);
     $noListenerAfter = did_action($noListenerHook);
 
+    $counterSeedDiagnostics = [];
+    foreach ([
+        'bool_true' => [
+            'hook' => 'callable-action-counter-seed-diagnostic-bool-true',
+            'seed' => true,
+        ],
+        'alpha' => [
+            'hook' => 'callable-action-counter-seed-diagnostic-alpha',
+            'seed' => 'a',
+        ],
+    ] as $label => $case) {
+        $diagnosticHook = $case['hook'];
+        $GLOBALS['wp_actions'][$diagnosticHook] = $case['seed'];
+        $diagnosticTrace = [];
+        $diagnostics = [];
+        $dispatchLabel = null;
+        add_action('all', static function (...$args) use (
+            &$diagnosticTrace,
+            &$dispatchLabel,
+            $diagnosticHook
+        ): void {
+            if (($args[0] ?? null) !== $diagnosticHook) {
+                return;
+            }
+            $diagnosticTrace[] = [
+                'event' => 'all',
+                'dispatch' => $dispatchLabel,
+                'args' => $args,
+            ];
+        }, 0, 0);
+        add_action($diagnosticHook, static function (...$args) use (
+            &$diagnosticTrace,
+            &$dispatchLabel,
+            $diagnosticHook
+        ): void {
+            $diagnosticTrace[] = [
+                'event' => 'named',
+                'dispatch' => $dispatchLabel,
+                'args' => $args,
+                'did_action' => callable_program_scalar_view(did_action($diagnosticHook)),
+                'wp_actions' => callable_program_scalar_view($GLOBALS['wp_actions'][$diagnosticHook] ?? null),
+            ];
+        }, 10, 99);
+
+        set_error_handler(static function (int $severity, string $message) use (
+            &$diagnosticTrace,
+            &$diagnostics,
+            &$dispatchLabel
+        ): bool {
+            $diagnostic = [
+                'severity' => $severity,
+                'message_hex' => bin2hex($message),
+            ];
+            $diagnostics[] = $diagnostic;
+            $diagnosticTrace[] = [
+                'event' => 'diagnostic',
+                'dispatch' => $dispatchLabel,
+                ...$diagnostic,
+            ];
+            return true;
+        });
+        try {
+            $dispatchLabel = 'first';
+            $firstReturn = do_action($diagnosticHook, 'first');
+            $dispatchLabel = 'second';
+            $secondReturn = do_action($diagnosticHook, 'second');
+        } finally {
+            restore_error_handler();
+        }
+
+        $counterSeedDiagnostics[$label] = [
+            'seed' => callable_program_scalar_view($case['seed']),
+            'returns' => [
+                callable_program_scalar_view($firstReturn),
+                callable_program_scalar_view($secondReturn),
+            ],
+            'diagnostics' => $diagnostics,
+            'trace' => $diagnosticTrace,
+            'after' => callable_program_scalar_view($GLOBALS['wp_actions'][$diagnosticHook] ?? null),
+        ];
+    }
+
     $counterSeedValues = [];
     foreach ([
         'int_7' => ['hook' => 'callable-action-counter-seed-int-7', 'seed' => 7],
@@ -2799,6 +2881,7 @@ function callable_program_action_api_cases(): array
         'nested_caught_throw' => ['events' => $nestedCaughtEvents, 'do_action_return' => $nestedCaughtReturn,
             'after' => $nestedCaughtAfter],
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
+        'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,
         'throw_all' => ['caught' => $throwAllCaught, 'events' => $throwAllEvents, 'after_catch' => $throwAllAfterCatch, 'followup_return' => $throwAllFollowupReturn, 'after_followup' => $throwAllAfterFollowup],
         'throw_named' => ['caught' => $throwNamedCaught, 'events' => $throwNamedEvents, 'after_catch' => $throwNamedAfterCatch, 'followup_return' => $throwNamedFollowupReturn, 'after_followup' => $throwNamedAfterFollowup]];
