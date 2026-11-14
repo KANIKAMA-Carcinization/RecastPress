@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-action-uncaught-throwable-poc.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-14T02:42:44.744214+00:00",
+  "observed_at_utc": "2026-11-14T03:58:49.674370+00:00",
   "wordpress_version": "7.1.3",
   "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "php_version": "8.5.12",
@@ -14,7 +14,7 @@
     "wordpress/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     "wordpress/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
     "workspace/fixture": "90841449388186b6eb946f73386c348e73fb0d035d8529470e7503cbeabf91a3",
-    "workspace/runner": "00f4fe6cd06cafeb877e78c9a48069aa73abb20abb5d480561f31aba7c17c9c6"
+    "workspace/runner": "6081971b4d41e3b404ff4d666e1bc1c76a562868befbd40abaa2f2f380cf1d31"
   },
   "source_sha256_after": {
     "owner/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
@@ -24,35 +24,35 @@
     "wordpress/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     "wordpress/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
     "workspace/fixture": "90841449388186b6eb946f73386c348e73fb0d035d8529470e7503cbeabf91a3",
-    "workspace/runner": "00f4fe6cd06cafeb877e78c9a48069aa73abb20abb5d480561f31aba7c17c9c6"
+    "workspace/runner": "6081971b4d41e3b404ff4d666e1bc1c76a562868befbd40abaa2f2f380cf1d31"
   },
   "raw_capture": {
     "all": {
-      "pid": 8172,
+      "pid": 25012,
       "returncode": 255,
       "reaped": true,
       "stdout": {
-        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T024244.723282Z-stdout.bin",
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T035849.627258Z-stdout.bin",
         "bytes": 531,
         "sha256": "9b15cc82eb08b11d88be2085d8aa89a756e19ed6083a3d0349a6a4ef442da097"
       },
       "stderr": {
-        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T024244.723282Z-stderr.bin",
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T035849.627258Z-stderr.bin",
         "bytes": 1078,
         "sha256": "d91b6b9cd5aec4fff9ff99b5923f0fcc9e340fcf8fb1e34aa14b7ac2ec2c9287"
       }
     },
     "named": {
-      "pid": 4328,
+      "pid": 23516,
       "returncode": 255,
       "reaped": true,
       "stdout": {
-        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T024244.723282Z-stdout.bin",
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T035849.627258Z-stdout.bin",
         "bytes": 581,
         "sha256": "9519e6a3a759d6066cdf47986a9ba5d0680fcfc08729334d07254885a8f91788"
       },
       "stderr": {
-        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T024244.723282Z-stderr.bin",
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T035849.627258Z-stderr.bin",
         "bytes": 1072,
         "sha256": "0ce9ff50c5ca35fff49c09d8e4c7dfec41e12fcb51283769ced467d321c09cc4"
       }

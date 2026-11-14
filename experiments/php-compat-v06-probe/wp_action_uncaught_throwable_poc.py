@@ -157,15 +157,16 @@ def run_target() -> tuple[dict, dict]:
     return {'php_version': '8.5.12', 'wordpress_version': '7.1.3', 'cases': observed_cases}, captures
 
 
-def validate_receipt(report: dict) -> dict:
+def validate_receipt(report: dict, *, replay: bool = True) -> dict:
     if report.get('schema') != 'recastpress.wp-action-uncaught-throwable-poc.v1' or report.get('status') != 'passed':
         raise ValueError('uncaught Throwable receipt schema/status differs')
     inputs = fixed_inputs()
     if report.get('source_sha256_before') != inputs or report.get('source_sha256_after') != inputs:
         raise ValueError('uncaught Throwable source identities differ')
-    oracle, _ = run_target()
-    if oracle != report.get('oracle'):
-        raise ValueError('uncaught Throwable observation changed on replay')
+    if replay:
+        oracle, _ = run_target()
+        if oracle != report.get('oracle'):
+            raise ValueError('uncaught Throwable observation changed on replay')
     captures = report.get('raw_capture', {})
     if set(captures) != {case for case in CASES}:
         raise ValueError('uncaught Throwable capture case inventory differs')

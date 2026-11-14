@@ -58,6 +58,15 @@ const BRIDGE_DRIVER: &[u8] = include_bytes!("../../../fixtures/bridge_driver.php
 const PUBLISH_DRIVER: &[u8] = include_bytes!("../../../fixtures/publish_driver.php");
 const HANDLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/handle_driver.php");
 const HOOK_DRIVER: &[u8] = include_bytes!("../../../fixtures/hooks_driver.php");
+const UNCAUGHT_ACTION_DRIVER: &[u8] =
+    include_bytes!("../../../fixtures/uncaught_action_bridge.php");
+const WP_PLUGIN: &[u8] =
+    include_bytes!("../../../../../.reference/wordpress-7.1.3/wp-includes/plugin.php");
+const WP_HOOK: &[u8] =
+    include_bytes!("../../../../../.reference/wordpress-7.1.3/wp-includes/class-wp-hook.php");
+const WP_FILTER_SENTINEL: &[u8] = include_bytes!(
+    "../../../../../.reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php"
+);
 const CALLABLE_DRIVER: &[u8] = include_bytes!("../../../fixtures/callable_driver.php");
 const CALLABLE_ADAPTER: &[u8] = include_bytes!("../../../fixtures/callable_adapter.php");
 const CALLABLE_PROGRAM: &[u8] = include_bytes!("../../../fixtures/callable_program.php");
@@ -71,6 +80,24 @@ const TRAP_RECOVERY: &[u8] = include_bytes!("../../../fixtures/trap_recovery.php
 const OUTPUT_LIMIT: usize = 64 * 1024;
 const SCENARIO_TIMEOUT: Duration = Duration::from_secs(120);
 const GUEST_JOIN_TIMEOUT: Duration = Duration::from_secs(5);
+
+fn source_root() -> Result<PathBuf> {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    #[cfg(target_os = "linux")]
+    let manifest_dir = if let Some((drive, rest)) = manifest_dir.split_once(':') {
+        ensure!(drive.len() == 1, "unsupported cross-build manifest path");
+        PathBuf::from(format!(
+            "/mnt/{}/{}",
+            drive.to_ascii_lowercase(),
+            rest.trim_start_matches(['\\', '/']).replace('\\', "/")
+        ))
+    } else {
+        PathBuf::from(manifest_dir)
+    };
+    #[cfg(not(target_os = "linux"))]
+    let manifest_dir = PathBuf::from(manifest_dir);
+    Ok(manifest_dir.join("../../..").canonicalize()?)
+}
 
 #[cfg(feature = "llvm")]
 const COMPILER_PROFILE: &str = "wasmer-7.2.0/llvm-default";
@@ -116,6 +143,12 @@ const HOOK_FILES: [(&str, &[u8]); 8] = [
     FILES[5],
     FILES[6],
     ("hooks_driver.php", HOOK_DRIVER),
+];
+const HOOK_UNCAUGHT_FILES: [(&str, &[u8]); 4] = [
+    ("uncaught_action_bridge.php", UNCAUGHT_ACTION_DRIVER),
+    ("wp_plugin.php", WP_PLUGIN),
+    ("class-wp-hook.php", WP_HOOK),
+    ("class-wp-filter-sentinel.php", WP_FILTER_SENTINEL),
 ];
 
 const CALLABLE_FILES: [(&str, &[u8]); 10] = [
@@ -355,6 +388,7 @@ fn run() -> Result<()> {
                 | "--publish"
                 | "--handles"
                 | "--hooks"
+                | "--hooks-uncaught"
                 | "--callables"
                 | "--actions"
         ),
@@ -364,7 +398,7 @@ fn run() -> Result<()> {
         .iter()
         .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
         .collect();
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let root = source_root()?;
     let path = root.join(ARTIFACT_RELATIVE);
     let file = File::open(&path).context("open pinned PHP WASIX artifact")?;
     ensure!(
@@ -514,6 +548,31 @@ fn run() -> Result<()> {
         println!("{result}");
         return Ok(());
     }
+    if mode == "--hooks-uncaught" {
+        let cases = ["all", "named"]
+            .into_iter()
+            .map(|case| run_uncaught_action_case(&module, module_hash, case))
+            .collect::<Result<Vec<_>>>()?;
+        let fixtures: Vec<_> = HOOK_UNCAUGHT_FILES
+            .iter()
+            .map(|(name, bytes)| (*name, bytes.len(), format!("{:x}", Sha256::digest(bytes))))
+            .collect();
+        println!(
+            "{}",
+            json!({
+                "schema":"recastpress.php-compat-v06-wasm-hooks-uncaught.v1",
+                "execution":"passed",
+                "runtime":"PHP-WASIX 8.5.12 / Wasmer 7.2.0",
+                "compiler_profile":COMPILER_PROFILE,
+                "artifact":{"path":ARTIFACT_RELATIVE,"bytes":ARTIFACT_BYTES,"sha256":artifact_hash},
+                "fixtures":fixtures,
+                "cases":cases,
+                "compile_elapsed_ms":compile_ms,
+                "execution_elapsed_ms":execution_started.elapsed().as_millis()
+            })
+        );
+        return Ok(());
+    }
     if mode == "--cpu-loop" {
         return run_cpu_loop(&module, module_hash, &artifact_hash, compile_ms);
     }
@@ -581,9 +640,7 @@ struct WireCapture {
 
 impl WireCapture {
     fn create() -> Result<Self> {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../..")
-            .canonicalize()?;
+        let root = source_root()?;
         let target = root.join("target").canonicalize()?;
         ensure!(target.starts_with(&root), "wire target escaped repository");
         let base = target.join("php-compat-v06-wire");
@@ -699,6 +756,305 @@ impl<W: Write> Write for RecordedWriter<W> {
     fn flush(&mut self) -> std::io::Result<()> {
         self.inner.flush()
     }
+}
+
+fn expected_uncaught_observation(case: &str) -> Value {
+    let hook = format!("uncaught-throwable-{case}");
+    let (events, hook_state, all_hook_state, marker) = if case == "all" {
+        (
+            json!([{"event":"all_first","args":[hook,"payload"]}]),
+            json!({"nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false}),
+            json!({"nesting_level":1,"iterations":[[1,2]],"current_priority":[],"doing_action":false}),
+            "uncaught-all-marker",
+        )
+    } else {
+        (
+            json!([
+                {"event":"all","args":[hook,"payload"]},
+                {"event":"named_first","args":["payload"]}
+            ]),
+            json!({"nesting_level":1,"iterations":[[10,20]],"current_priority":[10],"doing_action":true}),
+            json!({"nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false}),
+            "uncaught-named-marker",
+        )
+    };
+    json!({
+        "php_version":"8.5.12",
+        "case":case,
+        "events":events,
+        "state":{
+            "did_action":1,
+            "current_action":hook,
+            "doing_action":true,
+            "stack":[hook],
+            "hook_state":hook_state,
+            "all_hook_state":all_hook_state
+        },
+        "last_error":{"type":1,"uncaught_class":"RuntimeException","uncaught_message":marker}
+    })
+}
+
+fn normalize_uncaught_stderr(raw: &[u8], marker: &str) -> Result<String> {
+    let text = std::str::from_utf8(raw)
+        .context("uncaught Action stderr is not UTF-8")?
+        .replace("\r\n", "\n")
+        .replace('\r', "\n");
+    let lines: Vec<_> = text.lines().collect();
+    let marker_lines: Vec<_> = lines
+        .iter()
+        .copied()
+        .filter(|line| line.starts_with("V06_UNCAUGHT_ACTION_OBSERVATION="))
+        .collect();
+    ensure!(
+        marker_lines.len() == 1,
+        "uncaught Action shutdown witness count differs"
+    );
+    let diagnostics: Vec<_> = lines
+        .iter()
+        .copied()
+        .filter(|line| !line.starts_with("V06_UNCAUGHT_ACTION_OBSERVATION="))
+        .collect();
+    ensure!(
+        diagnostics.len() >= 5,
+        "uncaught Action fatal diagnostic is incomplete"
+    );
+    let expected = format!("Uncaught RuntimeException: {marker}");
+    let fatal_prefix = format!("Fatal error: {expected} in /fixture/uncaught_action_bridge.php:");
+    let fatal = diagnostics[0];
+    ensure!(
+        fatal.starts_with(&fatal_prefix),
+        "uncaught Action fatal header differs"
+    );
+    ensure!(
+        diagnostics[1] == "Stack trace:",
+        "uncaught Action stack trace header differs"
+    );
+    let fatal_line = fatal
+        .strip_prefix(&fatal_prefix)
+        .and_then(|line| line.parse::<u32>().ok())
+        .filter(|line| *line > 0)
+        .context("uncaught Action fatal source line differs")?;
+    let thrown = diagnostics[diagnostics.len() - 1];
+    let thrown_prefix = "  thrown in /fixture/uncaught_action_bridge.php on line ";
+    let thrown_line = thrown
+        .strip_prefix(thrown_prefix)
+        .and_then(|line| line.parse::<u32>().ok())
+        .filter(|line| *line > 0)
+        .context("uncaught Action terminal fatal line differs")?;
+    ensure!(
+        fatal_line == thrown_line,
+        "uncaught Action fatal locations differ"
+    );
+    let frames = &diagnostics[2..diagnostics.len() - 1];
+    ensure!(
+        !frames.is_empty(),
+        "uncaught Action stack trace has no frames"
+    );
+    for (index, frame) in frames.iter().enumerate() {
+        let expected_prefix = format!("#{index} ");
+        let frame = frame
+            .strip_prefix(&expected_prefix)
+            .context("uncaught Action stack frame sequence differs")?;
+        if frame == "{main}" {
+            ensure!(
+                index + 1 == frames.len(),
+                "uncaught Action main frame is not last"
+            );
+            continue;
+        }
+        ensure!(
+            frame.starts_with("/fixture/"),
+            "uncaught Action frame escaped fixture root"
+        );
+        let open = frame
+            .find('(')
+            .context("uncaught Action frame location is missing")?;
+        let close = frame[open + 1..]
+            .find(')')
+            .map(|offset| open + 1 + offset)
+            .context("uncaught Action frame location is malformed")?;
+        ensure!(
+            frame[open + 1..close].parse::<u32>().is_ok() && frame[close + 1..].starts_with(": "),
+            "uncaught Action frame location is malformed"
+        );
+    }
+    Ok(format!(
+        "Fatal error: {expected} in <fixture>:<line>\nStack trace: <normalized>\n  thrown in <fixture> on line <line>\n"
+    ))
+}
+
+fn run_uncaught_action_case(
+    module: &wasmer::Module,
+    module_hash: ModuleHash,
+    case: &str,
+) -> Result<Value> {
+    ensure!(
+        matches!(case, "all" | "named"),
+        "unsupported uncaught Action case"
+    );
+    let marker = if case == "all" {
+        "uncaught-all-marker"
+    } else {
+        "uncaught-named-marker"
+    };
+    let request = format!("hooks-uncaught-{case}-1");
+    eprintln!("PHP_WASIX_V06_BRIDGE_PHASE=guest_hooks_uncaught_{case}");
+    let (host_wire, guest_wire) = Pipe::channel();
+    let (mut host_stdin, host_stdout) = host_wire.split();
+    let (mut host_stderr, guest_stderr) = Pipe::channel();
+    let (stderr_tx, stderr_rx) = mpsc::channel();
+    let stderr_thread = thread::Builder::new()
+        .name(format!("hooks-uncaught-{case}-stderr"))
+        .spawn(move || {
+            let result = drain_stderr(&mut host_stderr);
+            let _ = stderr_tx.send(result);
+        })?;
+    let (done_tx, done_rx) = mpsc::channel();
+    let module_copy = module.clone();
+    let scenario = format!("hooks_uncaught_{case}");
+    let scenario_for_thread = scenario.clone();
+    let guest_thread = thread::Builder::new()
+        .name(scenario.clone())
+        .spawn(move || {
+            let result = run_guest(
+                &module_copy,
+                module_hash,
+                &scenario_for_thread,
+                guest_wire.clone(),
+                guest_wire,
+                guest_stderr,
+            );
+            let _ = done_tx.send(result);
+        })?;
+
+    let mut reader = BufReader::new(DeadlinePipeReader {
+        pipe: host_stdout,
+        deadline: Instant::now() + SCENARIO_TIMEOUT,
+    });
+    let mut start = Vec::new();
+    let start_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut start)?;
+    let expected_start = format!(
+        "{{\"v\":1,\"request\":\"{request}\",\"seq\":0,\"kind\":\"start_root\",\"payload\":{{\"operation\":\"hooks_uncaught_action\",\"case\":\"{case}\"}}}}\n"
+    );
+    ensure!(
+        start_read == expected_start.len() && start.as_slice() == expected_start.as_bytes(),
+        "uncaught Action start frame differs"
+    );
+
+    let request_generation = RequestGeneration::new(if case == "all" { 901 } else { 902 });
+    let mut continuation =
+        Continuation::<Value>::new(request_generation, LimitsProfile::default())?;
+    let root = continuation.start_root()?;
+    let effect = continuation.invoke_php(root)?;
+    let effect_correlation = effect.correlation();
+    let wire_effect_id = format!("e-{}-{}", effect_correlation.0, effect_correlation.1);
+    let invoke = format!(
+        "{{\"v\":1,\"request\":\"{request}\",\"seq\":0,\"kind\":\"invoke_php\",\"payload\":{{\"callback\":\"dispatch_uncaught_action\",\"effect_id\":\"{wire_effect_id}\"}}}}\n"
+    );
+    host_stdin.write_all(invoke.as_bytes())?;
+    host_stdin.flush()?;
+    let mut checkpoint = Vec::new();
+    let checkpoint_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_until(b'\n', &mut checkpoint)?;
+    let expected_checkpoint = format!(
+        "{{\"v\":1,\"request\":\"{request}\",\"seq\":1,\"kind\":\"effect_started\",\"payload\":{{\"effect_id\":\"{wire_effect_id}\"}}}}\n"
+    );
+    ensure!(
+        checkpoint_read == expected_checkpoint.len()
+            && checkpoint.as_slice() == expected_checkpoint.as_bytes(),
+        "uncaught Action callback checkpoint differs"
+    );
+    host_stdin.close();
+
+    let mut trailing = Vec::new();
+    let trailing_read = reader
+        .by_ref()
+        .take((OUTPUT_LIMIT + 1) as u64)
+        .read_to_end(&mut trailing)?;
+    ensure!(
+        trailing_read <= OUTPUT_LIMIT && trailing.is_empty(),
+        "unexpected stdout after uncaught Action checkpoint"
+    );
+    let guest_result = done_rx
+        .recv_timeout(SCENARIO_TIMEOUT)
+        .context("uncaught Action guest completion deadline")?;
+    guest_thread
+        .join()
+        .map_err(|_| anyhow::anyhow!("uncaught Action guest runner thread panicked"))?;
+    let (stderr, stderr_overflow) = stderr_rx
+        .recv_timeout(GUEST_JOIN_TIMEOUT)
+        .context("uncaught Action stderr join deadline")??;
+    stderr_thread
+        .join()
+        .map_err(|_| anyhow::anyhow!("uncaught Action stderr drainer thread panicked"))?;
+    ensure!(
+        !stderr_overflow,
+        "uncaught Action stderr exceeded fixed capture bound"
+    );
+    let exit = guest_result.as_ref().err().and_then(|error| {
+        error.chain().find_map(|cause| {
+            cause
+                .downcast_ref::<wasmer_wasix::WasiRuntimeError>()
+                .and_then(|runtime_error| runtime_error.as_exit_code())
+                .map(|code| code.raw())
+        })
+    });
+    ensure!(
+        exit == Some(255),
+        "uncaught Action guest exit differs: {exit:?}"
+    );
+
+    let stderr_text = String::from_utf8_lossy(&stderr);
+    let marker_lines: Vec<_> = stderr_text
+        .lines()
+        .filter_map(|line| line.strip_prefix("V06_UNCAUGHT_ACTION_OBSERVATION="))
+        .collect();
+    ensure!(
+        marker_lines.len() == 1,
+        "uncaught Action shutdown witness count differs"
+    );
+    let observed: Value =
+        serde_json::from_str(marker_lines[0]).context("decode uncaught Action shutdown witness")?;
+    ensure!(
+        observed == expected_uncaught_observation(case),
+        "uncaught Action shutdown state differs from native oracle"
+    );
+    let stderr_normalized = normalize_uncaught_stderr(&stderr, marker)?;
+
+    let pending_rejected =
+        continuation.finish_operation(root) == Err(ContinuationError::PendingEffect);
+    continuation.abort();
+    let depth_after_abort = continuation.depth();
+    let resume_after_abort_rejected = continuation.resume(effect, Completion::Value(Value::Null))
+        == Err(ContinuationError::RequestClosed);
+    let finish_after_abort_rejected =
+        continuation.finish_request(root) == Err(ContinuationError::RequestClosed);
+    ensure!(
+        pending_rejected
+            && depth_after_abort == 0
+            && resume_after_abort_rejected
+            && finish_after_abort_rejected,
+        "uncaught Action continuation abort did not close the pending request"
+    );
+    Ok(json!({
+        "case":case,
+        "status":"passed",
+        "php_exit_code":exit,
+        "guest_completed":true,
+        "guest_thread_joined":true,
+        "stderr_thread_joined":true,
+        "stderr_normalized":stderr_normalized,
+        "shutdown_observation":observed,
+        "bridge":{"start_frame_validated":true,"callback_checkpoint_validated":true,"effect_id":wire_effect_id,"stdout_after_checkpoint_bytes":trailing.len()},
+        "continuation":{"pending_effect_confirmed":pending_rejected,"depth_after_abort":depth_after_abort,
+            "effect_correlation":[effect_correlation.0,effect_correlation.1],
+            "resume_after_abort_rejected":resume_after_abort_rejected,"finish_after_abort_rejected":finish_after_abort_rejected}
+    }))
 }
 
 fn run_scenario(module: &wasmer::Module, module_hash: ModuleHash, scenario: &str) -> Result<Value> {
@@ -1353,7 +1709,17 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let guest_args = if matches!(scenario, "handles" | "handles_abort") {
+    let guest_args = if matches!(scenario, "hooks_uncaught_all" | "hooks_uncaught_named") {
+        vec![
+            "-n",
+            "-d",
+            "display_errors=stderr",
+            "-d",
+            "log_errors=0",
+            "/fixture/uncaught_action_bridge.php",
+            scenario.strip_prefix("hooks_uncaught_").unwrap_or(""),
+        ]
+    } else if matches!(scenario, "handles" | "handles_abort") {
         vec!["-n", "/fixture/handle_driver.php", scenario]
     } else if matches!(scenario, "callable_api" | "action_api") {
         vec!["-n", "/fixture/callable_driver.php", scenario]
@@ -1392,6 +1758,8 @@ fn run_guest(
                     &HANDLE_FILES
                 } else if matches!(scenario, "callable_api" | "action_api") {
                     &CALLABLE_FILES
+                } else if matches!(scenario, "hooks_uncaught_all" | "hooks_uncaught_named") {
+                    &HOOK_UNCAUGHT_FILES
                 } else if matches!(scenario, "hooks" | "hooks_catch" | "hooks_abort") {
                     &HOOK_FILES
                 } else if scenario == "publish" {

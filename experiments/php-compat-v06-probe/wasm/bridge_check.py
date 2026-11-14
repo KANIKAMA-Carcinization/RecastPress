@@ -46,8 +46,15 @@ PUBLISH_SCHEMA = "recastpress.php-compat-v06-wasm-publish.v1"
 PUBLISH_HOST_NAME = HOST_NAME
 PUBLISH_FILES = HOST_FIXTURE_ORDER + ("publish_driver.php",)
 HANDLE_SCHEMA = "recastpress.php-compat-v06-wasm-handles.v1"
+UNCAUGHT_ACTION_SCHEMA = "recastpress.php-compat-v06-wasm-hooks-uncaught.v1"
 HANDLE_FILES = HOST_FIXTURE_ORDER + ("handle_driver.php",)
 HOOK_FILES = HOST_FIXTURE_ORDER + ("hooks_driver.php",)
+UNCAUGHT_ACTION_FIXTURE = WASM_DIR.parent / "fixtures" / "uncaught_action_bridge.php"
+UNCAUGHT_ACTION_FIXTURE_NAMES = ("uncaught_action_bridge.php", "wp_plugin.php",
+    "class-wp-hook.php", "class-wp-filter-sentinel.php")
+WP_ROOT = ROOT / ".reference" / "wordpress-7.1.3"
+WP_ARCHIVE = ROOT / ".reference" / "wordpress-7.1.3.tar.gz"
+WP_MANIFEST = WP_ROOT / "recastpress-reference.json"
 CALLABLE_FILES = HOST_FIXTURE_ORDER + ("callable_driver.php", "callable_adapter.php", "callable_program.php")
 
 sys.path.insert(0, str(WASM_DIR.parent))
@@ -57,6 +64,7 @@ from callable_v2_contract import (self_check as callable_self_check, validate_re
     reject_mutated_transcripts as reject_callable_transcripts,
     action_self_check, validate_action_result, reject_action_transcripts)
 from handle_contract import SCENARIOS as HANDLE_SCENARIOS, self_check as handle_self_check, validate_handle_result
+import wp_action_uncaught_throwable_poc as uncaught_action_oracle
 
 
 def sha_bytes(data: bytes) -> str:
@@ -88,7 +96,7 @@ def selected_target() -> Path:
     return target
 
 
-def source_paths(publish: bool = False) -> list[Path]:
+def source_paths(publish: bool = False, *, profile=None) -> list[Path]:
     paths = [
         ROOT / "Cargo.toml", ROOT / "Cargo.lock",
         ROOT / "crates" / "recastpress-wp" / "Cargo.toml",
@@ -118,21 +126,35 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.extend((WASM_DIR.parent / "fixtures" / name for name in FIXTURE_NAMES))
     paths.append(RECOVERY_FIXTURE)
     paths.append(WASM_DIR.parent / "fixtures" / "trap_recovery.php")
+    if profile == "hooks-uncaught":
+        paths.extend((
+            UNCAUGHT_ACTION_FIXTURE,
+            WASM_DIR.parent / "wp_action_uncaught_throwable_poc.py",
+            WASM_DIR.parent / "fixtures" / "wp_action_uncaught_throwable_poc.php",
+            WASM_DIR.parent / "evidence" / "wp-action-uncaught-throwable-poc-v1.json",
+            WP_ROOT / "wp-includes" / "plugin.php",
+            WP_ROOT / "wp-includes" / "class-wp-hook.php",
+            WP_ROOT / "wp-includes" / "class-wp-filter-sentinel.php",
+            WP_MANIFEST,
+            WP_ARCHIVE,
+        ))
     # The common adapter and the selected binary live below this source tree.
     paths.extend(sorted((WASM_DIR / "src").rglob("*.rs")))
     return sorted(set(path.resolve() for path in paths), key=relative)
 
 
-def fixed_inputs(publish: bool = False) -> dict:
+def fixed_inputs(publish: bool = False, *, profile=None) -> dict:
     if not ARTIFACT.is_file():
         raise FileNotFoundError("fixed PHP-WASIX artifact is missing")
     artifact_size = ARTIFACT.stat().st_size
     artifact_hash = sha_file(ARTIFACT)
     if artifact_size != ARTIFACT_BYTES or artifact_hash != ARTIFACT_SHA256:
         raise ValueError("fixed PHP-WASIX artifact identity differs")
+    if profile == "hooks-uncaught":
+        uncaught_action_oracle.fixed_inputs()
     return {
         relative(path): {"bytes": path.stat().st_size, "sha256": sha_file(path)}
-        for path in source_paths(publish)
+        for path in source_paths(publish, profile=profile)
     }
 
 
@@ -496,6 +518,7 @@ PROFILE_SCOPES = {
     "hooks": "fixed resumable Rust hooks with PHP Closures, nested Throwable catch/recovery and root abort, active-bucket snapshot and future-priority mutation",
     "callables": "PHP standard hook API control under one script effect, generic callable identity, deferred release and destructor reentry; materialized POD filter values",
     "actions": "PHP action API aliases, callback dispatch and ignored returns, shared action/filter stack, PHP-owned action counts, nested actions and Throwable propagation",
+    "hooks-uncaught": "pinned WordPress 7.1.3 do_action callback Throwable fatal in PHP-WASIX, bounded bridge checkpoint, shutdown state and owned guest reaping",
 }
 
 
@@ -555,6 +578,45 @@ def _validate_binary_receipt(report: dict, actual_hash: str, expected_path: str)
         raise ValueError("bridge receipt host binary identities are inconsistent")
 
 
+def _validate_raw_captures(report: dict, target: Path) -> None:
+    captures = _mapping(report.get("raw_capture"))
+    process_output = _mapping(report.get("process_output"))
+    if set(captures) != {"build", "host"} or set(process_output) != {"build", "host"}:
+        raise ValueError("bridge raw capture process inventory differs")
+    capture_root = (target / ".bridge-runs").resolve()
+    for label in ("build", "host"):
+        stream_paths = _mapping(captures.get(label))
+        output = _mapping(process_output.get(label))
+        if set(stream_paths) != {"stdout", "stderr"} or set(output) != {
+                "stdout_bytes", "stdout_sha256", "stderr_bytes", "stderr_sha256"}:
+            raise ValueError(f"bridge {label} capture inventory differs")
+        raw_streams = {}
+        for stream in ("stdout", "stderr"):
+            relative_path = stream_paths.get(stream)
+            if not isinstance(relative_path, str):
+                raise ValueError(f"bridge {label} {stream} capture path is missing")
+            path = (ROOT / relative_path).resolve()
+            try:
+                path.relative_to(capture_root)
+            except ValueError as error:
+                raise ValueError(f"bridge {label} {stream} capture escaped target/.bridge-runs") from error
+            if path.name != f"{label}.{stream}.bin" or not path.is_file():
+                raise ValueError(f"bridge {label} {stream} capture file is missing")
+            raw = path.read_bytes()
+            size = output.get(f"{stream}_bytes")
+            digest = output.get(f"{stream}_sha256")
+            if (not _int_is(size, len(raw)) or digest != sha_bytes(raw)):
+                raise ValueError(f"bridge {label} {stream} capture identity differs")
+            raw_streams[stream] = raw
+        if label == "host":
+            try:
+                captured_result = json.loads(raw_streams["stdout"].decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise ValueError("bridge host stdout is not one UTF-8 JSON result") from error
+            if captured_result != report.get("host_result"):
+                raise ValueError("bridge host stdout differs from validated host result")
+
+
 def _save_private_capture(run_dir: Path, label: str, item) -> dict | None:
     if item is None:
         return None
@@ -574,11 +636,14 @@ def verify_latest(publish: bool = False, handles: bool = False, *, profile=None)
     if not receipts:
         raise ValueError("no bridge receipt exists")
     entries = [(path, json.loads(path.read_text(encoding="utf-8"))) for path in receipts]
-    receipt_path, report = _latest_by_observation(entries)
     run_schema = f"recastpress.php-compat-v06-wasm-{prefix}-run.v1"
+    entries = [(path, report) for path, report in entries if report.get("schema") == run_schema]
+    if not entries:
+        raise ValueError(f"no {prefix} profile receipt exists")
+    receipt_path, report = _latest_by_observation(entries)
     if report.get("status") != "passed" or report.get("schema") != run_schema:
         raise ValueError(f"latest {prefix} receipt is not a successful run")
-    current = fixed_inputs(publish)
+    current = fixed_inputs(publish, profile=profile)
     if report.get("source_bound_inputs_before") != current or report.get("source_bound_inputs_after") != current:
         raise ValueError("latest bridge receipt has stale source inputs")
     _validate_owned_processes(report)
@@ -587,8 +652,9 @@ def verify_latest(publish: bool = False, handles: bool = False, *, profile=None)
         target.relative_to((ROOT / "target").resolve())
     except ValueError as error:
         raise ValueError("latest bridge receipt target is outside repository target/") from error
+    _validate_raw_captures(report, target)
     host_name = HOST_NAME
-    binary_path = target / "debug" / host_name
+    binary_path = target / "x86_64-unknown-linux-gnu" / "debug" / host_name
     if not binary_path.is_file():
         raise ValueError("latest bridge receipt host binary is missing or stale")
     _validate_binary_receipt(report, sha_file(binary_path), relative(binary_path))
@@ -748,6 +814,101 @@ def validate_action_host_result(value: dict) -> list[str]:
     return _validate_callable_wires(case, reject_action_transcripts, "action")
 
 
+def validate_uncaught_action_host_result(value: dict) -> None:
+    result = _mapping(value)
+    if (result.get("schema") != UNCAUGHT_ACTION_SCHEMA or result.get("execution") != "passed"
+            or result.get("compiler_profile") != COMPILER_PROFILE):
+        raise ValueError("uncaught Action host header differs")
+    artifact = _mapping(result.get("artifact"))
+    if not _int_is(artifact.get("bytes"), ARTIFACT_BYTES) or artifact.get("sha256") != ARTIFACT_SHA256:
+        raise ValueError("uncaught Action host artifact differs")
+    wp_sources = {
+        "wp_plugin.php": WP_ROOT / "wp-includes" / "plugin.php",
+        "class-wp-hook.php": WP_ROOT / "wp-includes" / "class-wp-hook.php",
+        "class-wp-filter-sentinel.php": WP_ROOT / "wp-includes" / "class-wp-filter-sentinel.php",
+    }
+    expected = []
+    fixture_path = WASM_DIR.parent / "fixtures" / "uncaught_action_bridge.php"
+    for name in UNCAUGHT_ACTION_FIXTURE_NAMES:
+        path = fixture_path if name == "uncaught_action_bridge.php" else wp_sources[name]
+        expected.append([name, path.stat().st_size, sha_file(path)])
+    if result.get("fixtures") != expected:
+        raise ValueError("uncaught Action fixture/source identities differ")
+    native_report = uncaught_action_oracle.validate_receipt(
+        json.loads(uncaught_action_oracle.RECEIPT.read_text(encoding="utf-8")), replay=False)
+    cases = result.get("cases")
+    if not isinstance(cases, list) or len(cases) != 2:
+        raise ValueError("uncaught Action guest case inventory differs")
+    for name, case in zip(("all", "named"), cases):
+        case = _mapping(case)
+        if (case.get("case") != name or case.get("status") != "passed"
+                or not _int_is(case.get("php_exit_code"), 255)
+                or case.get("guest_completed") is not True
+                or case.get("guest_thread_joined") is not True
+                or case.get("stderr_thread_joined") is not True):
+            raise ValueError(f"uncaught Action {name} guest exit/reaping differs")
+        expected_oracle = native_report["oracle"]["cases"][name]
+        if (case.get("shutdown_observation") != {
+                key: expected_oracle[key]
+                for key in ("php_version", "case", "events", "state", "last_error")
+            } or case.get("stderr_normalized") != expected_oracle["stderr_normalized"]):
+            raise ValueError(f"uncaught Action {name} shutdown/fatal observation differs from native PHP")
+        bridge = _mapping(case.get("bridge"))
+        continuation = _mapping(case.get("continuation"))
+        correlation = continuation.get("effect_correlation")
+        if (not isinstance(correlation, list) or len(correlation) != 2
+                or any(type(value) is not int or value < 0 for value in correlation)
+                or bridge.get("effect_id") != f"e-{correlation[0]}-{correlation[1]}"):
+            raise ValueError(f"uncaught Action {name} wire/Rust effect correlation differs")
+        if (bridge.get("start_frame_validated") is not True
+                or bridge.get("callback_checkpoint_validated") is not True
+                or not _int_is(bridge.get("stdout_after_checkpoint_bytes"), 0)
+                or continuation.get("pending_effect_confirmed") is not True
+                or not _int_is(continuation.get("depth_after_abort"), 0)
+                or continuation.get("resume_after_abort_rejected") is not True
+                or continuation.get("finish_after_abort_rejected") is not True):
+            raise ValueError(f"uncaught Action {name} bridge checkpoint or abort handling differs")
+
+
+def uncaught_action_self_check() -> None:
+    native_report = uncaught_action_oracle.validate_receipt(
+        json.loads(uncaught_action_oracle.RECEIPT.read_text(encoding="utf-8")), replay=False)
+    fixture_dir = WASM_DIR.parent / "fixtures"
+    expected_fixtures = [
+        ["uncaught_action_bridge.php", UNCAUGHT_ACTION_FIXTURE.stat().st_size, sha_file(UNCAUGHT_ACTION_FIXTURE)],
+        ["wp_plugin.php", (WP_ROOT / "wp-includes" / "plugin.php").stat().st_size, sha_file(WP_ROOT / "wp-includes" / "plugin.php")],
+        ["class-wp-hook.php", (WP_ROOT / "wp-includes" / "class-wp-hook.php").stat().st_size, sha_file(WP_ROOT / "wp-includes" / "class-wp-hook.php")],
+        ["class-wp-filter-sentinel.php", (WP_ROOT / "wp-includes" / "class-wp-filter-sentinel.php").stat().st_size, sha_file(WP_ROOT / "wp-includes" / "class-wp-filter-sentinel.php")],
+    ]
+    cases = []
+    for name in ("all", "named"):
+        oracle = native_report["oracle"]["cases"][name]
+        cases.append({
+            "case":name, "status":"passed", "php_exit_code":255,
+            "guest_completed":True, "guest_thread_joined":True, "stderr_thread_joined":True,
+            "stderr_normalized":oracle["stderr_normalized"],
+            "shutdown_observation":{key:oracle[key] for key in ("php_version", "case", "events", "state", "last_error")},
+            "bridge":{"start_frame_validated":True,"callback_checkpoint_validated":True,
+                "effect_id":f"e-{901 if name == 'all' else 902}-1","stdout_after_checkpoint_bytes":0},
+            "continuation":{"pending_effect_confirmed":True,"depth_after_abort":0,
+                "effect_correlation":[901 if name == "all" else 902,1],
+                "resume_after_abort_rejected":True,"finish_after_abort_rejected":True},
+        })
+    base = {"schema":UNCAUGHT_ACTION_SCHEMA,"execution":"passed","compiler_profile":COMPILER_PROFILE,
+        "artifact":{"bytes":ARTIFACT_BYTES,"sha256":ARTIFACT_SHA256},
+        "fixtures":expected_fixtures,"cases":cases}
+    validate_uncaught_action_host_result(base)
+    bad = json.loads(json.dumps(base))
+    bad["cases"][0]["php_exit_code"] = 0
+    try:
+        validate_uncaught_action_host_result(bad)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("normal guest completion was accepted as an uncaught fatal")
+
+
+
 PROFILE_VALIDATORS = {
     "bridge": validate_host_result,
     "publish": validate_publish_host_result,
@@ -755,6 +916,7 @@ PROFILE_VALIDATORS = {
     "hooks": validate_hook_host_result,
     "callables": validate_callable_host_result,
     "actions": validate_action_host_result,
+    "hooks-uncaught": validate_uncaught_action_host_result,
 }
 
 
@@ -769,7 +931,7 @@ def _isolated_env(target: Path) -> dict:
 def main() -> int:
     args = sys.argv[1:]
     profile_flags = {"--publish": "publish", "--handles": "handles", "--hooks": "hooks",
-        "--callables": "callables", "--actions": "actions"}
+        "--hooks-uncaught": "hooks-uncaught", "--callables": "callables", "--actions": "actions"}
     selected = [arg for arg in args if arg in profile_flags]
     if len(selected) > 1:
         raise ValueError("select one fixed bridge profile")
@@ -778,13 +940,13 @@ def main() -> int:
     if args == ["--self-test"]:
         {"bridge": self_check, "publish": publish_self_check,
          "handles": handle_self_check, "hooks": hook_self_check, "callables": callable_self_check,
-         "actions": action_self_check}[profile]()
+         "actions": action_self_check, "hooks-uncaught": uncaught_action_self_check}[profile]()
         print(f"{profile} result validator self-test passed")
         return 0
     if args == ["--verify-only"]:
         return verify_latest(profile=profile)
     if args:
-        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles|--hooks|--callables|--actions]", file=sys.stderr)
+        print("usage: python3 -B experiments/php-compat-v06-probe/wasm/bridge_check.py [--self-test|--verify-only] [--publish|--handles|--hooks|--hooks-uncaught|--callables|--actions]", file=sys.stderr)
         return 2
     if platform.system() != "Linux":
         print("bridge execution is Linux-only", file=sys.stderr)
@@ -796,6 +958,7 @@ def main() -> int:
     build = host = None
     host_receipt = None
     failure = None
+    failure_detail = None
     phase = "source_verification"
     binary_before = binary_after = None
     target = None
@@ -805,15 +968,16 @@ def main() -> int:
     try:
         target = selected_target()
         capture_dir = target / ".bridge-runs" / f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')}-{uuid.uuid4().hex}"
-        before = fixed_inputs()
+        before = fixed_inputs(profile=profile)
         env = _isolated_env(target)
         target.mkdir(parents=True, exist_ok=True)
         host_name = HOST_NAME
         build_command = ["cargo", "build", "--offline", "--locked", "--manifest-path",
-            relative(MANIFEST), "--bin", host_name, "--target-dir", relative(target)]
+            relative(MANIFEST), "--bin", host_name, "--target", "x86_64-unknown-linux-gnu",
+            "--target-dir", relative(target)]
         phase = "build"
         build = run_bounded(build_command, env, BUILD_TIMEOUT, "build")
-        binary_path = target / "debug" / host_name
+        binary_path = target / "x86_64-unknown-linux-gnu" / "debug" / host_name
         if build["returncode"] != 0 or build["failure"]:
             failure = build["failure"] or "cargo_build_failed"
         elif not binary_path.is_file():
@@ -839,15 +1003,16 @@ def main() -> int:
                     action_transcript_rejections = verified_transcripts
                 if binary_before != binary_after:
                     raise ValueError("host binary changed during execution")
-        after = fixed_inputs()
+        after = fixed_inputs(profile=profile)
         if before != after:
             failure = "source_bound_inputs_changed"
             phase = "source_bound_verification"
     except BaseException as error:
         failure = failure or f"{type(error).__name__}"
+        failure_detail = str(error)[:1024]
         if not after:
             try:
-                after = fixed_inputs()
+                after = fixed_inputs(profile=profile)
             except BaseException:
                 after = {}
 
@@ -858,7 +1023,8 @@ def main() -> int:
     ended = datetime.now(timezone.utc)
     status = "passed" if failure is None else "failed"
     host_name = HOST_NAME
-    binary = (target / "debug" / host_name) if target else (DEFAULT_TARGET / "debug" / host_name)
+    binary = ((target / "x86_64-unknown-linux-gnu" / "debug" / host_name) if target else
+        (DEFAULT_TARGET / "x86_64-unknown-linux-gnu" / "debug" / host_name))
     binary_hash = sha_file(binary) if binary.is_file() else None
     captures = {}
     if capture_dir is not None:
@@ -880,6 +1046,7 @@ def main() -> int:
         "target_dir": relative(target) if target else None,
         "phase": phase,
         "failure_class": failure,
+        "failure_detail": failure_detail,
         "owned_processes": {"build": public_process(build), "host": public_process(host),
             "all_reaped": all(item is None or item["reaped"] for item in (build, host))},
         "source_bound_inputs_before": before,
