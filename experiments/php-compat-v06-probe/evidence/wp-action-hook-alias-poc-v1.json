@@ -1,0 +1,365 @@
+{
+  "schema": "recastpress.wp-action-hook-alias-poc.v1",
+  "status": "passed",
+  "observed_at_utc": "2026-11-14T01:44:56.624329+00:00",
+  "wordpress_version": "7.1.3",
+  "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+  "php_version": "8.5.12",
+  "php_archive_sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477",
+  "source_sha256_before": {
+    ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    ".reference/wordpress-7.1.3.tar.gz": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "20d7a3b891e2615461a2ce9c5f6225cd4f85b8b77cfda56c6219661ea1eb15aa",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "635b697d0fa36199f68b3cd3ffcb9a0040a3daeb56ba39da93dc86ce9b1bcc7c",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+  },
+  "source_sha256_after": {
+    ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    ".reference/wordpress-7.1.3.tar.gz": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "20d7a3b891e2615461a2ce9c5f6225cd4f85b8b77cfda56c6219661ea1eb15aa",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "635b697d0fa36199f68b3cd3ffcb9a0040a3daeb56ba39da93dc86ce9b1bcc7c",
+    "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
+  },
+  "owned_child": {
+    "pid": 25748,
+    "returncode": 0,
+    "reaped": true
+  },
+  "raw_capture": {
+    "stdout": {
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T014456.614985Z-stdout.bin",
+      "bytes": 3320,
+      "sha256": "43b125957394117f0872707762220a517abacbf29f7704e461becfb5554a3242"
+    },
+    "stderr": {
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T014456.614985Z-stderr.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "oracle": {
+    "php_version": "8.5.12",
+    "php_int_size": 8,
+    "cases": {
+      "string_registration_integer_dispatch": {
+        "label": "string_registration_integer_dispatch",
+        "registered_hook": {
+          "type": "string",
+          "hex": "35"
+        },
+        "dispatch_hook": {
+          "type": "int",
+          "value": "5"
+        },
+        "second_dispatch_hook": {
+          "type": "string",
+          "hex": "35"
+        },
+        "before": {
+          "string": {
+            "type": "int",
+            "value": "0"
+          },
+          "integer": {
+            "type": "int",
+            "value": "0"
+          }
+        },
+        "has_before_dispatch": {
+          "registered": {
+            "type": "int",
+            "value": "10"
+          },
+          "dispatch": {
+            "type": "int",
+            "value": "10"
+          }
+        },
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "int",
+                "value": "5"
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "int",
+              "value": "5"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "1"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "1"
+            }
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "int",
+              "value": "5"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "1"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "1"
+            }
+          },
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "string",
+                "hex": "35"
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "string",
+              "hex": "35"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "2"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "2"
+            }
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "string",
+              "hex": "35"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "2"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "2"
+            }
+          }
+        ],
+        "after": {
+          "did_action_string": {
+            "type": "int",
+            "value": "2"
+          },
+          "did_action_integer": {
+            "type": "int",
+            "value": "2"
+          },
+          "removed_by_dispatch_alias": true,
+          "has_after_remove": {
+            "registered": {
+              "type": "bool",
+              "value": false
+            },
+            "dispatch": {
+              "type": "bool",
+              "value": false
+            }
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "integer_registration_string_dispatch": {
+        "label": "integer_registration_string_dispatch",
+        "registered_hook": {
+          "type": "int",
+          "value": "5"
+        },
+        "dispatch_hook": {
+          "type": "string",
+          "hex": "35"
+        },
+        "second_dispatch_hook": {
+          "type": "int",
+          "value": "5"
+        },
+        "before": {
+          "string": {
+            "type": "int",
+            "value": "2"
+          },
+          "integer": {
+            "type": "int",
+            "value": "2"
+          }
+        },
+        "has_before_dispatch": {
+          "registered": {
+            "type": "int",
+            "value": "10"
+          },
+          "dispatch": {
+            "type": "int",
+            "value": "10"
+          }
+        },
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "string",
+                "hex": "35"
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "string",
+              "hex": "35"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "3"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "3"
+            }
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "string",
+              "hex": "35"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "3"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "3"
+            }
+          },
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "int",
+                "value": "5"
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "int",
+              "value": "5"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "4"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "4"
+            }
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "current_action": {
+              "type": "int",
+              "value": "5"
+            },
+            "did_action_string": {
+              "type": "int",
+              "value": "4"
+            },
+            "did_action_integer": {
+              "type": "int",
+              "value": "4"
+            }
+          }
+        ],
+        "after": {
+          "did_action_string": {
+            "type": "int",
+            "value": "4"
+          },
+          "did_action_integer": {
+            "type": "int",
+            "value": "4"
+          },
+          "removed_by_dispatch_alias": true,
+          "has_after_remove": {
+            "registered": {
+              "type": "bool",
+              "value": false
+            },
+            "dispatch": {
+              "type": "bool",
+              "value": false
+            }
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      }
+    }
+  },
+  "scope": "Target-only cross-type numeric hook-key aliases for do_action: register string 5/dispatch int 5 and the reverse, including all/named arguments, did_action aliases, raw current_action values, and post-dispatch stack unwind. No Rust bridge or PHP-Wasm request is made."
+}

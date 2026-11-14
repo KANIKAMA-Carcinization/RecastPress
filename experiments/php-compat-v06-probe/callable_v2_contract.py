@@ -6,7 +6,7 @@ import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
     ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ACTION_HEAP_ARGUMENT_EXPECTATIONS,
-    ACTION_SINGLETON_OBJECT_EXPECTATIONS,
+    ACTION_SINGLETON_OBJECT_EXPECTATIONS, ACTION_HOOK_KEY_ALIAS_EXPECTATIONS,
     ALL_APIS, EXPECTED_OBSERVATION,
     ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
     validate_key, validate_pod)
@@ -4000,6 +4000,7 @@ EXPECTED_ACTION_API['global_state'] = ACTION_GLOBAL_STATE_EXPECTATIONS
 EXPECTED_ACTION_API['counter_cow'] = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
 EXPECTED_ACTION_API['heap_argument_continuation'] = json.loads(json.dumps(ACTION_HEAP_ARGUMENT_EXPECTATIONS))
 EXPECTED_ACTION_API['singleton_object_unwrap'] = json.loads(json.dumps(ACTION_SINGLETON_OBJECT_EXPECTATIONS))
+EXPECTED_ACTION_API['hook_key_alias'] = json.loads(json.dumps(ACTION_HOOK_KEY_ALIAS_EXPECTATIONS))
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode
@@ -4330,6 +4331,10 @@ def action_self_check():
     changed['singleton_object_unwrap']['zero_key_singleton']['events'][1]['args'][0] = {
         'type': 'array', 'count': 1, 'items': []}
     mutations.append(('action singleton object named callback unwrapping', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['hook_key_alias']['string_registration_integer_dispatch']['events'][0]['current_action'] = {
+        'type': 'string', 'hex': '35'}
+    mutations.append(('numeric hook alias preserves dispatch representation', changed))
     changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['int']['do_action'][0]['initial']['value'] = {
         'type': 'string', 'hex': '37'}
@@ -5055,7 +5060,7 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_action_counter_cow_live', 'wrong_action_counter_cow_warning_order',
     'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
     'wrong_heap_action_callcore_marker', 'wrong_heap_action_callback_marker',
-    'wrong_action_dispatch_context',
+    'wrong_action_dispatch_context', 'wrong_alias_registration_normalized_key',
 )
 
 
@@ -5255,6 +5260,16 @@ def reject_action_transcripts(streams, result):
                            and item.get('payload', {}).get('call_mode') == 'array'
                            and item.get('payload', {}).get('action_dispatch') is True)
             frames['rust'][index]['payload']['action_dispatch'] = False
+        elif name == 'wrong_alias_registration_normalized_key':
+            index = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                           and item.get('payload', {}).get('operation') == 'boundary'
+                           and item.get('payload', {}).get('action') == 'array_key'
+                           and source['php'][resume_index(source['rust'].index(item))]
+                           .get('payload', {}).get('completion', {}).get('value', {}).get('original')
+                           == {'type': 'string', 'hex': '35'})
+            resumed = frames['php'][resume_index(index)]['payload']['completion']['value']
+            resumed['original'] = {'type': 'string', 'hex': '3035'}
+            resumed['key'] = {'type': 'string', 'hex': '3035'}
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

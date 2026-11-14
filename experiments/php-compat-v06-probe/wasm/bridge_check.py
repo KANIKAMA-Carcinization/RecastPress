@@ -104,9 +104,10 @@ def source_paths(publish: bool = False) -> list[Path]:
     paths.extend(WASM_DIR.parent / name for name in (
         "callable_contract.py", "callable_v2_contract.py", "wp_callable_oracle.py",
         "wp_action_global_state_poc.py", "wp_action_counter_cow_poc.py",
-        "wp_action_singleton_object_poc.py"))
+        "wp_action_singleton_object_poc.py", "wp_action_hook_alias_poc.py"))
     paths.append(WASM_DIR.parent / "fixtures" / "wp_action_counter_cow_poc.php")
     paths.append(WASM_DIR.parent / "fixtures" / "wp-action-singleton-object-poc.php")
+    paths.append(WASM_DIR.parent / "fixtures" / "wp_action_hook_alias_poc.php")
     paths.extend(WASM_DIR.parent / "fixtures" / name for name in ("callable_adapter.php", "callable_driver.php", "callable_program.php", "callable_wp_oracle.php", "CALLABLE_API_CONTRACT.md"))
     paths.extend(ROOT / "crates/recastpress-wp/tests" / name
                  for name in ("hooks_contract.rs", "dispatcher_contract.rs"))

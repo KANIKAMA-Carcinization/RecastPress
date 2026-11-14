@@ -6,6 +6,7 @@ import re
 from wp_action_global_state_poc import expected_observation as _action_global_state_oracle
 from wp_action_counter_cow_poc import expected_oracle as _action_counter_cow_oracle
 from wp_action_singleton_object_poc import expected_oracle as _action_singleton_oracle
+from wp_action_hook_alias_poc import expected_oracle as _action_hook_alias_oracle
 
 APIS = ('add_filter', 'remove_filter', 'has_filter', 'apply_filters',
         'current_filter', 'doing_filter', 'did_filter')
@@ -40,6 +41,7 @@ _ACTION_SINGLETON_ORACLE_CASES = _action_singleton_oracle()['cases']
 ACTION_SINGLETON_OBJECT_EXPECTATIONS = {key: _ACTION_SINGLETON_ORACLE_CASES[key] for key in (
     'zero_key_singleton', 'nonzero_key_singleton', 'multi_element', 'direct_object',
     'extra_args', 'missing_named_listener')}
+ACTION_HOOK_KEY_ALIAS_EXPECTATIONS = _action_hook_alias_oracle()['cases']
 ACTION_COUNTER_COW_HOOKS = {
     mode: 'callable-action-counter-cow-' + mode for mode in ('live', 'snapshot')
 }

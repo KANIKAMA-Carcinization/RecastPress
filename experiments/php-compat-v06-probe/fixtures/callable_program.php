@@ -3024,6 +3024,70 @@ function callable_program_action_singleton_object_cases(): array
     return $cases;
 }
 
+function callable_program_action_hook_alias_cases(): array
+{
+    $view = static function ($value): array {
+        if ($value === null) return ['type' => 'null'];
+        if (is_bool($value)) return ['type' => 'bool', 'value' => $value];
+        if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
+        if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        return ['type' => get_debug_type($value)];
+    };
+    $definitions = [
+        'string_registration_integer_dispatch' => ['5', 5],
+        'integer_registration_string_dispatch' => [5, '5'],
+    ];
+    $cases = [];
+    foreach ($definitions as $name => [$registered, $dispatched]) {
+        $GLOBALS['wp_filter'] = [];
+        if ($name === 'string_registration_integer_dispatch') {
+            $GLOBALS['wp_actions'] = [];
+        }
+        $GLOBALS['wp_filters'] = [];
+        $GLOBALS['wp_current_filter'] = [];
+        $events = [];
+        $before = ['string' => $view(did_action('5')), 'integer' => $view(did_action(5))];
+        $all = static function (...$args) use (&$events, $view): void {
+            if (($args[0] ?? null) !== '5' && ($args[0] ?? null) !== 5) return;
+            $events[] = ['event' => 'all', 'args' => array_map($view, $args),
+                'current_action' => $view(current_action()),
+                'did_action_string' => $view(did_action('5')),
+                'did_action_integer' => $view(did_action(5))];
+        };
+        add_action('all', $all, 1, 99);
+        $named = static function (...$args) use (&$events, $view): void {
+            $events[] = ['event' => 'named', 'args' => array_map($view, $args),
+                'current_action' => $view(current_action()),
+                'did_action_string' => $view(did_action('5')),
+                'did_action_integer' => $view(did_action(5))];
+        };
+        add_action($registered, $named, 10, 99);
+        $hasBefore = ['registered' => $view(has_action($registered, $named)),
+            'dispatch' => $view(has_action($dispatched, $named))];
+        do_action($dispatched, 'payload');
+        $secondDispatch = is_int($dispatched) ? '5' : 5;
+        do_action($secondDispatch, 'payload');
+        $removed = remove_action($dispatched, $named, 10);
+        remove_action('all', $all, 1);
+        $hasAfterRemove = ['registered' => $view(has_action($registered, $named)),
+            'dispatch' => $view(has_action($dispatched, $named))];
+        $after = ['did_action_string' => $view(did_action('5')),
+            'did_action_integer' => $view(did_action(5)), 'removed_by_dispatch_alias' => $removed,
+            'has_after_remove' => $hasAfterRemove, 'current_action' => $view(current_action()),
+            'doing_action' => doing_action(),
+            'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+        $cases[$name] = ['label' => $name, 'registered_hook' => $view($registered),
+            'dispatch_hook' => $view($dispatched), 'second_dispatch_hook' => $view($secondDispatch),
+            'before' => $before, 'has_before_dispatch' => $hasBefore,
+            'events' => $events, 'after' => $after];
+    }
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    return $cases;
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
@@ -3033,6 +3097,7 @@ function callable_program_action_api_cases(): array
 
     $heapArgumentContinuation = callable_program_action_heap_argument_continuation();
     $singletonObjectCases = callable_program_action_singleton_object_cases();
+    $hookKeyAliasCases = callable_program_action_hook_alias_cases();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3348,6 +3413,7 @@ function callable_program_action_api_cases(): array
             'after' => $nestedCaughtAfter],
         'heap_argument_continuation' => $heapArgumentContinuation,
         'singleton_object_unwrap' => $singletonObjectCases,
+        'hook_key_alias' => $hookKeyAliasCases,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,

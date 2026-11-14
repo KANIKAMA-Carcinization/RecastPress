@@ -27,7 +27,9 @@ def fixed_inputs():
                  HERE / 'wp_action_global_state_poc.py', HERE / 'wp_action_counter_cow_poc.py',
                  HERE / 'fixtures/wp_action_counter_cow_poc.php',
                  HERE / 'wp_action_singleton_object_poc.py',
-                 HERE / 'fixtures/wp-action-singleton-object-poc.php'):
+                 HERE / 'fixtures/wp-action-singleton-object-poc.php',
+                 HERE / 'wp_action_hook_alias_poc.py',
+                 HERE / 'fixtures/wp_action_hook_alias_poc.php'):
         inputs[path.relative_to(ROOT).as_posix()] = digest(path)
     return dict(sorted(inputs.items()))
 

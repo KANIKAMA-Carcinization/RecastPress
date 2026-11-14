@@ -2,9 +2,9 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-14T01:14:08+00:00",
+  "recorded_at_utc": "2026-11-14T01:49:43+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "a12ba28495eaaf87884bfb18066dbf4e3b3ca10fef757529e28ee03403b41d5d",
+    "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
@@ -23,17 +23,19 @@
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "ddc5d6be3a97847140135555e337d2477603fe9d7adb6d3ba5c537ee552b7095",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "1cde3008d48f9aba3796ad0721e211455970d822c8941bd56bd41a0302b8f510",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ac064e81053447a775a09301618026c8095579699918f5a4a9020a20e7664479",
+    "experiments/php-compat-v06-probe/callable_contract.py": "8e1f21fb6e9e0b82dd62f2d324e2e574c64dfb22e35799a563816bccdcb35483",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "9d649210b30c7ec7f889206882f7f1e21b56917e61060d96d06e56929822902d",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "61402288b9fce8bb6f3101e5fdc85f95e9adab25883c39e3d917c065d6bda854",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "635b697d0fa36199f68b3cd3ffcb9a0040a3daeb56ba39da93dc86ce9b1bcc7c",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "20d7a3b891e2615461a2ce9c5f6225cd4f85b8b77cfda56c6219661ea1eb15aa",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "2518dab336ea6508b5d0e4c7086030aaef83f228bea680c096aace6c28097462",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "f2af80365584df0178e1436843a20c2b6c68b1e2e115d4a4d58e96c0636a48b4",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -252,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 24872,
-      "rust": 10556
+      "php": 20732,
+      "rust": 25716
     },
     "returncodes": {
       "php": 0,
@@ -310,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-c68ab562986540989d4a4e57f9e11c88-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-c68ab562986540989d4a4e57f9e11c88-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-c68ab562986540989d4a4e57f9e11c88-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-c68ab562986540989d4a4e57f9e11c88-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -335,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 22900,
-      "rust": 15828
+      "php": 5384,
+      "rust": 5612
     },
     "returncodes": {
       "php": 0,
@@ -399,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-96c31fb9ab0944f3b8ca26a592b9f88d-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-96c31fb9ab0944f3b8ca26a592b9f88d-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-96c31fb9ab0944f3b8ca26a592b9f88d-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-96c31fb9ab0944f3b8ca26a592b9f88d-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -424,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 22948,
-      "rust": 684
+      "php": 26384,
+      "rust": 6336
     },
     "returncodes": {
       "php": 0,
@@ -573,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-c5cbd04f2e6d41b5886a73442cf7c96e-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-c5cbd04f2e6d41b5886a73442cf7c96e-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-c5cbd04f2e6d41b5886a73442cf7c96e-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-c5cbd04f2e6d41b5886a73442cf7c96e-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -599,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 21860,
-        "rust": 21404
+        "php": 6152,
+        "rust": 26644
       },
       "returncodes": {
         "php": 0,
@@ -675,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-7f8c5a8700764fe58b005650fdc0235c-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-7f8c5a8700764fe58b005650fdc0235c-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-7f8c5a8700764fe58b005650fdc0235c-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-7f8c5a8700764fe58b005650fdc0235c-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "150766c7043c24f5812504b79143167c06e0fce0fb08b86ab539fd391189f599",
+          "stdout_sha256": "3b5cfae131fcb0eeb8e4193639afde5f3da8eaa755304f4ecf473255e989e6c5",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -700,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 25380,
-        "rust": 25552
+        "php": 6892,
+        "rust": 28668
       },
       "returncodes": {
         "php": 0,
@@ -779,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-5d896dc907a84512aaf45930e79c15c7-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-5d896dc907a84512aaf45930e79c15c7-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-5d896dc907a84512aaf45930e79c15c7-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-5d896dc907a84512aaf45930e79c15c7-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "397a2ca34c39fa22f04df17b792864f2a26ed88eea90d250d5c333e1e446f304",
+          "stdout_sha256": "c5452d9056c2ca20a2f236f3e14dceed6cfb47a200f46b1c3bbc40bd6e5cd00e",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -805,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 25956,
-      "rust": 22608
+      "php": 27804,
+      "rust": 26844
     },
     "returncodes": {
       "php": 0,
@@ -891,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-ec0a0f94daff4e79a8be79ae7d36c283-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-ec0a0f94daff4e79a8be79ae7d36c283-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-ec0a0f94daff4e79a8be79ae7d36c283-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-ec0a0f94daff4e79a8be79ae7d36c283-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "a4ed8a2513f6fed4fb350c873e2c0b7d82c7bbdea2f579edaaf8203dab625c48",
+        "stdout_sha256": "de288a87474cfb6ee9a4feb73efd75a168fa63bd89628932c295168f8b9fb6f9",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "368404688c05cefe0235c43186d3e78a43e2464013ee3561e9b393639de6c05d",
+        "stdout_sha256": "9c5a954d9bbaef7e1c8cd9c1cb7987a38935f90bafc06e78927d69b62cabeed7",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -917,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 3948,
-        "rust": 11556
+        "php": 9476,
+        "rust": 25104
       },
       "returncodes": {
         "php": 0,
@@ -1040,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-0e4bc13b449d4373a632688a446703cc-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-0e4bc13b449d4373a632688a446703cc-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-0e4bc13b449d4373a632688a446703cc-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-0e4bc13b449d4373a632688a446703cc-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "e6be363f0f9cef92a84b57f0642ef1376e9ff3630399ca85f58fb40034bfb46d",
+          "stdout_sha256": "f24cb37e408792217f8958ec1d60c023a41f9eab515aeff8cfcb6c70ae99484c",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "7c7b38910f0e6de15f49db49f94a9eca3179cf55c387f831be37f77a2ce9fc30",
+          "stdout_sha256": "b6476ab4509a0949f812d282f9b1e9782d3747d3457d11c1a817ca9b66f11d0b",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1085,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 24192,
-        "rust": 7944
+        "php": 25280,
+        "rust": 27588
       },
       "returncodes": {
         "php": 0,
@@ -1110,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "22d003014d0ade40"
+              "token": "6894c01b50196cc0"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1173,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "22d003014d0ade40"
+              "token": "6894c01b50196cc0"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1247,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-aa3a3619abe54f0f816475e9236df326-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-aa3a3619abe54f0f816475e9236df326-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-aa3a3619abe54f0f816475e9236df326-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-aa3a3619abe54f0f816475e9236df326-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "e007787a1c1313098569f5d996ec24cc6fd00f19781e2c9969e43474072b63fe",
+          "stdout_sha256": "a8aed5ef0a5ff12fd8cb74e4bb80ba572a08735f73e0d44add63e9bcd63750fd",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "e88507644a812cbd0e56b7ea421e832587b37d24a4bdf152ba01c5bc5865ab8e",
+          "stdout_sha256": "a66fd9e8243fb59c4c5b0e244e0f2e5700a334d36bb4959f4a8214f37dce3060",
           "stderr_bytes": 1817,
-          "stderr_sha256": "a09b51c3b03fc59d6c2199a08f5fe78e6a3dc03947cb0ef012665c08f7caf51b"
+          "stderr_sha256": "3f0b8b93675090e4d7c03c316cfa48ee1aa236d8935554d563ad2a31b379c673"
         }
       },
       "hook_transcript_rejections": [
@@ -1293,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 12652,
-      "rust": 4628
+      "php": 26240,
+      "rust": 27200
     },
     "returncodes": {
       "php": 0,
@@ -14715,24 +14717,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-00bf62e11ca44a27b50c729f5baf59a2-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-00bf62e11ca44a27b50c729f5baf59a2-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-00bf62e11ca44a27b50c729f5baf59a2-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-00bf62e11ca44a27b50c729f5baf59a2-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "b0ab803592bd159ed255c81b709306c3485c8257baa08b8f49063c2aeb2ea1a9",
+        "stdout_sha256": "d267713c357bd1d3f871af8b050131dba2a5faf4aa9a09a1e6e39f6a6ed8a5a2",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2770412,
-        "stdout_sha256": "c60050503fba9655bdb33641acdbb0d824c3b039da522ecef32fc8e0cc321e50",
+        "stdout_sha256": "eb2cb87e8160863fe84ccf2bdef41d882851248240166937db35cd97a4e449fe",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14784,8 +14786,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 18808,
-      "rust": 24300
+      "php": 26816,
+      "rust": 16196
     },
     "returncodes": {
       "php": 0,
@@ -14793,9 +14795,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 2238,
-    "frames_from_rust": 2237,
-    "relayed_bytes": 1379184,
+    "frames_from_php": 2514,
+    "frames_from_rust": 2513,
+    "relayed_bytes": 1538700,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -15929,6 +15931,320 @@
               ],
               "did_action": 1,
               "current_filter_stack": []
+            }
+          },
+          "hook_key_alias": {
+            "string_registration_integer_dispatch": {
+              "label": "string_registration_integer_dispatch",
+              "registered_hook": {
+                "type": "string",
+                "hex": "35"
+              },
+              "dispatch_hook": {
+                "type": "int",
+                "value": "5"
+              },
+              "second_dispatch_hook": {
+                "type": "string",
+                "hex": "35"
+              },
+              "before": {
+                "string": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "integer": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              "has_before_dispatch": {
+                "registered": {
+                  "type": "int",
+                  "value": "10"
+                },
+                "dispatch": {
+                  "type": "int",
+                  "value": "10"
+                }
+              },
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "int",
+                      "value": "5"
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "35"
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "string",
+                    "hex": "35"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "2"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "string",
+                    "hex": "35"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "2"
+                  }
+                }
+              ],
+              "after": {
+                "did_action_string": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_action_integer": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "removed_by_dispatch_alias": true,
+                "has_after_remove": {
+                  "registered": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "dispatch": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "integer_registration_string_dispatch": {
+              "label": "integer_registration_string_dispatch",
+              "registered_hook": {
+                "type": "int",
+                "value": "5"
+              },
+              "dispatch_hook": {
+                "type": "string",
+                "hex": "35"
+              },
+              "second_dispatch_hook": {
+                "type": "int",
+                "value": "5"
+              },
+              "before": {
+                "string": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "integer": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              "has_before_dispatch": {
+                "registered": {
+                  "type": "int",
+                  "value": "10"
+                },
+                "dispatch": {
+                  "type": "int",
+                  "value": "10"
+                }
+              },
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "35"
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "string",
+                    "hex": "35"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "3"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "string",
+                    "hex": "35"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "3"
+                  }
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "int",
+                      "value": "5"
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "4"
+                  }
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "4"
+                  }
+                }
+              ],
+              "after": {
+                "did_action_string": {
+                  "type": "int",
+                  "value": "4"
+                },
+                "did_action_integer": {
+                  "type": "int",
+                  "value": "4"
+                },
+                "removed_by_dispatch_alias": true,
+                "has_after_remove": {
+                  "registered": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "dispatch": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
             }
           },
           "no_listener_count": {
@@ -17349,33 +17665,33 @@
       }
     },
     "expected_frame_counts": {
-      "php": 2238,
-      "rust": 2237
+      "php": 2514,
+      "rust": 2513
     },
     "action_result": {
       "api_counts": {
-        "add_action": 52,
+        "add_action": 56,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 91,
+        "current_action": 101,
         "current_filter": 0,
-        "did_action": 140,
+        "did_action": 164,
         "did_filter": 7,
-        "do_action": 45,
-        "doing_action": 102,
+        "do_action": 49,
+        "doing_action": 104,
         "doing_filter": 0,
-        "has_action": 6,
+        "has_action": 14,
         "has_filter": 0,
-        "remove_action": 14,
+        "remove_action": 18,
         "remove_filter": 0
       },
-      "argument_release_effects": 367,
-      "boundary_effects": 1021,
-      "callback_invocations": 336,
+      "argument_release_effects": 413,
+      "boundary_effects": 1159,
+      "callback_invocations": 368,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 2238,
-      "frames_from_rust": 2237,
+      "frames_from_php": 2514,
+      "frames_from_rust": 2513,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -19464,6 +19780,320 @@
               "outer": null
             }
           },
+          "hook_key_alias": {
+            "integer_registration_string_dispatch": {
+              "after": {
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action_integer": {
+                  "type": "int",
+                  "value": "4"
+                },
+                "did_action_string": {
+                  "type": "int",
+                  "value": "4"
+                },
+                "doing_action": false,
+                "has_after_remove": {
+                  "dispatch": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "registered": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                "removed_by_dispatch_alias": true,
+                "stack": []
+              },
+              "before": {
+                "integer": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "string": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              "dispatch_hook": {
+                "hex": "35",
+                "type": "string"
+              },
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "35",
+                      "type": "string"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "hex": "35",
+                    "type": "string"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "hex": "35",
+                    "type": "string"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "3"
+                  },
+                  "event": "named"
+                },
+                {
+                  "args": [
+                    {
+                      "type": "int",
+                      "value": "5"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "4"
+                  },
+                  "event": "named"
+                }
+              ],
+              "has_before_dispatch": {
+                "dispatch": {
+                  "type": "int",
+                  "value": "10"
+                },
+                "registered": {
+                  "type": "int",
+                  "value": "10"
+                }
+              },
+              "label": "integer_registration_string_dispatch",
+              "registered_hook": {
+                "type": "int",
+                "value": "5"
+              },
+              "second_dispatch_hook": {
+                "type": "int",
+                "value": "5"
+              }
+            },
+            "string_registration_integer_dispatch": {
+              "after": {
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action_integer": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_action_string": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "doing_action": false,
+                "has_after_remove": {
+                  "dispatch": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "registered": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                "removed_by_dispatch_alias": true,
+                "stack": []
+              },
+              "before": {
+                "integer": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "string": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              "dispatch_hook": {
+                "type": "int",
+                "value": "5"
+              },
+              "events": [
+                {
+                  "args": [
+                    {
+                      "type": "int",
+                      "value": "5"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  "event": "named"
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "35",
+                      "type": "string"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "hex": "35",
+                    "type": "string"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "current_action": {
+                    "hex": "35",
+                    "type": "string"
+                  },
+                  "did_action_integer": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "did_action_string": {
+                    "type": "int",
+                    "value": "2"
+                  },
+                  "event": "named"
+                }
+              ],
+              "has_before_dispatch": {
+                "dispatch": {
+                  "type": "int",
+                  "value": "10"
+                },
+                "registered": {
+                  "type": "int",
+                  "value": "10"
+                }
+              },
+              "label": "string_registration_integer_dispatch",
+              "registered_hook": {
+                "hex": "35",
+                "type": "string"
+              },
+              "second_dispatch_hook": {
+                "hex": "35",
+                "type": "string"
+              }
+            }
+          },
           "nested": {
             "current_action": "callable-action-throw-named",
             "did_action": 2,
@@ -19945,32 +20575,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 52,
+      "release_effects": 56,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-e80fffb7eedc4fee876ea83d8d4b2974-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-e80fffb7eedc4fee876ea83d8d4b2974-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-e80fffb7eedc4fee876ea83d8d4b2974-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-e80fffb7eedc4fee876ea83d8d4b2974-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 618087,
-        "stdout_sha256": "7d0043880122604f325c7130ff22813b8690d05d96ff8218106eec13e19ee4e4",
+        "stdout_bytes": 688326,
+        "stdout_sha256": "766e55046b30f11e480d9dd0e691974dd3a367a8ae78699cc7b8e9db1f490891",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 761097,
-        "stdout_sha256": "8fddfb093832d1e8ec7c8f69b32c598797b100d85dd58300789f1ef1f0d43272",
-        "stderr_bytes": 36648,
-        "stderr_sha256": "ca0aaf24d539718918b3af647a681c8ea96b94f99c94d5057d965a43dcc9fa1d"
+        "stdout_bytes": 850374,
+        "stdout_sha256": "c2495dd3db1f7d4ecc80ffac556059c92dd49937343a454d9d53c04948aabd62",
+        "stderr_bytes": 39937,
+        "stderr_sha256": "f313b6e8466aaec85d2ab510e4b5a2c493b9330c04a4ed672e9bf55901a324a3"
       }
     },
     "action_transcript_rejections": [
@@ -20000,7 +20630,8 @@
       "wrong_action_counter_cow_read",
       "wrong_heap_action_callcore_marker",
       "wrong_heap_action_callback_marker",
-      "wrong_action_dispatch_context"
+      "wrong_action_dispatch_context",
+      "wrong_alias_registration_normalized_key"
     ]
   },
   "negative_vectors_rejected_by_rust": [
@@ -20028,72 +20659,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 13716,
+        "pid": 22888,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 19196,
+        "pid": 25572,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 27580,
+        "pid": 8668,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 14464,
+        "pid": 14444,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 12592,
+        "pid": 27900,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 21964,
+        "pid": 25492,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 20824,
+        "pid": 21972,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 27412,
+        "pid": 18812,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25044,
+        "pid": 11188,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25128,
+        "pid": 27160,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 23468,
+        "pid": 8832,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 9068,
+        "pid": 28664,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 7324,
+        "pid": 25624,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 9916,
+        "pid": 26368,
         "returncode": 0,
         "reaped": true
       }
