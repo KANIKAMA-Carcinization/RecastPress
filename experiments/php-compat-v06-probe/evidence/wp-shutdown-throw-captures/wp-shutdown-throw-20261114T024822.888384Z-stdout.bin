@@ -1,0 +1,1 @@
+{"php_version":"8.5.12","event":"first_shutdown_wp_observer","wp_state":{"did_action":1,"current_action":"recastpress_shutdown_throw_probe","doing_action":true,"stack":["recastpress_shutdown_throw_probe"],"hook_state":{"nesting_level":1,"iterations":[[5,10,20]],"current_priority":[5],"doing_action":true},"mutation_before_throw_callback":"initial"}}

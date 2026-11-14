@@ -1,0 +1,9 @@
+Fatal error: Uncaught RuntimeException: shutdown-do-action-throw-marker in C:\Users\nodew\Documents\ChatGPT\recastpress\experiments\php-compat-v06-probe\fixtures\wp_shutdown_throw_oracle.php:43
+Stack trace:
+#0 C:\Users\nodew\Documents\ChatGPT\recastpress\.reference\wordpress-7.1.3\wp-includes\class-wp-hook.php(353): {closure:C:\Users\nodew\Documents\ChatGPT\recastpress\experiments\php-compat-v06-probe\fixtures\wp_shutdown_throw_oracle.php:41}('')
+#1 C:\Users\nodew\Documents\ChatGPT\recastpress\.reference\wordpress-7.1.3\wp-includes\class-wp-hook.php(377): WP_Hook->apply_filters(NULL, Array)
+#2 C:\Users\nodew\Documents\ChatGPT\recastpress\.reference\wordpress-7.1.3\wp-includes\plugin.php(523): WP_Hook->do_action(Array)
+#3 C:\Users\nodew\Documents\ChatGPT\recastpress\experiments\php-compat-v06-probe\fixtures\wp_shutdown_throw_oracle.php(49): do_action('recastpress_shu...')
+#4 [internal function]: {closure:C:\Users\nodew\Documents\ChatGPT\recastpress\experiments\php-compat-v06-probe\fixtures\wp_shutdown_throw_oracle.php:48}()
+#5 {main}
+  thrown in C:\Users\nodew\Documents\ChatGPT\recastpress\experiments\php-compat-v06-probe\fixtures\wp_shutdown_throw_oracle.php on line 43
