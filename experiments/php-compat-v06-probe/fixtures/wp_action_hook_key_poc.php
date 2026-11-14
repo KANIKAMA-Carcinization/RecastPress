@@ -14,6 +14,9 @@ function action_hook_key_view($value): array
     if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
     if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
     if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+    if (is_resource($value)) return ['type' => 'resource', 'resource_type' => get_resource_type($value), 'resource_id' => get_resource_id($value)];
+    if (is_array($value)) return ['type' => 'array', 'count' => count($value)];
+    if (is_object($value)) return ['type' => 'object', 'class' => get_class($value)];
     return ['type' => get_debug_type($value)];
 }
 
@@ -152,5 +155,100 @@ $aliases = [
     'true_register_one_dispatch' => action_hook_key_alias_case('true_register_one_dispatch', true, 1),
     'one_register_true_dispatch' => action_hook_key_alias_case('one_register_true_dispatch', 1, true),
 ];
+
+class ActionHookKeyStringable
+{
+    public function __toString(): string { return 'stringable-hook-key'; }
+}
+
+function action_hook_key_unusual_case(string $label, $hook, bool $named): array
+{
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $events = [];
+    $warnings = [];
+    $hookView = action_hook_key_view($hook);
+    set_error_handler(static function (int $severity, string $message) use (&$events, &$warnings, $hookView): bool {
+        $warning = ['index' => count($warnings) + 1, 'severity' => $severity, 'message_hex' => bin2hex($message)];
+        $warnings[] = $warning;
+        $events[] = ['event' => 'warning', ...$warning,
+            'current_action' => action_hook_key_view(current_action()),
+            'counter_entries' => count($GLOBALS['wp_actions'] ?? [])];
+        return true;
+    });
+    add_action('all', static function (...$args) use (&$events): void {
+        $events[] = ['event' => 'all', 'args' => array_map('action_hook_key_view', $args),
+            'current_action' => action_hook_key_view(current_action()),
+            'doing_action' => doing_action(),
+            'counter_entries' => count($GLOBALS['wp_actions'] ?? [])];
+    }, 1, 99);
+    if ($named) {
+        $registrationThrowable = null;
+        try {
+            add_action($hook, static function (...$args) use (&$events): void {
+                $events[] = ['event' => 'named', 'args' => array_map('action_hook_key_view', $args),
+                    'current_action' => action_hook_key_view(current_action()),
+                    'doing_action' => doing_action(),
+                    'counter_entries' => count($GLOBALS['wp_actions'] ?? [])];
+            }, 10, 99);
+        } catch (Throwable $throwable) {
+            $registrationThrowable = ['class' => $throwable::class, 'message_hex' => bin2hex($throwable->getMessage())];
+            $events[] = ['event' => 'throwable', 'stage' => 'named_registration', ...$registrationThrowable];
+        }
+    } else {
+        $registrationThrowable = null;
+    }
+    $dispatchThrowable = null;
+    if ($registrationThrowable === null) {
+        try {
+            do_action($hook, 'payload');
+        } catch (Throwable $throwable) {
+            $dispatchThrowable = ['class' => $throwable::class, 'message_hex' => bin2hex($throwable->getMessage())];
+            $events[] = ['event' => 'throwable', 'stage' => 'dispatch', ...$dispatchThrowable];
+        }
+    }
+    $didAction = null;
+    try {
+        $didAction = ['value' => action_hook_key_view(did_action($hook))];
+    } catch (Throwable $throwable) {
+        $didAction = ['throwable' => ['class' => $throwable::class, 'message_hex' => bin2hex($throwable->getMessage())]];
+    }
+    $counterEntries = [];
+    foreach ($GLOBALS['wp_actions'] as $key => $value) {
+        $counterEntries[] = ['key' => action_hook_key_view($key), 'value' => action_hook_key_view($value)];
+    }
+    $after = ['did_action' => $didAction,
+        'counter_entries' => $counterEntries,
+        'current_action' => action_hook_key_view(current_action()),
+        'doing_action' => doing_action(),
+        'stack' => array_map('action_hook_key_view', $GLOBALS['wp_current_filter'])];
+    restore_error_handler();
+    return ['label' => $label, 'hook' => $hookView, 'named_listener' => $named,
+        'events' => $events, 'warnings' => $warnings,
+        'registration_throwable' => $registrationThrowable,
+        'dispatch_throwable' => $dispatchThrowable, 'after' => $after];
+}
+
+$resourceHook = fopen('php://memory', 'r+');
+if (!is_resource($resourceHook)) {
+    fwrite(STDERR, "could not create resource hook fixture\n");
+    exit(2);
+}
+$unusualHooks = [
+    'array' => [],
+    'ordinary_object' => new stdClass(),
+    'stringable_object' => new ActionHookKeyStringable(),
+    'resource' => $resourceHook,
+];
+$unusualCases = [];
+foreach ($unusualHooks as $label => $hook) {
+    foreach ([false, true] as $named) {
+        $key = $label . ($named ? '_named' : '_all_only');
+        $unusualCases[$key] = action_hook_key_unusual_case($key, $hook, $named);
+    }
+}
+fclose($resourceHook);
 echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE,
-    'cases' => $cases, 'boolean_aliases' => $aliases], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";
+    'cases' => $cases, 'boolean_aliases' => $aliases, 'unusual_cases' => $unusualCases], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";

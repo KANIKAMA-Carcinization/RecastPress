@@ -27,6 +27,9 @@ CASE_NAMES = {f'{label}_{mode}' for label in ('float_5_7', 'null', 'numeric_stri
               for mode in ('all_only', 'named')}
 BOOLEAN_ALIAS_NAMES = {'false_register_zero_dispatch', 'zero_register_false_dispatch',
                        'true_register_one_dispatch', 'one_register_true_dispatch'}
+UNUSUAL_CASE_NAMES = {f'{label}_{mode}' for label in
+                      ('array', 'ordinary_object', 'stringable_object', 'resource')
+                      for mode in ('all_only', 'named')}
 
 
 def digest(path: Path) -> str:
@@ -108,6 +111,61 @@ def run_target():
         sent = case['dispatched_hook']
         if events[0].get('hook_arg') != sent or events[0].get('current_action') != sent:
             raise ValueError('Action boolean alias did not preserve dispatched type in all/current hook')
+    unusual = observed.get('unusual_cases')
+    if not isinstance(unusual, dict) or set(unusual) != UNUSUAL_CASE_NAMES:
+        raise ValueError('Action unusual hook-key case inventory differs')
+    for name, case in unusual.items():
+        if case.get('label') != name or case.get('named_listener') != name.endswith('_named'):
+            raise ValueError('Action unusual hook-key case identity differs')
+        warnings, events = case.get('warnings'), case.get('events')
+        if not isinstance(warnings, list) or not isinstance(events, list):
+            raise ValueError('Action unusual hook-key trace shape differs')
+        if [warning.get('index') for warning in warnings] != list(range(1, len(warnings) + 1)):
+            raise ValueError('Action unusual hook-key warning sequence differs')
+        if any(type(w.get('severity')) is not int or not isinstance(w.get('message_hex'), str)
+               for w in warnings):
+            raise ValueError('Action unusual hook-key diagnostic shape differs')
+        kind = name.removesuffix('_named').removesuffix('_all_only')
+        expected_hook_type = 'resource' if kind == 'resource' else ('array' if kind == 'array' else 'object')
+        if case.get('hook', {}).get('type') != expected_hook_type:
+            raise ValueError('Action unusual hook-key value type differs')
+        after = case.get('after', {})
+        if after.get('stack') != [] or after.get('doing_action') is not False or after.get('current_action') != {'type': 'bool', 'value': False}:
+            raise ValueError('Action unusual hook-key dispatcher did not unwind')
+        if kind == 'resource':
+            if case.get('registration_throwable') is not None or case.get('dispatch_throwable') is not None:
+                raise ValueError('PHP resource hook key unexpectedly threw')
+            event_names = [event.get('event') for event in events]
+            if event_names.count('all') != 1 or event_names.count('named') != int(name.endswith('_named')):
+                raise ValueError('PHP resource hook callbacks differ')
+            if not warnings or any(w.get('severity') != 2 for w in warnings):
+                raise ValueError('PHP resource hook key did not emit only expected warnings')
+            if any(b'used as offset, casting to integer' not in bytes.fromhex(w['message_hex'])
+                   for w in warnings):
+                raise ValueError('PHP resource hook key warning text differs')
+            entries = after.get('counter_entries')
+            if not isinstance(entries, list) or len(entries) != 1 or entries[0].get('key', {}).get('type') != 'int':
+                raise ValueError('PHP resource hook counter key was not converted to integer')
+            did = after.get('did_action', {}).get('value')
+            if did != {'type': 'int', 'value': '1'}:
+                raise ValueError('PHP resource hook action counter differs')
+        else:
+            expected_stage = 'named_registration' if name.endswith('_named') else 'dispatch'
+            thrown = case.get('registration_throwable') if expected_stage == 'named_registration' else case.get('dispatch_throwable')
+            if not isinstance(thrown, dict) or thrown.get('class') != 'TypeError':
+                raise ValueError('Illegal PHP hook-key type did not throw TypeError at expected stage')
+            expected_error = ('Cannot access offset of type array in isset or empty' if kind == 'array'
+                              else 'Cannot access offset of type stdClass in isset or empty'
+                              if kind == 'ordinary_object'
+                              else 'Cannot access offset of type ActionHookKeyStringable in isset or empty')
+            if bytes.fromhex(thrown.get('message_hex', '')).decode('utf-8') != expected_error:
+                raise ValueError('Illegal PHP hook-key TypeError message differs')
+            if (case.get('dispatch_throwable') is not None) != (expected_stage == 'dispatch'):
+                raise ValueError('Illegal PHP hook-key dispatch cut point differs')
+            if any(event.get('event') in ('all', 'named') for event in events):
+                raise ValueError('Illegal PHP hook-key unexpectedly invoked callbacks')
+            if after.get('counter_entries') != [] or after.get('did_action', {}).get('throwable', {}).get('class') != 'TypeError':
+                raise ValueError('Illegal PHP hook-key changed action counter or lookup behavior')
     return child, observed
 
 
