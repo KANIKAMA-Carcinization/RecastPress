@@ -2,9 +2,9 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-14T00:37:06+00:00",
+  "recorded_at_utc": "2026-11-14T01:14:08+00:00",
   "source_sha256": {
-    "experiments/php-compat-v06-probe/run_check.py": "542f2d2f0772c5f81702ea504f11619cb457d5455377280a7dda07275957f70f",
+    "experiments/php-compat-v06-probe/run_check.py": "a12ba28495eaaf87884bfb18066dbf4e3b3ca10fef757529e28ee03403b41d5d",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
@@ -23,15 +23,17 @@
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "ac2d5885174898c013f494f92f98ead15be2d9ed0d5107bcde27b564522cfca7",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "01e4adab56884ccba3cb1dc0b0d905677a2acb302b1dd913662292dcf35af636",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "fe0b6e2ec6bc0d77d4539ef4bd0a4b92cbc847ea18024c56fd29f256224037cf",
+    "experiments/php-compat-v06-probe/callable_contract.py": "ddc5d6be3a97847140135555e337d2477603fe9d7adb6d3ba5c537ee552b7095",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "1cde3008d48f9aba3796ad0721e211455970d822c8941bd56bd41a0302b8f510",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ac064e81053447a775a09301618026c8095579699918f5a4a9020a20e7664479",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "a36f8e3d11cae1de7e91225dbe33415fee005605d686deeb3e5c80fbd228bc53",
+    "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
+    "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "bf2d346a07e086a6a634731203eb8c29be49495a649f76b70da5cfa2712b8a00",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "2518dab336ea6508b5d0e4c7086030aaef83f228bea680c096aace6c28097462",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -47,7 +49,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "bca1546523fd3802cf162fa0986c50c65634605fd0e6818d156f38d38e6a78d0",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "565aec0e20294abab93011d9659e5c332bf72298a0adcc18d53375823da8d4d1",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
@@ -212,7 +214,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "ac2aad0c517a78462799d0dff2c24efba1eb6f10af32686e74ba408cb8e55357",
+  "adapter_binary_sha256": "0718fb89f494e0c7233de1902b3428a6c7c33572bac1bc123204e3ac04dab0a2",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -250,8 +252,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 17472,
-      "rust": 12296
+      "php": 24872,
+      "rust": 10556
     },
     "returncodes": {
       "php": 0,
@@ -308,12 +310,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-9dd462522cd145979d3fba8d8031e749-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-9dd462522cd145979d3fba8d8031e749-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-9dd462522cd145979d3fba8d8031e749-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-9dd462522cd145979d3fba8d8031e749-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-b09f69d6147b4850ba535d37d3953162-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -333,8 +335,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 23540,
-      "rust": 27444
+      "php": 22900,
+      "rust": 15828
     },
     "returncodes": {
       "php": 0,
@@ -397,12 +399,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-28215814b3a84cacb6d59541f067f226-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-28215814b3a84cacb6d59541f067f226-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-28215814b3a84cacb6d59541f067f226-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-28215814b3a84cacb6d59541f067f226-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-a478b007afa24b66af9879c93bcffeb0-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -422,8 +424,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 25904,
-      "rust": 10320
+      "php": 22948,
+      "rust": 684
     },
     "returncodes": {
       "php": 0,
@@ -571,12 +573,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-50988fbca9f143418efd3a13093792e7-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-50988fbca9f143418efd3a13093792e7-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-50988fbca9f143418efd3a13093792e7-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-50988fbca9f143418efd3a13093792e7-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-444442cebc59442ab219659b4baa8886-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -597,8 +599,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 28328,
-        "rust": 17168
+        "php": 21860,
+        "rust": 21404
       },
       "returncodes": {
         "php": 0,
@@ -673,18 +675,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-c17315601b264324a897297775cebd78-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-c17315601b264324a897297775cebd78-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-c17315601b264324a897297775cebd78-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-c17315601b264324a897297775cebd78-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-2904e0c04af74a1cbf37a9da99787308-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "d3fc4c3139f4537ebaf598043322457fe44f2ec1ef1499f36bc59f153f331690",
+          "stdout_sha256": "150766c7043c24f5812504b79143167c06e0fce0fb08b86ab539fd391189f599",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -698,8 +700,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 19376,
-        "rust": 24920
+        "php": 25380,
+        "rust": 25552
       },
       "returncodes": {
         "php": 0,
@@ -777,18 +779,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f694911f9a144b51a15a4e5f50e43602-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f694911f9a144b51a15a4e5f50e43602-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f694911f9a144b51a15a4e5f50e43602-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f694911f9a144b51a15a4e5f50e43602-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-f4788a3cc23e4569bbe83fd110b13223-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "e8daca745a95acfdf45320d89a33ad1bd35c66814103a31636bb1ee64f5fd216",
+          "stdout_sha256": "397a2ca34c39fa22f04df17b792864f2a26ed88eea90d250d5c333e1e446f304",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -803,8 +805,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 17188,
-      "rust": 1840
+      "php": 25956,
+      "rust": 22608
     },
     "returncodes": {
       "php": 0,
@@ -889,24 +891,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-fb715fecc4e2432989a555332af05c94-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-fb715fecc4e2432989a555332af05c94-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-fb715fecc4e2432989a555332af05c94-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-fb715fecc4e2432989a555332af05c94-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-b77c43ae3fc8491b9ff2959e94e62703-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "f89610868e8d4e06382c6203f183d73bf2c5ce460da40947911f2fbe0888f469",
+        "stdout_sha256": "a4ed8a2513f6fed4fb350c873e2c0b7d82c7bbdea2f579edaaf8203dab625c48",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "376583b9cf0272f005f28dfc46782173ea7e5e5a0a44c5edc229381b16f474c7",
+        "stdout_sha256": "368404688c05cefe0235c43186d3e78a43e2464013ee3561e9b393639de6c05d",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -915,8 +917,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 3272,
-        "rust": 27280
+        "php": 3948,
+        "rust": 11556
       },
       "returncodes": {
         "php": 0,
@@ -1038,24 +1040,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-4c52c6b158534289b1d5db0c01317b02-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-4c52c6b158534289b1d5db0c01317b02-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-4c52c6b158534289b1d5db0c01317b02-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-4c52c6b158534289b1d5db0c01317b02-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-9b78192fc5e74bdabc7b0caf2bcd073b-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "bb5e369d494953b2e9bc1781ef575e7f008463268909ba16fecfdae0a1d0a923",
+          "stdout_sha256": "e6be363f0f9cef92a84b57f0642ef1376e9ff3630399ca85f58fb40034bfb46d",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "13b75aae71502c0df356ba7b969cc75250131cff629931a2136cb9bc15f1cc55",
+          "stdout_sha256": "7c7b38910f0e6de15f49db49f94a9eca3179cf55c387f831be37f77a2ce9fc30",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1083,8 +1085,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 26288,
-        "rust": 13564
+        "php": 24192,
+        "rust": 7944
       },
       "returncodes": {
         "php": 0,
@@ -1108,7 +1110,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "b791b7d8a90bc8ec"
+              "token": "22d003014d0ade40"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1171,7 +1173,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "b791b7d8a90bc8ec"
+              "token": "22d003014d0ade40"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1245,26 +1247,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-aa694d2295f2430a96b226d1e3ff4a9d-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-aa694d2295f2430a96b226d1e3ff4a9d-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-aa694d2295f2430a96b226d1e3ff4a9d-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-aa694d2295f2430a96b226d1e3ff4a9d-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c585ba4623b3422182e9f3ec387d5ce7-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "78ef24f598f0dddb701fe70770aff6825b300141f6f5e97f1885bcb274d24b81",
+          "stdout_sha256": "e007787a1c1313098569f5d996ec24cc6fd00f19781e2c9969e43474072b63fe",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "c5153c97cf17239cb5207d210a736d1f43efac8f5a614a4822e0db5bd939d3d3",
+          "stdout_sha256": "e88507644a812cbd0e56b7ea421e832587b37d24a4bdf152ba01c5bc5865ab8e",
           "stderr_bytes": 1817,
-          "stderr_sha256": "c74ffdb4f954b409fa9e01abe74301dd8a8298f1effdb2cae09bb4b6024dd2d7"
+          "stderr_sha256": "a09b51c3b03fc59d6c2199a08f5fe78e6a3dc03947cb0ef012665c08f7caf51b"
         }
       },
       "hook_transcript_rejections": [
@@ -1291,8 +1293,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 27920,
-      "rust": 10572
+      "php": 12652,
+      "rust": 4628
     },
     "returncodes": {
       "php": 0,
@@ -1302,7 +1304,7 @@
     "rust_marker": "V06_CALLABLES_OK continuation_peer=true",
     "frames_from_php": 8788,
     "frames_from_rust": 8787,
-    "relayed_bytes": 5641225,
+    "relayed_bytes": 5648161,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -14713,24 +14715,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-2b81b114e59041a6bb8eea4bc5485168-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-2b81b114e59041a6bb8eea4bc5485168-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-2b81b114e59041a6bb8eea4bc5485168-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-2b81b114e59041a6bb8eea4bc5485168-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-aa52490d96c14098804e122f750ea3b6-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "26da4cc8c4f3875c8cbc352f4944ff0f01b99233dfe47486264d1b2ea6c8c599",
+        "stdout_sha256": "b0ab803592bd159ed255c81b709306c3485c8257baa08b8f49063c2aeb2ea1a9",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 2763476,
-        "stdout_sha256": "29d3c70004105b5b378f1113f91a376ee3de7f05d269d0cb7a1ec6b43c8c5c7f",
+        "stdout_bytes": 2770412,
+        "stdout_sha256": "c60050503fba9655bdb33641acdbb0d824c3b039da522ecef32fc8e0cc321e50",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14782,8 +14784,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 20748,
-      "rust": 23184
+      "php": 18808,
+      "rust": 24300
     },
     "returncodes": {
       "php": 0,
@@ -14791,9 +14793,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 1881,
-    "frames_from_rust": 1880,
-    "relayed_bytes": 1119501,
+    "frames_from_php": 2238,
+    "frames_from_rust": 2237,
+    "relayed_bytes": 1379184,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -15659,6 +15661,274 @@
               "scalar_cell": "nested",
               "outer_count": 1,
               "nested_count": 1
+            }
+          },
+          "singleton_object_unwrap": {
+            "zero_key_singleton": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d7a65726f2d6b65792d73696e676c65746f6e"
+                    },
+                    {
+                      "type": "array",
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-zero-key-singleton",
+                            "same_object": true
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "object",
+                      "class": "stdClass",
+                      "marker": "object-zero-key-singleton",
+                      "same_object": true
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
+            },
+            "nonzero_key_singleton": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6e6f6e7a65726f2d6b65792d73696e676c65746f6e"
+                    },
+                    {
+                      "type": "array",
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "1",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-nonzero-key-singleton",
+                            "same_object": true
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "array",
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "1",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-nonzero-key-singleton",
+                            "same_object": true
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
+            },
+            "multi_element": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6d756c74692d656c656d656e74"
+                    },
+                    {
+                      "type": "array",
+                      "count": 2,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-multi-element",
+                            "same_object": true
+                          }
+                        },
+                        {
+                          "key": "1",
+                          "value": {
+                            "type": "string",
+                            "hex": "7461696c"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "array",
+                      "count": 2,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-multi-element",
+                            "same_object": true
+                          }
+                        },
+                        {
+                          "key": "1",
+                          "value": {
+                            "type": "string",
+                            "hex": "7461696c"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
+            },
+            "direct_object": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6469726563742d6f626a656374"
+                    },
+                    {
+                      "type": "object",
+                      "class": "stdClass",
+                      "marker": "object-direct-object",
+                      "same_object": true
+                    }
+                  ]
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "object",
+                      "class": "stdClass",
+                      "marker": "object-direct-object",
+                      "same_object": true
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
+            },
+            "extra_args": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d65787472612d61726773"
+                    },
+                    {
+                      "type": "array",
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-extra-args",
+                            "same_object": true
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7461696c"
+                    }
+                  ]
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "object",
+                      "class": "stdClass",
+                      "marker": "object-extra-args",
+                      "same_object": true
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7461696c"
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
+            },
+            "missing_named_listener": {
+              "events": [
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6d697373696e672d6e616d65642d6c697374656e6572"
+                    },
+                    {
+                      "type": "array",
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "type": "object",
+                            "class": "stdClass",
+                            "marker": "object-missing-named-listener",
+                            "same_object": true
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "did_action": 1,
+              "current_filter_stack": []
             }
           },
           "no_listener_count": {
@@ -17079,19 +17349,19 @@
       }
     },
     "expected_frame_counts": {
-      "php": 1881,
-      "rust": 1880
+      "php": 2238,
+      "rust": 2237
     },
     "action_result": {
       "api_counts": {
-        "add_action": 41,
+        "add_action": 52,
         "add_filter": 0,
         "apply_filters": 1,
         "current_action": 91,
         "current_filter": 0,
-        "did_action": 134,
+        "did_action": 140,
         "did_filter": 7,
-        "do_action": 39,
+        "do_action": 45,
         "doing_action": 102,
         "doing_filter": 0,
         "has_action": 6,
@@ -17099,13 +17369,13 @@
         "remove_action": 14,
         "remove_filter": 0
       },
-      "argument_release_effects": 344,
-      "boundary_effects": 915,
-      "callback_invocations": 142,
+      "argument_release_effects": 367,
+      "boundary_effects": 1021,
+      "callback_invocations": 336,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 1881,
-      "frames_from_rust": 1880,
+      "frames_from_php": 2238,
+      "frames_from_rust": 2237,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -19305,6 +19575,274 @@
             "before": 0
           },
           "process_warnings": [],
+          "singleton_object_unwrap": {
+            "direct_object": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6469726563742d6f626a656374",
+                      "type": "string"
+                    },
+                    {
+                      "class": "stdClass",
+                      "marker": "object-direct-object",
+                      "same_object": true,
+                      "type": "object"
+                    }
+                  ],
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "class": "stdClass",
+                      "marker": "object-direct-object",
+                      "same_object": true,
+                      "type": "object"
+                    }
+                  ],
+                  "event": "named"
+                }
+              ]
+            },
+            "extra_args": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d65787472612d61726773",
+                      "type": "string"
+                    },
+                    {
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-extra-args",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    },
+                    {
+                      "hex": "7461696c",
+                      "type": "string"
+                    }
+                  ],
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "class": "stdClass",
+                      "marker": "object-extra-args",
+                      "same_object": true,
+                      "type": "object"
+                    },
+                    {
+                      "hex": "7461696c",
+                      "type": "string"
+                    }
+                  ],
+                  "event": "named"
+                }
+              ]
+            },
+            "missing_named_listener": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6d697373696e672d6e616d65642d6c697374656e6572",
+                      "type": "string"
+                    },
+                    {
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-missing-named-listener",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "all"
+                }
+              ]
+            },
+            "multi_element": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6d756c74692d656c656d656e74",
+                      "type": "string"
+                    },
+                    {
+                      "count": 2,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-multi-element",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        },
+                        {
+                          "key": "1",
+                          "value": {
+                            "hex": "7461696c",
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "count": 2,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-multi-element",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        },
+                        {
+                          "key": "1",
+                          "value": {
+                            "hex": "7461696c",
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "named"
+                }
+              ]
+            },
+            "nonzero_key_singleton": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d6e6f6e7a65726f2d6b65792d73696e676c65746f6e",
+                      "type": "string"
+                    },
+                    {
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "1",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-nonzero-key-singleton",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "1",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-nonzero-key-singleton",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "named"
+                }
+              ]
+            },
+            "zero_key_singleton": {
+              "current_filter_stack": [],
+              "did_action": 1,
+              "events": [
+                {
+                  "args": [
+                    {
+                      "hex": "73696e676c65746f6e2d6f626a6563742d7a65726f2d6b65792d73696e676c65746f6e",
+                      "type": "string"
+                    },
+                    {
+                      "count": 1,
+                      "items": [
+                        {
+                          "key": "0",
+                          "value": {
+                            "class": "stdClass",
+                            "marker": "object-zero-key-singleton",
+                            "same_object": true,
+                            "type": "object"
+                          }
+                        }
+                      ],
+                      "type": "array"
+                    }
+                  ],
+                  "event": "all"
+                },
+                {
+                  "args": [
+                    {
+                      "class": "stdClass",
+                      "marker": "object-zero-key-singleton",
+                      "same_object": true,
+                      "type": "object"
+                    }
+                  ],
+                  "event": "named"
+                }
+              ]
+            }
+          },
           "throw_all": {
             "after_catch": {
               "current_action": "callable-action-throw-all",
@@ -19407,32 +19945,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 41,
+      "release_effects": 52,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-d1821b91e4324fb5804e15a2c5fd207f-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-d1821b91e4324fb5804e15a2c5fd207f-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-d1821b91e4324fb5804e15a2c5fd207f-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-d1821b91e4324fb5804e15a2c5fd207f-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-7759875bb68444f9ad35c14aec573711-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 531733,
-        "stdout_sha256": "328afc51b69ffd7dfd0eab342baaeb3f436eea3c177409fa3465c99dbcbdd764",
+        "stdout_bytes": 618087,
+        "stdout_sha256": "7d0043880122604f325c7130ff22813b8690d05d96ff8218106eec13e19ee4e4",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 587768,
-        "stdout_sha256": "3863828784ddf3aa2207b992b35b38f326db69d925fd2f810d257a074f8d0467",
-        "stderr_bytes": 33759,
-        "stderr_sha256": "0250a11d78224d658b9fcb009e88f422f56d488c9fbc59f7f3929346c2bce2a8"
+        "stdout_bytes": 761097,
+        "stdout_sha256": "8fddfb093832d1e8ec7c8f69b32c598797b100d85dd58300789f1ef1f0d43272",
+        "stderr_bytes": 36648,
+        "stderr_sha256": "ca0aaf24d539718918b3af647a681c8ea96b94f99c94d5057d965a43dcc9fa1d"
       }
     },
     "action_transcript_rejections": [
@@ -19461,7 +19999,8 @@
       "wrong_action_counter_cow_result",
       "wrong_action_counter_cow_read",
       "wrong_heap_action_callcore_marker",
-      "wrong_heap_action_callback_marker"
+      "wrong_heap_action_callback_marker",
+      "wrong_action_dispatch_context"
     ]
   },
   "negative_vectors_rejected_by_rust": [
@@ -19489,72 +20028,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 28368,
+        "pid": 13716,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 21632,
+        "pid": 19196,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 28496,
+        "pid": 27580,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 7932,
+        "pid": 14464,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 24844,
+        "pid": 12592,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 4724,
+        "pid": 21964,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 17168,
+        "pid": 20824,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 24196,
+        "pid": 27412,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 22380,
+        "pid": 25044,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25108,
+        "pid": 25128,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28448,
+        "pid": 23468,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 26144,
+        "pid": 9068,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 9948,
+        "pid": 7324,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 15324,
+        "pid": 9916,
         "returncode": 0,
         "reaped": true
       }

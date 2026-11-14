@@ -2295,10 +2295,14 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         PhpCallMode::Array => "array",
                         PhpCallMode::All => "all",
                     };
+                    let action_dispatch = self
+                        .api_action_argument_counts
+                        .last()
+                        .is_some_and(Option::is_some);
                     self.wire.send("invoke_php", Some(caller_wire), json!({
                         "operation":"callable","effect_id":effect_wire,"handle":descriptor(invocation.handle),
                         "hook":scalar_pod(&invocation.hook,"callback_hook")?,
-                        "priority":php_key_json(&invocation.priority),"call_mode":call_mode,"args":args,
+                        "priority":php_key_json(&invocation.priority),"call_mode":call_mode,"action_dispatch":action_dispatch,"args":args,
                     }))?;
                     let completion = self.drive_effect(
                         &effect_wire,

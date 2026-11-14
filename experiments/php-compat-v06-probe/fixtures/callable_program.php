@@ -2950,6 +2950,80 @@ function callable_program_action_heap_argument_continuation(): array
     ];
 }
 
+function callable_program_action_singleton_object_cases(): array
+{
+    $view = static function ($value, object $expected) use (&$view): array {
+        if (is_object($value)) {
+            return ['type' => 'object', 'class' => get_class($value), 'marker' => $value->marker,
+                'same_object' => $value === $expected];
+        }
+        if (is_array($value)) {
+            $items = [];
+            foreach ($value as $key => $item) {
+                $items[] = ['key' => (string) $key, 'value' => $view($item, $expected)];
+            }
+            return ['type' => 'array', 'count' => count($value), 'items' => $items];
+        }
+        if (is_string($value)) {
+            return ['type' => 'string', 'hex' => bin2hex($value)];
+        }
+        return ['type' => get_debug_type($value)];
+    };
+    $definitions = [
+        'zero_key_singleton' => ['zero-key-singleton', [0 => 'object']],
+        'nonzero_key_singleton' => ['nonzero-key-singleton', [1 => 'object']],
+        'multi_element' => ['multi-element', [0 => 'object', 1 => 'tail']],
+        'direct_object' => ['direct-object', 'object'],
+        'extra_args' => ['extra-args', [[0 => 'object'], 'tail']],
+        'missing_named_listener' => ['missing-named-listener', [0 => 'object']],
+    ];
+    $cases = [];
+    foreach ($definitions as $case => [$label, $shape]) {
+        $GLOBALS['wp_filter'] = [];
+        $GLOBALS['wp_actions'] = [];
+        $GLOBALS['wp_filters'] = [];
+        $GLOBALS['wp_current_filter'] = [];
+        $hook = 'singleton-object-' . $label;
+        $object = (object) ['marker' => 'object-' . $label];
+        $events = [];
+        add_action('all', static function (...$args) use (&$events, $hook, $object, $view): void {
+            if (($args[0] ?? null) === $hook) {
+                $events[] = ['event' => 'all', 'args' => array_map(
+                    static fn ($value): array => $view($value, $object), $args,
+                )];
+            }
+        }, 10, 99);
+        if ($case !== 'missing_named_listener') {
+            add_action($hook, static function (...$args) use (&$events, $object, $view): void {
+                $events[] = ['event' => 'named', 'args' => array_map(
+                    static fn ($value): array => $view($value, $object), $args,
+                )];
+            }, 10, 99);
+        }
+        $convert = null;
+        $convert = static function ($value) use (&$convert, $object) {
+            if ($value === 'object') { return $object; }
+            if (is_array($value)) { foreach ($value as $key => $entry) { $value[$key] = $convert($entry); } }
+            return $value;
+        };
+        $args = $convert($shape);
+        if ($case === 'direct_object') {
+            do_action($hook, $object);
+        } elseif ($case === 'extra_args') {
+            do_action($hook, $args[0], $args[1]);
+        } else {
+            do_action($hook, $args);
+        }
+        $cases[$case] = ['events' => $events, 'did_action' => did_action($hook),
+            'current_filter_stack' => $GLOBALS['wp_current_filter']];
+    }
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    return $cases;
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
@@ -2958,6 +3032,7 @@ function callable_program_action_api_cases(): array
     $GLOBALS['wp_current_filter'] = [];
 
     $heapArgumentContinuation = callable_program_action_heap_argument_continuation();
+    $singletonObjectCases = callable_program_action_singleton_object_cases();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3272,6 +3347,7 @@ function callable_program_action_api_cases(): array
         'nested_caught_throw' => ['events' => $nestedCaughtEvents, 'do_action_return' => $nestedCaughtReturn,
             'after' => $nestedCaughtAfter],
         'heap_argument_continuation' => $heapArgumentContinuation,
+        'singleton_object_unwrap' => $singletonObjectCases,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,

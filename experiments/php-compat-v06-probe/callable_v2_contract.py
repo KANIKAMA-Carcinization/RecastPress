@@ -6,6 +6,7 @@ import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
     ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ACTION_HEAP_ARGUMENT_EXPECTATIONS,
+    ACTION_SINGLETON_OBJECT_EXPECTATIONS,
     ALL_APIS, EXPECTED_OBSERVATION,
     ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
     validate_key, validate_pod)
@@ -3998,6 +3999,7 @@ EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
 EXPECTED_ACTION_API['global_state'] = ACTION_GLOBAL_STATE_EXPECTATIONS
 EXPECTED_ACTION_API['counter_cow'] = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
 EXPECTED_ACTION_API['heap_argument_continuation'] = json.loads(json.dumps(ACTION_HEAP_ARGUMENT_EXPECTATIONS))
+EXPECTED_ACTION_API['singleton_object_unwrap'] = json.loads(json.dumps(ACTION_SINGLETON_OBJECT_EXPECTATIONS))
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode
@@ -4324,6 +4326,10 @@ def action_self_check():
     changed = json.loads(json.dumps(sample_action_api))
     changed['heap_argument_continuation']['after']['object_marker'] = 'outer'
     mutations.append(('heap action object mutation after nested dispatch', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['singleton_object_unwrap']['zero_key_singleton']['events'][1]['args'][0] = {
+        'type': 'array', 'count': 1, 'items': []}
+    mutations.append(('action singleton object named callback unwrapping', changed))
     changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['int']['do_action'][0]['initial']['value'] = {
         'type': 'string', 'hex': '37'}
@@ -4675,12 +4681,16 @@ def validate_transcript(streams, result):
                         raise ValueError('strict hook membership was key-coerced')
                 observed['boundary_effects'] += 1
         elif operation == 'callable':
-            exact(payload, ('operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'args'), 'callable InvokePhp')
+            exact(payload, ('operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'args'), 'callable InvokePhp')
             ident = require_live(payload['handle'], 'callable')
             registration = registrations[ident]
             scalar(payload['hook']); validate_key(payload['priority'])
+            if type(payload['action_dispatch']) is not bool:
+                raise ValueError('callable Action dispatch context type differs')
             if context is None or context['name'] not in ('apply_filters', 'do_action') or context['hook'] is None:
                 raise ValueError('callable outside a typed dispatch')
+            _require_exact(payload['action_dispatch'], context['name'] == 'do_action',
+                           'invoked Action dispatch context')
             _require_exact(payload['hook'], context['hook']['original'], 'invoked original hook')
             _require_exact(payload['priority'], registration['priority']['key'], 'invoked priority key')
             mode, accepted = payload['call_mode'], registration['accepted']
@@ -5045,6 +5055,7 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_action_counter_cow_live', 'wrong_action_counter_cow_warning_order',
     'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
     'wrong_heap_action_callcore_marker', 'wrong_heap_action_callback_marker',
+    'wrong_action_dispatch_context',
 )
 
 
@@ -5238,6 +5249,12 @@ def reject_action_transcripts(streams, result):
                           if isinstance(arg, dict) and arg.get('type') == 'handle')
             token = marker['handle']['token']
             marker['handle']['token'] = ('0' if token[0] != '0' else '1') + token[1:]
+        elif name == 'wrong_action_dispatch_context':
+            index = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                           and item.get('payload', {}).get('operation') == 'callable'
+                           and item.get('payload', {}).get('call_mode') == 'array'
+                           and item.get('payload', {}).get('action_dispatch') is True)
+            frames['rust'][index]['payload']['action_dispatch'] = False
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

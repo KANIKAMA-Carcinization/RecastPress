@@ -755,7 +755,7 @@ final class CallableApiAdapter
         if ($operation === 'callable') {
             expect_payload_keys(
                 $frame,
-                ['operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'args'],
+                ['operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'args'],
                 'callable_invoke',
             );
             $effectId = $payload['effect_id'];
@@ -768,6 +768,7 @@ final class CallableApiAdapter
                 if (!is_array($payload['hook'])
                     || !is_array($payload['priority'])
                     || !is_string($payload['call_mode'])
+                    || !is_bool($payload['action_dispatch'])
                 ) {
                     throw new RuntimeException('callable_invoke_metadata');
                 }
@@ -785,6 +786,20 @@ final class CallableApiAdapter
                         }
                         $value = call_user_func($callable);
                     } elseif ($payload['call_mode'] === 'array' || $payload['call_mode'] === 'all') {
+                        // WordPress do_action() exposes the original variadic arguments
+                        // to `all`, then unwraps the PHP4-style array(&$this) form for
+                        // named listeners. Keep this at the PHP call boundary so the
+                        // Argument handle and underlying object identity stay intact.
+                        if ($payload['action_dispatch']
+                            && $payload['call_mode'] === 'array'
+                            && isset($arguments[0])
+                            && is_array($arguments[0])
+                            && count($arguments[0]) === 1
+                            && isset($arguments[0][0])
+                            && is_object($arguments[0][0])
+                        ) {
+                            $arguments[0] = $arguments[0][0];
+                        }
                         if ($payload['call_mode'] === 'all'
                             && ($arguments === [] || self::encodePod($arguments[0]) !== self::encodePod($hookName))
                         ) {
