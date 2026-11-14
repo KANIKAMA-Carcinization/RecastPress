@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-action-hook-key-poc.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-14T00:57:34.466810+00:00",
+  "observed_at_utc": "2026-11-14T02:29:41.899783+00:00",
   "wordpress_version": "7.1.3",
   "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "php_version": "8.5.12",
@@ -12,8 +12,8 @@
     ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "20ff8ddea6a720e9e49d9b6567cde78eb8da32090906e3de7248f2801cc8cc35",
-    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "aec3cf5b4b1ad28ef09a88a87e315a946d4d785f03e3c39dc2d7b39fc655438f",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "11824c7e7692f840fa51b3441cb4dd4d6d194a895b85d5371726ff5191e5f9ca",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "6d99b70661bc01036e5a69c8efa86ec59832095822a5db74acbd2b7a6968b819",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "source_sha256_after": {
@@ -22,23 +22,23 @@
     ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "20ff8ddea6a720e9e49d9b6567cde78eb8da32090906e3de7248f2801cc8cc35",
-    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "aec3cf5b4b1ad28ef09a88a87e315a946d4d785f03e3c39dc2d7b39fc655438f",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "11824c7e7692f840fa51b3441cb4dd4d6d194a895b85d5371726ff5191e5f9ca",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "6d99b70661bc01036e5a69c8efa86ec59832095822a5db74acbd2b7a6968b819",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 668,
+    "pid": 25048,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "experiments/php-compat-v06-probe/evidence/action-hook-key-captures/wp-action-hook-key-20261114T005734.455951Z-stdout.bin",
-      "bytes": 26535,
-      "sha256": "91950202090f6b771a5d5ddacadc17f8d933f15c68472a9f64ab6b73689241dc"
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-key-captures/wp-action-hook-key-20261114T022941.886412Z-stdout.bin",
+      "bytes": 32536,
+      "sha256": "6bbc987b755b03ac82897ea35f8ec8fcfcad693ff4221b8e94ea4568a9c85af6"
     },
     "stderr": {
-      "path": "experiments/php-compat-v06-probe/evidence/action-hook-key-captures/wp-action-hook-key-20261114T005734.455951Z-stderr.bin",
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-key-captures/wp-action-hook-key-20261114T022941.886412Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -1545,8 +1545,560 @@
           "doing_action": false,
           "stack": []
         }
+      },
+      "boolean_false_all_only": {
+        "label": "boolean_false_all_only",
+        "hook": {
+          "type": "bool",
+          "value": false
+        },
+        "named_listener": false,
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "bool",
+                "value": false
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": false
+            },
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          }
+        ],
+        "warnings": [],
+        "throwable": null,
+        "after": {
+          "did_action": {
+            "type": "int",
+            "value": "1"
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "boolean_false_named": {
+        "label": "boolean_false_named",
+        "hook": {
+          "type": "bool",
+          "value": false
+        },
+        "named_listener": true,
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "bool",
+                "value": false
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": false
+            },
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": false
+            },
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          }
+        ],
+        "warnings": [],
+        "throwable": null,
+        "after": {
+          "did_action": {
+            "type": "int",
+            "value": "1"
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "boolean_true_all_only": {
+        "label": "boolean_true_all_only",
+        "hook": {
+          "type": "bool",
+          "value": true
+        },
+        "named_listener": false,
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "bool",
+                "value": true
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": true
+            },
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          }
+        ],
+        "warnings": [],
+        "throwable": null,
+        "after": {
+          "did_action": {
+            "type": "int",
+            "value": "1"
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "boolean_true_named": {
+        "label": "boolean_true_named",
+        "hook": {
+          "type": "bool",
+          "value": true
+        },
+        "named_listener": true,
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              {
+                "type": "bool",
+                "value": true
+              },
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": true
+            },
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          },
+          {
+            "event": "named",
+            "args": [
+              {
+                "type": "string",
+                "hex": "7061796c6f6164"
+              }
+            ],
+            "hook": {
+              "type": "bool",
+              "value": true
+            },
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "doing_action": true,
+            "did_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "counter": {
+              "type": "int",
+              "value": "1"
+            },
+            "warning_count": 0
+          }
+        ],
+        "warnings": [],
+        "throwable": null,
+        "after": {
+          "did_action": {
+            "type": "int",
+            "value": "1"
+          },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      }
+    },
+    "boolean_aliases": {
+      "false_register_zero_dispatch": {
+        "label": "false_register_zero_dispatch",
+        "registered_hook": {
+          "type": "bool",
+          "value": false
+        },
+        "dispatched_hook": {
+          "type": "int",
+          "value": "0"
+        },
+        "before": {
+          "has_dispatched": true,
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "int",
+              "value": "0"
+            },
+            "current_action": {
+              "type": "int",
+              "value": "0"
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "0"
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "int",
+              "value": "0"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": false,
+          "has_dispatched": false,
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "zero_register_false_dispatch": {
+        "label": "zero_register_false_dispatch",
+        "registered_hook": {
+          "type": "int",
+          "value": "0"
+        },
+        "dispatched_hook": {
+          "type": "bool",
+          "value": false
+        },
+        "before": {
+          "has_dispatched": true,
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "bool",
+              "value": false
+            },
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": false
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": false
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": false,
+          "has_dispatched": false,
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "true_register_one_dispatch": {
+        "label": "true_register_one_dispatch",
+        "registered_hook": {
+          "type": "bool",
+          "value": true
+        },
+        "dispatched_hook": {
+          "type": "int",
+          "value": "1"
+        },
+        "before": {
+          "has_dispatched": true,
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "int",
+              "value": "1"
+            },
+            "current_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "1"
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": false,
+          "has_dispatched": false,
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "one_register_true_dispatch": {
+        "label": "one_register_true_dispatch",
+        "registered_hook": {
+          "type": "int",
+          "value": "1"
+        },
+        "dispatched_hook": {
+          "type": "bool",
+          "value": true
+        },
+        "before": {
+          "has_dispatched": true,
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "bool",
+              "value": true
+            },
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": true
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": true
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": false,
+          "has_dispatched": false,
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
       }
     }
   },
-  "scope": "Target-only native PHP/WP do_action non-string hook-key coercion, warning/callback order, counter reads and unwind. No Rust bridge or PHP-Wasm request is made."
+  "scope": "Target-only native PHP/WP do_action non-string hook-key coercion, bool/int alias lookup/removal, warning/callback order, counter reads and unwind. No Rust bridge or PHP-Wasm request is made."
 }

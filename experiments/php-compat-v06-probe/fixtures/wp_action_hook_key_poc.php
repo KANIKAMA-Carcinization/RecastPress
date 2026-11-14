@@ -91,10 +91,66 @@ foreach ([
     'null' => null,
     'numeric_string_5' => '5',
     'integer_5' => 5,
+    'boolean_false' => false,
+    'boolean_true' => true,
 ] as $label => $hook) {
     foreach ([false, true] as $named) {
         $key = $label . ($named ? '_named' : '_all_only');
         $cases[$key] = action_hook_key_run($key, $hook, $named);
     }
 }
-echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE, 'cases' => $cases], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";
+
+function action_hook_key_alias_case(string $label, $registeredHook, $dispatchedHook): array
+{
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $events = [];
+    $all = static function (...$args) use (&$events): void {
+        $events[] = ['event' => 'all', 'hook_arg' => action_hook_key_view($args[0] ?? null),
+            'current_action' => action_hook_key_view(current_action()),
+            'did_dispatched' => action_hook_key_view(did_action($args[0] ?? null)),
+            'stack' => array_map('action_hook_key_view', $GLOBALS['wp_current_filter'])];
+    };
+    $named = static function (...$args) use (&$events): void {
+        $events[] = ['event' => 'named', 'current_action' => action_hook_key_view(current_action()),
+            'stack' => array_map('action_hook_key_view', $GLOBALS['wp_current_filter'])];
+    };
+    add_action('all', $all, 1, 99);
+    add_action($registeredHook, $named, 10, 99);
+    $before = [
+        'has_dispatched' => has_action($dispatchedHook),
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+    ];
+    do_action($dispatchedHook, 'payload');
+    $duringIndependent = [
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+    ];
+    $removed = remove_action($dispatchedHook, $named, 10);
+    $after = [
+        'has_registered' => has_action($registeredHook),
+        'has_dispatched' => has_action($dispatchedHook),
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+        'current_action' => action_hook_key_view(current_action()),
+        'doing_action' => doing_action(),
+        'stack' => array_map('action_hook_key_view', $GLOBALS['wp_current_filter']),
+    ];
+    return ['label' => $label,
+        'registered_hook' => action_hook_key_view($registeredHook),
+        'dispatched_hook' => action_hook_key_view($dispatchedHook),
+        'before' => $before, 'events' => $events,
+        'after_dispatch' => $duringIndependent, 'removed_by_alias' => $removed, 'after' => $after];
+}
+
+$aliases = [
+    'false_register_zero_dispatch' => action_hook_key_alias_case('false_register_zero_dispatch', false, 0),
+    'zero_register_false_dispatch' => action_hook_key_alias_case('zero_register_false_dispatch', 0, false),
+    'true_register_one_dispatch' => action_hook_key_alias_case('true_register_one_dispatch', true, 1),
+    'one_register_true_dispatch' => action_hook_key_alias_case('one_register_true_dispatch', 1, true),
+];
+echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE,
+    'cases' => $cases, 'boolean_aliases' => $aliases], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";

@@ -23,8 +23,10 @@ WP_ARCHIVE_SHA256 = 'd2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e28
 PHP_ARCHIVE_SHA256 = '2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477'
 RECEIPT = HERE / 'evidence/wp-action-hook-key-poc-v1.json'
 CAPTURES = HERE / 'evidence/action-hook-key-captures'
-CASE_NAMES = {f'{label}_{mode}' for label in ('float_5_7', 'null', 'numeric_string_5', 'integer_5')
+CASE_NAMES = {f'{label}_{mode}' for label in ('float_5_7', 'null', 'numeric_string_5', 'integer_5', 'boolean_false', 'boolean_true')
               for mode in ('all_only', 'named')}
+BOOLEAN_ALIAS_NAMES = {'false_register_zero_dispatch', 'zero_register_false_dispatch',
+                       'true_register_one_dispatch', 'one_register_true_dispatch'}
 
 
 def digest(path: Path) -> str:
@@ -84,6 +86,28 @@ def run_target():
             raise ValueError('Action hook-key callback observation count differs')
         if case.get('after', {}).get('stack') != [] or case.get('after', {}).get('doing_action') is not False:
             raise ValueError('Action hook-key dispatcher did not unwind')
+    aliases = observed.get('boolean_aliases')
+    if not isinstance(aliases, dict) or set(aliases) != BOOLEAN_ALIAS_NAMES:
+        raise ValueError('Action boolean alias case inventory differs')
+    for name, case in aliases.items():
+        if case.get('label') != name:
+            raise ValueError('Action boolean alias identity differs')
+        events = case.get('events')
+        if not isinstance(events, list) or [e.get('event') for e in events] != ['all', 'named']:
+            raise ValueError('Action boolean alias callbacks differ')
+        if case.get('before') != {'has_dispatched': True, 'did_registered': 0, 'did_dispatched': 0}:
+            raise ValueError('Action boolean alias lookup did not share its integer key')
+        if case.get('after_dispatch') != {'did_registered': 1, 'did_dispatched': 1}:
+            raise ValueError('Action boolean alias counters did not share their integer key')
+        if case.get('removed_by_alias') is not True:
+            raise ValueError('Action boolean alias removal did not find callback')
+        if case.get('after', {}).get('has_registered') is not False or case.get('after', {}).get('has_dispatched') is not False:
+            raise ValueError('Action boolean alias removal left hook registered')
+        if case.get('after', {}).get('stack') != [] or case.get('after', {}).get('doing_action') is not False:
+            raise ValueError('Action boolean alias dispatcher did not unwind')
+        sent = case['dispatched_hook']
+        if events[0].get('hook_arg') != sent or events[0].get('current_action') != sent:
+            raise ValueError('Action boolean alias did not preserve dispatched type in all/current hook')
     return child, observed
 
 
@@ -142,7 +166,7 @@ def record() -> None:
         'php_version': '8.5.12', 'php_archive_sha256': PHP_ARCHIVE_SHA256,
         'source_sha256_before': before, 'source_sha256_after': after,
         'owned_child': native.CHILD_RUNS[-1], 'raw_capture': captures, 'oracle': observed,
-        'scope': 'Target-only native PHP/WP do_action non-string hook-key coercion, warning/callback order, counter reads and unwind. No Rust bridge or PHP-Wasm request is made.',
+        'scope': 'Target-only native PHP/WP do_action non-string hook-key coercion, bool/int alias lookup/removal, warning/callback order, counter reads and unwind. No Rust bridge or PHP-Wasm request is made.',
     }
     RECEIPT.parent.mkdir(parents=True, exist_ok=True)
     RECEIPT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
