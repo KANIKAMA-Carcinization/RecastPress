@@ -182,11 +182,31 @@ final class CallableApiAdapter
 
     public function doAction($hookName, ...$args)
     {
-        $argumentNodes = array_map(self::encodePod(...), $args);
         [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+        try {
+            foreach ($args as $index => $value) {
+                $handle = $this->registry->retainArgument($value);
+                $arguments['args'][$index] = $handle;
+                $handles[] = $handle;
+            }
+        } catch (Throwable $error) {
+            foreach ($handles as $handle) {
+                try {
+                    $this->registry->release($handle);
+                } catch (Throwable) {
+                    // Keep the original retention failure.
+                }
+            }
+            throw $error;
+        }
+
+        $argumentNodes = array_map(
+            static fn (array $handle): array => ['type' => 'handle', 'handle' => $handle],
+            $arguments['args'] ?? [],
+        );
 
         $result = $this->api('do_action', [
-            'arguments' => $arguments,
+            'arguments' => ['hook' => $arguments['hook']],
             'args' => $argumentNodes,
         ], $handles);
         array_pop($GLOBALS['wp_current_filter']);
@@ -757,8 +777,8 @@ final class CallableApiAdapter
                 }
                 $priority = self::decodePhpKey($payload['priority']);
                 $callable = $this->registry->resolve($payload['handle'], 'callable');
-                $arguments = self::decodePodList($payload['args']);
                 try {
+                    $arguments = $this->decodeCallableArguments($payload['args']);
                     if ($payload['call_mode'] === 'zero') {
                         if ($arguments !== []) {
                             throw new RuntimeException('callable_zero_args_not_empty');
@@ -1043,6 +1063,32 @@ final class CallableApiAdapter
         }
 
         return array_map(self::decodePod(...), $nodes);
+    }
+
+    private function decodeCallableArguments($nodes): array
+    {
+        if (!is_array($nodes) || !array_is_list($nodes)) {
+            throw new RuntimeException('callable_args_not_list');
+        }
+
+        $arguments = [];
+        foreach ($nodes as $node) {
+            if (is_array($node) && ($node['type'] ?? null) === 'handle') {
+                expect_payload_keys(
+                    ['payload' => $node],
+                    ['type', 'handle'],
+                    'callable_argument_handle_marker',
+                );
+                if (!is_array($node['handle'])) {
+                    throw new RuntimeException('callable_argument_handle_marker');
+                }
+                $arguments[] = $this->registry->resolve($node['handle'], 'argument');
+                continue;
+            }
+            $arguments[] = self::decodePod($node);
+        }
+
+        return $arguments;
     }
 
     private static function decodeArrayKey($node): int|string

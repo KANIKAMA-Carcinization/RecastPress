@@ -5,7 +5,8 @@ import json
 import struct
 from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACTION_COUNTER_SEED_EXPECTATIONS,
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
-    ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ALL_APIS, EXPECTED_OBSERVATION,
+    ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ACTION_HEAP_ARGUMENT_EXPECTATIONS,
+    ALL_APIS, EXPECTED_OBSERVATION,
     ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
     validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
@@ -3996,6 +3997,7 @@ EXPECTED_ACTION_API = json.loads(r'''{"aliases":{"add_action":true,"add_action_s
 EXPECTED_ACTION_API['counter_seed_values'] = ACTION_COUNTER_SEED_EXPECTATIONS
 EXPECTED_ACTION_API['global_state'] = ACTION_GLOBAL_STATE_EXPECTATIONS
 EXPECTED_ACTION_API['counter_cow'] = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
+EXPECTED_ACTION_API['heap_argument_continuation'] = json.loads(json.dumps(ACTION_HEAP_ARGUMENT_EXPECTATIONS))
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode
@@ -4314,6 +4316,15 @@ def action_self_check():
     changed['counter_cow']['live']['events'][2]['live'] = {'type': 'string', 'hex': '63'}
     mutations.append(('action counter COW increment observation', changed))
     changed = json.loads(json.dumps(sample_action_api))
+    changed['heap_argument_continuation']['events'][0]['same_object'] = False
+    mutations.append(('heap action all-listener object identity', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['heap_argument_continuation']['events'][5]['cell'] = 'outer'
+    mutations.append(('heap action ref-cell visibility after nested dispatch', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['heap_argument_continuation']['after']['object_marker'] = 'outer'
+    mutations.append(('heap action object mutation after nested dispatch', changed))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['int']['do_action'][0]['initial']['value'] = {
         'type': 'string', 'hex': '37'}
     mutations.append(('non-array global initial type', changed))
@@ -4523,8 +4534,16 @@ def validate_transcript(streams, result):
         if name in ('apply_filters', 'do_action'):
             if not isinstance(payload['args'], list):
                 raise ValueError('apply args are not list')
-            for value in payload['args']:
-                validate_pod(value)
+            if name == 'do_action':
+                for value in payload['args']:
+                    exact(value, ('type', 'handle'), 'do_action positional argument marker')
+                    ident = handle(value['handle'], 'argument')
+                    if ident in owned:
+                        raise ValueError('do_action argument handle duplicates another argument')
+                    owned.add(retain(value['handle'], 'argument'))
+            else:
+                for value in payload['args']:
+                    validate_pod(value)
             if name == 'apply_filters':
                 validate_pod(payload['value'])
         context = {'name': name, 'payload': payload, 'owned': owned, 'released': not owned,
@@ -5025,6 +5044,7 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_global_state_all_hook_count', 'wrong_action_counter_cow_snapshot',
     'wrong_action_counter_cow_live', 'wrong_action_counter_cow_warning_order',
     'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
+    'wrong_heap_action_callcore_marker', 'wrong_heap_action_callback_marker',
 )
 
 
@@ -5048,6 +5068,15 @@ def reject_action_transcripts(streams, result):
                                and item.get('payload', {}).get('api') == 'did_action')
     callback = locate('rust', lambda item: item.get('kind') == 'invoke_php'
                       and item.get('payload', {}).get('operation') == 'callable')
+    heap_action_api = locate('php', lambda item: item.get('kind') == 'call_core'
+                            and item.get('payload', {}).get('api') == 'do_action'
+                            and any(isinstance(arg, dict) and arg.get('type') == 'handle'
+                                    for arg in item.get('payload', {}).get('args', [])))
+    heap_action_callback = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                                  and item.get('payload', {}).get('operation') == 'callable'
+                                  and item.get('payload', {}).get('call_mode') == 'array'
+                                  and any(isinstance(arg, dict) and arg.get('type') == 'handle'
+                                          for arg in item.get('payload', {}).get('args', [])))
     script_resume = locate('php', lambda item: item.get('kind') == 'resume'
                            and item.get('payload', {}).get('completion', {}).get('value') == result['php_observation'])
     finished = locate('php', lambda item: item.get('kind') == 'request_finished')
@@ -5200,6 +5229,15 @@ def reject_action_transcripts(streams, result):
             resume = resume_index(index)
             frames['php'][resume]['payload']['completion']['value'] = {
                 'type': 'string', 'hex': '62'}
+        elif name == 'wrong_heap_action_callcore_marker':
+            marker = frames['php'][heap_action_api]['payload']['args'][0]
+            token = marker['handle']['token']
+            marker['handle']['token'] = ('0' if token[0] != '0' else '1') + token[1:]
+        elif name == 'wrong_heap_action_callback_marker':
+            marker = next(arg for arg in frames['rust'][heap_action_callback]['payload']['args']
+                          if isinstance(arg, dict) and arg.get('type') == 'handle')
+            token = marker['handle']['token']
+            marker['handle']['token'] = ('0' if token[0] != '0' else '1') + token[1:]
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':

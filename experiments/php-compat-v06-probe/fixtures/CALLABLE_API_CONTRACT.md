@@ -62,6 +62,12 @@ B = sum(api_counts)+callback_invocations+release_effects+boundary_effects+argume
 frames_from_php=B+4; frames_from_rust=B+3.
 Root script program observation is ordinary JSON, independently compared against pinned native WP and actual PHP-Wasm. It includes warning severity/message hex and order measured by a shared error handler, not guessed Rust state or future completion flags.
 
+## Action heap positional arguments
+
+For do_action, CallCore.args is an ordered list of {type:'handle',handle:<argument descriptor>} markers, one for every positional value, including scalars. Each positional handle is fresh for that API call and joins the same exact release_arguments batch as the named API arguments; when there are no positional values, args is an empty list. For an all callback, InvokePhp.args is the hook-name POD followed by one handle marker for each positional value. A named callback receives only its accepted positional slice, represented by the same markers. The adapter resolves markers to retained PHP values before call_user_func_array.
+
+The heap_argument_continuation action observation uses a PHP object and an array containing a reference to a scalar cell. It records only JSON-safe class names, strict object identity booleans, property strings, and cell values. The named callback mutates both values, dispatches a nested action with them, and records the outer callback's resumed view. The pinned contract checks identity and reference-cell visibility without adding a value codec.
+
 ## Verification status and remaining acceptance
 
 The fixture now implements the measured hook-array and priority phase map below, including live handler reentry, receiver pinning, warning delivery, and cleanup sequencing. The pinned PHP oracle covers 20 base observations, 20 coercion observations, and the finite numeric-key matrix documented below. This is evidence for those cases only; matching warning counts alone does not establish broader PHP or WordPress fidelity.

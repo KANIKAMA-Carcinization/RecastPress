@@ -38,6 +38,27 @@ ACTION_COUNTER_COW_EXPECTATIONS = _action_counter_cow_oracle()['cases']
 ACTION_COUNTER_COW_HOOKS = {
     mode: 'callable-action-counter-cow-' + mode for mode in ('live', 'snapshot')
 }
+ACTION_HEAP_ARGUMENT_EXPECTATIONS = {
+    'events': [
+        {'event': 'all', 'hook': 'callable-action-heap-arguments',
+         'object_class': 'stdClass', 'same_object': True, 'object_marker': 'seed', 'cell': 'seed'},
+        {'event': 'named-enter', 'hook': 'callable-action-heap-arguments',
+         'object_class': 'stdClass', 'same_object': True, 'object_marker': 'seed', 'cell': 'seed'},
+        {'event': 'all', 'hook': 'callable-action-heap-arguments-nested',
+         'object_class': 'stdClass', 'same_object': True, 'object_marker': 'outer', 'cell': 'outer'},
+        {'event': 'nested-enter', 'hook': 'callable-action-heap-arguments-nested',
+         'object_class': 'stdClass', 'same_object': True, 'object_marker': 'outer', 'cell': 'outer'},
+        {'event': 'nested-exit', 'hook': 'callable-action-heap-arguments-nested',
+         'object_class': 'stdClass', 'same_object': True, 'object_marker': 'nested', 'cell': 'nested'},
+        {'event': 'outer-resume', 'object_class': 'stdClass', 'same_object': True,
+         'object_marker': 'nested', 'cell': 'nested', 'scalar_cell': 'nested', 'nested_return': None},
+    ],
+    'returns': {'outer': None},
+    'after': {
+        'object_class': 'stdClass', 'object_marker': 'nested',
+        'cell': 'nested', 'scalar_cell': 'nested', 'outer_count': 1, 'nested_count': 1,
+    },
+}
 
 
 def action_counter_cow_read_expectations(mode: str) -> list[dict]:

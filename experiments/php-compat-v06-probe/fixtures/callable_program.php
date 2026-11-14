@@ -2853,12 +2853,111 @@ function callable_program_priority_cow_cases(): array
     ];
 }
 
+function callable_program_action_heap_argument_continuation(): array
+{
+    $hook = 'callable-action-heap-arguments';
+    $nestedHook = 'callable-action-heap-arguments-nested';
+    $events = [];
+    $object = (object) ['marker' => 'seed'];
+    $cell = 'seed';
+    $payload = ['cell' => &$cell];
+
+    $observe = static function (string $event, string $name, $receivedObject, $receivedPayload) use (
+        &$events,
+        $object,
+    ): void {
+        $events[] = [
+            'event' => $event,
+            'hook' => $name,
+            'object_class' => is_object($receivedObject) ? $receivedObject::class : null,
+            'same_object' => $receivedObject === $object,
+            'object_marker' => is_object($receivedObject) ? ($receivedObject->marker ?? null) : null,
+            'cell' => is_array($receivedPayload) ? ($receivedPayload['cell'] ?? null) : null,
+        ];
+    };
+
+    $all = static function (...$args) use ($hook, $nestedHook, $observe): void {
+        $name = $args[0] ?? null;
+        if ($name !== $hook && $name !== $nestedHook) {
+            return;
+        }
+        $observe('all', $name, $args[1] ?? null, $args[2] ?? null);
+    };
+    add_action('all', $all, 1, 0);
+
+    $nested = static function (...$args) use ($nestedHook, $observe): void {
+        $objectArg = $args[0] ?? null;
+        $payloadArg = $args[1] ?? null;
+        $observe('nested-enter', $nestedHook, $objectArg, $payloadArg);
+        if (is_object($objectArg)) {
+            $objectArg->marker = 'nested';
+        }
+        if (is_array($payloadArg)) {
+            $payloadArg['cell'] = 'nested';
+        }
+        $observe('nested-exit', $nestedHook, $objectArg, $payloadArg);
+    };
+    add_action($nestedHook, $nested, 10, 2);
+
+    $outer = static function (...$args) use (
+        $hook,
+        $nestedHook,
+        $object,
+        &$cell,
+        &$events,
+        $observe,
+    ): void {
+        $objectArg = $args[0] ?? null;
+        $payloadArg = $args[1] ?? null;
+        $observe('named-enter', $hook, $objectArg, $payloadArg);
+        if (is_object($objectArg)) {
+            $objectArg->marker = 'outer';
+        }
+        if (is_array($payloadArg)) {
+            $payloadArg['cell'] = 'outer';
+        }
+        $nestedReturn = do_action($nestedHook, $objectArg, $payloadArg);
+        $events[] = [
+            'event' => 'outer-resume',
+            'object_class' => is_object($objectArg) ? $objectArg::class : null,
+            'same_object' => $objectArg === $object,
+            'object_marker' => is_object($objectArg) ? ($objectArg->marker ?? null) : null,
+            'cell' => is_array($payloadArg) ? ($payloadArg['cell'] ?? null) : null,
+            'scalar_cell' => $cell,
+            'nested_return' => $nestedReturn,
+        ];
+    };
+    add_action($hook, $outer, 10, 2);
+
+    $outerReturn = do_action($hook, $object, $payload);
+    $after = [
+        'object_class' => $object::class,
+        'object_marker' => $object->marker,
+        'cell' => $payload['cell'],
+        'scalar_cell' => $cell,
+        'outer_count' => did_action($hook),
+        'nested_count' => did_action($nestedHook),
+    ];
+
+    remove_action($hook, $outer, 10);
+    remove_action($nestedHook, $nested, 10);
+    remove_action('all', $all, 1);
+
+    return [
+        'events' => $events,
+        'returns' => ['outer' => $outerReturn],
+        'after' => $after,
+    ];
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];
     $GLOBALS['wp_current_filter'] = [];
+
+    $heapArgumentContinuation = callable_program_action_heap_argument_continuation();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3172,6 +3271,7 @@ function callable_program_action_api_cases(): array
         'nested' => ['events' => $nestedEvents, 'did_action' => did_action($nestedHook), 'current_action' => current_action(), 'doing_action' => doing_action()],
         'nested_caught_throw' => ['events' => $nestedCaughtEvents, 'do_action_return' => $nestedCaughtReturn,
             'after' => $nestedCaughtAfter],
+        'heap_argument_continuation' => $heapArgumentContinuation,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,

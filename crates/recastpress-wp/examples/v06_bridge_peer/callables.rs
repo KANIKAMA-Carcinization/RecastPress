@@ -420,6 +420,7 @@ struct CallablePeer<'a, R, W> {
     nested_caught_child_throwable: Option<PhpHandle>,
     effect_ids: HashMap<String, EffectId>,
     api_arguments: Vec<HashMap<String, PhpHandle>>,
+    api_action_argument_counts: Vec<Option<usize>>,
     hook_names: Vec<HookArgument>,
     api_counts: BTreeMap<String, u64>,
     callback_invocations: u64,
@@ -542,7 +543,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         }
         let values = payload.get("arguments").ok_or("api_arguments_missing")?;
         exact_keys(values, names, "api_arguments")?;
-        names
+        let mut registered = names
             .iter()
             .map(|name| {
                 let descriptor = values
@@ -551,7 +552,122 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 self.register_argument(descriptor, &format!("api_argument_{name}"))
                     .map(|handle| ((*name).to_owned(), handle))
             })
-            .collect()
+            .collect::<Result<Vec<_>, String>>()?;
+        if api == "do_action" {
+            let action_args = payload
+                .get("args")
+                .and_then(Value::as_array)
+                .ok_or("do_action_args")?;
+            for (index, marker) in action_args.iter().enumerate() {
+                let label = format!("do_action_arg_{index}");
+                exact_keys(marker, &["type", "handle"], &label)?;
+                if string(marker, "type")? != "handle" {
+                    return Err(format!("{label}_marker_type"));
+                }
+                let descriptor = marker
+                    .get("handle")
+                    .ok_or_else(|| format!("{label}_handle_missing"))?;
+                let handle = self.register_argument(descriptor, &label)?;
+                registered.push((format!("action_arg_{index}"), handle));
+            }
+        }
+        Ok(registered)
+    }
+
+    fn action_argument_handles(&self) -> Result<Option<Vec<PhpHandle>>, String> {
+        let Some(count) = self.api_action_argument_counts.last().copied().flatten() else {
+            return Ok(None);
+        };
+        let frame = self
+            .api_arguments
+            .last()
+            .ok_or("action_api_argument_frame_missing")?;
+        let mut handles = Vec::with_capacity(count);
+        for index in 0..count {
+            let name = format!("action_arg_{index}");
+            let handle = frame
+                .get(&name)
+                .copied()
+                .ok_or_else(|| format!("{name}_missing"))?;
+            self.check_argument(handle, &name)?;
+            handles.push(handle);
+        }
+        for name in frame.keys().filter(|name| name.starts_with("action_arg_")) {
+            let suffix = name
+                .strip_prefix("action_arg_")
+                .ok_or("action_arg_name_prefix")?;
+            let index = suffix
+                .parse::<usize>()
+                .map_err(|_| "action_arg_index_schema")?;
+            if index.to_string() != suffix || index >= count {
+                return Err("action_arg_order_or_count".into());
+            }
+        }
+        Ok(Some(handles))
+    }
+
+    fn encode_callback_arguments(
+        &self,
+        call_mode: PhpCallMode,
+        args: &[PhpValue],
+    ) -> Result<Vec<Value>, String> {
+        let Some(handles) = self.action_argument_handles()? else {
+            return args
+                .iter()
+                .enumerate()
+                .map(|(index, value)| pod(value, &format!("callback_arg_{index}")))
+                .collect();
+        };
+        if call_mode == PhpCallMode::Array
+            && handles.is_empty()
+            && args.len() == 1
+            && matches!(&args[0], PhpValue::Bytes(bytes) if bytes.is_empty())
+        {
+            return Ok(vec![pod(&args[0], "action_empty_argument_placeholder")?]);
+        }
+        let (prefix, start) = match call_mode {
+            PhpCallMode::All => {
+                if args.len() != handles.len() + 1 {
+                    return Err("action_all_argument_count".into());
+                }
+                (Some(pod(&args[0], "action_all_hook_prefix")?), 1)
+            }
+            PhpCallMode::Zero => {
+                if !args.is_empty() {
+                    return Err("action_zero_argument_count".into());
+                }
+                (None, 0)
+            }
+            PhpCallMode::Array => {
+                if handles.is_empty() {
+                    if args.len() > 1
+                        || args
+                            .first()
+                            .is_some_and(|value| *value != PhpValue::Bytes(Vec::new()))
+                    {
+                        return Err("action_empty_argument_placeholder".into());
+                    }
+                } else if args.len() > handles.len() {
+                    return Err("action_named_argument_count".into());
+                }
+                (None, 0)
+            }
+        };
+        let mut encoded = Vec::with_capacity(args.len());
+        if let Some(prefix) = prefix {
+            encoded.push(prefix);
+        }
+        for (offset, value) in args.iter().skip(start).enumerate() {
+            let handle = handles
+                .get(offset)
+                .copied()
+                .ok_or("action_arg_order_or_count")?;
+            if *value != PhpValue::Unsupported {
+                return Err("action_arg_placeholder_expected".into());
+            }
+            encoded.push(json!({"type":"handle","handle":descriptor(handle)}));
+        }
+        Ok(encoded)
     }
 
     fn release_arguments(
@@ -911,7 +1027,18 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .begin_child(parent)
             .map_err(|error| format!("begin_api_child:{error:?}"))?;
         let arguments = self.register_api_arguments(payload, &api_name)?;
+        let action_argument_count = if api_name == "do_action" {
+            Some(
+                arguments
+                    .iter()
+                    .filter(|(name, _)| name.starts_with("action_arg_"))
+                    .count(),
+            )
+        } else {
+            None
+        };
         self.api_arguments.push(arguments.iter().cloned().collect());
+        self.api_action_argument_counts.push(action_argument_count);
         let completion = match api_name.as_str() {
             "add_filter" | "add_action" => self.api_add(payload, operation, parent_wire),
             "remove_filter" | "remove_action" => self.api_remove(payload, operation, parent_wire),
@@ -928,6 +1055,9 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         self.api_arguments
             .pop()
             .ok_or("api_argument_stack_underflow")?;
+        self.api_action_argument_counts
+            .pop()
+            .ok_or("api_action_argument_count_stack_underflow")?;
         let completion = release_throwable
             .map(Completion::PhpThrowable)
             .unwrap_or(completion);
@@ -1996,14 +2126,12 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         };
         let hook = HookArgument::new(hook, array_key);
         self.remember_hook(hook.clone());
-        let args = payload
-            .get("args")
-            .and_then(Value::as_array)
-            .ok_or("do_action_args")?
-            .iter()
-            .enumerate()
-            .map(|(index, value)| parse_pod(value, &format!("do_action_arg_{index}")))
-            .collect::<Result<Vec<_>, _>>()?;
+        let args = self
+            .action_argument_handles()?
+            .ok_or("do_action_argument_frame_missing")?
+            .into_iter()
+            .map(|_| PhpValue::Unsupported)
+            .collect::<Vec<_>>();
         let ticket = self
             .dispatcher
             .begin_action_effectful_typed(&hook, &args)
@@ -2160,12 +2288,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .invoke_php(operation)
                         .map_err(|error| format!("invoke_callback:{error:?}"))?;
                     let effect_wire = self.fresh_effect("callback");
-                    let args = invocation
-                        .args
-                        .iter()
-                        .enumerate()
-                        .map(|(i, value)| pod(value, &format!("callback_arg_{i}")))
-                        .collect::<Result<Vec<_>, _>>()?;
+                    let args =
+                        self.encode_callback_arguments(invocation.call_mode, &invocation.args)?;
                     let call_mode = match invocation.call_mode {
                         PhpCallMode::Zero => "zero",
                         PhpCallMode::Array => "array",
@@ -2856,6 +2980,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         nested_caught_child_throwable: None,
         effect_ids: HashMap::new(),
         api_arguments: Vec::new(),
+        api_action_argument_counts: Vec::new(),
         hook_names: Vec::new(),
         api_counts: api_names
             .iter()
@@ -3227,6 +3352,7 @@ mod tests {
             nested_caught_child_throwable: None,
             effect_ids: HashMap::new(),
             api_arguments: Vec::new(),
+            api_action_argument_counts: Vec::new(),
             hook_names: Vec::new(),
             api_counts: BTreeMap::new(),
             callback_invocations: 0,
@@ -3428,6 +3554,154 @@ mod tests {
         assert_eq!(
             action_counter_increment_ack(PhpValue::Float(f64::INFINITY)).unwrap_err(),
             "action_counter_increment_not_finite"
+        );
+    }
+
+    #[test]
+    fn action_argument_transcript_markers_preserve_order_and_validate_counts() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        let first = handle_descriptor("argument", 30, 1, 301);
+        let second = handle_descriptor("argument", 31, 1, 311);
+        let registered = peer
+            .register_api_arguments(
+                &json!({
+                    "arguments":{"hook":handle_descriptor("argument", 29, 1, 291)},
+                    "args":[
+                        {"type":"handle","handle":first},
+                        {"type":"handle","handle":second}
+                    ]
+                }),
+                "do_action",
+            )
+            .unwrap();
+        assert_eq!(
+            registered
+                .iter()
+                .map(|(name, _)| name.as_str())
+                .collect::<Vec<_>>(),
+            vec!["hook", "action_arg_0", "action_arg_1"]
+        );
+        let frame = registered.iter().cloned().collect::<HashMap<_, _>>();
+        peer.api_arguments.push(frame);
+        peer.api_action_argument_counts.push(Some(2));
+        let translated = peer
+            .encode_callback_arguments(
+                PhpCallMode::All,
+                &[
+                    PhpValue::Bytes(b"heap-action".to_vec()),
+                    PhpValue::Unsupported,
+                    PhpValue::Unsupported,
+                ],
+            )
+            .unwrap();
+        assert_eq!(
+            translated,
+            vec![
+                pod(&PhpValue::Bytes(b"heap-action".to_vec()), "prefix").unwrap(),
+                json!({"type":"handle","handle":first}),
+                json!({"type":"handle","handle":second}),
+            ]
+        );
+        assert_eq!(
+            peer.encode_callback_arguments(PhpCallMode::Array, &[PhpValue::Unsupported],)
+                .unwrap(),
+            vec![json!({"type":"handle","handle":first})]
+        );
+        assert_eq!(
+            peer.encode_callback_arguments(
+                PhpCallMode::All,
+                &[
+                    PhpValue::Bytes(b"heap-action".to_vec()),
+                    PhpValue::Unsupported
+                ],
+            )
+            .unwrap_err(),
+            "action_all_argument_count"
+        );
+
+        peer.api_action_argument_counts.pop();
+        peer.api_action_argument_counts.push(Some(1));
+        assert_eq!(
+            peer.action_argument_handles().unwrap_err(),
+            "action_arg_order_or_count"
+        );
+    }
+
+    #[test]
+    fn action_argument_transcript_rejects_bad_markers_and_inactive_handles() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        assert!(
+            peer.register_api_arguments(
+                &json!({
+                    "arguments":{"hook":handle_descriptor("argument", 40, 1, 401)},
+                    "args":[{"type":"pod","handle":handle_descriptor("argument", 41, 1, 411)}]
+                }),
+                "do_action",
+            )
+            .is_err()
+        );
+
+        let registered = peer
+            .register_api_arguments(
+                &json!({
+                    "arguments":{"hook":handle_descriptor("argument", 42, 1, 421)},
+                    "args":[{"type":"handle","handle":handle_descriptor("argument", 43, 1, 431)}]
+                }),
+                "do_action",
+            )
+            .unwrap();
+        let frame = registered.iter().cloned().collect::<HashMap<_, _>>();
+        let action_arg = frame["action_arg_0"];
+        peer.api_arguments.push(frame);
+        peer.api_action_argument_counts.push(Some(1));
+        peer.handles.insert(action_arg, HandleState::ReleasePending);
+        assert_eq!(
+            peer.action_argument_handles().unwrap_err(),
+            "action_arg_0_argument_not_active"
+        );
+    }
+
+    #[test]
+    fn empty_action_array_placeholder_is_preserved_as_pod() {
+        create_peer!(request, wire, continuation, dispatcher, peer);
+        let registered = peer
+            .register_api_arguments(
+                &json!({
+                    "arguments":{"hook":handle_descriptor("argument", 44, 1, 441)},
+                    "args":[]
+                }),
+                "do_action",
+            )
+            .unwrap();
+        peer.api_arguments
+            .push(registered.iter().cloned().collect());
+        peer.api_action_argument_counts.push(Some(0));
+
+        assert_eq!(
+            peer.encode_callback_arguments(PhpCallMode::Array, &[PhpValue::Bytes(Vec::new())],)
+                .unwrap(),
+            vec![pod(&PhpValue::Bytes(Vec::new()), "expected").unwrap()]
+        );
+        assert_eq!(
+            peer.encode_callback_arguments(PhpCallMode::Array, &[])
+                .unwrap(),
+            Vec::<Value>::new()
+        );
+        assert_eq!(
+            peer.encode_callback_arguments(
+                PhpCallMode::Array,
+                &[PhpValue::Bytes(b"unexpected".to_vec())],
+            )
+            .unwrap_err(),
+            "action_empty_argument_placeholder"
+        );
+        assert_eq!(
+            peer.encode_callback_arguments(
+                PhpCallMode::Array,
+                &[PhpValue::Bytes(Vec::new()), PhpValue::Bytes(Vec::new())],
+            )
+            .unwrap_err(),
+            "action_empty_argument_placeholder"
         );
     }
 
