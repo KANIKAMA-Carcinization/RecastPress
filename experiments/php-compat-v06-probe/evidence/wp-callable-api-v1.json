@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-14T01:57:49.841747+00:00",
+  "observed_at_utc": "2026-11-14T02:19:41.784313+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -172,14 +172,14 @@
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
     "experiments/php-compat-v06-probe/callable_contract.py": "8e1f21fb6e9e0b82dd62f2d324e2e574c64dfb22e35799a563816bccdcb35483",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "9d649210b30c7ec7f889206882f7f1e21b56917e61060d96d06e56929822902d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "c0ede45f6595c319019a78ad435b2b2b45b1301a802eda52d38478c5ce67e1cb",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "f2af80365584df0178e1436843a20c2b6c68b1e2e115d4a4d58e96c0636a48b4",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6fd055662493b0851f0ae045ec4eb9f3a6a51c3d2a352ce8b3c50a30565458bb",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -192,14 +192,14 @@
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "20d7a3b891e2615461a2ce9c5f6225cd4f85b8b77cfda56c6219661ea1eb15aa",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "635b697d0fa36199f68b3cd3ffcb9a0040a3daeb56ba39da93dc86ce9b1bcc7c",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "61402288b9fce8bb6f3101e5fdc85f95e9adab25883c39e3d917c065d6bda854",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -374,14 +374,14 @@
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
     "experiments/php-compat-v06-probe/callable_contract.py": "8e1f21fb6e9e0b82dd62f2d324e2e574c64dfb22e35799a563816bccdcb35483",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "9d649210b30c7ec7f889206882f7f1e21b56917e61060d96d06e56929822902d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "c0ede45f6595c319019a78ad435b2b2b45b1301a802eda52d38478c5ce67e1cb",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "f2af80365584df0178e1436843a20c2b6c68b1e2e115d4a4d58e96c0636a48b4",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6fd055662493b0851f0ae045ec4eb9f3a6a51c3d2a352ce8b3c50a30565458bb",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -394,14 +394,14 @@
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "20d7a3b891e2615461a2ce9c5f6225cd4f85b8b77cfda56c6219661ea1eb15aa",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "635b697d0fa36199f68b3cd3ffcb9a0040a3daeb56ba39da93dc86ce9b1bcc7c",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "61402288b9fce8bb6f3101e5fdc85f95e9adab25883c39e3d917c065d6bda854",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -409,33 +409,33 @@
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 27588,
+    "pid": 27432,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 26260,
+    "pid": 26712,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T015749.819312Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-stdout.bin",
       "bytes": 120941,
       "sha256": "7783b1489fa9ef3183b51bfd22a5a6035f90d5940d3a078da36d30bef1cef506"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T015749.819312Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T015749.819312Z-action_stdout.bin",
-      "bytes": 38930,
-      "sha256": "a3608b1b78acc887d8a8cddadf4018002e81fc6e3f46254a022ac2f230f9c0c1"
+      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-action_stdout.bin",
+      "bytes": 41860,
+      "sha256": "aaad484cbe3313e8d5b0c1ef5de869bd9e81ba05ec627fa78546614340a54661"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T015749.819312Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -8565,6 +8565,266 @@
               "doing_action": false,
               "stack": []
             }
+          },
+          "leading_zero_non_alias": {
+            "label": "leading_zero_non_alias",
+            "registered_hook": {
+              "type": "string",
+              "hex": "3035"
+            },
+            "integer_hook": {
+              "type": "int",
+              "value": "5"
+            },
+            "before": {
+              "five_string": {
+                "type": "int",
+                "value": "4"
+              },
+              "five_integer": {
+                "type": "int",
+                "value": "4"
+              },
+              "leading_zero": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "has_before": {
+              "leading_zero": {
+                "type": "int",
+                "value": "10"
+              },
+              "integer_five": {
+                "type": "bool",
+                "value": false
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "3035"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "1"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "1"
+                }
+              }
+            ],
+            "after": {
+              "did_action_five_string": {
+                "type": "int",
+                "value": "5"
+              },
+              "did_action_five_integer": {
+                "type": "int",
+                "value": "5"
+              },
+              "did_action_leading_zero": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "leading_zero_registration_integer_dispatch": {
+            "label": "leading_zero_registration_integer_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "5"
+            },
+            "leading_zero_hook": {
+              "type": "string",
+              "hex": "3035"
+            },
+            "before": {
+              "five": {
+                "type": "int",
+                "value": "5"
+              },
+              "leading_zero": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "has_before": {
+              "integer_five": {
+                "type": "int",
+                "value": "10"
+              },
+              "leading_zero": {
+                "type": "bool",
+                "value": false
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "3035"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "6"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "6"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              }
+            ],
+            "after": {
+              "did_action_five": {
+                "type": "int",
+                "value": "6"
+              },
+              "did_action_leading_zero": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
           }
         },
         "no_listener_count": {
@@ -11427,6 +11687,266 @@
               "doing_action": false,
               "stack": []
             }
+          },
+          "leading_zero_non_alias": {
+            "label": "leading_zero_non_alias",
+            "registered_hook": {
+              "type": "string",
+              "hex": "3035"
+            },
+            "integer_hook": {
+              "type": "int",
+              "value": "5"
+            },
+            "before": {
+              "five_string": {
+                "type": "int",
+                "value": "4"
+              },
+              "five_integer": {
+                "type": "int",
+                "value": "4"
+              },
+              "leading_zero": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "has_before": {
+              "leading_zero": {
+                "type": "int",
+                "value": "10"
+              },
+              "integer_five": {
+                "type": "bool",
+                "value": false
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "0"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "3035"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "1"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five_string": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five_integer": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "1"
+                }
+              }
+            ],
+            "after": {
+              "did_action_five_string": {
+                "type": "int",
+                "value": "5"
+              },
+              "did_action_five_integer": {
+                "type": "int",
+                "value": "5"
+              },
+              "did_action_leading_zero": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "leading_zero_registration_integer_dispatch": {
+            "label": "leading_zero_registration_integer_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "5"
+            },
+            "leading_zero_hook": {
+              "type": "string",
+              "hex": "3035"
+            },
+            "before": {
+              "five": {
+                "type": "int",
+                "value": "5"
+              },
+              "leading_zero": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "has_before": {
+              "integer_five": {
+                "type": "int",
+                "value": "10"
+              },
+              "leading_zero": {
+                "type": "bool",
+                "value": false
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "3035"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "6c656164696e672d7a65726f2d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "string",
+                  "hex": "3035"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "5"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "6"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "696e74656765722d6469737061746368"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "5"
+                },
+                "did_action_five": {
+                  "type": "int",
+                  "value": "6"
+                },
+                "did_action_leading_zero": {
+                  "type": "int",
+                  "value": "2"
+                }
+              }
+            ],
+            "after": {
+              "did_action_five": {
+                "type": "int",
+                "value": "6"
+              },
+              "did_action_leading_zero": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
           }
         },
         "no_listener_count": {
@@ -12848,11 +13368,11 @@
   },
   "scope": "Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-14T01:57:55.171742+00:00",
+    "observed_at_utc": "2026-11-14T02:19:53.788617+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "7cb4e09752af9ff34629c08509f41dad38fbafb328c6903700c80a0b159bc9ac",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261114T015530.507370Z-success.json",
-    "wasm_receipt_sha256": "761d3a28cb88e8919445fe0d73ac8a9fd4d826f7cc41eac2a1a6da40c507d629",
+    "native_receipt_sha256": "79420c4253697c05144cc11954171ca624e31b565a88b71c133c8d9823f3f74f",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261114T021648.790374Z-success.json",
+    "wasm_receipt_sha256": "e31cd67b96f91d9f08d98f2a1538aa52e9052f7b55cd8f08d9e85c81695535ec",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -12945,11 +13465,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-14T01:58:42.678481+00:00",
+    "observed_at_utc": "2026-11-14T02:20:41.508732+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "7cb4e09752af9ff34629c08509f41dad38fbafb328c6903700c80a0b159bc9ac",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261114T015242.148557Z-success.json",
-    "wasm_receipt_sha256": "0ca7b97ae9893efcd6dcde99fc23e618a7caec4b80ba45ec9b7df8c1d17236a3",
+    "native_receipt_sha256": "79420c4253697c05144cc11954171ca624e31b565a88b71c133c8d9823f3f74f",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261114T021351.461568Z-success.json",
+    "wasm_receipt_sha256": "80bcf616b4388b229cf7e297d3acf63909ae5738ac61217a24d7b848c6b3ffce",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",

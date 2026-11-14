@@ -71,10 +71,60 @@ def expected_case(name: str, registered: str | int, dispatched: str | int) -> di
     }
 
 
+def expected_leading_zero_case() -> dict:
+    payload_int, payload_zero = string('integer-dispatch'), string('leading-zero-dispatch')
+    count0, count1, count2 = integer(0), integer(5), integer(1)
+    count5_before, count5_after = integer(4), integer(5)
+    int5, str05 = integer(5), string('05')
+    return {
+        'label': 'leading_zero_non_alias', 'registered_hook': str05, 'integer_hook': int5,
+        'before': {'five_string': count5_before, 'five_integer': count5_before, 'leading_zero': count0},
+        'has_before': {'leading_zero': integer(10), 'integer_five': {'type': 'bool', 'value': False}},
+        'events': [
+            {'event': 'all', 'args': [int5, payload_int], 'current_action': int5,
+             'did_action_five_string': count5_after, 'did_action_five_integer': count5_after,
+             'did_action_leading_zero': count0},
+            {'event': 'all', 'args': [str05, payload_zero], 'current_action': str05,
+             'did_action_five_string': count5_after, 'did_action_five_integer': count5_after,
+             'did_action_leading_zero': count2},
+            {'event': 'named', 'args': [payload_zero], 'current_action': str05,
+             'did_action_five_string': count1, 'did_action_five_integer': count1,
+             'did_action_leading_zero': count2},
+        ],
+        'after': {'did_action_five_string': count5_after, 'did_action_five_integer': count5_after,
+                  'did_action_leading_zero': count2, 'current_action': {'type': 'bool', 'value': False},
+                  'doing_action': False, 'stack': []},
+    }
+
+
+def expected_leading_zero_reverse_case() -> dict:
+    zero, one, five, six, two = integer(0), integer(1), integer(5), integer(6), integer(2)
+    payload_zero, payload_int = string('leading-zero-dispatch'), string('integer-dispatch')
+    int5, str05 = integer(5), string('05')
+    return {
+        'label': 'leading_zero_registration_integer_dispatch',
+        'registered_hook': int5, 'leading_zero_hook': str05,
+        'before': {'five': five, 'leading_zero': one},
+        'has_before': {'integer_five': integer(10), 'leading_zero': {'type': 'bool', 'value': False}},
+        'events': [
+            {'event': 'all', 'args': [str05, payload_zero], 'current_action': str05,
+             'did_action_five': five, 'did_action_leading_zero': two},
+            {'event': 'all', 'args': [int5, payload_int], 'current_action': int5,
+             'did_action_five': six, 'did_action_leading_zero': two},
+            {'event': 'named', 'args': [payload_int], 'current_action': int5,
+             'did_action_five': six, 'did_action_leading_zero': two},
+        ],
+        'after': {'did_action_five': six, 'did_action_leading_zero': two,
+                  'current_action': {'type': 'bool', 'value': False}, 'doing_action': False, 'stack': []},
+    }
+
+
 def expected_oracle() -> dict:
     return {'php_version': '8.5.12', 'php_int_size': 8, 'cases': {
         'string_registration_integer_dispatch': expected_case('string_registration_integer_dispatch', '5', 5),
         'integer_registration_string_dispatch': expected_case('integer_registration_string_dispatch', 5, '5'),
+        'leading_zero_non_alias': expected_leading_zero_case(),
+        'leading_zero_registration_integer_dispatch': expected_leading_zero_reverse_case(),
     }}
 
 

@@ -3081,6 +3081,80 @@ function callable_program_action_hook_alias_cases(): array
             'before' => $before, 'has_before_dispatch' => $hasBefore,
             'events' => $events, 'after' => $after];
     }
+
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $events = [];
+    $all = static function (...$args) use (&$events, $view): void {
+        $hook = $args[0] ?? null;
+        if ($hook !== '05' && $hook !== 5) return;
+        $events[] = ['event' => 'all', 'args' => array_map($view, $args),
+            'current_action' => $view(current_action()),
+            'did_action_five_string' => $view(did_action('5')),
+            'did_action_five_integer' => $view(did_action(5)),
+            'did_action_leading_zero' => $view(did_action('05'))];
+    };
+    $named = static function (...$args) use (&$events, $view): void {
+        $events[] = ['event' => 'named', 'args' => array_map($view, $args),
+            'current_action' => $view(current_action()),
+            'did_action_five_string' => $view(did_action('5')),
+            'did_action_five_integer' => $view(did_action(5)),
+            'did_action_leading_zero' => $view(did_action('05'))];
+    };
+    add_action('all', $all, 1, 99);
+    add_action('05', $named, 10, 99);
+    $before = ['five_string' => $view(did_action('5')), 'five_integer' => $view(did_action(5)),
+        'leading_zero' => $view(did_action('05'))];
+    $hasBefore = ['leading_zero' => $view(has_action('05', $named)),
+        'integer_five' => $view(has_action(5, $named))];
+    do_action(5, 'integer-dispatch');
+    do_action('05', 'leading-zero-dispatch');
+    $after = ['did_action_five_string' => $view(did_action('5')),
+        'did_action_five_integer' => $view(did_action(5)),
+        'did_action_leading_zero' => $view(did_action('05')),
+        'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+        'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+    remove_action('05', $named, 10);
+    remove_action('all', $all, 1);
+    $cases['leading_zero_non_alias'] = ['label' => 'leading_zero_non_alias',
+        'registered_hook' => $view('05'), 'integer_hook' => $view(5), 'before' => $before,
+        'has_before' => $hasBefore, 'events' => $events, 'after' => $after];
+
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $events = [];
+    $all = static function (...$args) use (&$events, $view): void {
+        $hook = $args[0] ?? null;
+        if ($hook !== '05' && $hook !== 5) return;
+        $events[] = ['event' => 'all', 'args' => array_map($view, $args),
+            'current_action' => $view(current_action()), 'did_action_five' => $view(did_action(5)),
+            'did_action_leading_zero' => $view(did_action('05'))];
+    };
+    $named = static function (...$args) use (&$events, $view): void {
+        $events[] = ['event' => 'named', 'args' => array_map($view, $args),
+            'current_action' => $view(current_action()), 'did_action_five' => $view(did_action(5)),
+            'did_action_leading_zero' => $view(did_action('05'))];
+    };
+    add_action('all', $all, 1, 99);
+    add_action(5, $named, 10, 99);
+    $before = ['five' => $view(did_action(5)), 'leading_zero' => $view(did_action('05'))];
+    $hasBefore = ['integer_five' => $view(has_action(5, $named)),
+        'leading_zero' => $view(has_action('05', $named))];
+    do_action('05', 'leading-zero-dispatch');
+    do_action(5, 'integer-dispatch');
+    $after = ['did_action_five' => $view(did_action(5)),
+        'did_action_leading_zero' => $view(did_action('05')),
+        'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+        'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+    remove_action(5, $named, 10);
+    remove_action('all', $all, 1);
+    $cases['leading_zero_registration_integer_dispatch'] = [
+        'label' => 'leading_zero_registration_integer_dispatch', 'registered_hook' => $view(5),
+        'leading_zero_hook' => $view('05'), 'before' => $before, 'has_before' => $hasBefore,
+        'events' => $events, 'after' => $after];
+
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];

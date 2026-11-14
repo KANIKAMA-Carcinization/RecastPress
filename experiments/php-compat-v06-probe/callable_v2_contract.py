@@ -4336,6 +4336,10 @@ def action_self_check():
         'type': 'string', 'hex': '35'}
     mutations.append(('numeric hook alias preserves dispatch representation', changed))
     changed = json.loads(json.dumps(sample_action_api))
+    changed['hook_key_alias']['leading_zero_non_alias']['has_before']['integer_five'] = {
+        'type': 'int', 'value': '10'}
+    mutations.append(('leading-zero hook key remains distinct from integer five', changed))
+    changed = json.loads(json.dumps(sample_action_api))
     changed['global_state']['int']['do_action'][0]['initial']['value'] = {
         'type': 'string', 'hex': '37'}
     mutations.append(('non-array global initial type', changed))
@@ -5061,6 +5065,7 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
     'wrong_heap_action_callcore_marker', 'wrong_heap_action_callback_marker',
     'wrong_action_dispatch_context', 'wrong_alias_registration_normalized_key',
+    'wrong_leading_zero_key_normalization',
 )
 
 
@@ -5270,6 +5275,15 @@ def reject_action_transcripts(streams, result):
             resumed = frames['php'][resume_index(index)]['payload']['completion']['value']
             resumed['original'] = {'type': 'string', 'hex': '3035'}
             resumed['key'] = {'type': 'string', 'hex': '3035'}
+        elif name == 'wrong_leading_zero_key_normalization':
+            index = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                           and item.get('payload', {}).get('operation') == 'boundary'
+                           and item.get('payload', {}).get('action') == 'array_key'
+                           and source['php'][resume_index(source['rust'].index(item))]
+                           .get('payload', {}).get('completion', {}).get('value', {}).get('original')
+                           == {'type': 'string', 'hex': '3035'})
+            frames['php'][resume_index(index)]['payload']['completion']['value']['key'] = {
+                'type': 'int', 'value': '5'}
         elif name == 'wrong_script_observation':
             frames['php'][script_resume]['payload']['completion']['value'] = {}
         elif name == 'wrong_transport':
