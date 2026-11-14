@@ -145,11 +145,64 @@ function action_hook_leading_zero_reverse_case(): array
         'before' => $before, 'has_before' => $hasBefore, 'events' => $events, 'after' => $after];
 }
 
+function action_hook_boolean_alias_case(string $label, $registeredHook, $dispatchedHook): array
+{
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    $events = [];
+    $all = static function (...$args) use (&$events): void {
+        $events[] = ['event' => 'all', 'hook_arg' => action_hook_alias_view($args[0] ?? null),
+            'current_action' => action_hook_alias_view(current_action()),
+            'did_dispatched' => action_hook_alias_view(did_action($args[0] ?? null)),
+            'stack' => array_map('action_hook_alias_view', $GLOBALS['wp_current_filter'])];
+    };
+    $named = static function (...$args) use (&$events): void {
+        $events[] = ['event' => 'named', 'current_action' => action_hook_alias_view(current_action()),
+            'stack' => array_map('action_hook_alias_view', $GLOBALS['wp_current_filter'])];
+    };
+    add_action('all', $all, 1, 99);
+    add_action($registeredHook, $named, 10, 99);
+    $before = [
+        // Supplying the callback avoids the false-hook any-callback sentinel.
+        'has_dispatched' => action_hook_alias_view(has_action($dispatchedHook, $named)),
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+    ];
+    do_action($dispatchedHook, 'payload');
+    $afterDispatch = [
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+    ];
+    $removed = remove_action($dispatchedHook, $named, 10);
+    remove_action('all', $all, 1);
+    $after = [
+        'has_registered' => action_hook_alias_view(has_action($registeredHook, $named)),
+        'has_dispatched' => action_hook_alias_view(has_action($dispatchedHook, $named)),
+        'did_registered' => did_action($registeredHook),
+        'did_dispatched' => did_action($dispatchedHook),
+        'current_action' => action_hook_alias_view(current_action()),
+        'doing_action' => doing_action(),
+        'stack' => array_map('action_hook_alias_view', $GLOBALS['wp_current_filter']),
+    ];
+    return ['label' => $label,
+        'registered_hook' => action_hook_alias_view($registeredHook),
+        'dispatched_hook' => action_hook_alias_view($dispatchedHook),
+        'before' => $before, 'events' => $events,
+        'after_dispatch' => $afterDispatch, 'removed_by_alias' => $removed, 'after' => $after];
+}
 $cases = [
     'string_registration_integer_dispatch' => action_hook_alias_case('string_registration_integer_dispatch', '5', 5),
     'integer_registration_string_dispatch' => action_hook_alias_case('integer_registration_string_dispatch', 5, '5'),
     'leading_zero_non_alias' => action_hook_leading_zero_case(),
     'leading_zero_registration_integer_dispatch' => action_hook_leading_zero_reverse_case(),
 ];
-echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE, 'cases' => $cases],
+$booleanAliases = [
+    'false_register_zero_dispatch' => action_hook_boolean_alias_case('false_register_zero_dispatch', false, 0),
+    'zero_register_false_dispatch' => action_hook_boolean_alias_case('zero_register_false_dispatch', 0, false),
+    'true_register_one_dispatch' => action_hook_boolean_alias_case('true_register_one_dispatch', true, 1),
+    'one_register_true_dispatch' => action_hook_boolean_alias_case('one_register_true_dispatch', 1, true),
+];
+echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE, 'cases' => $cases, 'boolean_aliases' => $booleanAliases],
     JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";

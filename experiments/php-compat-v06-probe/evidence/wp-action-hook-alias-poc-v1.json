@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-action-hook-alias-poc.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-14T02:07:03.760779+00:00",
+  "observed_at_utc": "2026-11-14T06:03:01.644592+00:00",
   "wordpress_version": "7.1.3",
   "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "php_version": "8.5.12",
@@ -12,8 +12,8 @@
     ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "source_sha256_after": {
@@ -22,23 +22,23 @@
     ".reference/wordpress-7.1.3/recastpress-reference.json": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
     ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 26652,
+    "pid": 30224,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T020703.757420Z-stdout.bin",
-      "bytes": 6250,
-      "sha256": "8ed9c8ffb913ce644178f9b404481213b0d013d03e70bd905ce5b2a9acf31fb4"
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T060301.634200Z-stdout.bin",
+      "bytes": 9685,
+      "sha256": "613ca1bc3ce400bd03359b81a0e17a432beb5bce31260e944e94527ad92d832b"
     },
     "stderr": {
-      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T020703.757420Z-stderr.bin",
+      "path": "experiments/php-compat-v06-probe/evidence/action-hook-alias-captures/wp-action-hook-alias-20261114T060301.634200Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -611,6 +611,320 @@
             "type": "int",
             "value": "2"
           },
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      }
+    },
+    "boolean_aliases": {
+      "false_register_zero_dispatch": {
+        "label": "false_register_zero_dispatch",
+        "registered_hook": {
+          "type": "bool",
+          "value": false
+        },
+        "dispatched_hook": {
+          "type": "int",
+          "value": "0"
+        },
+        "before": {
+          "has_dispatched": {
+            "type": "int",
+            "value": "10"
+          },
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "int",
+              "value": "0"
+            },
+            "current_action": {
+              "type": "int",
+              "value": "0"
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "0"
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "int",
+              "value": "0"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": {
+            "type": "bool",
+            "value": false
+          },
+          "has_dispatched": {
+            "type": "bool",
+            "value": false
+          },
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "zero_register_false_dispatch": {
+        "label": "zero_register_false_dispatch",
+        "registered_hook": {
+          "type": "int",
+          "value": "0"
+        },
+        "dispatched_hook": {
+          "type": "bool",
+          "value": false
+        },
+        "before": {
+          "has_dispatched": {
+            "type": "int",
+            "value": "10"
+          },
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "bool",
+              "value": false
+            },
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": false
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "bool",
+              "value": false
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": false
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": {
+            "type": "bool",
+            "value": false
+          },
+          "has_dispatched": {
+            "type": "bool",
+            "value": false
+          },
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "true_register_one_dispatch": {
+        "label": "true_register_one_dispatch",
+        "registered_hook": {
+          "type": "bool",
+          "value": true
+        },
+        "dispatched_hook": {
+          "type": "int",
+          "value": "1"
+        },
+        "before": {
+          "has_dispatched": {
+            "type": "int",
+            "value": "10"
+          },
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "int",
+              "value": "1"
+            },
+            "current_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "int",
+                "value": "1"
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": {
+            "type": "bool",
+            "value": false
+          },
+          "has_dispatched": {
+            "type": "bool",
+            "value": false
+          },
+          "did_registered": 1,
+          "did_dispatched": 1,
+          "current_action": {
+            "type": "bool",
+            "value": false
+          },
+          "doing_action": false,
+          "stack": []
+        }
+      },
+      "one_register_true_dispatch": {
+        "label": "one_register_true_dispatch",
+        "registered_hook": {
+          "type": "int",
+          "value": "1"
+        },
+        "dispatched_hook": {
+          "type": "bool",
+          "value": true
+        },
+        "before": {
+          "has_dispatched": {
+            "type": "int",
+            "value": "10"
+          },
+          "did_registered": 0,
+          "did_dispatched": 0
+        },
+        "events": [
+          {
+            "event": "all",
+            "hook_arg": {
+              "type": "bool",
+              "value": true
+            },
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "did_dispatched": {
+              "type": "int",
+              "value": "1"
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": true
+              }
+            ]
+          },
+          {
+            "event": "named",
+            "current_action": {
+              "type": "bool",
+              "value": true
+            },
+            "stack": [
+              {
+                "type": "bool",
+                "value": true
+              }
+            ]
+          }
+        ],
+        "after_dispatch": {
+          "did_registered": 1,
+          "did_dispatched": 1
+        },
+        "removed_by_alias": true,
+        "after": {
+          "has_registered": {
+            "type": "bool",
+            "value": false
+          },
+          "has_dispatched": {
+            "type": "bool",
+            "value": false
+          },
+          "did_registered": 1,
+          "did_dispatched": 1,
           "current_action": {
             "type": "bool",
             "value": false

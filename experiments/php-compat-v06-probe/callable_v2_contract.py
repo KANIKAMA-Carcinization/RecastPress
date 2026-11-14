@@ -4848,7 +4848,10 @@ def validate_transcript(streams, result):
                             raise ValueError('action counter read is negative')
                         expected = action_counts.get(key, 0)
                         if observed_count != expected:
-                            raise ValueError('action counter read differs from measured action dispatches')
+                            raise ValueError(
+                                'action counter read differs from measured action dispatches: '
+                                f'key={key!r} observed={observed_count} expected={expected}'
+                            )
             elif action in ('missing_offset', 'null_property', 'null_foreach'):
                 _require_exact(value, {'missing': True}, 'native missing access')
             elif action == 'null_method':

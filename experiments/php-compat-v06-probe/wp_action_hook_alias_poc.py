@@ -120,13 +120,51 @@ def expected_leading_zero_reverse_case() -> dict:
 
 
 def expected_oracle() -> dict:
-    return {'php_version': '8.5.12', 'php_int_size': 8, 'cases': {
+    cases = {
         'string_registration_integer_dispatch': expected_case('string_registration_integer_dispatch', '5', 5),
         'integer_registration_string_dispatch': expected_case('integer_registration_string_dispatch', 5, '5'),
         'leading_zero_non_alias': expected_leading_zero_case(),
         'leading_zero_registration_integer_dispatch': expected_leading_zero_reverse_case(),
-    }}
+    }
 
+    def bool_int_alias_case(name: str, registered: bool | int, dispatched: bool | int) -> dict:
+        def view(value: bool | int) -> dict:
+            if type(value) is bool:
+                return {'type': 'bool', 'value': value}
+            return integer(value)
+
+        registered_view = view(registered)
+        dispatch_view = view(dispatched)
+        action_count = integer(1)
+        return {
+            'label': name,
+            'registered_hook': registered_view,
+            'dispatched_hook': dispatch_view,
+            'before': {'has_dispatched': integer(10), 'did_registered': 0, 'did_dispatched': 0},
+            'events': [
+                {'event': 'all', 'hook_arg': dispatch_view, 'current_action': dispatch_view,
+                 'did_dispatched': action_count, 'stack': [dispatch_view]},
+                {'event': 'named', 'current_action': dispatch_view, 'stack': [dispatch_view]},
+            ],
+            'after_dispatch': {'did_registered': 1, 'did_dispatched': 1},
+            'removed_by_alias': True,
+            'after': {
+                'has_registered': {'type': 'bool', 'value': False},
+                'has_dispatched': {'type': 'bool', 'value': False},
+                'did_registered': 1, 'did_dispatched': 1,
+                'current_action': {'type': 'bool', 'value': False},
+                'doing_action': False, 'stack': [],
+            },
+        }
+
+    boolean_aliases = {
+        'false_register_zero_dispatch': bool_int_alias_case('false_register_zero_dispatch', False, 0),
+        'zero_register_false_dispatch': bool_int_alias_case('zero_register_false_dispatch', 0, False),
+        'true_register_one_dispatch': bool_int_alias_case('true_register_one_dispatch', True, 1),
+        'one_register_true_dispatch': bool_int_alias_case('one_register_true_dispatch', 1, True),
+    }
+    return {'php_version': '8.5.12', 'php_int_size': 8, 'cases': cases,
+            'boolean_aliases': boolean_aliases}
 
 def fixed_inputs() -> dict[str, str]:
     import run_check as native

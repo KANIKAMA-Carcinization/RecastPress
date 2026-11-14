@@ -3082,6 +3082,63 @@ function callable_program_action_hook_alias_cases(): array
             'events' => $events, 'after' => $after];
     }
 
+    $booleanDefinitions = [
+        'false_register_zero_dispatch' => [false, 0],
+        'zero_register_false_dispatch' => [0, false],
+        'true_register_one_dispatch' => [true, 1],
+        'one_register_true_dispatch' => [1, true],
+    ];
+    // Isolate bool/int keys once, while keeping the numeric-string/5 history.
+    $fiveCount = did_action(5);
+    $GLOBALS['wp_actions'] = [5 => $fiveCount];
+    foreach ($booleanDefinitions as $name => [$registered, $dispatched]) {
+        $GLOBALS['wp_filter'] = [];
+        $GLOBALS['wp_filters'] = [];
+        $GLOBALS['wp_current_filter'] = [];
+        $events = [];
+        $all = static function (...$args) use (&$events, $view, $registered, $dispatched): void {
+            $events[] = ['event' => 'all', 'args' => array_map($view, $args),
+                'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+                'doing_registered' => doing_action($registered),
+                'doing_dispatched' => doing_action($dispatched),
+                'did_registered' => $view(did_action($registered)),
+                'did_dispatched' => $view(did_action($dispatched)),
+                'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+        };
+        $named = static function (...$args) use (&$events, $view, $registered, $dispatched): void {
+            $events[] = ['event' => 'named', 'args' => array_map($view, $args),
+                'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+                'doing_registered' => doing_action($registered),
+                'doing_dispatched' => doing_action($dispatched),
+                'did_registered' => $view(did_action($registered)),
+                'did_dispatched' => $view(did_action($dispatched)),
+                'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+        };
+        add_action('all', $all, 1, 99);
+        add_action($registered, $named, 10, 99);
+        $before = ['has_registered' => $view(has_action($registered, $named)),
+            'has_dispatched' => $view(has_action($dispatched, $named)),
+            'did_registered' => $view(did_action($registered)),
+            'did_dispatched' => $view(did_action($dispatched))];
+        do_action($dispatched, 'payload');
+        $during = ['did_registered' => $view(did_action($registered)),
+            'did_dispatched' => $view(did_action($dispatched)),
+            'has_registered' => $view(has_action($registered, $named)),
+            'has_dispatched' => $view(has_action($dispatched, $named))];
+        $removed = remove_action($dispatched, $named, 10);
+        $after = ['has_registered' => $view(has_action($registered, $named)),
+            'has_dispatched' => $view(has_action($dispatched, $named)),
+            'did_registered' => $view(did_action($registered)),
+            'did_dispatched' => $view(did_action($dispatched)),
+            'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+            'stack' => array_map($view, $GLOBALS['wp_current_filter'])];
+        remove_action('all', $all, 1);
+        $cases[$name] = ['label' => $name, 'registered_hook' => $view($registered),
+            'dispatched_hook' => $view($dispatched), 'before' => $before,
+            'events' => $events, 'after_dispatch' => $during,
+            'removed_by_alias' => $removed, 'after' => $after];
+    }
+
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_filters'] = [];
     $GLOBALS['wp_current_filter'] = [];

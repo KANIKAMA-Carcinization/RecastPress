@@ -42,6 +42,69 @@ ACTION_SINGLETON_OBJECT_EXPECTATIONS = {key: _ACTION_SINGLETON_ORACLE_CASES[key]
     'zero_key_singleton', 'nonzero_key_singleton', 'multi_element', 'direct_object',
     'extra_args', 'missing_named_listener')}
 ACTION_HOOK_KEY_ALIAS_EXPECTATIONS = _action_hook_alias_oracle()['cases']
+
+
+def _action_bool_int_alias_cases():
+    """Strict Action bridge expectations for PHP bool/int array-key aliases."""
+    def view(value):
+        if type(value) is bool:
+            return {'type': 'bool', 'value': value}
+        return {'type': 'int', 'value': str(value)}
+
+    payload = {'type': 'string', 'hex': '7061796c6f6164'}
+    cases = {}
+    definitions = (
+        ('false_register_zero_dispatch', False, 0),
+        ('zero_register_false_dispatch', 0, False),
+        ('true_register_one_dispatch', True, 1),
+        ('one_register_true_dispatch', 1, True),
+    )
+    action_counts = {0: 0, 1: 0}
+    for name, registered, dispatched in definitions:
+        dispatched_view = view(dispatched)
+        key = int(dispatched)
+        before_count = action_counts[key]
+        after_count = before_count + 1
+        action_counts[key] = after_count
+        doing_registered = registered == dispatched and type(registered) is type(dispatched)
+        event_common = {
+            'current_action': dispatched_view,
+            'doing_action': True,
+            'doing_registered': doing_registered,
+            'doing_dispatched': True,
+            'did_registered': view(after_count),
+            'did_dispatched': view(after_count),
+            'stack': [dispatched_view],
+        }
+        cases[name] = {
+            'label': name,
+            'registered_hook': view(registered),
+            'dispatched_hook': dispatched_view,
+            'before': {
+                'has_registered': view(10), 'has_dispatched': view(10),
+                'did_registered': view(before_count), 'did_dispatched': view(before_count),
+            },
+            'events': [
+                {'event': 'all', 'args': [dispatched_view, payload], **event_common},
+                {'event': 'named', 'args': [payload], **event_common},
+            ],
+            'after_dispatch': {
+                'did_registered': view(after_count), 'did_dispatched': view(after_count),
+                'has_registered': view(10), 'has_dispatched': view(10),
+            },
+            'removed_by_alias': True,
+            'after': {
+                'has_registered': {'type': 'bool', 'value': False},
+                'has_dispatched': {'type': 'bool', 'value': False},
+                'did_registered': view(after_count), 'did_dispatched': view(after_count),
+                'current_action': {'type': 'bool', 'value': False},
+                'doing_action': False, 'stack': [],
+            },
+        }
+    return cases
+
+
+ACTION_HOOK_KEY_ALIAS_EXPECTATIONS.update(_action_bool_int_alias_cases())
 ACTION_COUNTER_COW_HOOKS = {
     mode: 'callable-action-counter-cow-' + mode for mode in ('live', 'snapshot')
 }
