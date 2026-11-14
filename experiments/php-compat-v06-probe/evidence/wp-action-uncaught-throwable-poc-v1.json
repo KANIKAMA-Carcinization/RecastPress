@@ -1,0 +1,166 @@
+{
+  "schema": "recastpress.wp-action-uncaught-throwable-poc.v1",
+  "status": "passed",
+  "observed_at_utc": "2026-11-14T02:42:44.744214+00:00",
+  "wordpress_version": "7.1.3",
+  "wordpress_archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+  "php_version": "8.5.12",
+  "php_archive_sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477",
+  "source_sha256_before": {
+    "owner/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
+    "php/manifest": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "wordpress/archive": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "wordpress/manifest": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
+    "wordpress/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "wordpress/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "workspace/fixture": "90841449388186b6eb946f73386c348e73fb0d035d8529470e7503cbeabf91a3",
+    "workspace/runner": "00f4fe6cd06cafeb877e78c9a48069aa73abb20abb5d480561f31aba7c17c9c6"
+  },
+  "source_sha256_after": {
+    "owner/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
+    "php/manifest": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
+    "wordpress/archive": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
+    "wordpress/manifest": "05394b622a88068e1a03d86d90ecae2f31f7b5f62ed2f664b1c2366c0182ff3f",
+    "wordpress/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "wordpress/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "workspace/fixture": "90841449388186b6eb946f73386c348e73fb0d035d8529470e7503cbeabf91a3",
+    "workspace/runner": "00f4fe6cd06cafeb877e78c9a48069aa73abb20abb5d480561f31aba7c17c9c6"
+  },
+  "raw_capture": {
+    "all": {
+      "pid": 8172,
+      "returncode": 255,
+      "reaped": true,
+      "stdout": {
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T024244.723282Z-stdout.bin",
+        "bytes": 531,
+        "sha256": "9b15cc82eb08b11d88be2085d8aa89a756e19ed6083a3d0349a6a4ef442da097"
+      },
+      "stderr": {
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-all-20261114T024244.723282Z-stderr.bin",
+        "bytes": 1078,
+        "sha256": "d91b6b9cd5aec4fff9ff99b5923f0fcc9e340fcf8fb1e34aa14b7ac2ec2c9287"
+      }
+    },
+    "named": {
+      "pid": 4328,
+      "returncode": 255,
+      "reaped": true,
+      "stdout": {
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T024244.723282Z-stdout.bin",
+        "bytes": 581,
+        "sha256": "9519e6a3a759d6066cdf47986a9ba5d0680fcfc08729334d07254885a8f91788"
+      },
+      "stderr": {
+        "path": "experiments/php-compat-v06-probe/evidence/action-uncaught-throwable-captures/wp-action-uncaught-throwable-named-20261114T024244.723282Z-stderr.bin",
+        "bytes": 1072,
+        "sha256": "0ce9ff50c5ca35fff49c09d8e4c7dfec41e12fcb51283769ced467d321c09cc4"
+      }
+    }
+  },
+  "oracle": {
+    "php_version": "8.5.12",
+    "wordpress_version": "7.1.3",
+    "cases": {
+      "all": {
+        "php_version": "8.5.12",
+        "case": "all",
+        "events": [
+          {
+            "event": "all_first",
+            "args": [
+              "uncaught-throwable-all",
+              "payload"
+            ]
+          }
+        ],
+        "state": {
+          "did_action": 1,
+          "current_action": "uncaught-throwable-all",
+          "doing_action": true,
+          "stack": [
+            "uncaught-throwable-all"
+          ],
+          "hook_state": {
+            "nesting_level": 0,
+            "iterations": [],
+            "current_priority": [],
+            "doing_action": false
+          },
+          "all_hook_state": {
+            "nesting_level": 1,
+            "iterations": [
+              [
+                1,
+                2
+              ]
+            ],
+            "current_priority": [],
+            "doing_action": false
+          }
+        },
+        "last_error": {
+          "type": 1,
+          "uncaught_class": "RuntimeException",
+          "uncaught_message": "uncaught-all-marker"
+        },
+        "exit_code": 255,
+        "stderr_normalized": "Fatal error: Uncaught RuntimeException: uncaught-all-marker in <fixture>:<line>\nStack trace: <normalized>\n  thrown in <fixture> on line <line>\n"
+      },
+      "named": {
+        "php_version": "8.5.12",
+        "case": "named",
+        "events": [
+          {
+            "event": "all",
+            "args": [
+              "uncaught-throwable-named",
+              "payload"
+            ]
+          },
+          {
+            "event": "named_first",
+            "args": [
+              "payload"
+            ]
+          }
+        ],
+        "state": {
+          "did_action": 1,
+          "current_action": "uncaught-throwable-named",
+          "doing_action": true,
+          "stack": [
+            "uncaught-throwable-named"
+          ],
+          "hook_state": {
+            "nesting_level": 1,
+            "iterations": [
+              [
+                10,
+                20
+              ]
+            ],
+            "current_priority": [
+              10
+            ],
+            "doing_action": true
+          },
+          "all_hook_state": {
+            "nesting_level": 0,
+            "iterations": [],
+            "current_priority": [],
+            "doing_action": false
+          }
+        },
+        "last_error": {
+          "type": 1,
+          "uncaught_class": "RuntimeException",
+          "uncaught_message": "uncaught-named-marker"
+        },
+        "exit_code": 255,
+        "stderr_normalized": "Fatal error: Uncaught RuntimeException: uncaught-named-marker in <fixture>:<line>\nStack trace: <normalized>\n  thrown in <fixture> on line <line>\n"
+      }
+    }
+  },
+  "scope": "Native pinned PHP/WordPress subprocesses for uncaught Throwable from first all callback and first named callback; shutdown state and process output only. No bridge request is made."
+}
