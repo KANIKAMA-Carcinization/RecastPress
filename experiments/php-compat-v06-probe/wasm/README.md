@@ -220,4 +220,14 @@ Historical 2026-11-14 source-bound receipts (116-input callable snapshot; 125 in
 |Action|[passed](evidence/actions-20261114T063156.902521Z-success.json)|116|
 |Uncaught Action|[passed](evidence/hooks-uncaught-20261114T064823.023405Z-success.json)|125|
 
-Current-source callable profile receipts (2026-11-15): [Filter](evidence/callables-20261115T162438.195943Z-success.json) and [Action](evidence/actions-20261115T162708.547723Z-success.json), each bound to 119 unchanged inputs. The shared source snapshot changed when Resource identity support landed, so every source-bound PHP-Wasm profile was rerun and verified. The current-source profile receipts are: Native/Wasm observations match the fixed WordPress oracle; Action float/null ordering and illegal array/object hook keys are included.
+Current-source profile receipts (2026-11-15) after the Resource identity model test changed the shared source snapshot. All seven profiles were rerun and verified; 119 inputs are bound except 125 for Uncaught Action. Native/Wasm observations match the fixed WordPress oracle; Action float/null ordering, illegal array/object keys, and Resource warning/callback parity remain covered.
+
+|Profile|Receipt|Bound inputs|
+|---|---|---:|
+|Bridge|[passed](evidence/bridge-20261115T171756.067837Z-success.json)|119|
+|Publish|[passed](evidence/publish-20261115T171958.735395Z-success.json)|119|
+|Handles|[passed](evidence/handles-20261115T172201.701693Z-success.json)|119|
+|Hooks|[passed](evidence/hooks-20261115T172405.044982Z-success.json)|119|
+|Callable Filter|[passed](evidence/callables-20261115T172655.272192Z-success.json)|119|
+|Action|[passed](evidence/actions-20261115T172914.757755Z-success.json)|119|
+|Uncaught Action|[passed](evidence/hooks-uncaught-20261115T173130.455271Z-success.json)|125|

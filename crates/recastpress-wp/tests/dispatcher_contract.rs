@@ -112,6 +112,22 @@ fn drive_native_ticket(
     }
 }
 
+fn advance_native_effectful_action(
+    dispatcher: &mut Dispatcher,
+    ticket: recastpress_wp::dispatcher::DispatchTicket,
+) -> DispatchStep {
+    loop {
+        match dispatcher.advance(ticket).unwrap() {
+            DispatchStep::Boundary(
+                DispatchBoundary::NamedHookIsset | DispatchBoundary::NamedHookRead,
+            ) => dispatcher
+                .resume_boundary(ticket, Completion::Value(PhpValue::Null))
+                .unwrap(),
+            step => return step,
+        }
+    }
+}
+
 #[test]
 fn effectful_filter_updates_counter_only_after_boundary_and_runs_named_phases() {
     let mut dispatcher = Dispatcher::new();
@@ -3101,7 +3117,10 @@ fn effectful_action_preincrements_then_runs_all_and_named_with_void_semantics() 
     dispatcher
         .resume_boundary(ticket, Completion::Value(PhpValue::Null))
         .unwrap();
-    assert_eq!(drive_native_ticket(&mut dispatcher, ticket), PhpValue::Null);
+    assert_eq!(
+        advance_native_effectful_action(&mut dispatcher, ticket),
+        DispatchStep::Complete(PhpValue::Null)
+    );
     assert_eq!(
         *all_seen.lock().unwrap(),
         vec![
@@ -3111,6 +3130,77 @@ fn effectful_action_preincrements_then_runs_all_and_named_with_void_semantics() 
     );
     assert_eq!(dispatcher.did_action("action-contract"), 1);
     assert_eq!(dispatcher.did_filter("action-contract"), 0);
+}
+
+#[test]
+fn resource_hook_identity_survives_resource_id_reuse_model() {
+    let generation = RequestGeneration::new(991);
+    let argument = |slot: u32, token: u64| {
+        let handle = PhpHandle::new(generation, PhpHandleKind::Resource, slot, 1, token);
+        let identity = PhpHandle::new(
+            generation,
+            PhpHandleKind::Resource,
+            slot + 100,
+            1,
+            token + 1000,
+        );
+        HookArgument::new(
+            HookScalar::Resource {
+                handle,
+                identity,
+                resource_type: "stream".into(),
+                resource_id: 41,
+            },
+            PhpKey::Integer(41),
+        )
+    };
+
+    let original = argument(1, 11);
+    let reused_id = argument(2, 22);
+    assert_eq!(original.array_key, reused_id.array_key);
+    assert!(!original.original.php_strict_eq(&reused_id.original));
+
+    let closed_same_resource = match &original.original {
+        HookScalar::Resource {
+            handle,
+            identity,
+            resource_id,
+            ..
+        } => HookScalar::Resource {
+            handle: *handle,
+            identity: *identity,
+            resource_type: "resource (closed)".into(),
+            resource_id: *resource_id,
+        },
+        _ => unreachable!(),
+    };
+    assert!(original.original.php_strict_eq(&closed_same_resource));
+
+    let mut dispatcher = Dispatcher::new();
+    let callback_original = original.original.clone();
+    let callback_reused = reused_id.original.clone();
+    dispatcher.add_typed(
+        &original,
+        HookPriority::integer(10),
+        DispatcherCallback::new(id("resource_id_reuse"), 0, move |context, _| {
+            assert_eq!(context.current_hook_typed(), Some(&callback_original));
+            assert!(context.doing_hook_typed(Some(&callback_original)));
+            assert!(!context.doing_hook_typed(Some(&callback_reused)));
+            assert_eq!(
+                context.did_action_typed(&HookArgument::new(
+                    callback_reused.clone(),
+                    PhpKey::Integer(41),
+                )),
+                1
+            );
+            Ok(PhpValue::Null)
+        }),
+    );
+
+    dispatcher.do_action_typed(&original, &[]).unwrap();
+    assert_eq!(dispatcher.did_action_typed(&reused_id), 1);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+    assert!(!dispatcher.doing_hook_typed(Some(&original.original)));
 }
 
 #[test]
@@ -3194,7 +3284,7 @@ fn effectful_action_without_any_bindings_counts_once_per_completed_boundary() {
             )
             .unwrap();
         assert_eq!(
-            dispatcher.advance(ticket).unwrap(),
+            advance_native_effectful_action(&mut dispatcher, ticket),
             DispatchStep::Complete(PhpValue::Null)
         );
         assert_eq!(dispatcher.did_action_typed(&name), expected_count);
@@ -3232,7 +3322,7 @@ fn nested_effectful_actions_dispatch_while_parent_php_callback_is_suspended() {
     dispatcher
         .resume_boundary(parent, Completion::Value(value("1")))
         .unwrap();
-    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(parent).unwrap() else {
+    let DispatchStep::InvokePhp(invocation) = advance_native_effectful_action(&mut dispatcher, parent) else {
         panic!("expected the parent PHP callback")
     };
     assert_eq!(invocation.callback, id("parent_action_php"));
@@ -3250,7 +3340,10 @@ fn nested_effectful_actions_dispatch_while_parent_php_callback_is_suspended() {
     dispatcher
         .resume_boundary(child, Completion::Value(value("1")))
         .unwrap();
-    assert_eq!(drive_native_ticket(&mut dispatcher, child), PhpValue::Null);
+    assert_eq!(
+        advance_native_effectful_action(&mut dispatcher, child),
+        DispatchStep::Complete(PhpValue::Null)
+    );
     dispatcher
         .resume_php(parent, value("parent callback result"))
         .unwrap();
@@ -3325,7 +3418,7 @@ fn caught_nested_action_throw_leaves_the_wp_stale_stack_tail_for_parent_pop() {
         .resume_boundary(parent, Completion::Value(PhpValue::Integer(1)))
         .unwrap();
     assert!(matches!(
-        dispatcher.advance(parent).unwrap(),
+        advance_native_effectful_action(&mut dispatcher, parent),
         DispatchStep::InvokePhp(_)
     ));
 
@@ -3340,7 +3433,7 @@ fn caught_nested_action_throw_leaves_the_wp_stale_stack_tail_for_parent_pop() {
         .resume_boundary(child, Completion::Value(PhpValue::Integer(1)))
         .unwrap();
     assert!(matches!(
-        dispatcher.advance(child).unwrap(),
+        advance_native_effectful_action(&mut dispatcher, child),
         DispatchStep::InvokePhp(_)
     ));
     let thrown = throwable_handle(843);

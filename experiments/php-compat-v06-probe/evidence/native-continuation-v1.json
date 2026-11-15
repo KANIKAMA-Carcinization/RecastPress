@@ -2,7 +2,7 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-15T16:19:57+00:00",
+  "recorded_at_utc": "2026-11-15T17:15:48+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
@@ -11,7 +11,7 @@
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "crates/recastpress-wp/src/lib.rs": "298d4548c356d8c90d8aa4cc70b79ec259ff4e34048d0d6dd4565f5f4cbb9172",
+    "crates/recastpress-wp/src/lib.rs": "f2b68358f634ef3bcfbb220dc510ffd23c8f71204c985d67066d1fb3ba141d38",
     "crates/recastpress-wp/src/continuation.rs": "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849",
     "crates/recastpress-wp/src/public_state.rs": "d0f798aa5229ab8a20a3b1da286eadcebe188a52943786d8a54fd5b7ca9c5cc5",
     "crates/recastpress-wp/tests/continuation_contract.rs": "16d8934c6ab7641ecde1c244ee6c1839f36c32ac1f5eab82f5384b272af30def",
@@ -42,7 +42,7 @@
     "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
-    "crates/recastpress-wp/tests/dispatcher_contract.rs": "57db3733b6bad84720d835f99d873c54e00d84de9b13378a753ef214af91c9db",
+    "crates/recastpress-wp/tests/dispatcher_contract.rs": "88d58b0d2824fd0b61eaa7944176332e6a9292c33b9f3b29c54bf926b044dd9c",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
@@ -216,7 +216,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "3916039627793dc10bdafd861648e8918579e852884815900b264c0e3379733c",
+  "adapter_binary_sha256": "c463c10079437a3df1a0e8d1a87eb0bbde84a908b8508c0b08336aef9148dee1",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -254,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 23996,
-      "rust": 33024
+      "php": 27868,
+      "rust": 25464
     },
     "returncodes": {
       "php": 0,
@@ -312,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -337,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 31948,
-      "rust": 31584
+      "php": 3560,
+      "rust": 32908
     },
     "returncodes": {
       "php": 0,
@@ -401,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -426,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 32704,
-      "rust": 2224
+      "php": 14660,
+      "rust": 34452
     },
     "returncodes": {
       "php": 0,
@@ -575,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -601,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 13796,
-        "rust": 23096
+        "php": 19744,
+        "rust": 21620
       },
       "returncodes": {
         "php": 0,
@@ -677,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "5f0e27342e99ce8a7f03e58e3f0ccd5500888c25c082daecdf19720fbecbd246",
+          "stdout_sha256": "3439e970d598a1b9354c0ac64b2ff7501d9608144a316b84e73f2626c75a960f",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -702,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 14660,
-        "rust": 3300
+        "php": 28476,
+        "rust": 18036
       },
       "returncodes": {
         "php": 0,
@@ -781,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "64638c1a3de46833906ca7024568103a0effcccd5ad2b723a73755ce20b09433",
+          "stdout_sha256": "0b29122aae844a23bcd8a4c17b11d3cab1cc961c159e9841f063554d2b019825",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -807,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 19040,
-      "rust": 34800
+      "php": 24572,
+      "rust": 33996
     },
     "returncodes": {
       "php": 0,
@@ -893,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "20cb69f72bc42d5795cdb914dcd865fc9209f2791dac251f01056f7ffce208d1",
+        "stdout_sha256": "a4a979bec8e7f3c2e0f5f32fcba40ee5e67ceaa6a093b227c5e543557c2b2d40",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "6d6023a10d3b7a5c143cfb43b76134b3c467e92c098fcd30d87d0f9ffb74357f",
+        "stdout_sha256": "12e4341767156c301737e1b1c8f397191f3cdac6f6c2b3a3e321f1ff2d550932",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -919,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 26516,
-        "rust": 34408
+        "php": 29412,
+        "rust": 34300
       },
       "returncodes": {
         "php": 0,
@@ -1042,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "aa8a6ca20648aad26ad56ca69181e6df7c8f9299befd0bfd4b4e887a3e7bb4be",
+          "stdout_sha256": "473419f74f76d7455451e03e5dca1f2c94bf608a4da4b303ae3b60490c4e44ca",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "f746c040c24acc8c9ee029dfccfe6c0fd3c6f3f4fb951f1b826101af96f050cc",
+          "stdout_sha256": "680969729077bea3fbb43ba73c7ee2538f3fb105a15c65df0fb4f05aef576cc6",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1087,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 14540,
-        "rust": 1836
+        "php": 21944,
+        "rust": 23432
       },
       "returncodes": {
         "php": 0,
@@ -1112,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "9923f9e21a041b03"
+              "token": "11d8f9d7f10b2ed3"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1175,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "9923f9e21a041b03"
+              "token": "11d8f9d7f10b2ed3"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1249,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "263d6c679e8d712996e861dee66feec6d40c3bb5fd88be16e6c19e4d8f7a99cd",
+          "stdout_sha256": "25adc69658600debd73e1f9a8641fbef0be694f270979176aaf0127c653f92c0",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "d224ddd5b8f43444dfa0ed34c6be57ff6db81443bab7d2b13685e7b4fc05450e",
+          "stdout_sha256": "fc001d93b47d3c642ef143c3d2d5fc0edfebf4fbc8de35dd1c8fbfebb86d22be",
           "stderr_bytes": 1817,
-          "stderr_sha256": "20db7c512a1b9421a5d3a8fef1d2707a3a86f3acc557d73a3426c8f593d77182"
+          "stderr_sha256": "d1ca742e51cd1de40edd20fef0c0545dddfa6d5507816750d5624bbfb6cdb7e3"
         }
       },
       "hook_transcript_rejections": [
@@ -1295,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 34640,
-      "rust": 20612
+      "php": 33436,
+      "rust": 29124
     },
     "returncodes": {
       "php": 0,
@@ -14717,24 +14717,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "418eb9bf295acbee4b0350f56950a5c0cc87a8298d913da5cdf11fad274dcb59",
+        "stdout_sha256": "e039314d51d30dcd362478512380397cb1adb3ee4d7edecb253f9c686240ed2f",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2770412,
-        "stdout_sha256": "d4fbefcb5aa02f29402f06c58ca64330c34c0f11fff56f632ae43aabdbe3c6e1",
+        "stdout_sha256": "971001beded0a895aa18824f14afbb182199143d341afed1cf826616cd37689f",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14786,8 +14786,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 19316,
-      "rust": 31008
+      "php": 32140,
+      "rust": 33968
     },
     "returncodes": {
       "php": 0,
@@ -25881,24 +25881,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 1163011,
-        "stdout_sha256": "3cd877b3af2eb84cbc22a2d291932c361c4de78d2786d44671f82560b33e70bf",
+        "stdout_sha256": "f25ee1a4bc7bbb646a29d51906df752a6a1317351fdfc1b4c6e37e23576b3886",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1368116,
-        "stdout_sha256": "c3658fa32a8310312c1e6a0c1969622282d07a2af76e343316f2047f2d386faa",
+        "stdout_sha256": "3edbb90e291b617941bc1ad011b16ec023ef17f5155853088fea401308e29891",
         "stderr_bytes": 85126,
         "stderr_sha256": "69c68c35be87e688caf40b1a7ab153e8fdefc7bdc6f28e3a5ed59270f2d8d821"
       }
@@ -25960,72 +25960,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 6976,
+        "pid": 21588,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 32576,
+        "pid": 14172,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 30672,
+        "pid": 33984,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 19904,
+        "pid": 34780,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 26984,
+        "pid": 30636,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 2024,
+        "pid": 31448,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 26836,
+        "pid": 34588,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 29528,
+        "pid": 1948,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 33844,
+        "pid": 17480,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 31152,
+        "pid": 28572,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 17228,
+        "pid": 17300,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 24372,
+        "pid": 14288,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 9448,
+        "pid": 23536,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 33024,
+        "pid": 5464,
         "returncode": 0,
         "reaped": true
       }
