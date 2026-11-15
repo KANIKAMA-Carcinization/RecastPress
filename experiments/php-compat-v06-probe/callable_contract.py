@@ -44,6 +44,13 @@ ACTION_SINGLETON_OBJECT_EXPECTATIONS = {key: _ACTION_SINGLETON_ORACLE_CASES[key]
     'zero_key_singleton', 'nonzero_key_singleton', 'multi_element', 'direct_object',
     'extra_args', 'missing_named_listener')}
 ACTION_HOOK_KEY_ALIAS_EXPECTATIONS = _action_hook_alias_oracle()['cases']
+_ACTION_HOOK_KEY_RECEIPT = json.loads(
+    (Path(__file__).resolve().parent / 'evidence/wp-action-hook-key-poc-v1.json').read_text(encoding='utf-8')
+)
+ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS = {
+    key: case for key, case in _ACTION_HOOK_KEY_RECEIPT['oracle']['unusual_cases'].items()
+    if not key.startswith('resource_')
+}
 
 
 def _action_bool_int_alias_cases():

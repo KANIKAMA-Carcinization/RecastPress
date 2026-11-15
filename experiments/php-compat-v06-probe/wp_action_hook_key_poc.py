@@ -129,6 +129,9 @@ def run_target():
         expected_hook_type = 'resource' if kind == 'resource' else ('array' if kind == 'array' else 'object')
         if case.get('hook', {}).get('type') != expected_hook_type:
             raise ValueError('Action unusual hook-key value type differs')
+        expected_stringify_calls = 0 if kind == 'stringable_object' else None
+        if case.get('stringify_calls') != expected_stringify_calls:
+            raise ValueError('Stringable Action hook key invoked __toString')
         after = case.get('after', {})
         if after.get('stack') != [] or after.get('doing_action') is not False or after.get('current_action') != {'type': 'bool', 'value': False}:
             raise ValueError('Action unusual hook-key dispatcher did not unwind')

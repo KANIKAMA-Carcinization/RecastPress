@@ -158,7 +158,13 @@ $aliases = [
 
 class ActionHookKeyStringable
 {
-    public function __toString(): string { return 'stringable-hook-key'; }
+    public int $stringifyCalls = 0;
+
+    public function __toString(): string
+    {
+        $this->stringifyCalls++;
+        return 'stringable-hook-key';
+    }
 }
 
 function action_hook_key_unusual_case(string $label, $hook, bool $named): array
@@ -227,6 +233,7 @@ function action_hook_key_unusual_case(string $label, $hook, bool $named): array
     restore_error_handler();
     return ['label' => $label, 'hook' => $hookView, 'named_listener' => $named,
         'events' => $events, 'warnings' => $warnings,
+        'stringify_calls' => $hook instanceof ActionHookKeyStringable ? $hook->stringifyCalls : null,
         'registration_throwable' => $registrationThrowable,
         'dispatch_throwable' => $dispatchThrowable, 'after' => $after];
 }

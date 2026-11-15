@@ -10,7 +10,7 @@ from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACT
     ACTION_HOOK_KEY_WARNING_EXPECTATIONS,
     ALL_APIS, EXPECTED_OBSERVATION,
     ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
-    validate_key, validate_pod)
+    ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS, validate_key, validate_pod)
 from hook_contract import _require_exact, _unique_frame_object
 
 REQUEST = '71'
@@ -4003,6 +4003,7 @@ EXPECTED_ACTION_API['heap_argument_continuation'] = json.loads(json.dumps(ACTION
 EXPECTED_ACTION_API['singleton_object_unwrap'] = json.loads(json.dumps(ACTION_SINGLETON_OBJECT_EXPECTATIONS))
 EXPECTED_ACTION_API['hook_key_alias'] = json.loads(json.dumps(ACTION_HOOK_KEY_ALIAS_EXPECTATIONS))
 EXPECTED_ACTION_API['hook_key_warning'] = json.loads(json.dumps(ACTION_HOOK_KEY_WARNING_EXPECTATIONS))
+EXPECTED_ACTION_API['hook_key_unusual'] = json.loads(json.dumps(ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS))
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode

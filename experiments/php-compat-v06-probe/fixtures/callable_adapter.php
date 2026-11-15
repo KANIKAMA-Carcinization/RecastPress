@@ -458,9 +458,9 @@ final class CallableApiAdapter
                 $target = [];
                 if ($arguments['access'] === 'project') {
                     // Keep PHP's native invalid-array-key TypeError for the
-                    // projection mode without invoking a scalar offset access.
-                    $projected = $target[$original];
-                    unset($projected);
+                    // projection mode with the same isset operation WordPress
+                    // uses at the Action counter boundary.
+                    isset($target[$original]);
                 }
                 switch ($arguments['access']) {
                     case 'isset':

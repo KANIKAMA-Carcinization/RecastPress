@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-15T14:05:14.619413+00:00",
+  "observed_at_utc": "2026-11-15T14:47:40.480970+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -171,16 +171,16 @@
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
-    "experiments/php-compat-v06-probe/callable_contract.py": "85b31f02dbd74e80d4bfeee29eaea3f675c81db916682acd60f7ded55fea7116",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "979e4f52d3d7ec52d6372c8d26de1c38e4ccc3a78fc67624233952e26ff7cbfa",
-    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "e48a09705e662f8128147323ce11cbd7d67b22da6a759173599c1f3880060a04",
+    "experiments/php-compat-v06-probe/callable_contract.py": "3828bf14f85779c9824ebfd5d35314f3c082c9b9f93aab4d4692021b3f17cd2d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "22aa688104c15bc537e5930435bf05e89c6b456a20a75f9fbd268163d5166a5e",
+    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "b3c82e075239c9ac2b661e921f1ddf99380c98443d5d909553c56b1a52dce94b",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "80a661331d1b21261e52202cfa173aced81e068d1facbc75abe8d90ee45e4ada",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e70ec560c66da9bdfe2606a51feb16d939d898c051382f2ee9f897230bfa7592",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "16f6691fd77cadbe97293a5a036e57762afaff0eae7db35d3dcf4f71b591905f",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "875c6206b17b202d54a4e5d46d7aed68e245dc1ed4f9ff974179811c1ef67a06",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -194,7 +194,7 @@
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "e0f5a784a6f4980eed9c79e94a9bc13704d9bcc868b70b3e72f5bbd89800be9f",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "8eab87e33f64b42692e00d3205783941f1245b3a31502f1d40ef92e94a8222fe",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
@@ -202,7 +202,7 @@
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
-    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "81398ad3409015ba03c9cd46b2eabf991b13f74347f0abf0403767f9e139ec93",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "dded0b230608495ba23ac4108b7410ab2d79c7822f4ac927ed3cf1370536c9dd",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -376,16 +376,16 @@
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
-    "experiments/php-compat-v06-probe/callable_contract.py": "85b31f02dbd74e80d4bfeee29eaea3f675c81db916682acd60f7ded55fea7116",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "979e4f52d3d7ec52d6372c8d26de1c38e4ccc3a78fc67624233952e26ff7cbfa",
-    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "e48a09705e662f8128147323ce11cbd7d67b22da6a759173599c1f3880060a04",
+    "experiments/php-compat-v06-probe/callable_contract.py": "3828bf14f85779c9824ebfd5d35314f3c082c9b9f93aab4d4692021b3f17cd2d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "22aa688104c15bc537e5930435bf05e89c6b456a20a75f9fbd268163d5166a5e",
+    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "b3c82e075239c9ac2b661e921f1ddf99380c98443d5d909553c56b1a52dce94b",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "80a661331d1b21261e52202cfa173aced81e068d1facbc75abe8d90ee45e4ada",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e70ec560c66da9bdfe2606a51feb16d939d898c051382f2ee9f897230bfa7592",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "16f6691fd77cadbe97293a5a036e57762afaff0eae7db35d3dcf4f71b591905f",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "875c6206b17b202d54a4e5d46d7aed68e245dc1ed4f9ff974179811c1ef67a06",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -399,7 +399,7 @@
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "e0f5a784a6f4980eed9c79e94a9bc13704d9bcc868b70b3e72f5bbd89800be9f",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "8eab87e33f64b42692e00d3205783941f1245b3a31502f1d40ef92e94a8222fe",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
@@ -407,7 +407,7 @@
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
-    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "81398ad3409015ba03c9cd46b2eabf991b13f74347f0abf0403767f9e139ec93",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "dded0b230608495ba23ac4108b7410ab2d79c7822f4ac927ed3cf1370536c9dd",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -415,33 +415,33 @@
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 32796,
+    "pid": 26560,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 33108,
+    "pid": 13172,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T144740.460122Z-stdout.bin",
       "bytes": 120941,
       "sha256": "7783b1489fa9ef3183b51bfd22a5a6035f90d5940d3a078da36d30bef1cef506"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T144740.460122Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-action_stdout.bin",
-      "bytes": 71535,
-      "sha256": "4c725615ccb5423f85c4f5d19519fd6af793d478d10ba15f92e2602cb4aadf01"
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T144740.460122Z-action_stdout.bin",
+      "bytes": 76799,
+      "sha256": "5e6b6e92001f82f9983a44a7ca5a98bc41e43739c8763aaee69dbf4356f6e5d3"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T144740.460122Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -10612,6 +10612,236 @@
             }
           }
         },
+        "hook_key_unusual": {
+          "array_all_only": {
+            "label": "array_all_only",
+            "hook": {
+              "type": "array",
+              "count": 0
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "array_named": {
+            "label": "array_named",
+            "hook": {
+              "type": "array",
+              "count": 0
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "ordinary_object_all_only": {
+            "label": "ordinary_object_all_only",
+            "hook": {
+              "type": "object",
+              "class": "stdClass"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "ordinary_object_named": {
+            "label": "ordinary_object_named",
+            "hook": {
+              "type": "object",
+              "class": "stdClass"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "stringable_object_all_only": {
+            "label": "stringable_object_all_only",
+            "hook": {
+              "type": "object",
+              "class": "ActionHookKeyStringable"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": 0,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "stringable_object_named": {
+            "label": "stringable_object_named",
+            "hook": {
+              "type": "object",
+              "class": "ActionHookKeyStringable"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": 0,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          }
+        },
         "no_listener_count": {
           "before": 0,
           "after": 1
@@ -15513,6 +15743,236 @@
             }
           }
         },
+        "hook_key_unusual": {
+          "array_all_only": {
+            "label": "array_all_only",
+            "hook": {
+              "type": "array",
+              "count": 0
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "array_named": {
+            "label": "array_named",
+            "hook": {
+              "type": "array",
+              "count": 0
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "ordinary_object_all_only": {
+            "label": "ordinary_object_all_only",
+            "hook": {
+              "type": "object",
+              "class": "stdClass"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "ordinary_object_named": {
+            "label": "ordinary_object_named",
+            "hook": {
+              "type": "object",
+              "class": "stdClass"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": null,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "stringable_object_all_only": {
+            "label": "stringable_object_all_only",
+            "hook": {
+              "type": "object",
+              "class": "ActionHookKeyStringable"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "dispatch",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": 0,
+            "registration_throwable": null,
+            "dispatch_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+            },
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "stringable_object_named": {
+            "label": "stringable_object_named",
+            "hook": {
+              "type": "object",
+              "class": "ActionHookKeyStringable"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "throwable",
+                "stage": "named_registration",
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              }
+            ],
+            "warnings": [],
+            "stringify_calls": 0,
+            "registration_throwable": {
+              "class": "TypeError",
+              "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+            },
+            "dispatch_throwable": null,
+            "after": {
+              "did_action": {
+                "throwable": {
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              },
+              "counter_entries": [],
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          }
+        },
         "no_listener_count": {
           "before": 0,
           "after": 1
@@ -16932,11 +17392,11 @@
   },
   "scope": "Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-15T14:05:23.208794+00:00",
+    "observed_at_utc": "2026-11-15T14:54:33.632401+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "4084ef527a443050b6b24378bf0e10fdada7681bdff879e816fc99b69e3523f3",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261115T140257.867262Z-success.json",
-    "wasm_receipt_sha256": "75c4417706fa900a9b0fdc18b5e5162a9f21dfcb034a68f253390f438c789606",
+    "native_receipt_sha256": "a7dbef9981b7c2bd5ba1aba5c18d60453fbd660a7527357d2118a860dd3ebf33",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261115T145324.644340Z-success.json",
+    "wasm_receipt_sha256": "a3aa07ae9ff69ea84f213293e5760ead7c14594ef79a74bb72fc33e38be9540b",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -17029,11 +17489,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-15T14:06:18.471770+00:00",
+    "observed_at_utc": "2026-11-15T14:55:27.817083+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "4084ef527a443050b6b24378bf0e10fdada7681bdff879e816fc99b69e3523f3",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261115T135633.671989Z-success.json",
-    "wasm_receipt_sha256": "15e8900c0eafa90757f66758f14d2dd9cf13226f9fffa8d7507cd0fc5da0c016",
+    "native_receipt_sha256": "a7dbef9981b7c2bd5ba1aba5c18d60453fbd660a7527357d2118a860dd3ebf33",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261115T145032.329679Z-success.json",
+    "wasm_receipt_sha256": "b3b8a93399c37865fa2645898ef966059697cbc5e2aeafe83722d63713798887",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",
@@ -17048,6 +17508,7 @@
       "action_api.singleton_object_unwrap",
       "action_api.hook_key_alias",
       "action_api.hook_key_warning",
+      "action_api.hook_key_unusual",
       "action_api.no_listener_count",
       "action_api.counter_seed_diagnostics",
       "action_api.counter_seed_values",

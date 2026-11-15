@@ -2,7 +2,7 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-15T13:51:02+00:00",
+  "recorded_at_utc": "2026-11-15T14:40:46+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
@@ -23,8 +23,8 @@
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "85b31f02dbd74e80d4bfeee29eaea3f675c81db916682acd60f7ded55fea7116",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "979e4f52d3d7ec52d6372c8d26de1c38e4ccc3a78fc67624233952e26ff7cbfa",
+    "experiments/php-compat-v06-probe/callable_contract.py": "3828bf14f85779c9824ebfd5d35314f3c082c9b9f93aab4d4692021b3f17cd2d",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "22aa688104c15bc537e5930435bf05e89c6b456a20a75f9fbd268163d5166a5e",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
@@ -33,9 +33,9 @@
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "80a661331d1b21261e52202cfa173aced81e068d1facbc75abe8d90ee45e4ada",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e70ec560c66da9bdfe2606a51feb16d939d898c051382f2ee9f897230bfa7592",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "16f6691fd77cadbe97293a5a036e57762afaff0eae7db35d3dcf4f71b591905f",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "875c6206b17b202d54a4e5d46d7aed68e245dc1ed4f9ff974179811c1ef67a06",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -254,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 26088,
-      "rust": 28952
+      "php": 27984,
+      "rust": 3104
     },
     "returncodes": {
       "php": 0,
@@ -312,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-85238b49acc544aebcec837e4fae42c5-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-85238b49acc544aebcec837e4fae42c5-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-85238b49acc544aebcec837e4fae42c5-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-85238b49acc544aebcec837e4fae42c5-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -337,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 33244,
-      "rust": 33368
+      "php": 19896,
+      "rust": 32068
     },
     "returncodes": {
       "php": 0,
@@ -401,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-ba200dab60fe4b999d75c4d025bd540c-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-ba200dab60fe4b999d75c4d025bd540c-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-ba200dab60fe4b999d75c4d025bd540c-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-ba200dab60fe4b999d75c4d025bd540c-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -426,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 33724,
-      "rust": 32392
+      "php": 33148,
+      "rust": 34032
     },
     "returncodes": {
       "php": 0,
@@ -575,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-885ac13fbeac4365bcd46e0b7d678404-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-885ac13fbeac4365bcd46e0b7d678404-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-885ac13fbeac4365bcd46e0b7d678404-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-885ac13fbeac4365bcd46e0b7d678404-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -601,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 23572,
-        "rust": 16912
+        "php": 11204,
+        "rust": 22400
       },
       "returncodes": {
         "php": 0,
@@ -677,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-0b8292a9ef174c828886d96915cee5c8-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-0b8292a9ef174c828886d96915cee5c8-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-0b8292a9ef174c828886d96915cee5c8-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-0b8292a9ef174c828886d96915cee5c8-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "d8926c89112fcba37444a7d5214041fc3ef96fef409f6752674ab6eb5affc604",
+          "stdout_sha256": "dc0ed1eb1cb65a9820774f5b2b8040c53f19711ef52e888411a3d4e5b49561da",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -702,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 26996,
-        "rust": 19600
+        "php": 30976,
+        "rust": 9044
       },
       "returncodes": {
         "php": 0,
@@ -781,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-5f927f9a95d74b368e61ec1f8396f6ae-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-5f927f9a95d74b368e61ec1f8396f6ae-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-5f927f9a95d74b368e61ec1f8396f6ae-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-5f927f9a95d74b368e61ec1f8396f6ae-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "ebe880250b1e203bf97c5626b33bcb026dce7e9fe499240dd953a84e6739b1cd",
+          "stdout_sha256": "9d45345acc8174e9fdd4e1a60af37a898a506c228dbbf02e755ce6dff237ac63",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -807,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 18316,
-      "rust": 32236
+      "php": 25348,
+      "rust": 16912
     },
     "returncodes": {
       "php": 0,
@@ -893,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-44e9a8aef3184370bcfbeb12f1676646-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-44e9a8aef3184370bcfbeb12f1676646-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-44e9a8aef3184370bcfbeb12f1676646-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-44e9a8aef3184370bcfbeb12f1676646-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "d6182e548a4c75f17815e7402426ed12cecc59a0fe964dc8b36f8e9cf231d18f",
+        "stdout_sha256": "138139bf7886db064378018797ef9eaf350826bd1e39f2cd9ea55cc36368e8e4",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "bfcd71ae6eac3e5cc63c3591c5e52f6674b3697a0454698f3e3e56f2d8dd42c6",
+        "stdout_sha256": "aa7e6d18435ecf58690bb82018be74c9890a215dfa5682b84cb50e3a3b17b98a",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -919,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 27488,
-        "rust": 29664
+        "php": 34744,
+        "rust": 31840
       },
       "returncodes": {
         "php": 0,
@@ -1042,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-2c81537e1c35486aa02417c88f583f26-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-2c81537e1c35486aa02417c88f583f26-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-2c81537e1c35486aa02417c88f583f26-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-2c81537e1c35486aa02417c88f583f26-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "cb32eaccb71e292bec1b1ba96a552fd4f900f8b8ee1e4deea5f27429525288d0",
+          "stdout_sha256": "d287402a0631e3b2790451ac52e1c3382488fd3064c984f1af6937e8f829b596",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "4521c2eeaa0564e2127ca6ed0f97a03bcdcff6413bb632da1ea34386612472f7",
+          "stdout_sha256": "0473c2d6cb0e53a53df6591bdc702065082f7358ec3fb6520565010539fd5cf9",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1087,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 18340,
-        "rust": 14224
+        "php": 32568,
+        "rust": 6460
       },
       "returncodes": {
         "php": 0,
@@ -1112,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "55f2188048a20bf2"
+              "token": "4a655b3ccd622767"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1175,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "55f2188048a20bf2"
+              "token": "4a655b3ccd622767"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1249,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-2c8a125786aa4a92a5b11ac3a0ef79d7-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-2c8a125786aa4a92a5b11ac3a0ef79d7-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-2c8a125786aa4a92a5b11ac3a0ef79d7-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-2c8a125786aa4a92a5b11ac3a0ef79d7-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "e9ebf7ea298f84162f15c951dce9bcbbd5770a22385c2ac486caf67821766f50",
+          "stdout_sha256": "5cead72d0ac8c5aac3e46a2e5707e000e0234051b9388cc4702f1da78f571ace",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "688aa7ecea09de6319aea633f823027fc7e7c0bca978573e2f3020a06ab8df0b",
+          "stdout_sha256": "127b41cbbca15a5993d8bbb9d7dd7234f80050c04a42329f95ca647f45646202",
           "stderr_bytes": 1817,
-          "stderr_sha256": "99bbd0c39ea6b001fe55bbea60face96773cf80e09ff7827a2baf23b848b3d8a"
+          "stderr_sha256": "97bc8180f7209ee384ae56bcb19cfe3f82a3b112b8d568632dd3e8f1a25c7d2e"
         }
       },
       "hook_transcript_rejections": [
@@ -1295,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 14660,
-      "rust": 25052
+      "php": 33356,
+      "rust": 23072
     },
     "returncodes": {
       "php": 0,
@@ -14717,24 +14717,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-ee94bd2a4a08433db35a236aed5ec258-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-ee94bd2a4a08433db35a236aed5ec258-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-ee94bd2a4a08433db35a236aed5ec258-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-ee94bd2a4a08433db35a236aed5ec258-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "32247d8f37a79a7fd7cdfd58275bc05cbfe712ff9f6dbd1f45980110ac395ccc",
+        "stdout_sha256": "41ec95618d1bab15a0b7318823a65540438f082cf8c8833e015a0c1ea895ae91",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2770412,
-        "stdout_sha256": "ffe9f63a1a7f0fb25cf9135126842fba120a46835cf0c380e013ddf007189ace",
+        "stdout_sha256": "f139ee4ebef6d32bab4414198fe156e711eeb9d1bc63f80d34439981536dbc46",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14786,8 +14786,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 33200,
-      "rust": 19836
+      "php": 33788,
+      "rust": 12064
     },
     "returncodes": {
       "php": 0,
@@ -14795,9 +14795,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 3867,
-    "frames_from_rust": 3866,
-    "relayed_bytes": 2316039,
+    "frames_from_php": 4056,
+    "frames_from_rust": 4055,
+    "relayed_bytes": 2436969,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -18286,6 +18286,236 @@
               }
             }
           },
+          "hook_key_unusual": {
+            "array_all_only": {
+              "label": "array_all_only",
+              "hook": {
+                "type": "array",
+                "count": 0
+              },
+              "named_listener": false,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "dispatch",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": null,
+              "registration_throwable": null,
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              },
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "array_named": {
+              "label": "array_named",
+              "hook": {
+                "type": "array",
+                "count": 0
+              },
+              "named_listener": true,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "named_registration",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": null,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              },
+              "dispatch_throwable": null,
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "ordinary_object_all_only": {
+              "label": "ordinary_object_all_only",
+              "hook": {
+                "type": "object",
+                "class": "stdClass"
+              },
+              "named_listener": false,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "dispatch",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": null,
+              "registration_throwable": null,
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              },
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "ordinary_object_named": {
+              "label": "ordinary_object_named",
+              "hook": {
+                "type": "object",
+                "class": "stdClass"
+              },
+              "named_listener": true,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "named_registration",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": null,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              },
+              "dispatch_throwable": null,
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "stringable_object_all_only": {
+              "label": "stringable_object_all_only",
+              "hook": {
+                "type": "object",
+                "class": "ActionHookKeyStringable"
+              },
+              "named_listener": false,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "dispatch",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": 0,
+              "registration_throwable": null,
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              },
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "stringable_object_named": {
+              "label": "stringable_object_named",
+              "hook": {
+                "type": "object",
+                "class": "ActionHookKeyStringable"
+              },
+              "named_listener": true,
+              "events": [
+                {
+                  "event": "throwable",
+                  "stage": "named_registration",
+                  "class": "TypeError",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                }
+              ],
+              "warnings": [],
+              "stringify_calls": 0,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              },
+              "dispatch_throwable": null,
+              "after": {
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                  }
+                },
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            }
+          },
           "no_listener_count": {
             "before": 0,
             "after": 1
@@ -19704,33 +19934,33 @@
       }
     },
     "expected_frame_counts": {
-      "php": 3867,
-      "rust": 3866
+      "php": 4056,
+      "rust": 4055
     },
     "action_result": {
       "api_counts": {
-        "add_action": 74,
+        "add_action": 83,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 171,
+        "current_action": 177,
         "current_filter": 0,
-        "did_action": 240,
+        "did_action": 246,
         "did_filter": 7,
-        "do_action": 61,
-        "doing_action": 184,
+        "do_action": 64,
+        "doing_action": 190,
         "doing_filter": 0,
         "has_action": 42,
         "has_filter": 0,
-        "remove_action": 36,
+        "remove_action": 42,
         "remove_filter": 0
       },
-      "argument_release_effects": 645,
-      "boundary_effects": 1868,
+      "argument_release_effects": 675,
+      "boundary_effects": 1985,
       "callback_invocations": 460,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 3867,
-      "frames_from_rust": 3866,
+      "frames_from_php": 4056,
+      "frames_from_rust": 4055,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -22945,6 +23175,236 @@
               "removed_by_alias": true
             }
           },
+          "hook_key_unusual": {
+            "array_all_only": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              },
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479",
+                  "stage": "dispatch"
+                }
+              ],
+              "hook": {
+                "count": 0,
+                "type": "array"
+              },
+              "label": "array_all_only",
+              "named_listener": false,
+              "registration_throwable": null,
+              "stringify_calls": null,
+              "warnings": []
+            },
+            "array_named": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": null,
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479",
+                  "stage": "named_registration"
+                }
+              ],
+              "hook": {
+                "count": 0,
+                "type": "array"
+              },
+              "label": "array_named",
+              "named_listener": true,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520617272617920696e206973736574206f7220656d707479"
+              },
+              "stringify_calls": null,
+              "warnings": []
+            },
+            "ordinary_object_all_only": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              },
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479",
+                  "stage": "dispatch"
+                }
+              ],
+              "hook": {
+                "class": "stdClass",
+                "type": "object"
+              },
+              "label": "ordinary_object_all_only",
+              "named_listener": false,
+              "registration_throwable": null,
+              "stringify_calls": null,
+              "warnings": []
+            },
+            "ordinary_object_named": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": null,
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479",
+                  "stage": "named_registration"
+                }
+              ],
+              "hook": {
+                "class": "stdClass",
+                "type": "object"
+              },
+              "label": "ordinary_object_named",
+              "named_listener": true,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520737464436c61737320696e206973736574206f7220656d707479"
+              },
+              "stringify_calls": null,
+              "warnings": []
+            },
+            "stringable_object_all_only": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              },
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479",
+                  "stage": "dispatch"
+                }
+              ],
+              "hook": {
+                "class": "ActionHookKeyStringable",
+                "type": "object"
+              },
+              "label": "stringable_object_all_only",
+              "named_listener": false,
+              "registration_throwable": null,
+              "stringify_calls": 0,
+              "warnings": []
+            },
+            "stringable_object_named": {
+              "after": {
+                "counter_entries": [],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "throwable": {
+                    "class": "TypeError",
+                    "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": null,
+              "events": [
+                {
+                  "class": "TypeError",
+                  "event": "throwable",
+                  "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479",
+                  "stage": "named_registration"
+                }
+              ],
+              "hook": {
+                "class": "ActionHookKeyStringable",
+                "type": "object"
+              },
+              "label": "stringable_object_named",
+              "named_listener": true,
+              "registration_throwable": {
+                "class": "TypeError",
+                "message_hex": "43616e6e6f7420616363657373206f6666736574206f66207479706520416374696f6e486f6f6b4b6579537472696e6761626c6520696e206973736574206f7220656d707479"
+              },
+              "stringify_calls": 0,
+              "warnings": []
+            }
+          },
           "hook_key_warning": {
             "float_5_7_all_only": {
               "after": {
@@ -24653,32 +25113,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 74,
+      "release_effects": 80,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-85d751a6ff044f6e8f3addf80c82d880-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-85d751a6ff044f6e8f3addf80c82d880-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-85d751a6ff044f6e8f3addf80c82d880-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-85d751a6ff044f6e8f3addf80c82d880-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 1057539,
-        "stdout_sha256": "458c8583d900486c0a4c1095548afe7f8d9af39816a5db7c4e917ec0032504bc",
+        "stdout_bytes": 1117302,
+        "stdout_sha256": "edd3477f903346c50d6bf3678224d16f46d185c927df06b48c2ce08411aff13c",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 1258500,
-        "stdout_sha256": "2e060ad49d3cdea7b79e0ee0b77dc8cae5826edd76c971a0eb4ca565e237121f",
-        "stderr_bytes": 72542,
-        "stderr_sha256": "22390fd1c6f1c2553523bc7e052732bd936e4895453ba5095569690f38544bdd"
+        "stdout_bytes": 1319667,
+        "stdout_sha256": "548ecb1ec635b45cfbf2d216b64b9b824f4aa63006ec4d7292d090dc66ad758a",
+        "stderr_bytes": 77806,
+        "stderr_sha256": "620e02674c3fd1030ddbc1d10e6c64c644d7f13e3200d5e2efda2ffc0065ed75"
       }
     },
     "action_transcript_rejections": [
@@ -24738,72 +25198,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 28408,
+        "pid": 19876,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 33268,
+        "pid": 23200,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 32864,
+        "pid": 34304,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 28380,
+        "pid": 23592,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 25416,
+        "pid": 34356,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 7524,
+        "pid": 17868,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 32256,
+        "pid": 32156,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 33256,
+        "pid": 23096,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28420,
+        "pid": 13916,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 25448,
+        "pid": 13344,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 4224,
+        "pid": 9460,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 29264,
+        "pid": 19668,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 33520,
+        "pid": 23492,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 360,
+        "pid": 31840,
         "returncode": 0,
         "reaped": true
       }

@@ -15,6 +15,17 @@ final class CallableStaticFixture
     }
 }
 
+final class ActionHookKeyStringable
+{
+    public int $stringifyCalls = 0;
+
+    public function __toString(): string
+    {
+        $this->stringifyCalls++;
+        return 'stringable-hook-key';
+    }
+}
+
 final class CallableZeroFixture
 {
     public static function run(): string
@@ -3314,6 +3325,104 @@ function callable_program_action_hook_key_warning_cases(): array
     return $cases;
 }
 
+function callable_program_action_hook_key_unusual_cases(): array
+{
+    $view = static function ($value): array {
+        if ($value === null) return ['type' => 'null'];
+        if (is_bool($value)) return ['type' => 'bool', 'value' => $value];
+        if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
+        if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
+        if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        if (is_array($value)) return ['type' => 'array', 'count' => count($value)];
+        if (is_object($value)) return ['type' => 'object', 'class' => get_class($value)];
+        return ['type' => get_debug_type($value)];
+    };
+    $hooks = [
+        'array' => [],
+        'ordinary_object' => new stdClass(),
+        'stringable_object' => new ActionHookKeyStringable(),
+    ];
+    $cases = [];
+    foreach ($hooks as $kind => $hook) {
+        foreach ([false, true] as $named) {
+            $label = $kind . ($named ? '_named' : '_all_only');
+            $GLOBALS['wp_filter'] = [];
+            $GLOBALS['wp_actions'] = [];
+            $GLOBALS['wp_filters'] = [];
+            $GLOBALS['wp_current_filter'] = [];
+            $events = [];
+            $warnings = [];
+            $registrationThrowable = null;
+            $dispatchThrowable = null;
+            $hookView = $view($hook);
+            set_error_handler(static function (int $severity, string $message) use (&$events, &$warnings): bool {
+                $warning = ['index' => count($warnings) + 1, 'severity' => $severity,
+                    'message_hex' => bin2hex($message)];
+                $warnings[] = $warning;
+                $events[] = ['event' => 'warning', ...$warning];
+                return true;
+            });
+            $allListener = static function (...$args) use (&$events, $view): void {
+                $events[] = ['event' => 'all', 'args' => array_map($view, $args)];
+            };
+            add_action('all', $allListener, 1, 99);
+            $namedListener = null;
+            if ($named) {
+                $namedListener = static function (...$args) use (&$events, $view): void {
+                    $events[] = ['event' => 'named', 'args' => array_map($view, $args)];
+                };
+                try {
+                    add_action($hook, $namedListener, 10, 99);
+                } catch (Throwable $throwable) {
+                    $registrationThrowable = ['class' => $throwable::class,
+                        'message_hex' => bin2hex($throwable->getMessage())];
+                    $events[] = ['event' => 'throwable', 'stage' => 'named_registration', ...$registrationThrowable];
+                }
+            }
+            if ($registrationThrowable === null) {
+                try {
+                    do_action($hook, 'payload');
+                } catch (Throwable $throwable) {
+                    $dispatchThrowable = ['class' => $throwable::class,
+                        'message_hex' => bin2hex($throwable->getMessage())];
+                    $events[] = ['event' => 'throwable', 'stage' => 'dispatch', ...$dispatchThrowable];
+                }
+            }
+            $didAction = null;
+            try {
+                $didAction = ['value' => $view(did_action($hook))];
+            } catch (Throwable $throwable) {
+                $didAction = ['throwable' => ['class' => $throwable::class,
+                    'message_hex' => bin2hex($throwable->getMessage())]];
+            }
+            $counterEntries = [];
+            foreach ($GLOBALS['wp_actions'] as $key => $value) {
+                $counterEntries[] = ['key' => $view($key), 'value' => $view($value)];
+            }
+            $cases[$label] = [
+                'label' => $label, 'hook' => $hookView, 'named_listener' => $named,
+                'events' => $events, 'warnings' => $warnings,
+                'stringify_calls' => $hook instanceof ActionHookKeyStringable ? $hook->stringifyCalls : null,
+                'registration_throwable' => $registrationThrowable,
+                'dispatch_throwable' => $dispatchThrowable,
+                'after' => ['did_action' => $didAction, 'counter_entries' => $counterEntries,
+                    'current_action' => $view(current_action()), 'doing_action' => doing_action(),
+                    'stack' => array_map($view, $GLOBALS['wp_current_filter'])],
+            ];
+            restore_error_handler();
+            remove_action('all', $allListener, 1);
+            if ($namedListener !== null && $registrationThrowable === null) {
+                remove_action($hook, $namedListener, 10);
+            }
+        }
+    }
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    return $cases;
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
@@ -3325,6 +3434,7 @@ function callable_program_action_api_cases(): array
     $singletonObjectCases = callable_program_action_singleton_object_cases();
     $hookKeyAliasCases = callable_program_action_hook_alias_cases();
     $hookKeyWarningCases = callable_program_action_hook_key_warning_cases();
+    $hookKeyUnusualCases = callable_program_action_hook_key_unusual_cases();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3642,6 +3752,7 @@ function callable_program_action_api_cases(): array
         'singleton_object_unwrap' => $singletonObjectCases,
         'hook_key_alias' => $hookKeyAliasCases,
         'hook_key_warning' => $hookKeyWarningCases,
+        'hook_key_unusual' => $hookKeyUnusualCases,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,
