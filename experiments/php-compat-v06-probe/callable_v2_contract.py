@@ -4281,16 +4281,19 @@ def validate_action_observation(value):
     expected = normalize_action_resource_ids(expected, actual)
     _require_exact(actual, expected, 'measured action API group')
 
+
+EXPECTED_HEAP_FILTER_VALUES = json.loads(r'''{"events":[{"event":"all","hook":"callable-heap-filter","value_marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"first-enter","same_original":true,"marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"all","hook":"callable-heap-filter-nested","value_marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_filter":true},{"event":"nested-enter","same_original":true,"marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"nested-exit","marker":"nested","cell":2,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"first-resume","same_original":true,"nested_same":true,"marker":"nested","cell":2,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"second","same_original":true,"marker":"nested","cell":2},{"event":"third","same_replacement":true,"marker":"second","cell":2}],"returned_same_replacement":true,"returned_marker":"third","original_marker":"nested","reference_cell":2,"did_filter":{"parent":1,"nested":1},"current_filter_after":101001.5,"doing_filter_after":true,"doing_parent_after":false,"doing_nested_after":false,"stack_before":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_after":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_unchanged_after":true,"current_filter_unchanged_after":true,"doing_filter_unchanged_after":true}''')
+
 def validate_observation(value):
     if isinstance(value, dict) and set(value) == {'action_api'}:
         validate_action_observation(value)
         return
     action_group = None
     if isinstance(value, dict) and 'action_api' in value:
-        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'action_api'), 'program observation')
+        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'heap_filter_values', 'action_api'), 'program observation')
         action_group = value['action_api']
         value = {key: item for key, item in value.items() if key != 'action_api'}
-    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry'), 'program observation')
+    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'heap_filter_values'), 'program observation')
     _require_exact(value['base'], EXPECTED_OBSERVATION, 'original twenty cases')
     if EXPECTED_COERCIONS is None:
         raise ValueError('pinned WordPress coercion observation has not been frozen')
@@ -4301,6 +4304,7 @@ def validate_observation(value):
     _require_exact(value['priority_cow'], EXPECTED_PRIORITY_COW, 'measured priority COW cases')
     _require_exact(value['remove_cow'], EXPECTED_REMOVE_COW, 'measured remove-filter COW cases')
     _require_exact(value['hook_unset_reentry'], EXPECTED_HOOK_UNSET_REENTRY, 'measured hook-unset reentry cases')
+    _require_exact(value['heap_filter_values'], EXPECTED_HEAP_FILTER_VALUES, 'heap-valued filter identity and reference cases')
     if action_group is not None:
         validate_action_observation({'action_api': action_group})
 
@@ -4517,6 +4521,7 @@ def action_self_check():
             'priority_cow': EXPECTED_PRIORITY_COW,
             'remove_cow': EXPECTED_REMOVE_COW,
             'hook_unset_reentry': EXPECTED_HOOK_UNSET_REENTRY,
+            'heap_filter_values': EXPECTED_HEAP_FILTER_VALUES,
         }, 'nested_caught_throw': None})
     validate_result(filter_result)
     filter_result['nested_caught_throw'] = dict(EXPECTED_NESTED_CAUGHT_THROW_RESULT)
@@ -4650,13 +4655,18 @@ def validate_transcript(streams, result):
             raise ValueError('effect descriptor is not active')
         return ident
 
-    def completion(value, pod=False):
+    def completion(value, pod=False, allow_argument_handle=False):
         if not isinstance(value, dict):
             raise ValueError('completion must be object')
         if value.get('kind') == 'value':
             exact(value, ('kind', 'value'), 'Value completion')
             if pod:
-                validate_pod(value['value'])
+                if (allow_argument_handle and isinstance(value['value'], dict)
+                        and value['value'].get('type') == 'handle'):
+                    exact(value['value'], ('type', 'handle'), 'argument handle completion')
+                    handle(value['value']['handle'], 'argument')
+                else:
+                    validate_pod(value['value'])
         elif value.get('kind') == 'php_throwable':
             exact(value, ('kind', 'handle', 'class_hex', 'message_hex'), 'Throwable completion')
             ident = handle(value['handle'], 'throwable')
@@ -4679,6 +4689,7 @@ def validate_transcript(streams, result):
         descriptors = payload.get('arguments', {})
         exact(descriptors, ARGUMENTS[name], 'API argument inventory')
         owned = {retain(value, 'argument') for value in descriptors.values()}
+        owned_order = [handle(value, 'argument') for value in descriptors.values()]
         if len(owned) != len(descriptors):
             raise ValueError('API argument aliases not fresh')
         counts[name] += 1
@@ -4691,6 +4702,13 @@ def validate_transcript(streams, result):
         if name in ('apply_filters', 'do_action'):
             if not isinstance(payload['args'], list):
                 raise ValueError('apply args are not list')
+            if name == 'apply_filters':
+                exact(payload['value'], ('type', 'handle'), 'apply_filters value marker')
+                ident = handle(payload['value']['handle'], 'argument')
+                if ident in owned:
+                    raise ValueError('apply_filters value handle duplicates another argument')
+                owned.add(retain(payload['value']['handle'], 'argument'))
+                owned_order.append(ident)
             if name == 'do_action':
                 for value in payload['args']:
                     exact(value, ('type', 'handle'), 'do_action positional argument marker')
@@ -4698,14 +4716,20 @@ def validate_transcript(streams, result):
                     if ident in owned:
                         raise ValueError('do_action argument handle duplicates another argument')
                     owned.add(retain(value['handle'], 'argument'))
+                    owned_order.append(ident)
             else:
                 for value in payload['args']:
-                    validate_pod(value)
-            if name == 'apply_filters':
-                validate_pod(payload['value'])
+                    exact(value, ('type', 'handle'), 'apply_filters positional argument marker')
+                    ident = handle(value['handle'], 'argument')
+                    if ident in owned:
+                        raise ValueError('apply_filters argument handle duplicates another argument')
+                    owned.add(retain(value['handle'], 'argument'))
+                    owned_order.append(ident)
         context = {'name': name, 'payload': payload, 'owned': owned, 'released': not owned,
+                   'owned_order': owned_order,
                    'hook': None, 'priority': None, 'callback_key': None, 'accepted': None,
-                   'value': payload.get('value'), 'extra': payload.get('args'), 'throwable': None}
+                   'value': payload.get('value'), 'extra': payload.get('args'), 'throwable': None,
+                   'filter_result_handles': []}
         while peek('rust')['kind'] == 'invoke_php':
             effect(parent, context)
         returned = take('rust', 'return', parent)
@@ -4713,7 +4737,7 @@ def validate_transcript(streams, result):
         if returned['api'] != name or not context['released']:
             raise ValueError('API Return identity/argument release differs')
         outcome = returned['completion']
-        completion(outcome, True)
+        completion(outcome, True, name == 'apply_filters')
         if outcome['kind'] == 'value':
             node = outcome['value']; kind = node['type']
             if name in ('add_filter', 'remove_filter', 'doing_filter', 'add_action', 'remove_action', 'doing_action') and kind != 'bool':
@@ -4784,7 +4808,7 @@ def validate_transcript(streams, result):
                 if context['released'] or not isinstance(args['handles'], list):
                     raise ValueError('arguments already released')
                 releasers = [require_live(value, 'argument') for value in args['handles']]
-                if len(set(releasers)) != len(releasers) or set(releasers) != context['owned']:
+                if len(set(releasers)) != len(releasers) or releasers != context['owned_order']:
                     raise ValueError('argument release batch differs')
                 pending_release.update(releasers)
                 observed['argument_release_effects'] += 1
@@ -4832,19 +4856,25 @@ def validate_transcript(streams, result):
                         raise ValueError('strict hook membership was key-coerced')
                 observed['boundary_effects'] += 1
         elif operation == 'callable':
-            exact(payload, ('operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'args'), 'callable InvokePhp')
+            exact(payload, ('operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'filter_all_dispatch', 'args'), 'callable InvokePhp')
             ident = require_live(payload['handle'], 'callable')
             registration = registrations[ident]
             scalar(payload['hook']); validate_key(payload['priority'])
             if type(payload['action_dispatch']) is not bool:
                 raise ValueError('callable Action dispatch context type differs')
+            if type(payload['filter_all_dispatch']) is not bool:
+                raise ValueError('callable Filter all dispatch context type differs')
             if context is None or context['name'] not in ('apply_filters', 'do_action') or context['hook'] is None:
                 raise ValueError('callable outside a typed dispatch')
             _require_exact(payload['action_dispatch'], context['name'] == 'do_action',
                            'invoked Action dispatch context')
+            _require_exact(payload['filter_all_dispatch'], context['name'] == 'apply_filters' and payload['call_mode'] == 'all',
+                           'invoked Filter all dispatch context')
             _require_exact(payload['hook'], context['hook']['original'], 'invoked original hook')
             _require_exact(payload['priority'], registration['priority']['key'], 'invoked priority key')
             mode, accepted = payload['call_mode'], registration['accepted']
+            _require_exact(payload['filter_all_dispatch'], context['name'] == 'apply_filters' and mode == 'all',
+                           'Filter all dispatch flag')
             if mode == 'all':
                 _require_exact(registration['hook']['key'], {'type': 'string', 'hex': b'all'.hex()}, 'all registration')
                 if context['name'] == 'do_action':
@@ -4891,7 +4921,9 @@ def validate_transcript(streams, result):
         if resumed['effect_id'] != effect_id:
             raise ValueError('Resume correlation differs')
         outcome = resumed['completion']
-        completion(outcome, operation == 'callable')
+        completion(outcome, operation == 'callable',
+                   context is not None and context['name'] == 'apply_filters' and operation == 'callable'
+                   and payload.get('call_mode') != 'all')
         if operation == 'run_script':
             _require_exact(outcome, {'kind': 'value', 'value': result['php_observation']}, 'script observation')
         elif operation == 'boundary' and outcome['kind'] == 'value':
@@ -5023,6 +5055,10 @@ def validate_transcript(streams, result):
             ):
                 context['throwable'] = outcome
             elif context['name'] == 'apply_filters' and operation == 'callable' and payload['call_mode'] != 'all':
+                result_id = retain(outcome['value']['handle'], 'argument')
+                context['owned'].add(result_id)
+                context['owned_order'].append(result_id)
+                context['filter_result_handles'].append(result_id)
                 context['value'] = outcome['value']
         return operation
 
@@ -5071,7 +5107,7 @@ def validate_transcript(streams, result):
 
 def self_check():
     """Exercise structural replay while keeping unfrozen oracle data a failing gate."""
-    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY
+    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY, EXPECTED_HEAP_FILTER_VALUES
     import copy
     descriptor = {'request': REQUEST, 'kind': 'argument', 'slot': 0, 'generation': 1, 'token': '0102030405060708'}
     handle(descriptor, 'argument')
@@ -5105,14 +5141,17 @@ def self_check():
     previous_priority_cow = EXPECTED_PRIORITY_COW
     previous_remove_cow = EXPECTED_REMOVE_COW
     previous_hook_unset_reentry = EXPECTED_HOOK_UNSET_REENTRY
+    previous_heap_filter_values = EXPECTED_HEAP_FILTER_VALUES
     sample = {'self_test_only': True}
     sample_counter_cow = {'self_test_only': True}
     sample_priority_cow = {'self_test_only': True}
     sample_remove_cow = {'self_test_only': True}
     sample_hook_unset_reentry = {'self_test_only': True}
+    sample_heap_filter_values = {'self_test_only': True}
     observation = {'base': EXPECTED_OBSERVATION, 'coercions': sample, 'counter_cow': sample_counter_cow,
         'priority_cow': sample_priority_cow, 'remove_cow': sample_remove_cow,
-        'hook_unset_reentry': sample_hook_unset_reentry}
+        'hook_unset_reentry': sample_hook_unset_reentry,
+        'heap_filter_values': sample_heap_filter_values}
     for accepted in ({'type': 'null'}, {'type': 'int', 'value': '0'}):
         validate_did_filter_result(accepted)
     for rejected in ({'type': 'bool', 'value': False}, {'type': 'int', 'value': '-1'}, {'type': 'array', 'entries': []}):
@@ -5135,6 +5174,7 @@ def self_check():
         EXPECTED_PRIORITY_COW = sample_priority_cow
         EXPECTED_REMOVE_COW = sample_remove_cow
         EXPECTED_HOOK_UNSET_REENTRY = sample_hook_unset_reentry
+        EXPECTED_HEAP_FILTER_VALUES = sample_heap_filter_values
         validate_result(result)
         frames = {'php': [], 'rust': []}
         def add(direction, kind, payload, parent=None):
@@ -5178,6 +5218,7 @@ def self_check():
         EXPECTED_PRIORITY_COW = previous_priority_cow
         EXPECTED_REMOVE_COW = previous_remove_cow
         EXPECTED_HOOK_UNSET_REENTRY = previous_hook_unset_reentry
+        EXPECTED_HEAP_FILTER_VALUES = previous_heap_filter_values
     if previous is None:
         try:
             validate_result(result)
@@ -5198,6 +5239,9 @@ TRANSCRIPT_NEGATIVE_INVENTORY = (
     'duplicate_argument_release', 'false_argument_ack', 'false_callable_ack',
     'wrong_null_foreach_arguments', 'false_null_foreach_ack', 'wrong_null_method_api',
     'wrong_api_result_type', 'wrong_resume_effect', 'wrong_script_observation',
+    'wrong_filter_value_handle', 'wrong_filter_extra_handle', 'wrong_filter_callback_marker',
+    'wrong_filter_result_handle',
+    'wrong_filter_all_flag', 'wrong_filter_release_order',
     'wrong_unwind_payload_fields', 'wrong_unwind_callable_handle', 'wrong_unwind_throwable_kind',
     'wrong_unwind_throwable_token', 'false_unwind_release_ack',
     'live_registry_close', 'wrong_transport', 'extra_frame', 'duplicate_decoded_key', 'unterminated_frame',
@@ -5216,7 +5260,8 @@ ACTION_TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_action_counter_cow_live', 'wrong_action_counter_cow_warning_order',
     'wrong_action_counter_cow_result', 'wrong_action_counter_cow_read',
     'wrong_heap_action_callcore_marker', 'wrong_heap_action_callback_marker',
-    'wrong_action_dispatch_context', 'wrong_alias_registration_normalized_key',
+    'wrong_action_dispatch_context', 'wrong_action_filter_all_context',
+    'wrong_alias_registration_normalized_key',
     'wrong_leading_zero_key_normalization',
 )
 
@@ -5421,6 +5466,12 @@ def reject_action_transcripts(streams, result):
                            and item.get('payload', {}).get('call_mode') == 'array'
                            and item.get('payload', {}).get('action_dispatch') is True)
             frames['rust'][index]['payload']['action_dispatch'] = False
+        elif name == 'wrong_action_filter_all_context':
+            index = locate('rust', lambda item: item.get('kind') == 'invoke_php'
+                           and item.get('payload', {}).get('operation') == 'callable'
+                           and item.get('payload', {}).get('call_mode') == 'all'
+                           and item.get('payload', {}).get('action_dispatch') is True)
+            frames['rust'][index]['payload']['filter_all_dispatch'] = True
         elif name == 'wrong_alias_registration_normalized_key':
             index = locate('rust', lambda item: item.get('kind') == 'invoke_php'
                            and item.get('payload', {}).get('operation') == 'boundary'
@@ -5467,6 +5518,17 @@ def reject_mutated_transcripts(streams, result):
     retain_index = find('rust', lambda item: item['payload'].get('operation') == 'boundary' and item['payload'].get('action') == 'retain_callable')
     release_index = find('rust', lambda item: item['payload'].get('operation') == 'boundary' and item['payload'].get('action') == 'release_arguments' and len(item['payload']['arguments']['handles']) >= 2)
     callback_index = find('rust', lambda item: item['payload'].get('operation') == 'callable' and item['payload'].get('args'))
+    filter_api_index = find('php', lambda item: item['kind'] == 'call_core'
+                            and item['payload'].get('api') == 'apply_filters'
+                            and item['payload'].get('args'))
+    filter_callback_index = find('rust', lambda item: item['kind'] == 'invoke_php'
+                                 and item['payload'].get('operation') == 'callable'
+                                 and item['payload'].get('action_dispatch') is False
+                                 and item['payload'].get('filter_all_dispatch') is False
+                                 and item['payload'].get('args'))
+    filter_all_index = find('rust', lambda item: item['kind'] == 'invoke_php'
+                            and item['payload'].get('operation') == 'callable'
+                            and item['payload'].get('filter_all_dispatch') is True)
     callable_release_index = find('rust', lambda item: item['payload'].get('operation') == 'release_callable')
     return_index = find('rust', lambda item: item['kind'] == 'return' and item['payload'].get('api') == 'add_filter' and item['payload']['completion']['kind'] == 'value')
     script_index = find('php', lambda item: item['kind'] == 'resume' and item['payload']['effect_id'] == 'e-script')
@@ -5474,6 +5536,12 @@ def reject_mutated_transcripts(streams, result):
     foreach_index = find('rust', lambda item: item['payload'].get('operation') == 'boundary' and item['payload'].get('action') == 'null_foreach')
     null_method_index = find('rust', lambda item: item['payload'].get('operation') == 'boundary' and item['payload'].get('action') == 'null_method')
     unwind_index = find('rust', lambda item: item['payload'].get('operation') == 'release_callable_unwind')
+    filter_callback_resume = find('php', lambda item: item['kind'] == 'resume'
+                                  and item['payload'].get('effect_id') == source['rust'][filter_callback_index]['payload']['effect_id'])
+    filter_result_descriptor = source['php'][filter_callback_resume]['payload']['completion']['value']['handle']
+    filter_result_release_index = find('rust', lambda item: item['payload'].get('operation') == 'boundary'
+                                       and item['payload'].get('action') == 'release_arguments'
+                                       and filter_result_descriptor in item['payload'].get('arguments', {}).get('handles', []))
     def resume_for(index):
         effect_id = source['rust'][index]['payload']['effect_id']
         return find('php', lambda item: item['kind'] == 'resume' and item['payload']['effect_id'] == effect_id)
@@ -5533,6 +5601,15 @@ def reject_mutated_transcripts(streams, result):
         elif name == 'wrong_api_result_type': frames['rust'][return_index]['payload']['completion'] = {'kind': 'value', 'value': {'type': 'int', 'value': '1'}}
         elif name == 'wrong_resume_effect': frames['php'][boundary_resume]['payload']['effect_id'] = 'foreign'
         elif name == 'wrong_script_observation': frames['php'][script_index]['payload']['completion']['value'] = {}
+        elif name == 'wrong_filter_value_handle': flip_token(frames['php'][filter_api_index]['payload']['value']['handle'])
+        elif name == 'wrong_filter_extra_handle': flip_token(frames['php'][filter_api_index]['payload']['args'][0]['handle'])
+        elif name == 'wrong_filter_callback_marker':
+            marker = next(value for value in frames['rust'][filter_callback_index]['payload']['args']
+                          if isinstance(value, dict) and value.get('type') == 'handle')
+            flip_token(marker['handle'])
+        elif name == 'wrong_filter_result_handle': flip_token(frames['php'][filter_callback_resume]['payload']['completion']['value']['handle'])
+        elif name == 'wrong_filter_all_flag': frames['rust'][filter_all_index]['payload']['filter_all_dispatch'] = False
+        elif name == 'wrong_filter_release_order': frames['rust'][filter_result_release_index]['payload']['arguments']['handles'].reverse()
         elif name == 'wrong_unwind_payload_fields': frames['rust'][unwind_index]['payload'].pop('throwable')
         elif name == 'wrong_unwind_callable_handle': flip_token(frames['rust'][unwind_index]['payload']['handle'])
         elif name == 'wrong_unwind_throwable_kind': frames['rust'][unwind_index]['payload']['throwable']['kind'] = 'callable'

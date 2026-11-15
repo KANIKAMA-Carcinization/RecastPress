@@ -519,7 +519,7 @@ PROFILE_SCOPES = {
     "publish": "fixed PHP-WASIX live-state publish, stale/replay/atomic rejection, and nested continuation",
     "handles": "fixed PHP-WASIX request-local registry lifetime, reference rebinding, slot generations, destructor reentry and normal/abort cleanup",
     "hooks": "fixed resumable Rust hooks with PHP Closures, nested Throwable catch/recovery and root abort, active-bucket snapshot and future-priority mutation",
-    "callables": "PHP standard hook API control under one script effect, generic callable identity, deferred release and destructor reentry; materialized POD filter values",
+    "callables": "PHP standard hook API control under one script effect, generic callable identity, deferred release and destructor reentry; bounded heap-valued Filter input/extra args/results via request-scoped Argument handles, including nested dispatch and reference-cell mutation",
     "actions": "PHP action API aliases, callback dispatch and ignored returns, shared action/filter stack, PHP-owned action counts, nested actions and Throwable propagation",
     "hooks-uncaught": "pinned WordPress 7.1.3 do_action callback Throwable fatal in PHP-WASIX, bounded bridge checkpoint, shutdown state and owned guest reaping",
 }

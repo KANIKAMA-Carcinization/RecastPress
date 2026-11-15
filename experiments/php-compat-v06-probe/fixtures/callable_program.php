@@ -3997,7 +3997,94 @@ function callable_program_run(): array
         'priority_cow' => $priorityCow,
         'remove_cow' => callable_program_remove_cow_cases(),
         'hook_unset_reentry' => callable_program_hook_unset_cases(),
+        'heap_filter_values' => callable_program_heap_filter_values(),
     ];
+}
+
+function callable_program_heap_filter_values(): array
+{
+    $hook = 'callable-heap-filter';
+    $nestedHook = 'callable-heap-filter-nested';
+    $original = (object) ['marker' => 'seed'];
+    $replacement = (object) ['marker' => 'replacement'];
+    $cell = 0;
+    $payload = ['cell' => &$cell];
+    $events = [];
+    $GLOBALS['wp_current_filter'] = ['callable-lifetime', 'callable-invalid-function', 'callable-invalid-object', 101001.5];
+    $stackBefore = array_values($GLOBALS['wp_current_filter'] ?? []);
+    $currentBefore = current_filter();
+    $doingBefore = doing_filter();
+    $all = static function (...$args) use ($hook, $nestedHook, &$events): void {
+        $name = $args[0] ?? null;
+        if ($name !== $hook && $name !== $nestedHook) {
+            return;
+        }
+        $value = $args[1] ?? null;
+        $extra = $args[2] ?? null;
+        $events[] = [
+            'event' => 'all',
+            'hook' => $name,
+            'value_marker' => is_object($value) ? ($value->marker ?? null) : null,
+            'cell' => is_array($extra) ? ($extra['cell'] ?? null) : null,
+            'current_filter' => current_filter(),
+            'doing_filter' => doing_filter(),
+        ];
+    };
+    add_filter('all', $all, 1, 99);
+    $nested = static function ($value, $extra) use (&$events, $nestedHook, $hook, $original): object {
+        $events[] = ['event' => 'nested-enter', 'same_original' => $value === $original, 'marker' => $value->marker, 'cell' => $extra['cell'], 'current_filter' => current_filter(), 'doing_parent' => doing_filter($hook), 'doing_nested' => doing_filter($nestedHook)];
+        $value->marker = 'nested';
+        $extra['cell']++;
+        $events[] = ['event' => 'nested-exit', 'marker' => $value->marker, 'cell' => $extra['cell'], 'current_filter' => current_filter(), 'doing_parent' => doing_filter($hook), 'doing_nested' => doing_filter($nestedHook)];
+        return $value;
+    };
+    $GLOBALS['callable_heap_filter_original'] = $original;
+    add_filter($nestedHook, $nested, 10, 2);
+    $first = static function ($value, $extra) use ($hook, $nestedHook, &$events, $original): object {
+        $events[] = ['event' => 'first-enter', 'same_original' => $value === $original, 'marker' => $value->marker, 'cell' => $extra['cell'], 'current_filter' => current_filter(), 'doing_filter' => doing_filter($hook)];
+        $value->marker = 'first';
+        $extra['cell']++;
+        $nestedResult = apply_filters($nestedHook, $value, $extra);
+        $events[] = ['event' => 'first-resume', 'same_original' => $value === $original, 'nested_same' => $nestedResult === $value, 'marker' => $value->marker, 'cell' => $extra['cell'], 'current_filter' => current_filter(), 'doing_filter' => doing_filter($hook)];
+        return $value;
+    };
+    $second = static function ($value, $extra) use ($original, $replacement, &$events): object {
+        $events[] = ['event' => 'second', 'same_original' => $value === $original, 'marker' => $value->marker, 'cell' => $extra['cell']];
+        $replacement->marker = 'second';
+        return $replacement;
+    };
+    $third = static function ($value, $extra) use ($replacement, &$events): object {
+        $events[] = ['event' => 'third', 'same_replacement' => $value === $replacement, 'marker' => $value->marker, 'cell' => $extra['cell']];
+        $value->marker = 'third';
+        return $value;
+    };
+    add_filter($hook, $first, 10, 2);
+    add_filter($hook, $second, 20, 2);
+    add_filter($hook, $third, 30, 2);
+    $returned = apply_filters($hook, $original, $payload);
+    $result = [
+        'events' => $events,
+        'returned_same_replacement' => $returned === $replacement,
+        'returned_marker' => $returned->marker,
+        'original_marker' => $original->marker,
+        'reference_cell' => $cell,
+        'did_filter' => ['parent' => did_filter($hook), 'nested' => did_filter($nestedHook)],
+        'current_filter_after' => current_filter(),
+        'doing_filter_after' => doing_filter(),
+        'doing_parent_after' => doing_filter($hook),
+        'doing_nested_after' => doing_filter($nestedHook),
+        'stack_before' => $stackBefore,
+        'stack_after' => array_values($GLOBALS['wp_current_filter'] ?? []),
+        'stack_unchanged_after' => array_values($GLOBALS['wp_current_filter'] ?? []) === $stackBefore,
+        'current_filter_unchanged_after' => current_filter() === $currentBefore,
+        'doing_filter_unchanged_after' => doing_filter() === $doingBefore,
+    ];
+    remove_filter($hook, $first, 10);
+    remove_filter($hook, $second, 20);
+    remove_filter($hook, $third, 30);
+    remove_filter($nestedHook, $nested, 10);
+    remove_filter('all', $all, 1);
+    return $result;
 }
 
 function callable_program_run_action_api(): array

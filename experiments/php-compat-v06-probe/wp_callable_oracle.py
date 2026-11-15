@@ -125,7 +125,7 @@ def record():
         'source_sha256_before': before, 'source_sha256_after': after,
         'owned_child': native.CHILD_RUNS[-2], 'action_owned_child': native.CHILD_RUNS[-1],
         'raw_capture': captures, 'oracle': oracle, 'action_oracle': action_oracle,
-        'scope': 'Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.'}
+        'scope': 'Existing 87 filter observations plus the bounded heap_filter_values fixture and isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The heap case measures object identity across priorities and nested apply_filters, a reference-cell extra argument, final replacement-object identity, and raw hook-stack equality at entry and exit. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.'}
     RECEIPT.parent.mkdir(parents=True, exist_ok=True)
     RECEIPT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     verify_receipt()

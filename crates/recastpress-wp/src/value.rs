@@ -13,6 +13,8 @@ pub enum PhpValue {
     Bytes(Vec<u8>),
     Array(PhpArray),
     Resource { handle: PhpHandle, identity: PhpHandle, resource_type: String, resource_id: i64 },
+    /// Opaque PHP heap value held by the request-scoped Wasm bridge.
+    ArgumentHandle(PhpHandle),
     /// Signals a value whose behavior has no implementation in this prototype.
     Unsupported,
 }

@@ -61,6 +61,9 @@ final class CallableApiAdapter
     private array $effects = [];
     private array $issuedHandles = [];
     private array $argumentFrames = [];
+    private array $filterValueFrames = [];
+    private array $filterDispatchStack = [];
+    private array $deferredFilterValues = [];
     private array $registryObservation = [];
 
     public function __construct(
@@ -169,15 +172,53 @@ final class CallableApiAdapter
 
     public function applyFilters($hookName, $value, ...$args)
     {
-        $valueNode = self::encodePod($value);
-        $argumentNodes = array_map(self::encodePod(...), $args);
-        [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
-
-        return $this->api('apply_filters', [
-            'arguments' => $arguments,
-            'value' => $valueNode,
-            'args' => $argumentNodes,
-        ], $handles);
+        $this->filterValueFrames[] = [];
+        $this->filterDispatchStack[] = false;
+        $dispatchFrameOpen = true;
+        $handles = [];
+        $apiStarted = false;
+        try {
+            [$arguments, $handles] = $this->retainArguments(['hook' => $hookName]);
+            $valueHandle = $this->registry->retainArgument($value);
+            $handles[] = $valueHandle;
+            $this->filterValueFrames[array_key_last($this->filterValueFrames)][] = $valueHandle;
+            $this->deferFilterValue($valueHandle, $value);
+            $argumentNodes = [];
+            foreach ($args as $index => $argument) {
+                $handle = $this->registry->retainArgument($argument);
+                $handles[] = $handle;
+                $this->filterValueFrames[array_key_last($this->filterValueFrames)][] = $handle;
+                $this->deferFilterValue($handle, $argument);
+                $argumentNodes[] = ['type' => 'handle', 'handle' => $handle];
+            }
+            $apiStarted = true;
+            $result = $this->api('apply_filters', [
+                'arguments' => $arguments,
+                'value' => ['type' => 'handle', 'handle' => $valueHandle],
+                'args' => $argumentNodes,
+            ], $handles);
+            $didPushFilter = array_pop($this->filterDispatchStack);
+            $dispatchFrameOpen = false;
+            if ($didPushFilter) {
+                array_pop($GLOBALS['wp_current_filter']);
+            }
+            return $result;
+        } catch (Throwable $error) {
+            if (!$apiStarted) {
+                foreach ($handles as $handle) {
+                    try { $this->registry->release($handle); } catch (Throwable) {}
+                }
+            }
+            throw $error;
+        } finally {
+            if ($dispatchFrameOpen) {
+                array_pop($this->filterDispatchStack);
+            }
+            $frame = array_pop($this->filterValueFrames) ?? [];
+            foreach ($frame as $handle) {
+                unset($this->deferredFilterValues[self::handleKey($handle)]);
+            }
+        }
     }
 
     public function doAction($hookName, ...$args)
@@ -397,7 +438,7 @@ final class CallableApiAdapter
         } finally {
             if ($argumentHandles !== []) {
                 $releasedFrame = array_pop($this->argumentFrames);
-                if (!self::sameHandleList($releasedFrame, $argumentHandles)) {
+                if (!is_array($releasedFrame) || array_slice($releasedFrame, 0, count($argumentHandles)) !== $argumentHandles) {
                     throw new RuntimeException('callable_argument_frame_stack');
                 }
             }
@@ -784,7 +825,7 @@ final class CallableApiAdapter
         if ($operation === 'callable') {
             expect_payload_keys(
                 $frame,
-                ['operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'args'],
+                ['operation', 'effect_id', 'handle', 'hook', 'priority', 'call_mode', 'action_dispatch', 'filter_all_dispatch', 'args'],
                 'callable_invoke',
             );
             $effectId = $payload['effect_id'];
@@ -798,12 +839,23 @@ final class CallableApiAdapter
                     || !is_array($payload['priority'])
                     || !is_string($payload['call_mode'])
                     || !is_bool($payload['action_dispatch'])
+                    || !is_bool($payload['filter_all_dispatch'])
                 ) {
                     throw new RuntimeException('callable_invoke_metadata');
                 }
                 $hookName = $this->decodePod($payload['hook']);
                 if (!self::isHookScalar($hookName)) {
                     throw new RuntimeException('callable_invoke_hook_scalar');
+                }
+                if (!$payload['action_dispatch'] && $this->filterDispatchStack !== []) {
+                    $frameIndex = array_key_last($this->filterDispatchStack);
+                    if (!$this->filterDispatchStack[$frameIndex]) {
+                        if (!isset($GLOBALS['wp_current_filter']) || !is_array($GLOBALS['wp_current_filter'])) {
+                            $GLOBALS['wp_current_filter'] = [];
+                        }
+                        $GLOBALS['wp_current_filter'][] = $hookName;
+                        $this->filterDispatchStack[$frameIndex] = true;
+                    }
                 }
                 $priority = self::decodePhpKey($payload['priority']);
                 $callable = $this->registry->resolve($payload['handle'], 'callable');
@@ -840,11 +892,23 @@ final class CallableApiAdapter
                     } else {
                         throw new RuntimeException('callable_call_mode');
                     }
+                    if ($payload['action_dispatch'] || $payload['filter_all_dispatch']) {
+                        $completionValue = self::encodePod(null);
+                    } else {
+                        $valueHandle = $this->registry->retainArgument($value);
+                        $this->deferFilterValue($valueHandle, $value);
+                        if ($this->argumentFrames === [] || $this->filterValueFrames === []) {
+                            throw new RuntimeException('callable_filter_result_without_frame');
+                        }
+                        $this->argumentFrames[array_key_last($this->argumentFrames)][] = $valueHandle;
+                        $this->filterValueFrames[array_key_last($this->filterValueFrames)][] = $valueHandle;
+                        $completionValue = ['type' => 'handle', 'handle' => $valueHandle];
+                    }
                     $completion = [
                         'kind' => 'value',
                         // WordPress do_action() ignores callback return values.
                         // Do not serialize a resource returned by an Action listener.
-                        'value' => self::encodePod($payload['action_dispatch'] ? null : $value),
+                        'value' => $completionValue,
                     ];
                 } catch (Throwable $error) {
                     $completion = $this->throwableCompletion($error);
@@ -959,6 +1023,16 @@ final class CallableApiAdapter
 
         if ($completion['kind'] === 'value') {
             expect_payload_keys(['payload' => $completion], ['kind', 'value'], 'callable_value_completion');
+            if (is_array($completion['value']) && ($completion['value']['type'] ?? null) === 'handle') {
+                expect_payload_keys(['payload' => $completion['value']], ['type', 'handle'], 'callable_handle_completion');
+                $key = self::handleKey($completion['value']['handle']);
+                if (!array_key_exists($key, $this->deferredFilterValues)) {
+                    throw new RuntimeException('callable_filter_result_handle_missing');
+                }
+                $value = $this->deferredFilterValues[$key];
+                unset($this->deferredFilterValues[$key]);
+                return $value;
+            }
             return $this->decodePod($completion['value']);
         }
 
@@ -990,6 +1064,22 @@ final class CallableApiAdapter
             'class_hex' => bin2hex($error::class),
             'message_hex' => bin2hex($error->getMessage()),
         ];
+    }
+
+    private function deferFilterValue(array $handle, mixed $value): void
+    {
+        if ($this->filterValueFrames === []) {
+            throw new RuntimeException('callable_filter_value_without_frame');
+        }
+        $this->deferredFilterValues[self::handleKey($handle)] = $value;
+    }
+
+    private static function handleKey(array $handle): string
+    {
+        if (!isset($handle['request'], $handle['kind'], $handle['slot'], $handle['generation'], $handle['token'])) {
+            throw new RuntimeException('callable_filter_handle_key_shape');
+        }
+        return implode(':', [$handle['request'], $handle['kind'], $handle['slot'], $handle['generation'], $handle['token']]);
     }
 
     private function withEffect(string $effectId, callable $callback): void

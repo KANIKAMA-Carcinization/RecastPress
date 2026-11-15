@@ -226,6 +226,7 @@ fn pod(value: &PhpValue, label: &str) -> Result<Value, String> {
             "type":"resource", "handle":descriptor(*handle), "identity":descriptor(*identity),
             "resource_type":resource_type, "resource_id":resource_id,
         }),
+        PhpValue::ArgumentHandle(handle) => json!({"type":"handle","handle":descriptor(*handle)}),
         PhpValue::Array(values) => {
             let mut entries = Vec::with_capacity(values.len());
             for (key, value) in values.iter() {
@@ -255,7 +256,7 @@ fn hook_scalar_from_value(value: PhpValue, label: &str) -> Result<HookScalar, St
         PhpValue::Resource { handle, identity, resource_type, resource_id } => Ok(HookScalar::Resource {
             handle, identity, resource_type, resource_id,
         }),
-        PhpValue::Array(_) | PhpValue::Unsupported => Err(format!("{label}_not_scalar")),
+        PhpValue::Array(_) | PhpValue::Unsupported | PhpValue::ArgumentHandle(_) => Err(format!("{label}_not_scalar")),
     }
 }
 
@@ -449,6 +450,7 @@ enum ControlOutcome {
 #[derive(Clone, Copy)]
 enum EffectValueMode {
     Pod,
+    ArgumentHandle,
     ReleaseAck,
     RegistryObservation,
 }
@@ -475,6 +477,7 @@ struct CallablePeer<'a, R, W> {
     nested_caught_child_throwable: Option<PhpHandle>,
     effect_ids: HashMap<String, EffectId>,
     api_arguments: Vec<HashMap<String, PhpHandle>>,
+    api_filter_result_handles: Vec<Vec<PhpHandle>>,
     api_action_argument_counts: Vec<Option<usize>>,
     hook_names: Vec<HookArgument>,
     api_counts: BTreeMap<String, u64>,
@@ -626,6 +629,21 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                 registered.push((format!("action_arg_{index}"), handle));
             }
         }
+        if api == "apply_filters" {
+            let marker = payload.get("value").ok_or("apply_value_missing")?;
+            exact_keys(marker, &["type", "handle"], "apply_value_handle")?;
+            if string(marker, "type")? != "handle" { return Err("apply_value_marker_type".into()); }
+            let handle = self.register_argument(marker.get("handle").ok_or("apply_value_handle_missing")?, "filter_value")?;
+            registered.push(("filter_value".into(), handle));
+            let args = payload.get("args").and_then(Value::as_array).ok_or("apply_args")?;
+            for (index, marker) in args.iter().enumerate() {
+                let label = format!("filter_arg_{index}");
+                exact_keys(marker, &["type", "handle"], &label)?;
+                if string(marker, "type")? != "handle" { return Err(format!("{label}_marker_type")); }
+                let handle = self.register_argument(marker.get("handle").ok_or("filter_arg_handle_missing")?, &label)?;
+                registered.push((label, handle));
+            }
+        }
         Ok(registered)
     }
 
@@ -661,11 +679,63 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         Ok(Some(handles))
     }
 
+    fn filter_argument_handles(&self) -> Result<Option<(PhpHandle, Vec<PhpHandle>)>, String> {
+        let Some(frame) = self.api_arguments.last() else { return Ok(None) };
+        let Some(value) = frame.get("filter_value").copied() else { return Ok(None) };
+        self.check_argument(value, "filter_value")?;
+        let count = frame.keys().filter(|name| name.starts_with("filter_arg_")).count();
+        let mut args = Vec::with_capacity(count);
+        for index in 0..count {
+            let name = format!("filter_arg_{index}");
+            let handle = frame.get(&name).copied().ok_or_else(|| format!("{name}_missing"))?;
+            self.check_argument(handle, &name)?;
+            args.push(handle);
+        }
+        Ok(Some((value, args)))
+    }
+
     fn encode_callback_arguments(
         &self,
         call_mode: PhpCallMode,
         args: &[PhpValue],
     ) -> Result<Vec<Value>, String> {
+        if self.action_argument_handles()?.is_none() {
+            if let Some((_value_handle, handles)) = self.filter_argument_handles()? {
+                let (prefix, start) = match call_mode {
+                    PhpCallMode::All => {
+                        if args.len() != handles.len() + 2 { return Err("filter_all_argument_count".into()); }
+                        (Some(pod(&args[0], "filter_all_hook_prefix")?), 1)
+                    }
+                    PhpCallMode::Zero => {
+                        if !args.is_empty() { return Err("filter_zero_argument_count".into()); }
+                        return Ok(Vec::new());
+                    }
+                    PhpCallMode::Array => {
+                        if args.len() > handles.len() + 1 { return Err("filter_named_argument_count".into()); }
+                        (None, 0)
+                    }
+                };
+                let mut encoded = Vec::with_capacity(args.len());
+                if let Some(prefix) = prefix { encoded.push(prefix); }
+                for (offset, value) in args.iter().skip(start).enumerate() {
+                    let handle = if offset == 0 {
+                        let PhpValue::ArgumentHandle(candidate) = value else { return Err("filter_value_placeholder_expected".into()) };
+                        self.check_argument(*candidate, "filter_dispatch_value")?;
+                        let frame = self.api_arguments.last().ok_or("filter_api_argument_frame_missing")?;
+                        if !frame.values().any(|registered| registered == candidate) { return Err("filter_value_handle_outside_frame".into()); }
+                        *candidate
+                    } else {
+                        let handle = *handles.get(offset - 1).ok_or("filter_arg_order_or_count")?;
+                        if !matches!(value, PhpValue::ArgumentHandle(candidate) if *candidate == handle) {
+                            return Err("filter_arg_placeholder_expected".into());
+                        }
+                        handle
+                    };
+                    encoded.push(json!({"type":"handle","handle":descriptor(handle)}));
+                }
+                return Ok(encoded);
+            }
+        }
         let Some(handles) = self.action_argument_handles()? else {
             return args
                 .iter()
@@ -799,6 +869,16 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     .ok_or_else(|| format!("{label}_value_missing"))?;
                 let value = match value_mode {
                     EffectValueMode::Pod => parse_pod(value, label)?,
+                    EffectValueMode::ArgumentHandle => {
+                        exact_keys(value, &["type", "handle"], label)?;
+                        if string(value, "type")? != "handle" { return Err(format!("{label}_handle_marker")); }
+                        let handle = self.register_argument(value.get("handle").ok_or_else(|| format!("{label}_handle_missing"))?, label)?;
+                        let frame = self.api_arguments.last_mut().ok_or("filter_result_without_api_frame")?;
+                        let index = frame.keys().filter(|name| name.starts_with("filter_result_")).count();
+                        frame.insert(format!("filter_result_{index}"), handle);
+                        self.api_filter_result_handles.last_mut().ok_or("filter_result_order_frame_missing")?.push(handle);
+                        PhpValue::ArgumentHandle(handle)
+                    }
                     EffectValueMode::ReleaseAck => {
                         exact_keys(value, &["released"], label)?;
                         if value.get("released") != Some(&Value::Bool(true)) {
@@ -1081,7 +1161,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             .continuation
             .begin_child(parent)
             .map_err(|error| format!("begin_api_child:{error:?}"))?;
-        let arguments = self.register_api_arguments(payload, &api_name)?;
+        let mut arguments = self.register_api_arguments(payload, &api_name)?;
         let action_argument_count = if api_name == "do_action" {
             Some(
                 arguments
@@ -1093,6 +1173,7 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             None
         };
         self.api_arguments.push(arguments.iter().cloned().collect());
+        self.api_filter_result_handles.push(Vec::new());
         self.api_action_argument_counts.push(action_argument_count);
         let completion = match api_name.as_str() {
             "add_filter" | "add_action" => self.api_add(payload, operation, parent_wire),
@@ -1106,10 +1187,17 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             "did_action" => self.api_did_action(payload, operation, parent_wire),
             _ => Err("call_core_unknown_api".into()),
         }?;
+        if api_name == "apply_filters" {
+            let result_handles = self.api_filter_result_handles.last().ok_or("apply_filter_result_order_missing")?;
+            for (index, handle) in result_handles.iter().enumerate() {
+                arguments.push((format!("filter_result_{index}"), *handle));
+            }
+        }
         let release_throwable = self.release_arguments(&arguments, operation, parent_wire)?;
         self.api_arguments
             .pop()
             .ok_or("api_argument_stack_underflow")?;
+        self.api_filter_result_handles.pop().ok_or("api_filter_result_order_stack_underflow")?;
         self.api_action_argument_counts
             .pop()
             .ok_or("api_action_argument_count_stack_underflow")?;
@@ -2365,18 +2453,9 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         ) {
             return Err("apply_counter_mutation_result_mismatch".into());
         }
-        let value = parse_pod(
-            payload.get("value").ok_or("apply_value_missing")?,
-            "apply_value",
-        )?;
-        let extra = payload
-            .get("args")
-            .and_then(Value::as_array)
-            .ok_or("apply_args")?
-            .iter()
-            .enumerate()
-            .map(|(i, value)| parse_pod(value, &format!("apply_arg_{i}")))
-            .collect::<Result<Vec<_>, _>>()?;
+        let (value_handle, extra_handles) = self.filter_argument_handles()?.ok_or("apply_filter_argument_handles_missing")?;
+        let value = PhpValue::ArgumentHandle(value_handle);
+        let extra = extra_handles.into_iter().map(PhpValue::ArgumentHandle).collect::<Vec<_>>();
         let ticket = self
             .dispatcher
             .begin_filter_after_counter_typed(&hook, value, &extra)
@@ -2419,16 +2498,17 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .api_action_argument_counts
                         .last()
                         .is_some_and(Option::is_some);
+                    let filter_all_dispatch = !action_dispatch && invocation.call_mode == PhpCallMode::All;
                     self.wire.send("invoke_php", Some(caller_wire), json!({
                         "operation":"callable","effect_id":effect_wire,"handle":descriptor(invocation.handle),
                         "hook":scalar_pod(&invocation.hook,"callback_hook")?,
-                        "priority":php_key_json(&invocation.priority),"call_mode":call_mode,"action_dispatch":action_dispatch,"args":args,
+                        "priority":php_key_json(&invocation.priority),"call_mode":call_mode,"action_dispatch":action_dispatch,"filter_all_dispatch":filter_all_dispatch,"args":args,
                     }))?;
                     let completion = self.drive_effect(
                         &effect_wire,
                         effect,
                         Some(caller_wire),
-                        EffectValueMode::Pod,
+                        if action_dispatch || filter_all_dispatch { EffectValueMode::Pod } else { EffectValueMode::ArgumentHandle },
                     )?;
                     self.dispatcher
                         .resume_php_completion(ticket, completion)
@@ -3104,6 +3184,7 @@ pub(super) fn run_callables_peer<R: BufRead, W: Write>(
         nested_caught_child_throwable: None,
         effect_ids: HashMap::new(),
         api_arguments: Vec::new(),
+        api_filter_result_handles: Vec::new(),
         api_action_argument_counts: Vec::new(),
         hook_names: Vec::new(),
         api_counts: api_names
@@ -3476,6 +3557,7 @@ mod tests {
             nested_caught_child_throwable: None,
             effect_ids: HashMap::new(),
             api_arguments: Vec::new(),
+            api_filter_result_handles: Vec::new(),
             api_action_argument_counts: Vec::new(),
             hook_names: Vec::new(),
             api_counts: BTreeMap::new(),

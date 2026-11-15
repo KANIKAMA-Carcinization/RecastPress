@@ -143,7 +143,7 @@ fn validate_fallback_domain(value: &PhpValue, depth: usize) -> Result<bool, Json
     match value {
         PhpValue::Null | PhpValue::Bool(_) | PhpValue::Integer(_) => Ok(false),
         PhpValue::Bytes(bytes) => Ok(!crate::wp_is_valid_utf8_bytes(bytes)),
-        PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } => Err(JsonEncodeError::UnsupportedValue),
+        PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } | PhpValue::ArgumentHandle(_) => Err(JsonEncodeError::UnsupportedValue),
         PhpValue::Array(array) => {
             if depth >= MAX_ARRAY_DEPTH {
                 return Err(JsonEncodeError::RecursionLimit);
@@ -176,7 +176,7 @@ fn sanitize_utf8_graph(value: &PhpValue) -> Result<PhpValue, JsonEncodeError> {
             }
             Ok(PhpValue::Array(sanitized))
         }
-        PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } => Err(JsonEncodeError::UnsupportedValue),
+        PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } | PhpValue::ArgumentHandle(_) => Err(JsonEncodeError::UnsupportedValue),
     }
 }
 
@@ -216,7 +216,7 @@ impl Encoder {
             PhpValue::Integer(value) => self.emit(value.to_string().as_bytes()),
             PhpValue::Bytes(value) => self.string(value),
             PhpValue::Array(array) => self.array(array, depth),
-            PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } => Err(JsonEncodeError::UnsupportedValue),
+            PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } | PhpValue::ArgumentHandle(_) => Err(JsonEncodeError::UnsupportedValue),
         }
     }
 
