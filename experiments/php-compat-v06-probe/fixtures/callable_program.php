@@ -3471,6 +3471,148 @@ function callable_program_action_hook_key_unusual_cases(): array
     return $cases;
 }
 
+function callable_program_action_live_mutation_cases(): array
+{
+    $currentHook = 'callable-action-live-current-bucket';
+    $currentEvents = [];
+    $currentMutation = null;
+    $currentMutated = false;
+    $recordCurrent = static function (string $event) use (&$currentEvents, $currentHook): void {
+        $currentEvents[] = [
+            'event' => $event,
+            'current_action' => current_action(),
+            'doing_action' => doing_action(),
+            'doing_named' => doing_action($currentHook),
+            'did_action' => did_action($currentHook),
+        ];
+    };
+    $currentAdded = static function () use ($recordCurrent): void { $recordCurrent('added-same-priority'); };
+    $currentVictim = static function () use ($recordCurrent): void { $recordCurrent('removed-sibling'); };
+    $currentSurvivor = static function () use ($recordCurrent): void { $recordCurrent('survivor'); };
+    $currentTrigger = static function () use (
+        &$currentMutation,
+        &$currentMutated,
+        $currentHook,
+        $currentAdded,
+        $currentVictim,
+        $recordCurrent
+    ): void {
+        $recordCurrent('trigger-enter');
+        if (!$currentMutated) {
+            $removed = remove_action($currentHook, $currentVictim, 10);
+            $added = add_action($currentHook, $currentAdded, 10, 0);
+            $currentMutation = [
+                'remove_sibling' => $removed,
+                'add_same_priority' => $added,
+                'has_removed_sibling' => has_action($currentHook, $currentVictim),
+                'same_priority' => has_action($currentHook, $currentAdded),
+            ];
+            $currentMutated = true;
+        }
+        $recordCurrent('trigger-exit');
+    };
+    add_action($currentHook, $currentTrigger, 10, 0);
+    add_action($currentHook, $currentVictim, 10, 0);
+    add_action($currentHook, $currentSurvivor, 10, 0);
+    $currentFirstReturn = do_action($currentHook);
+    $currentFirstEvents = $currentEvents;
+    $currentEvents = [];
+    $currentAfterFirst = [
+        'did_action' => did_action($currentHook),
+        'current_action' => current_action(),
+        'doing_action' => doing_action(),
+        'has_removed_sibling' => has_action($currentHook, $currentVictim),
+        'has_same_priority' => has_action($currentHook, $currentAdded),
+        'has_survivor' => has_action($currentHook, $currentSurvivor),
+    ];
+    $currentSecondReturn = do_action($currentHook);
+    $currentSecondEvents = $currentEvents;
+    $currentAfterSecond = [
+        'did_action' => did_action($currentHook),
+        'current_action' => current_action(),
+        'doing_action' => doing_action(),
+        'has_removed_sibling' => has_action($currentHook, $currentVictim),
+        'has_same_priority' => has_action($currentHook, $currentAdded),
+        'has_survivor' => has_action($currentHook, $currentSurvivor),
+    ];
+
+    $futureHook = 'callable-action-live-future-priority';
+    $futureEvents = [];
+    $futureMutation = null;
+    $futureMutated = false;
+    $recordFuture = static function (string $event) use (&$futureEvents, $futureHook): void {
+        $futureEvents[] = [
+            'event' => $event,
+            'current_action' => current_action(),
+            'doing_action' => doing_action(),
+            'doing_named' => doing_action($futureHook),
+            'did_action' => did_action($futureHook),
+        ];
+    };
+    $futureOld = static function () use ($recordFuture): void { $recordFuture('removed-future-sibling'); };
+    $futureAdded = static function () use ($recordFuture): void { $recordFuture('added-future-priority'); };
+    $futureKeeper = static function () use ($recordFuture): void { $recordFuture('future-keeper'); };
+    $futureTrigger = static function () use (
+        &$futureMutation,
+        &$futureMutated,
+        $futureHook,
+        $futureOld,
+        $futureAdded,
+        $recordFuture
+    ): void {
+        $recordFuture('trigger-enter');
+        if (!$futureMutated) {
+            $removed = remove_action($futureHook, $futureOld, 10);
+            $added = add_action($futureHook, $futureAdded, 15, 0);
+            $futureMutation = [
+                'remove_future_sibling' => $removed,
+                'add_new_future_priority' => $added,
+                'has_removed_sibling' => has_action($futureHook, $futureOld),
+                'new_future_priority' => has_action($futureHook, $futureAdded),
+            ];
+            $futureMutated = true;
+        }
+        $recordFuture('trigger-exit');
+    };
+    add_action($futureHook, $futureTrigger, 5, 0);
+    add_action($futureHook, $futureOld, 10, 0);
+    add_action($futureHook, $futureKeeper, 20, 0);
+    $futureFirstReturn = do_action($futureHook);
+    $futureFirstEvents = $futureEvents;
+    $futureEvents = [];
+    $futureAfterFirst = [
+        'did_action' => did_action($futureHook),
+        'current_action' => current_action(),
+        'doing_action' => doing_action(),
+        'has_removed_sibling' => has_action($futureHook, $futureOld),
+        'has_new_future_priority' => has_action($futureHook, $futureAdded),
+        'has_keeper' => has_action($futureHook, $futureKeeper),
+    ];
+    $futureSecondReturn = do_action($futureHook);
+    $futureSecondEvents = $futureEvents;
+    $futureAfterSecond = [
+        'did_action' => did_action($futureHook),
+        'current_action' => current_action(),
+        'doing_action' => doing_action(),
+        'has_removed_sibling' => has_action($futureHook, $futureOld),
+        'has_new_future_priority' => has_action($futureHook, $futureAdded),
+        'has_keeper' => has_action($futureHook, $futureKeeper),
+    ];
+
+    return [
+        'current_bucket' => [
+            'mutation' => $currentMutation,
+            'first' => ['return' => $currentFirstReturn, 'events' => $currentFirstEvents, 'after' => $currentAfterFirst],
+            'second' => ['return' => $currentSecondReturn, 'events' => $currentSecondEvents, 'after' => $currentAfterSecond],
+        ],
+        'future_priority' => [
+            'mutation' => $futureMutation,
+            'first' => ['return' => $futureFirstReturn, 'events' => $futureFirstEvents, 'after' => $futureAfterFirst],
+            'second' => ['return' => $futureSecondReturn, 'events' => $futureSecondEvents, 'after' => $futureAfterSecond],
+        ],
+    ];
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
@@ -3483,6 +3625,7 @@ function callable_program_action_api_cases(): array
     $hookKeyAliasCases = callable_program_action_hook_alias_cases();
     $hookKeyWarningCases = callable_program_action_hook_key_warning_cases();
     $hookKeyUnusualCases = callable_program_action_hook_key_unusual_cases();
+    $liveMutationCases = callable_program_action_live_mutation_cases();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3801,6 +3944,7 @@ function callable_program_action_api_cases(): array
         'hook_key_alias' => $hookKeyAliasCases,
         'hook_key_warning' => $hookKeyWarningCases,
         'hook_key_unusual' => $hookKeyUnusualCases,
+        'live_mutation' => $liveMutationCases,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,

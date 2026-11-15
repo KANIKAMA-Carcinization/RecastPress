@@ -2,7 +2,7 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-15T17:15:48+00:00",
+  "recorded_at_utc": "2026-11-15T18:13:13+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
@@ -24,8 +24,8 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "1e9142e607a1e6221cff23525160d27a55244e09514e905fae381820b024e75b",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "de0bf932f1ee9f7270fe720c2c61a123cecce30a0d553822605c6ee4a4431575",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "c06395fe47e9ea7534020a64b0b342dba22f5feaaf22d527c993bb13407ddb95",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
@@ -35,7 +35,7 @@
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d37b508d6fd78fd15f60f108426fa490ecdf4f96bb3845fdadc0800c5bc1c23f",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "d009b2169fc8ffb6ec6dc7124d11ab9e701c6c1fa78db95f126138f79742a17a",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6db72d61572b5375bd2c31e4d4ee4adf86689a173ccc610763b5ddfd1bca7940",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -254,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 27868,
-      "rust": 25464
+      "php": 18676,
+      "rust": 12540
     },
     "returncodes": {
       "php": 0,
@@ -312,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-f97118093c08488c835d3f3fcb5bade5-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-f97118093c08488c835d3f3fcb5bade5-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-914b2cee726f49c09daf25ae06134311-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-f97118093c08488c835d3f3fcb5bade5-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-f97118093c08488c835d3f3fcb5bade5-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -337,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 3560,
-      "rust": 32908
+      "php": 19668,
+      "rust": 34352
     },
     "returncodes": {
       "php": 0,
@@ -401,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-13361da73c204483ab7ac737e32176ee-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-13361da73c204483ab7ac737e32176ee-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-e7f95a2ad1ce4ae59676f747ef0957a3-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-13361da73c204483ab7ac737e32176ee-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-13361da73c204483ab7ac737e32176ee-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -426,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 14660,
-      "rust": 34452
+      "php": 26128,
+      "rust": 7428
     },
     "returncodes": {
       "php": 0,
@@ -575,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-8c5e89a765024ba4965aaaf24265ff09-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-8c5e89a765024ba4965aaaf24265ff09-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-4e48989d07c44f7086c72040305ab9be-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-8c5e89a765024ba4965aaaf24265ff09-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-8c5e89a765024ba4965aaaf24265ff09-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -601,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 19744,
-        "rust": 21620
+        "php": 16972,
+        "rust": 21412
       },
       "returncodes": {
         "php": 0,
@@ -677,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-6979cf35738a48fc9cb7797c344e6783-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-6979cf35738a48fc9cb7797c344e6783-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-b59461041d194bd4826750c72e929fbe-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-6979cf35738a48fc9cb7797c344e6783-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-6979cf35738a48fc9cb7797c344e6783-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "3439e970d598a1b9354c0ac64b2ff7501d9608144a316b84e73f2626c75a960f",
+          "stdout_sha256": "6d9ff0fb05c94f337c0c1adfa6454269b31e2610effdc8c5a7c086d283bab0ea",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -702,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 28476,
-        "rust": 18036
+        "php": 33608,
+        "rust": 34580
       },
       "returncodes": {
         "php": 0,
@@ -781,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-9a037b88574b42c9a138864b93a2f2dc-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-9a037b88574b42c9a138864b93a2f2dc-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1e194c8eafce4fcaa0d9c6ee45f51036-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-9a037b88574b42c9a138864b93a2f2dc-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-9a037b88574b42c9a138864b93a2f2dc-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "0b29122aae844a23bcd8a4c17b11d3cab1cc961c159e9841f063554d2b019825",
+          "stdout_sha256": "268c0066ad791ccc40ca75afcf3129a49292775f47b917ce9551746661276296",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -807,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 24572,
-      "rust": 33996
+      "php": 26652,
+      "rust": 33104
     },
     "returncodes": {
       "php": 0,
@@ -893,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-916f425f0afb47029765286180a60c0a-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-916f425f0afb47029765286180a60c0a-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-9f683208f47e4309ae9d9de00a0996c5-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-916f425f0afb47029765286180a60c0a-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-916f425f0afb47029765286180a60c0a-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "a4a979bec8e7f3c2e0f5f32fcba40ee5e67ceaa6a093b227c5e543557c2b2d40",
+        "stdout_sha256": "a873a08a3dcb16e4bb27e1bc10fd452fe94568a6fb30b6dfb0c3fb46c5590b91",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "12e4341767156c301737e1b1c8f397191f3cdac6f6c2b3a3e321f1ff2d550932",
+        "stdout_sha256": "90dd679cdaabf95781b7aa5b41ec96a8270de03f3016e8bebc55b4c6d8a0e344",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -919,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 29412,
-        "rust": 34300
+        "php": 4636,
+        "rust": 33564
       },
       "returncodes": {
         "php": 0,
@@ -1042,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-ab2e35b3a9924e7b8e0720e39b051600-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-ab2e35b3a9924e7b8e0720e39b051600-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c849d29f655e41bea9c23e52f2dcb280-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-ab2e35b3a9924e7b8e0720e39b051600-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-ab2e35b3a9924e7b8e0720e39b051600-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "473419f74f76d7455451e03e5dca1f2c94bf608a4da4b303ae3b60490c4e44ca",
+          "stdout_sha256": "75f8e46e2545f8b23becaa739b08e6209d50935cefca7a3c0727d7184afa30eb",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "680969729077bea3fbb43ba73c7ee2538f3fb105a15c65df0fb4f05aef576cc6",
+          "stdout_sha256": "25591648205d047bf93a8d8f609f0cfbcbb045a9a40267ca86bd3212ca133f1e",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1087,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 21944,
-        "rust": 23432
+        "php": 7668,
+        "rust": 32908
       },
       "returncodes": {
         "php": 0,
@@ -1112,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "11d8f9d7f10b2ed3"
+              "token": "7200f71ab2ea4c58"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1175,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "11d8f9d7f10b2ed3"
+              "token": "7200f71ab2ea4c58"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1249,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-a279f37bfa8447e8a0e671728e6b395d-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-a279f37bfa8447e8a0e671728e6b395d-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-ab4f7f329c9b46329d22b051e376d734-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-a279f37bfa8447e8a0e671728e6b395d-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-a279f37bfa8447e8a0e671728e6b395d-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "25adc69658600debd73e1f9a8641fbef0be694f270979176aaf0127c653f92c0",
+          "stdout_sha256": "250130ca8979ea49cb41da5969c80327f36bc96e46e965dfd7875ff38f2aac99",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "fc001d93b47d3c642ef143c3d2d5fc0edfebf4fbc8de35dd1c8fbfebb86d22be",
+          "stdout_sha256": "c3cd2720ce2b3aec828d52b9838deff5da32f7541c81ff104c74c2e0bf3f94e0",
           "stderr_bytes": 1817,
-          "stderr_sha256": "d1ca742e51cd1de40edd20fef0c0545dddfa6d5507816750d5624bbfb6cdb7e3"
+          "stderr_sha256": "a87464dd179d6cacdb394d121ce3db5660728e66578bbd3ef9ece4adce8e52bd"
         }
       },
       "hook_transcript_rejections": [
@@ -1295,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 33436,
-      "rust": 29124
+      "php": 30776,
+      "rust": 22400
     },
     "returncodes": {
       "php": 0,
@@ -14717,24 +14717,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-b48c916fa24d454ba2ebd6bee8abdcad-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-b48c916fa24d454ba2ebd6bee8abdcad-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-d65146a15598433da3a08055b36555bb-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-b48c916fa24d454ba2ebd6bee8abdcad-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-b48c916fa24d454ba2ebd6bee8abdcad-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "e039314d51d30dcd362478512380397cb1adb3ee4d7edecb253f9c686240ed2f",
+        "stdout_sha256": "49797012452395e913abf3586810c31e16bbf93e6520a60a8260c35426ac0591",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2770412,
-        "stdout_sha256": "971001beded0a895aa18824f14afbb182199143d341afed1cf826616cd37689f",
+        "stdout_sha256": "1bc17cef7502be88958016ca4061167c3961a758738595406e65bb450c09a6ac",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14786,8 +14786,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 32140,
-      "rust": 33968
+      "php": 34000,
+      "rust": 23952
     },
     "returncodes": {
       "php": 0,
@@ -14795,9 +14795,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 4185,
-    "frames_from_rust": 4184,
-    "relayed_bytes": 2531127,
+    "frames_from_php": 4634,
+    "frames_from_rust": 4633,
+    "relayed_bytes": 2791381,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -18897,6 +18897,188 @@
               }
             }
           },
+          "live_mutation": {
+            "current_bucket": {
+              "mutation": {
+                "remove_sibling": true,
+                "add_same_priority": true,
+                "has_removed_sibling": false,
+                "same_priority": 10
+              },
+              "first": {
+                "return": null,
+                "events": [
+                  {
+                    "event": "trigger-enter",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "trigger-exit",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "removed-sibling",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "survivor",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  }
+                ],
+                "after": {
+                  "did_action": 1,
+                  "current_action": false,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_same_priority": 10,
+                  "has_survivor": 10
+                }
+              },
+              "second": {
+                "return": null,
+                "events": [
+                  {
+                    "event": "trigger-enter",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "trigger-exit",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "survivor",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "added-same-priority",
+                    "current_action": "callable-action-live-current-bucket",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  }
+                ],
+                "after": {
+                  "did_action": 2,
+                  "current_action": false,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_same_priority": 10,
+                  "has_survivor": 10
+                }
+              }
+            },
+            "future_priority": {
+              "mutation": {
+                "remove_future_sibling": true,
+                "add_new_future_priority": true,
+                "has_removed_sibling": false,
+                "new_future_priority": 15
+              },
+              "first": {
+                "return": null,
+                "events": [
+                  {
+                    "event": "trigger-enter",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "trigger-exit",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "added-future-priority",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  },
+                  {
+                    "event": "future-keeper",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 1
+                  }
+                ],
+                "after": {
+                  "did_action": 1,
+                  "current_action": false,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_new_future_priority": 15,
+                  "has_keeper": 20
+                }
+              },
+              "second": {
+                "return": null,
+                "events": [
+                  {
+                    "event": "trigger-enter",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "trigger-exit",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "added-future-priority",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  },
+                  {
+                    "event": "future-keeper",
+                    "current_action": "callable-action-live-future-priority",
+                    "doing_action": true,
+                    "doing_named": true,
+                    "did_action": 2
+                  }
+                ],
+                "after": {
+                  "did_action": 2,
+                  "current_action": false,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_new_future_priority": 15,
+                  "has_keeper": 20
+                }
+              }
+            }
+          },
           "no_listener_count": {
             "before": 0,
             "after": 1
@@ -20315,33 +20497,33 @@
       }
     },
     "expected_frame_counts": {
-      "php": 4185,
-      "rust": 4184
+      "php": 4634,
+      "rust": 4633
     },
     "action_result": {
       "api_counts": {
-        "add_action": 86,
+        "add_action": 94,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 197,
+        "current_action": 217,
         "current_filter": 0,
-        "did_action": 248,
+        "did_action": 268,
         "did_filter": 7,
-        "do_action": 66,
-        "doing_action": 198,
+        "do_action": 70,
+        "doing_action": 234,
         "doing_filter": 0,
-        "has_action": 42,
+        "has_action": 58,
         "has_filter": 0,
-        "remove_action": 44,
+        "remove_action": 46,
         "remove_filter": 0
       },
-      "argument_release_effects": 692,
-      "boundary_effects": 2042,
-      "callback_invocations": 475,
+      "argument_release_effects": 778,
+      "boundary_effects": 2255,
+      "callback_invocations": 511,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 4185,
-      "frames_from_rust": 4184,
+      "frames_from_php": 4634,
+      "frames_from_rust": 4633,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -25394,6 +25576,188 @@
               ]
             }
           },
+          "live_mutation": {
+            "current_bucket": {
+              "first": {
+                "after": {
+                  "current_action": false,
+                  "did_action": 1,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_same_priority": 10,
+                  "has_survivor": 10
+                },
+                "events": [
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-enter"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-exit"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "removed-sibling"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "survivor"
+                  }
+                ],
+                "return": null
+              },
+              "mutation": {
+                "add_same_priority": true,
+                "has_removed_sibling": false,
+                "remove_sibling": true,
+                "same_priority": 10
+              },
+              "second": {
+                "after": {
+                  "current_action": false,
+                  "did_action": 2,
+                  "doing_action": false,
+                  "has_removed_sibling": false,
+                  "has_same_priority": 10,
+                  "has_survivor": 10
+                },
+                "events": [
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-enter"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-exit"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "survivor"
+                  },
+                  {
+                    "current_action": "callable-action-live-current-bucket",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "added-same-priority"
+                  }
+                ],
+                "return": null
+              }
+            },
+            "future_priority": {
+              "first": {
+                "after": {
+                  "current_action": false,
+                  "did_action": 1,
+                  "doing_action": false,
+                  "has_keeper": 20,
+                  "has_new_future_priority": 15,
+                  "has_removed_sibling": false
+                },
+                "events": [
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-enter"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-exit"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "added-future-priority"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 1,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "future-keeper"
+                  }
+                ],
+                "return": null
+              },
+              "mutation": {
+                "add_new_future_priority": true,
+                "has_removed_sibling": false,
+                "new_future_priority": 15,
+                "remove_future_sibling": true
+              },
+              "second": {
+                "after": {
+                  "current_action": false,
+                  "did_action": 2,
+                  "doing_action": false,
+                  "has_keeper": 20,
+                  "has_new_future_priority": 15,
+                  "has_removed_sibling": false
+                },
+                "events": [
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-enter"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "trigger-exit"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "added-future-priority"
+                  },
+                  {
+                    "current_action": "callable-action-live-future-priority",
+                    "did_action": 2,
+                    "doing_action": true,
+                    "doing_named": true,
+                    "event": "future-keeper"
+                  }
+                ],
+                "return": null
+              }
+            }
+          },
           "nested": {
             "current_action": "callable-action-throw-named",
             "did_action": 2,
@@ -25875,32 +26239,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 83,
+      "release_effects": 91,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-44a885747722469eb028bc31a646a720-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-44a885747722469eb028bc31a646a720-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a79a80b733954235ab3bdaba17b024b9-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-44a885747722469eb028bc31a646a720-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-44a885747722469eb028bc31a646a720-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 1163011,
-        "stdout_sha256": "f25ee1a4bc7bbb646a29d51906df752a6a1317351fdfc1b4c6e37e23576b3886",
+        "stdout_bytes": 1284183,
+        "stdout_sha256": "1ef280f72326a2052e915d2c1ddbede54f5400175a16787f9d30e8224024f0ca",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 1368116,
-        "stdout_sha256": "3edbb90e291b617941bc1ad011b16ec023ef17f5155853088fea401308e29891",
-        "stderr_bytes": 85126,
-        "stderr_sha256": "69c68c35be87e688caf40b1a7ab153e8fdefc7bdc6f28e3a5ed59270f2d8d821"
+        "stdout_bytes": 1507198,
+        "stdout_sha256": "02f19d38b24661060b1179bc6a763034faf3513988295969c5cf2b055724a567",
+        "stderr_bytes": 88296,
+        "stderr_sha256": "2f70a7cbc06f7aa5f2d28f5525ffe19856e817dc56a21bd9082f2b547b1f86b5"
       }
     },
     "action_transcript_rejections": [
@@ -25960,72 +26324,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 21588,
+        "pid": 33140,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 14172,
+        "pid": 33976,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 33984,
-        "returncode": 0,
-        "reaped": true
-      },
-      {
-        "pid": 34780,
-        "returncode": 0,
-        "reaped": true
-      },
-      {
-        "pid": 30636,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 31448,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 34588,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 1948,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 17480,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 28572,
-        "returncode": 2,
-        "reaped": true
-      },
-      {
-        "pid": 17300,
-        "returncode": 255,
-        "reaped": true
-      },
-      {
-        "pid": 14288,
-        "returncode": 255,
-        "reaped": true
-      },
-      {
-        "pid": 23536,
+        "pid": 5696,
         "returncode": 0,
         "reaped": true
       },
       {
         "pid": 5464,
+        "returncode": 0,
+        "reaped": true
+      },
+      {
+        "pid": 33608,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 33684,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 26840,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 19580,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 13544,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 22400,
+        "returncode": 2,
+        "reaped": true
+      },
+      {
+        "pid": 13696,
+        "returncode": 255,
+        "reaped": true
+      },
+      {
+        "pid": 24628,
+        "returncode": 255,
+        "reaped": true
+      },
+      {
+        "pid": 31448,
+        "returncode": 0,
+        "reaped": true
+      },
+      {
+        "pid": 1676,
         "returncode": 0,
         "reaped": true
       }

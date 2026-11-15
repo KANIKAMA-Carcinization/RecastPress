@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 import run_check as native
 import wp_hooks_oracle as hooks
-from callable_v2_contract import validate_observation, validate_action_observation
+from callable_v2_contract import validate_observation, validate_action_observation, normalize_action_resource_ids
 from hook_contract import _require_exact, _unique_frame_object
 
 ROOT, HERE = hooks.ROOT, hooks.HERE
@@ -176,7 +176,10 @@ def action_bridge_comparison(report):
     wasm_path, wasm = bridge._latest_by_observation(entries)
     wasm_case = wasm['host_result']['case']['peer']
     for label, result in (('native', native_case), ('wasm', wasm_case)):
-        _require_exact(result['php_observation'], report['action_oracle']['cases'], label + ' action WP observations')
+        expected = json.loads(json.dumps(report['action_oracle']['cases']))
+        expected['action_api'] = normalize_action_resource_ids(
+            expected['action_api'], result['php_observation']['action_api'])
+        _require_exact(result['php_observation'], expected, label + ' action WP observations')
     return {'native_receipt': native.RECEIPT.relative_to(ROOT).as_posix(), 'native_receipt_sha256': digest(native.RECEIPT),
         'wasm_receipt': wasm_path.relative_to(ROOT).as_posix(), 'wasm_receipt_sha256': digest(wasm_path),
         'matched_cases': ['action_api.' + key for key in report['action_oracle']['cases']['action_api']],

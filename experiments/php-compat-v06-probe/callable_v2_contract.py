@@ -4133,6 +4133,81 @@ for _state_name in ('unset', 'null', 'false', 'array'):
             'wp_actions': 1,
         })
 EXPECTED_ACTION_API['all_hook']['events'].extend(_global_state_all_hook_events)
+
+def _action_live_mutation_events(hook, count, event_names):
+    return [{
+        'event': event,
+        'current_action': hook,
+        'doing_action': True,
+        'doing_named': True,
+        'did_action': count,
+    } for event in event_names]
+
+
+def _action_live_mutation_after(count, removed, added, keeper):
+    return {
+        'did_action': count,
+        'current_action': False,
+        'doing_action': False,
+        'has_removed_sibling': False,
+        added[0]: added[1],
+        keeper[0]: keeper[1],
+    }
+
+
+_current_bucket_hook = 'callable-action-live-current-bucket'
+_future_priority_hook = 'callable-action-live-future-priority'
+EXPECTED_ACTION_API['live_mutation'] = {
+    'current_bucket': {
+        'mutation': {
+            'remove_sibling': True,
+            'add_same_priority': True,
+            'has_removed_sibling': False,
+            'same_priority': 10,
+        },
+        'first': {
+            'return': None,
+            'events': _action_live_mutation_events(
+                _current_bucket_hook, 1,
+                ['trigger-enter', 'trigger-exit', 'removed-sibling', 'survivor']),
+            'after': _action_live_mutation_after(
+                1, ('has_removed_sibling', False), ('has_same_priority', 10), ('has_survivor', 10)),
+        },
+        'second': {
+            'return': None,
+            'events': _action_live_mutation_events(
+                _current_bucket_hook, 2,
+                ['trigger-enter', 'trigger-exit', 'survivor', 'added-same-priority']),
+            'after': _action_live_mutation_after(
+                2, ('has_removed_sibling', False), ('has_same_priority', 10), ('has_survivor', 10)),
+        },
+    },
+    'future_priority': {
+        'mutation': {
+            'remove_future_sibling': True,
+            'add_new_future_priority': True,
+            'has_removed_sibling': False,
+            'new_future_priority': 15,
+        },
+        'first': {
+            'return': None,
+            'events': _action_live_mutation_events(
+                _future_priority_hook, 1,
+                ['trigger-enter', 'trigger-exit', 'added-future-priority', 'future-keeper']),
+            'after': _action_live_mutation_after(
+                1, ('has_removed_sibling', False), ('has_new_future_priority', 15), ('has_keeper', 20)),
+        },
+        'second': {
+            'return': None,
+            'events': _action_live_mutation_events(
+                _future_priority_hook, 2,
+                ['trigger-enter', 'trigger-exit', 'added-future-priority', 'future-keeper']),
+            'after': _action_live_mutation_after(
+                2, ('has_removed_sibling', False), ('has_new_future_priority', 15), ('has_keeper', 20)),
+        },
+    },
+}
+
 def _wp_callable_action_cow_expectations():
     result = json.loads(json.dumps(ACTION_COUNTER_COW_EXPECTATIONS))
     for mode, case in result.items():
@@ -4145,17 +4220,8 @@ def _wp_callable_action_cow_expectations():
     return result
 
 
-def validate_action_observation(value):
-    exact(value, ('action_api',), 'action API program observation')
-    if EXPECTED_ACTION_API is None:
-        raise ValueError('pinned WordPress action API observation has not been frozen')
-    actual = value['action_api']
-    expected = json.loads(json.dumps(EXPECTED_ACTION_API))
-    expected.pop('counter_cow')
-    expected.pop('process_warnings')
-    if 'process_warnings' in actual:
-        expected['process_warnings'] = EXPECTED_ACTION_API['process_warnings']
-    expected['counter_cow'] = _wp_callable_action_cow_expectations()
+def normalize_action_resource_ids(expected, actual):
+    expected = json.loads(json.dumps(expected))
     for name in ('resource_all_only', 'resource_named'):
         measured = actual.get('hook_key_unusual', {}).get(name)
         if not isinstance(measured, dict):
@@ -4185,6 +4251,21 @@ def validate_action_observation(value):
         for entry in expected['hook_key_unusual'][name]['after']['counter_entries']:
             if entry.get('key', {}).get('type') == 'int' and entry['key'].get('value') == str(target_id):
                 entry['key']['value'] = str(resource_id)
+    return expected
+
+
+def validate_action_observation(value):
+    exact(value, ('action_api',), 'action API program observation')
+    if EXPECTED_ACTION_API is None:
+        raise ValueError('pinned WordPress action API observation has not been frozen')
+    actual = value['action_api']
+    expected = json.loads(json.dumps(EXPECTED_ACTION_API))
+    expected.pop('counter_cow')
+    expected.pop('process_warnings')
+    if 'process_warnings' in actual:
+        expected['process_warnings'] = EXPECTED_ACTION_API['process_warnings']
+    expected['counter_cow'] = _wp_callable_action_cow_expectations()
+    expected = normalize_action_resource_ids(expected, actual)
     _require_exact(actual, expected, 'measured action API group')
 
 def validate_observation(value):
@@ -4352,6 +4433,12 @@ def action_self_check():
     changed = json.loads(json.dumps(sample_action_api))
     changed['counter_cow']['live']['events'][2]['live'] = {'type': 'string', 'hex': '63'}
     mutations.append(('action counter COW increment observation', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['live_mutation']['current_bucket']['first']['events'][2]['event'] = 'survivor'
+    mutations.append(('action current-priority bucket snapshot', changed))
+    changed = json.loads(json.dumps(sample_action_api))
+    changed['live_mutation']['future_priority']['first']['events'][2]['event'] = 'removed-future-sibling'
+    mutations.append(('action future-priority live membership', changed))
     changed = json.loads(json.dumps(sample_action_api))
     changed['heap_argument_continuation']['events'][0]['same_object'] = False
     mutations.append(('heap action all-listener object identity', changed))
