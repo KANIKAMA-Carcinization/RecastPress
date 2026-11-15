@@ -47,10 +47,7 @@ ACTION_HOOK_KEY_ALIAS_EXPECTATIONS = _action_hook_alias_oracle()['cases']
 _ACTION_HOOK_KEY_RECEIPT = json.loads(
     (Path(__file__).resolve().parent / 'evidence/wp-action-hook-key-poc-v1.json').read_text(encoding='utf-8')
 )
-ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS = {
-    key: case for key, case in _ACTION_HOOK_KEY_RECEIPT['oracle']['unusual_cases'].items()
-    if not key.startswith('resource_')
-}
+ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS = _ACTION_HOOK_KEY_RECEIPT['oracle']['unusual_cases']
 
 
 def _action_bool_int_alias_cases():
@@ -252,6 +249,15 @@ def validate_pod(value, depth=0, budget=None):
         if set(value) != {'type', 'hex'}:
             raise ValueError('string POD fields differ')
         canonical_hex(value['hex'], 'POD string')
+    elif kind == 'resource':
+        if set(value) != {'type', 'handle', 'identity', 'resource_type', 'resource_id'}:
+            raise ValueError('resource POD fields differ')
+        validate_handle(value['handle'], 'argument', requests=('61', '71'))
+        validate_handle(value['identity'], 'argument', requests=('61', '71'))
+        if not isinstance(value['resource_type'], str) or not value['resource_type']:
+            raise ValueError('resource POD type differs')
+        if type(value['resource_id']) is not int or value['resource_id'] <= 0:
+            raise ValueError('resource POD id differs')
     elif kind == 'array':
         if set(value) != {'type', 'entries'} or not isinstance(value['entries'], list):
             raise ValueError('array POD fields differ')
@@ -276,10 +282,10 @@ def validate_pod(value, depth=0, budget=None):
         raise ValueError('unsupported POD type')
 
 
-def validate_handle(value, kind):
+def validate_handle(value, kind, requests=('61',)):
     if not isinstance(value, dict) or set(value) != {'request', 'kind', 'slot', 'generation', 'token'}:
         raise ValueError('callable handle fields differ')
-    if value['request'] != '61' or value['kind'] != kind:
+    if value['request'] not in requests or value['kind'] != kind:
         raise ValueError('callable handle request/kind differs')
     if type(value['slot']) is not int or not 0 <= value['slot'] < 2**32:
         raise ValueError('callable handle slot differs')

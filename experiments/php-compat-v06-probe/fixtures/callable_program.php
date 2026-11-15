@@ -3042,6 +3042,8 @@ function callable_program_action_hook_alias_cases(): array
         if (is_bool($value)) return ['type' => 'bool', 'value' => $value];
         if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
         if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        if (is_resource($value)) return ['type' => 'resource', 'resource_type' => get_resource_type($value), 'resource_id' => get_resource_id($value)];
+        if (get_debug_type($value) === 'resource (closed)') return ['type' => 'resource_closed', 'resource_type' => 'Unknown', 'resource_id' => get_resource_id($value)];
         return ['type' => get_debug_type($value)];
     };
     $definitions = [
@@ -3333,6 +3335,8 @@ function callable_program_action_hook_key_unusual_cases(): array
         if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
         if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
         if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        if (is_resource($value)) return ['type' => 'resource', 'resource_type' => get_resource_type($value), 'resource_id' => get_resource_id($value)];
+        if (get_debug_type($value) === 'resource (closed)') return ['type' => 'resource_closed', 'resource_type' => 'Unknown', 'resource_id' => get_resource_id($value)];
         if (is_array($value)) return ['type' => 'array', 'count' => count($value)];
         if (is_object($value)) return ['type' => 'object', 'class' => get_class($value)];
         return ['type' => get_debug_type($value)];
@@ -3342,6 +3346,11 @@ function callable_program_action_hook_key_unusual_cases(): array
         'ordinary_object' => new stdClass(),
         'stringable_object' => new ActionHookKeyStringable(),
     ];
+    $resourceHook = fopen('php://memory', 'r+');
+    if (!is_resource($resourceHook)) {
+        throw new RuntimeException('callable_action_resource_hook_open');
+    }
+    $hooks['resource'] = $resourceHook;
     $cases = [];
     foreach ($hooks as $kind => $hook) {
         foreach ([false, true] as $named) {
@@ -3355,21 +3364,57 @@ function callable_program_action_hook_key_unusual_cases(): array
             $registrationThrowable = null;
             $dispatchThrowable = null;
             $hookView = $view($hook);
-            set_error_handler(static function (int $severity, string $message) use (&$events, &$warnings): bool {
+            $resourceCase = is_resource($hook);
+            set_error_handler(static function (int $severity, string $message) use (&$events, &$warnings, $hook, $hookView, $resourceCase, $view): bool {
                 $warning = ['index' => count($warnings) + 1, 'severity' => $severity,
                     'message_hex' => bin2hex($message)];
                 $warnings[] = $warning;
-                $events[] = ['event' => 'warning', ...$warning];
+                $events[] = $resourceCase
+                    ? ['event' => 'warning', ...$warning, 'current_action' => $view(current_action()),
+                        'counter_entries' => count($GLOBALS['wp_actions'] ?? [])]
+                    : ['event' => 'warning', ...$warning];
                 return true;
             });
-            $allListener = static function (...$args) use (&$events, $view): void {
-                $events[] = ['event' => 'all', 'args' => array_map($view, $args)];
+            $allListener = static function (...$args) use (&$events, $view, $resourceCase): void {
+                $event = ['event' => 'all', 'args' => array_map($view, $args)];
+                if ($resourceCase) {
+                    $event['current_action'] = $view(current_action());
+                    $event['doing_action'] = doing_action();
+                    $event['counter_entries'] = count($GLOBALS['wp_actions'] ?? []);
+                }
+                $events[] = $event;
             };
             add_action('all', $allListener, 1, 99);
             $namedListener = null;
+            $resourceClosedRecorded = false;
             if ($named) {
-                $namedListener = static function (...$args) use (&$events, $view): void {
-                    $events[] = ['event' => 'named', 'args' => array_map($view, $args)];
+                $namedListener = static function (...$args) use (&$events, $view, $resourceCase, $hook, &$resourceClosedRecorded): void {
+                    $event = ['event' => 'named', 'args' => array_map($view, $args)];
+                    if ($resourceCase) {
+                        $event['current_action'] = $view(current_action());
+                        $event['doing_action'] = doing_action();
+                        $event['counter_entries'] = count($GLOBALS['wp_actions'] ?? []);
+                    }
+                    $events[] = $event;
+                    if ($resourceCase && !$resourceClosedRecorded) {
+                        if (is_resource($hook)) {
+                            fclose($hook);
+                        }
+                        $resourceClosedRecorded = true;
+                        $current = current_action();
+                        $otherResource = fopen('php://memory', 'r+');
+                        if (!is_resource($otherResource)) {
+                            throw new RuntimeException('callable_action_comparison_resource_open');
+                        }
+                        $doingOtherResource = doing_action($otherResource);
+                        fclose($otherResource);
+                        $events[] = ['event' => 'resource_closed',
+                            'current_action' => $view($current),
+                            'same_current_action' => $current === $hook,
+                            'doing_action' => doing_action(),
+                            'doing_named' => doing_action($hook),
+                            'doing_other_resource' => $doingOtherResource];
+                    }
                 };
                 try {
                     add_action($hook, $namedListener, 10, 99);
@@ -3411,10 +3456,13 @@ function callable_program_action_hook_key_unusual_cases(): array
             ];
             restore_error_handler();
             remove_action('all', $allListener, 1);
-            if ($namedListener !== null && $registrationThrowable === null) {
+            if ($namedListener !== null && $registrationThrowable === null && !$resourceCase) {
                 remove_action($hook, $namedListener, 10);
             }
         }
+    }
+    if (is_resource($resourceHook)) {
+        fclose($resourceHook);
     }
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];

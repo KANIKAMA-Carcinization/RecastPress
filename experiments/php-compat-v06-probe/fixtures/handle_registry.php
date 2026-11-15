@@ -131,8 +131,39 @@ final class HandleRegistry
         $handle = $this->prepareIssue('argument');
         $slot = $handle['slot'];
         $this->storeValue($slot, $handle, 'argument', $value);
+        if (is_resource($value) || get_debug_type($value) === 'resource (closed)') {
+            $identity = $handle;
+            $resourceType = is_resource($value) ? get_resource_type($value) : 'Unknown';
+            foreach ($this->slots as $candidateSlot => $entry) {
+                if ($candidateSlot === $slot || $entry['kind'] !== 'argument'
+                    || !array_key_exists('resource_identity', $entry) || $entry['value'] !== $value) {
+                    continue;
+                }
+                $identity = $entry['resource_identity'];
+                $resourceType = $entry['resource_type'];
+                break;
+            }
+            $this->slots[$slot]['resource_identity'] = $identity;
+            $this->slots[$slot]['resource_type'] = $resourceType;
+            $this->slots[$slot]['resource_id'] = get_resource_id($value);
+        }
 
         return $handle;
+    }
+
+    public function resourceInfo(array $handle): ?array
+    {
+        $slot = $this->validateHandle($handle);
+        $entry = $this->slots[$slot];
+        if ($entry['kind'] !== 'argument' || !array_key_exists('resource_identity', $entry)) {
+            return null;
+        }
+        return [
+            'handle' => $this->handleFor($slot),
+            'identity' => $entry['resource_identity'],
+            'resource_type' => $entry['resource_type'],
+            'resource_id' => $entry['resource_id'],
+        ];
     }
 
     public function retainResource(mixed $value): array

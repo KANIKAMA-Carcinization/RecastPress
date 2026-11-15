@@ -63,6 +63,7 @@ fn same_priority_capture(left: &HookPriority, right: &HookPriority) -> bool {
                 left.to_bits() == right.to_bits()
             }
             (HookScalar::Bytes(left), HookScalar::Bytes(right)) => left == right,
+            (HookScalar::Resource { identity: left, .. }, HookScalar::Resource { identity: right, .. }) => left == right,
             _ => false,
         }
 }

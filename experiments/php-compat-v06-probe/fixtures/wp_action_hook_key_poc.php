@@ -15,6 +15,7 @@ function action_hook_key_view($value): array
     if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
     if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
     if (is_resource($value)) return ['type' => 'resource', 'resource_type' => get_resource_type($value), 'resource_id' => get_resource_id($value)];
+    if (get_debug_type($value) === 'resource (closed)') return ['type' => 'resource_closed', 'resource_type' => 'Unknown', 'resource_id' => get_resource_id($value)];
     if (is_array($value)) return ['type' => 'array', 'count' => count($value)];
     if (is_object($value)) return ['type' => 'object', 'class' => get_class($value)];
     return ['type' => get_debug_type($value)];
@@ -193,11 +194,27 @@ function action_hook_key_unusual_case(string $label, $hook, bool $named): array
     if ($named) {
         $registrationThrowable = null;
         try {
-            add_action($hook, static function (...$args) use (&$events): void {
+            add_action($hook, static function (...$args) use (&$events, $hook): void {
                 $events[] = ['event' => 'named', 'args' => array_map('action_hook_key_view', $args),
                     'current_action' => action_hook_key_view(current_action()),
                     'doing_action' => doing_action(),
                     'counter_entries' => count($GLOBALS['wp_actions'] ?? [])];
+                if (is_resource($hook)) {
+                    fclose($hook);
+                    $current = current_action();
+                    $otherResource = fopen('php://memory', 'r+');
+                    if (!is_resource($otherResource)) {
+                        throw new RuntimeException('could_not_create_comparison_resource');
+                    }
+                    $doingOtherResource = doing_action($otherResource);
+                    fclose($otherResource);
+                    $events[] = ['event' => 'resource_closed',
+                        'current_action' => action_hook_key_view($current),
+                        'same_current_action' => $current === $hook,
+                        'doing_action' => doing_action(),
+                        'doing_named' => doing_action($hook),
+                        'doing_other_resource' => $doingOtherResource];
+                }
             }, 10, 99);
         } catch (Throwable $throwable) {
             $registrationThrowable = ['class' => $throwable::class, 'message_hex' => bin2hex($throwable->getMessage())];
@@ -256,6 +273,6 @@ foreach ($unusualHooks as $label => $hook) {
         $unusualCases[$key] = action_hook_key_unusual_case($key, $hook, $named);
     }
 }
-fclose($resourceHook);
+if (is_resource($resourceHook)) fclose($resourceHook);
 echo json_encode(['php_version' => PHP_VERSION, 'php_int_size' => PHP_INT_SIZE,
     'cases' => $cases, 'boolean_aliases' => $aliases, 'unusual_cases' => $unusualCases], JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), "\n";

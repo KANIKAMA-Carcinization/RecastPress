@@ -1,6 +1,8 @@
 //! Explicit PHP-compatible byte strings and ordered array keys for a limited
 //! value domain. References, object/resource behavior, and scalar coercion remain
-//! unsupported; callers must not silently substitute Null for those domains.
+//! represented explicitly when a request-scoped bridge handle exists.
+
+use crate::continuation::PhpHandle;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PhpValue {
@@ -10,6 +12,7 @@ pub enum PhpValue {
     Float(f64),
     Bytes(Vec<u8>),
     Array(PhpArray),
+    Resource { handle: PhpHandle, identity: PhpHandle, resource_type: String, resource_id: i64 },
     /// Signals a value whose behavior has no implementation in this prototype.
     Unsupported,
 }

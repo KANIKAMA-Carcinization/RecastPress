@@ -395,7 +395,7 @@ fn serialize_into(
         }
         // Float serialization depends on PHP's serialize_precision and exact
         // spelling. Top-level maybe_serialize floats remain unchanged instead.
-        PhpValue::Float(_) | PhpValue::Unsupported => {
+        PhpValue::Float(_) | PhpValue::Unsupported | PhpValue::Resource { .. } => {
             return Err(CompatibilityError::UnsupportedValue);
         }
     }
@@ -404,7 +404,7 @@ fn serialize_into(
 
 fn string_bytes(value: &PhpValue) -> Result<Option<&[u8]>, CompatibilityError> {
     match value {
-        PhpValue::Unsupported => Err(CompatibilityError::UnsupportedValue),
+        PhpValue::Unsupported | PhpValue::Resource { .. } => Err(CompatibilityError::UnsupportedValue),
         PhpValue::Bytes(bytes) => Ok(Some(bytes)),
         _ => Ok(None),
     }

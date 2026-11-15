@@ -28,6 +28,7 @@ pub enum HookScalar {
     Integer(i64),
     Float(f64),
     Bytes(Vec<u8>),
+    Resource { handle: PhpHandle, identity: PhpHandle, resource_type: String, resource_id: i64 },
 }
 
 impl HookScalar {
@@ -38,6 +39,9 @@ impl HookScalar {
             Self::Integer(value) => PhpValue::Integer(*value),
             Self::Float(value) => PhpValue::Float(*value),
             Self::Bytes(value) => PhpValue::Bytes(value.clone()),
+            Self::Resource { handle, identity, resource_type, resource_id } => PhpValue::Resource {
+                handle: *handle, identity: *identity, resource_type: resource_type.clone(), resource_id: *resource_id,
+            },
         }
     }
 
@@ -48,6 +52,7 @@ impl HookScalar {
             (Self::Integer(left), Self::Integer(right)) => left == right,
             (Self::Float(left), Self::Float(right)) => left == right,
             (Self::Bytes(left), Self::Bytes(right)) => left == right,
+            (Self::Resource { identity: left, .. }, Self::Resource { identity: right, .. }) => left == right,
             _ => false,
         }
     }
@@ -56,6 +61,7 @@ impl HookScalar {
         match (self, key) {
             (Self::Integer(left), PhpKey::Integer(right)) => left == right,
             (Self::Bytes(left), PhpKey::Bytes(right)) => left == right,
+            (Self::Resource { resource_id, .. }, PhpKey::Integer(right)) => resource_id == right,
             _ => false,
         }
     }

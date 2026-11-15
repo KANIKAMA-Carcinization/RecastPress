@@ -3961,6 +3961,8 @@ def normalized_scalar_key(value):
         number = canonical_integer(value['value'], 'original int')
     elif kind == 'bool':
         number = int(value['value'])
+    elif kind == 'resource':
+        number = value['resource_id']
     else:
         number_float = struct.unpack('>d', bytes.fromhex(value['bits']))[0]
         number = math.trunc(number_float) % (2**64) if math.isfinite(number_float) else 0
@@ -4154,6 +4156,35 @@ def validate_action_observation(value):
     if 'process_warnings' in actual:
         expected['process_warnings'] = EXPECTED_ACTION_API['process_warnings']
     expected['counter_cow'] = _wp_callable_action_cow_expectations()
+    for name in ('resource_all_only', 'resource_named'):
+        measured = actual.get('hook_key_unusual', {}).get(name)
+        if not isinstance(measured, dict):
+            continue
+        resource_id = measured.get('hook', {}).get('resource_id')
+        if type(resource_id) is not int or resource_id <= 0:
+            raise ValueError('measured resource hook id differs')
+        target_id = expected['hook_key_unusual'][name]['hook']['resource_id']
+
+        def normalize_resource(value):
+            if isinstance(value, dict):
+                result = {key: normalize_resource(item) for key, item in value.items()}
+                if result.get('type') in ('resource', 'resource_closed'):
+                    result['resource_id'] = resource_id
+                if 'message_hex' in result and isinstance(result['message_hex'], str):
+                    message = bytes.fromhex(result['message_hex']).decode('ascii')
+                    if 'Resource ID#' in message:
+                        message = message.replace(f'#{target_id}', f'#{resource_id}').replace(
+                            f'({target_id})', f'({resource_id})')
+                        result['message_hex'] = message.encode('ascii').hex()
+                return result
+            if isinstance(value, list):
+                return [normalize_resource(item) for item in value]
+            return value
+
+        expected['hook_key_unusual'][name] = normalize_resource(expected['hook_key_unusual'][name])
+        for entry in expected['hook_key_unusual'][name]['after']['counter_entries']:
+            if entry.get('key', {}).get('type') == 'int' and entry['key'].get('value') == str(target_id):
+                entry['key']['value'] = str(resource_id)
     _require_exact(actual, expected, 'measured action API group')
 
 def validate_observation(value):
@@ -4463,6 +4494,10 @@ def validate_transcript(streams, result):
         json.dumps(case['hook'], sort_keys=True, separators=(',', ':'))
         for case in ACTION_HOOK_KEY_WARNING_EXPECTATIONS.values()
     }
+    action_hook_key_warning_values.update(
+        json.dumps(ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS[name]['hook'], sort_keys=True, separators=(',', ':'))
+        for name in ('resource_all_only', 'resource_named')
+    )
     action_counter_cow_dispatches = {}
     action_counter_cow_reads = {}
 
@@ -4827,7 +4862,8 @@ def validate_transcript(streams, result):
                     _require_exact(value, expected, 'seeded action counter increment')
                     action_seed_dispatches[key] = step + 1
                 else:
-                    if json.dumps(context['hook']['original'], sort_keys=True, separators=(',', ':')) in action_hook_key_warning_values:
+                    if (context['hook']['original'].get('type') == 'resource'
+                            or json.dumps(context['hook']['original'], sort_keys=True, separators=(',', ':')) in action_hook_key_warning_values):
                         # Each warning fixture resets the public PHP counter array
                         # before dispatch; the shared Rust peer keeps one lifetime.
                         action_counts[key] = 0

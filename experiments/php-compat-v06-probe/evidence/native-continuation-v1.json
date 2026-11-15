@@ -2,7 +2,7 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-15T14:40:46+00:00",
+  "recorded_at_utc": "2026-11-15T16:19:57+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
@@ -11,7 +11,7 @@
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "crates/recastpress-wp/src/lib.rs": "893b7470c25046b8a566f949378d1ba60a9466fa10d9fe4ac03d5de943c5e3f5",
+    "crates/recastpress-wp/src/lib.rs": "298d4548c356d8c90d8aa4cc70b79ec259ff4e34048d0d6dd4565f5f4cbb9172",
     "crates/recastpress-wp/src/continuation.rs": "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849",
     "crates/recastpress-wp/src/public_state.rs": "d0f798aa5229ab8a20a3b1da286eadcebe188a52943786d8a54fd5b7ca9c5cc5",
     "crates/recastpress-wp/tests/continuation_contract.rs": "16d8934c6ab7641ecde1c244ee6c1839f36c32ac1f5eab82f5384b272af30def",
@@ -19,12 +19,12 @@
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/fixtures/publish_driver.php": "7b7d623929a2fc2f8bd976d79e362f15e65d993f33d244783bce7b311ab8a194",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
-    "experiments/php-compat-v06-probe/fixtures/handle_registry.php": "bd15150985c3cf69e4346eae5826fa6b1ae7e39a97d68863c9cd95478c1c040f",
+    "experiments/php-compat-v06-probe/fixtures/handle_registry.php": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
-    "experiments/php-compat-v06-probe/callable_contract.py": "3828bf14f85779c9824ebfd5d35314f3c082c9b9f93aab4d4692021b3f17cd2d",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "22aa688104c15bc537e5930435bf05e89c6b456a20a75f9fbd268163d5166a5e",
+    "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "1e9142e607a1e6221cff23525160d27a55244e09514e905fae381820b024e75b",
     "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
@@ -33,9 +33,9 @@
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e70ec560c66da9bdfe2606a51feb16d939d898c051382f2ee9f897230bfa7592",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "d37b508d6fd78fd15f60f108426fa490ecdf4f96bb3845fdadc0800c5bc1c23f",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "875c6206b17b202d54a4e5d46d7aed68e245dc1ed4f9ff974179811c1ef67a06",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "d009b2169fc8ffb6ec6dc7124d11ab9e701c6c1fa78db95f126138f79742a17a",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
@@ -51,7 +51,7 @@
     "experiments/php-compat-v06-probe/fixtures/strict_json.php": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565",
     "experiments/php-compat-v06-probe/fixtures/strict_json_oracle.php": "cc84086632068e7aa837cca5d4fff3de2c14684c279a1cec4bd39b509069d7e8",
     ".reference/php-8.5.12/recastpress-tool.json": "159a065582fef2e837b2a67f02b9b4cd5c3b7397f644b95fd718a3d038696137",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "80fedb55eed0f82c4a019104a91bf358433ab613094956a942ef791d0c93c622",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "3a39f77074899c8c9386f999923272b049fbd59c0851bd5b653cb2ea2c27ddbc",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/publish.rs": "9c55a0779050c5608354af43e1c0d2262a118bcbbad6885d12921418a25519ca",
@@ -67,7 +67,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "700cf83fce630a2bd0866ff97abf32adaf2a34a6a09b0a59ce9c22bee18e7acc",
+    "crates/recastpress-wp/src/dispatcher.rs": "6a042288e511c4f6ff561efc8c058c7953430331d801c00bbd49c1c2680cd5d8",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -75,12 +75,12 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "ee77adcba6c17de9475981963e80e2c9cb0b1dfe63d641ec7af76e8f3cc258a7",
+    "crates/recastpress-wp/src/hooks.rs": "4e4244fd5e71a2c1f020496bdf246fd5f25464c62b2394b2e988c558397ba517",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
     "crates/recastpress-wp/src/html_replacement.rs": "2a975b7a9bae189c172f1bda3cb7347832a520b24a843b05c8ec5bec75f2a38a",
-    "crates/recastpress-wp/src/json_encode.rs": "dbe3436c2ff1a0535e1f833f871aae2cf06aa061dfeb971b79fa824e6f6bd76f",
+    "crates/recastpress-wp/src/json_encode.rs": "739b9cc5415b402b575db6213deca7844ee85aa18f88233ba73e9eb2d4b08a13",
     "crates/recastpress-wp/src/jsonp.rs": "e93e8879270cd099ce2ff086c381bb0e85087e74fb332921afc1f9c0e31ff476",
     "crates/recastpress-wp/src/kses_slashes.rs": "4f9f737b9bd4b8740abd74ed3858f201f3e0a4a7005be3eb8aaf15edbdaa6034",
     "crates/recastpress-wp/src/lists.rs": "e26f57363e91b70025847ac34fe0964e3c7a16f8d285099df18acddd46e75315",
@@ -102,7 +102,7 @@
     "crates/recastpress-wp/src/sanitize_text.rs": "041f1b739c93766ac2814487c28e078688e4ac5459b86e3ba54cbdda6f776609",
     "crates/recastpress-wp/src/sanitize_title.rs": "ed5bea63677bcd0d2b44b7fca813f063d2a17d5b5e31e2dc62b90aae4279fd21",
     "crates/recastpress-wp/src/sanitize_user.rs": "fc09bb062653e097776b1fb3f6801091aefe330f727b701855bcd3f938fe32e2",
-    "crates/recastpress-wp/src/serialization.rs": "5414cedb546a8c74a84bb9ea16ab9246b4882a1e11c798a703f3fc295e1c86c3",
+    "crates/recastpress-wp/src/serialization.rs": "4013af3bd6ffd9141d177e903463af18ed46655bdda47c239ef7dffb8174ac8f",
     "crates/recastpress-wp/src/specialchars.rs": "a7ba9faa09ea54af76b0c0b860ee08ce150065462a12fdc22855e57b7d419dc5",
     "crates/recastpress-wp/src/strings.rs": "a9a9a1b991f8be3f95326aca70bd1871d4949002317d4bfaf48caa9f429de384",
     "crates/recastpress-wp/src/strip_all_tags.rs": "f31e6e868b477bd390d566ed30777eed76bb39679fd111909cc23cc40c71a7ae",
@@ -117,7 +117,7 @@
     "crates/recastpress-wp/src/utf8.rs": "6739d6a1bacd3adbea170f4c85fde9f7e2c0ef8492be801360f3baca0aca4bc7",
     "crates/recastpress-wp/src/utf8_uri_encode.rs": "ce9b146d6e76a9134519ebf742dc67ddc71af6690cb31fc2e6945743b6234d30",
     "crates/recastpress-wp/src/uuid.rs": "0dafa10f607deadeb6ae8975f502a8a57f4cb9a80aa2489c6bf985e3aece1bf0",
-    "crates/recastpress-wp/src/value.rs": "ee1d84f35bfb91a889f2711be1aee7622bfee1e0fafbe5520bfdcf6fb3af264e",
+    "crates/recastpress-wp/src/value.rs": "6306326ade4b34ff75a6f3bb6acf1c2962dd904581840e76589253f40b0891ba",
     "crates/recastpress-wp/src/xml_entity_mapping.rs": "011b9f19787e14889ac00b2cc5f2b8ca98501840daa84325b2431232dd680d23",
     "crates/recastpress-wp/src/zeroise.rs": "1f1e806cba9a6026469ac2128634d8809e2fa2ba16d7f48b823ed9ef4be0b57a",
     ".reference/php-8.5.12/brotlicommon.dll": "e9673fc05441471721ea7b441d364e0386408227fdd15f9b1c6d817556e53f7f",
@@ -216,7 +216,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "4207245a0d7be266da7c3a46e62cf18ef9401c8ecb66a1899baf2bed4c712175",
+  "adapter_binary_sha256": "3916039627793dc10bdafd861648e8918579e852884815900b264c0e3379733c",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -254,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 27984,
-      "rust": 3104
+      "php": 23996,
+      "rust": 33024
     },
     "returncodes": {
       "php": 0,
@@ -312,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-6abf3a0fe5f74fbd89ce8ff8936ebcc1-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-05309d4bc4e84acd9fb6a8ae83373f02-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -337,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 19896,
-      "rust": 32068
+      "php": 31948,
+      "rust": 31584
     },
     "returncodes": {
       "php": 0,
@@ -401,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-716c9e1fd7aa4811997ed2761c035d53-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-62f2143fc48145f2812e5d72f0f9dbbf-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -426,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 33148,
-      "rust": 34032
+      "php": 32704,
+      "rust": 2224
     },
     "returncodes": {
       "php": 0,
@@ -575,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-f4e38ced482e4766a9eab8f3e8e5a397-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-5b885f4b748a45e8aa0fd056dacf0737-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -601,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 11204,
-        "rust": 22400
+        "php": 13796,
+        "rust": 23096
       },
       "returncodes": {
         "php": 0,
@@ -677,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-c13aa5164c14494c8b122a42faed3eb7-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-77bd3572b40840fab094a194cdc35b6f-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "dc0ed1eb1cb65a9820774f5b2b8040c53f19711ef52e888411a3d4e5b49561da",
+          "stdout_sha256": "5f0e27342e99ce8a7f03e58e3f0ccd5500888c25c082daecdf19720fbecbd246",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -702,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 30976,
-        "rust": 9044
+        "php": 14660,
+        "rust": 3300
       },
       "returncodes": {
         "php": 0,
@@ -781,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-2fe811d2f06943e2adf6e1874782e3a5-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-1ef6765a0f6d4d389b9a4f99dba59d06-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "9d45345acc8174e9fdd4e1a60af37a898a506c228dbbf02e755ce6dff237ac63",
+          "stdout_sha256": "64638c1a3de46833906ca7024568103a0effcccd5ad2b723a73755ce20b09433",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -807,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 25348,
-      "rust": 16912
+      "php": 19040,
+      "rust": 34800
     },
     "returncodes": {
       "php": 0,
@@ -893,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-cc955dcb0d814c3b8ed6c720571efdb7-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-ecc302e1b7be4571955fc9d158bbca9a-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "138139bf7886db064378018797ef9eaf350826bd1e39f2cd9ea55cc36368e8e4",
+        "stdout_sha256": "20cb69f72bc42d5795cdb914dcd865fc9209f2791dac251f01056f7ffce208d1",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "aa7e6d18435ecf58690bb82018be74c9890a215dfa5682b84cb50e3a3b17b98a",
+        "stdout_sha256": "6d6023a10d3b7a5c143cfb43b76134b3c467e92c098fcd30d87d0f9ffb74357f",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -919,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 34744,
-        "rust": 31840
+        "php": 26516,
+        "rust": 34408
       },
       "returncodes": {
         "php": 0,
@@ -1042,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-523fc7e2755b4b4abb425dc28ce3943c-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-12023c0c7a5c4ff9998bdb3683e416df-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "d287402a0631e3b2790451ac52e1c3382488fd3064c984f1af6937e8f829b596",
+          "stdout_sha256": "aa8a6ca20648aad26ad56ca69181e6df7c8f9299befd0bfd4b4e887a3e7bb4be",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "0473c2d6cb0e53a53df6591bdc702065082f7358ec3fb6520565010539fd5cf9",
+          "stdout_sha256": "f746c040c24acc8c9ee029dfccfe6c0fd3c6f3f4fb951f1b826101af96f050cc",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1087,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 32568,
-        "rust": 6460
+        "php": 14540,
+        "rust": 1836
       },
       "returncodes": {
         "php": 0,
@@ -1112,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "4a655b3ccd622767"
+              "token": "9923f9e21a041b03"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1175,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "4a655b3ccd622767"
+              "token": "9923f9e21a041b03"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1249,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-89c9d767bfcb4328a3bb74d3759096ba-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-c0b6474e69194592967379c11565fd9c-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "5cead72d0ac8c5aac3e46a2e5707e000e0234051b9388cc4702f1da78f571ace",
+          "stdout_sha256": "263d6c679e8d712996e861dee66feec6d40c3bb5fd88be16e6c19e4d8f7a99cd",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "127b41cbbca15a5993d8bbb9d7dd7234f80050c04a42329f95ca647f45646202",
+          "stdout_sha256": "d224ddd5b8f43444dfa0ed34c6be57ff6db81443bab7d2b13685e7b4fc05450e",
           "stderr_bytes": 1817,
-          "stderr_sha256": "97bc8180f7209ee384ae56bcb19cfe3f82a3b112b8d568632dd3e8f1a25c7d2e"
+          "stderr_sha256": "20db7c512a1b9421a5d3a8fef1d2707a3a86f3acc557d73a3426c8f593d77182"
         }
       },
       "hook_transcript_rejections": [
@@ -1295,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 33356,
-      "rust": 23072
+      "php": 34640,
+      "rust": 20612
     },
     "returncodes": {
       "php": 0,
@@ -14717,24 +14717,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-7f3ed2827cd74c139288705324170c40-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-be94940768b442cea2af46d770c3db66-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2877749,
-        "stdout_sha256": "41ec95618d1bab15a0b7318823a65540438f082cf8c8833e015a0c1ea895ae91",
+        "stdout_sha256": "418eb9bf295acbee4b0350f56950a5c0cc87a8298d913da5cdf11fad274dcb59",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 2770412,
-        "stdout_sha256": "f139ee4ebef6d32bab4414198fe156e711eeb9d1bc63f80d34439981536dbc46",
+        "stdout_sha256": "d4fbefcb5aa02f29402f06c58ca64330c34c0f11fff56f632ae43aabdbe3c6e1",
         "stderr_bytes": 121559,
         "stderr_sha256": "57f71507551ad22cf1e9b319e995226c737697f22d52c263b1a2508bfbf2d202"
       }
@@ -14786,8 +14786,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 33788,
-      "rust": 12064
+      "php": 19316,
+      "rust": 31008
     },
     "returncodes": {
       "php": 0,
@@ -14795,9 +14795,9 @@
     },
     "scenario": "action_api",
     "rust_marker": "V06_ACTIONS_OK continuation_peer=true",
-    "frames_from_php": 4056,
-    "frames_from_rust": 4055,
-    "relayed_bytes": 2436969,
+    "frames_from_php": 4185,
+    "frames_from_rust": 4184,
+    "relayed_bytes": 2531127,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -18514,6 +18514,387 @@
                 "doing_action": false,
                 "stack": []
               }
+            },
+            "resource_all_only": {
+              "label": "resource_all_only",
+              "hook": {
+                "type": "resource",
+                "resource_type": "stream",
+                "resource_id": 10
+              },
+              "named_listener": false,
+              "events": [
+                {
+                  "event": "warning",
+                  "index": 1,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "warning",
+                  "index": 2,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "resource",
+                      "resource_type": "stream",
+                      "resource_id": 10
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "doing_action": true,
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 3,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 5,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 1
+                }
+              ],
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 2,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 3,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 5,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                }
+              ],
+              "stringify_calls": null,
+              "registration_throwable": null,
+              "dispatch_throwable": null,
+              "after": {
+                "did_action": {
+                  "value": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                "counter_entries": [
+                  {
+                    "key": {
+                      "type": "int",
+                      "value": "10"
+                    },
+                    "value": {
+                      "type": "int",
+                      "value": "1"
+                    }
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
+            },
+            "resource_named": {
+              "label": "resource_named",
+              "hook": {
+                "type": "resource",
+                "resource_type": "stream",
+                "resource_id": 10
+              },
+              "named_listener": true,
+              "events": [
+                {
+                  "event": "warning",
+                  "index": 1,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "warning",
+                  "index": 2,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "warning",
+                  "index": 3,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "warning",
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "warning",
+                  "index": 5,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 0
+                },
+                {
+                  "event": "all",
+                  "args": [
+                    {
+                      "type": "resource",
+                      "resource_type": "stream",
+                      "resource_id": 10
+                    },
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "doing_action": true,
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 6,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 7,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "counter_entries": 1
+                },
+                {
+                  "event": "named",
+                  "args": [
+                    {
+                      "type": "string",
+                      "hex": "7061796c6f6164"
+                    }
+                  ],
+                  "current_action": {
+                    "type": "resource",
+                    "resource_type": "stream",
+                    "resource_id": 10
+                  },
+                  "doing_action": true,
+                  "counter_entries": 1
+                },
+                {
+                  "event": "resource_closed",
+                  "current_action": {
+                    "type": "resource_closed",
+                    "resource_type": "Unknown",
+                    "resource_id": 10
+                  },
+                  "same_current_action": true,
+                  "doing_action": true,
+                  "doing_named": true,
+                  "doing_other_resource": false
+                },
+                {
+                  "event": "warning",
+                  "index": 8,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 1
+                },
+                {
+                  "event": "warning",
+                  "index": 9,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "counter_entries": 1
+                }
+              ],
+              "warnings": [
+                {
+                  "index": 1,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 2,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 3,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 4,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 5,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 6,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 7,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 8,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                },
+                {
+                  "index": 9,
+                  "severity": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+                }
+              ],
+              "stringify_calls": null,
+              "registration_throwable": null,
+              "dispatch_throwable": null,
+              "after": {
+                "did_action": {
+                  "value": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                "counter_entries": [
+                  {
+                    "key": {
+                      "type": "int",
+                      "value": "10"
+                    },
+                    "value": {
+                      "type": "int",
+                      "value": "1"
+                    }
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "stack": []
+              }
             }
           },
           "no_listener_count": {
@@ -19934,33 +20315,33 @@
       }
     },
     "expected_frame_counts": {
-      "php": 4056,
-      "rust": 4055
+      "php": 4185,
+      "rust": 4184
     },
     "action_result": {
       "api_counts": {
-        "add_action": 83,
+        "add_action": 86,
         "add_filter": 0,
         "apply_filters": 1,
-        "current_action": 177,
+        "current_action": 197,
         "current_filter": 0,
-        "did_action": 246,
+        "did_action": 248,
         "did_filter": 7,
-        "do_action": 64,
-        "doing_action": 190,
+        "do_action": 66,
+        "doing_action": 198,
         "doing_filter": 0,
         "has_action": 42,
         "has_filter": 0,
-        "remove_action": 42,
+        "remove_action": 44,
         "remove_filter": 0
       },
-      "argument_release_effects": 675,
-      "boundary_effects": 1985,
-      "callback_invocations": 460,
+      "argument_release_effects": 692,
+      "boundary_effects": 2042,
+      "callback_invocations": 475,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 4056,
-      "frames_from_rust": 4055,
+      "frames_from_php": 4185,
+      "frames_from_rust": 4184,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": {
@@ -23328,6 +23709,387 @@
               "stringify_calls": null,
               "warnings": []
             },
+            "resource_all_only": {
+              "after": {
+                "counter_entries": [
+                  {
+                    "key": {
+                      "type": "int",
+                      "value": "10"
+                    },
+                    "value": {
+                      "type": "int",
+                      "value": "1"
+                    }
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "value": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": null,
+              "events": [
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 1,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "args": [
+                    {
+                      "resource_id": 10,
+                      "resource_type": "stream",
+                      "type": "resource"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "doing_action": true,
+                  "event": "all"
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "event": "warning",
+                  "index": 3,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 4,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 5,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                }
+              ],
+              "hook": {
+                "resource_id": 10,
+                "resource_type": "stream",
+                "type": "resource"
+              },
+              "label": "resource_all_only",
+              "named_listener": false,
+              "registration_throwable": null,
+              "stringify_calls": null,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 3,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 4,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 5,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                }
+              ]
+            },
+            "resource_named": {
+              "after": {
+                "counter_entries": [
+                  {
+                    "key": {
+                      "type": "int",
+                      "value": "10"
+                    },
+                    "value": {
+                      "type": "int",
+                      "value": "1"
+                    }
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "did_action": {
+                  "value": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                },
+                "doing_action": false,
+                "stack": []
+              },
+              "dispatch_throwable": null,
+              "events": [
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 1,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 3,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 4,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 0,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 5,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "args": [
+                    {
+                      "resource_id": 10,
+                      "resource_type": "stream",
+                      "type": "resource"
+                    },
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "doing_action": true,
+                  "event": "all"
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "event": "warning",
+                  "index": 6,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "event": "warning",
+                  "index": 7,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "args": [
+                    {
+                      "hex": "7061796c6f6164",
+                      "type": "string"
+                    }
+                  ],
+                  "counter_entries": 1,
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "stream",
+                    "type": "resource"
+                  },
+                  "doing_action": true,
+                  "event": "named"
+                },
+                {
+                  "current_action": {
+                    "resource_id": 10,
+                    "resource_type": "Unknown",
+                    "type": "resource_closed"
+                  },
+                  "doing_action": true,
+                  "doing_named": true,
+                  "doing_other_resource": false,
+                  "event": "resource_closed",
+                  "same_current_action": true
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 8,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "counter_entries": 1,
+                  "current_action": {
+                    "type": "bool",
+                    "value": false
+                  },
+                  "event": "warning",
+                  "index": 9,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                }
+              ],
+              "hook": {
+                "resource_id": 10,
+                "resource_type": "stream",
+                "type": "resource"
+              },
+              "label": "resource_named",
+              "named_listener": true,
+              "registration_throwable": null,
+              "stringify_calls": null,
+              "warnings": [
+                {
+                  "index": 1,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 2,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 3,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 4,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 5,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 6,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 7,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 8,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                },
+                {
+                  "index": 9,
+                  "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029",
+                  "severity": 2
+                }
+              ]
+            },
             "stringable_object_all_only": {
               "after": {
                 "counter_entries": [],
@@ -25113,32 +25875,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 80,
+      "release_effects": 83,
       "scenario": "action_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-a5ddd08ec9eb45f2a5800ddd20defaf7-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-a68d61a8cd5548a19d497f6a7e3017dd-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 1117302,
-        "stdout_sha256": "edd3477f903346c50d6bf3678224d16f46d185c927df06b48c2ce08411aff13c",
+        "stdout_bytes": 1163011,
+        "stdout_sha256": "3cd877b3af2eb84cbc22a2d291932c361c4de78d2786d44671f82560b33e70bf",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 1319667,
-        "stdout_sha256": "548ecb1ec635b45cfbf2d216b64b9b824f4aa63006ec4d7292d090dc66ad758a",
-        "stderr_bytes": 77806,
-        "stderr_sha256": "620e02674c3fd1030ddbc1d10e6c64c644d7f13e3200d5e2efda2ffc0065ed75"
+        "stdout_bytes": 1368116,
+        "stdout_sha256": "c3658fa32a8310312c1e6a0c1969622282d07a2af76e343316f2047f2d386faa",
+        "stderr_bytes": 85126,
+        "stderr_sha256": "69c68c35be87e688caf40b1a7ab153e8fdefc7bdc6f28e3a5ed59270f2d8d821"
       }
     },
     "action_transcript_rejections": [
@@ -25198,72 +25960,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 19876,
+        "pid": 6976,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 23200,
+        "pid": 32576,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 34304,
+        "pid": 30672,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 23592,
+        "pid": 19904,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 34356,
+        "pid": 26984,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 17868,
+        "pid": 2024,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 32156,
+        "pid": 26836,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 23096,
+        "pid": 29528,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 13916,
+        "pid": 33844,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 13344,
+        "pid": 31152,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 9460,
+        "pid": 17228,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 19668,
+        "pid": 24372,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 23492,
+        "pid": 9448,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 31840,
+        "pid": 33024,
         "returncode": 0,
         "reaped": true
       }

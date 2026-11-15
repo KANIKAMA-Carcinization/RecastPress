@@ -225,7 +225,7 @@ pub fn wp_validate_boolean(value: &PhpValue) -> Result<bool, CompatibilityError>
             Ok(!value.is_empty() && value != b"0" && !value.eq_ignore_ascii_case(b"false"))
         }
         PhpValue::Array(value) => Ok(!value.is_empty()),
-        PhpValue::Unsupported => Err(CompatibilityError::UnsupportedValue),
+        PhpValue::Unsupported | PhpValue::Resource { .. } => Err(CompatibilityError::UnsupportedValue),
     }
 }
 

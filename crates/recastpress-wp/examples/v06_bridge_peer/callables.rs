@@ -135,6 +135,31 @@ fn parse_pod(value: &Value, label: &str) -> Result<PhpValue, String> {
             exact_keys(value, &["type", "hex"], label)?;
             Ok(PhpValue::Bytes(decode_hex(string(value, "hex")?, label)?))
         }
+        "resource" => {
+            exact_keys(value, &["type", "handle", "identity", "resource_type", "resource_id"], label)?;
+            let handle = parse_handle(
+                value.get("handle").ok_or_else(|| format!("{label}_handle_missing"))?,
+                RequestGeneration::new(REQUEST_GENERATION),
+                PhpHandleKind::Argument,
+                label,
+            )?;
+            let identity = parse_handle(
+                value.get("identity").ok_or_else(|| format!("{label}_identity_missing"))?,
+                RequestGeneration::new(REQUEST_GENERATION),
+                PhpHandleKind::Argument,
+                label,
+            )?;
+            if handle.generation() == 0 {
+                return Err(format!("{label}_resource_handle"));
+            }
+            let resource_type = string(value, "resource_type")?.to_owned();
+            if resource_type.is_empty() {
+                return Err(format!("{label}_resource_type"));
+            }
+            let resource_id = value.get("resource_id").and_then(Value::as_i64)
+                .filter(|id| *id > 0).ok_or_else(|| format!("{label}_resource_id"))?;
+            Ok(PhpValue::Resource { handle, identity, resource_type, resource_id })
+        }
         "array" => {
             exact_keys(value, &["type", "entries"], label)?;
             let entries = value
@@ -197,6 +222,10 @@ fn pod(value: &PhpValue, label: &str) -> Result<Value, String> {
             "bits":encode_hex(&value.to_bits().to_be_bytes()),
         }),
         PhpValue::Bytes(value) => json!({"type":"string","hex":encode_hex(value)}),
+        PhpValue::Resource { handle, identity, resource_type, resource_id } => json!({
+            "type":"resource", "handle":descriptor(*handle), "identity":descriptor(*identity),
+            "resource_type":resource_type, "resource_id":resource_id,
+        }),
         PhpValue::Array(values) => {
             let mut entries = Vec::with_capacity(values.len());
             for (key, value) in values.iter() {
@@ -223,6 +252,9 @@ fn hook_scalar_from_value(value: PhpValue, label: &str) -> Result<HookScalar, St
         PhpValue::Integer(value) => Ok(HookScalar::Integer(value)),
         PhpValue::Float(value) => Ok(HookScalar::Float(value)),
         PhpValue::Bytes(value) => Ok(HookScalar::Bytes(value)),
+        PhpValue::Resource { handle, identity, resource_type, resource_id } => Ok(HookScalar::Resource {
+            handle, identity, resource_type, resource_id,
+        }),
         PhpValue::Array(_) | PhpValue::Unsupported => Err(format!("{label}_not_scalar")),
     }
 }
@@ -245,6 +277,7 @@ fn hook_scalar_array_key(value: &HookScalar) -> Option<PhpKey> {
         // pinned warning or Throwable behavior remains observable.
         HookScalar::Float(_) => None,
         HookScalar::Bytes(value) => Some(PhpKey::from_bytes(value)),
+        HookScalar::Resource { resource_id, .. } => Some(PhpKey::Integer(*resource_id)),
     }
 }
 
@@ -298,6 +331,7 @@ fn same_scalar_representation(left: &HookScalar, right: &HookScalar) -> bool {
         (HookScalar::Integer(left), HookScalar::Integer(right)) => left == right,
         (HookScalar::Float(left), HookScalar::Float(right)) => left.to_bits() == right.to_bits(),
         (HookScalar::Bytes(left), HookScalar::Bytes(right)) => left == right,
+        (HookScalar::Resource { identity: left, .. }, HookScalar::Resource { identity: right, .. }) => left == right,
         _ => false,
     }
 }
@@ -1126,6 +1160,13 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     label,
                 )?;
                 let scalar = hook_scalar_from_value(scalar, label)?;
+                if let HookScalar::Resource { handle: resource_handle, identity, .. } = &scalar
+                    && (*resource_handle != handle
+                        || self.handles.get(resource_handle) != Some(&HandleState::Active)
+                        || self.handles.get(identity) != Some(&HandleState::Active))
+                {
+                    return Err(format!("{label}_resource_handle_mismatch"));
+                }
                 Ok(Ok(Some(scalar)))
             }
         }

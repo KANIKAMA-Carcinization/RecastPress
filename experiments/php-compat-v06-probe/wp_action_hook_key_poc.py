@@ -143,11 +143,62 @@ def run_target():
                 raise ValueError('PHP resource hook callbacks differ')
             if not warnings or any(w.get('severity') != 2 for w in warnings):
                 raise ValueError('PHP resource hook key did not emit only expected warnings')
-            if any(b'used as offset, casting to integer' not in bytes.fromhex(w['message_hex'])
+            expected_message = (f"Resource ID#{case['hook']['resource_id']} used as offset, "
+                                f"casting to integer ({case['hook']['resource_id']})")
+            if any(w.get('severity') != 2
+                   or bytes.fromhex(w['message_hex']).decode('utf-8') != expected_message
                    for w in warnings):
                 raise ValueError('PHP resource hook key warning text differs')
+            warning_count = 9 if name.endswith('_named') else 5
+            if len(warnings) != warning_count:
+                raise ValueError('PHP resource hook key warning count differs')
+            warning_events = [event for event in events if event.get('event') == 'warning']
+            if [event.get('index') for event in warning_events] != list(range(1, warning_count + 1)):
+                raise ValueError('PHP resource hook warning event sequence differs')
+            expected_current = ([{'type': 'bool', 'value': False}] * 5
+                                + [case['hook']] * 2 + [{'type': 'bool', 'value': False}] * 2
+                                if name.endswith('_named') else
+                                [{'type': 'bool', 'value': False}] * 2 + [case['hook']]
+                                + [{'type': 'bool', 'value': False}] * 2)
+            if [event.get('current_action') for event in warning_events] != expected_current:
+                raise ValueError('PHP resource hook warning current_action order differs')
+            expected_counter_entries = [0] * (5 if name.endswith('_named') else 2)
+            expected_counter_entries += [1] * (warning_count - len(expected_counter_entries))
+            if [event.get('counter_entries') for event in warning_events] != expected_counter_entries:
+                raise ValueError('PHP resource hook warning counter timing differs')
+            expected_events = (['warning'] * 5 + ['all', 'warning', 'warning', 'named', 'resource_closed', 'warning', 'warning']
+                               if name.endswith('_named')
+                               else ['warning', 'warning', 'all', 'warning', 'warning', 'warning'])
+            if [event.get('event') for event in events] != expected_events:
+                raise ValueError('PHP resource hook callback/warning ordering differs')
+            for event in events:
+                if event.get('event') in ('all', 'named'):
+                    values = event.get('args', [])
+                    if event['event'] == 'all':
+                        if (len(values) != 2 or values[0] != case['hook']
+                                or values[1] != {'type': 'string', 'hex': '7061796c6f6164'}
+                                or event.get('current_action') != case['hook']
+                                or event.get('doing_action') is not True
+                                or event.get('counter_entries') != 1):
+                            raise ValueError('PHP resource hook all callback lost original resource')
+                    elif (values != [{'type': 'string', 'hex': '7061796c6f6164'}]
+                          or event.get('current_action') != case['hook']
+                          or event.get('doing_action') is not True
+                          or event.get('counter_entries') != 1):
+                        raise ValueError('PHP resource named callback context differs')
+                elif event.get('event') == 'resource_closed':
+                    if (event.get('current_action') != {
+                            'type': 'resource_closed', 'resource_type': 'Unknown',
+                            'resource_id': case['hook']['resource_id']}
+                            or event.get('same_current_action') is not True
+                            or event.get('doing_action') is not True
+                            or event.get('doing_named') is not True
+                            or event.get('doing_other_resource') is not False):
+                        raise ValueError('PHP closed resource Action context differs')
             entries = after.get('counter_entries')
-            if not isinstance(entries, list) or len(entries) != 1 or entries[0].get('key', {}).get('type') != 'int':
+            if (not isinstance(entries, list) or len(entries) != 1
+                    or entries[0].get('key') != {'type': 'int', 'value': str(case['hook']['resource_id'])}
+                    or entries[0].get('value') != {'type': 'int', 'value': '1'}):
                 raise ValueError('PHP resource hook counter key was not converted to integer')
             did = after.get('did_action', {}).get('value')
             if did != {'type': 'int', 'value': '1'}:

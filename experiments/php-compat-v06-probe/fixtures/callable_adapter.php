@@ -522,7 +522,7 @@ final class CallableApiAdapter
             }
             if ($arguments['access'] === 'project') {
                 return [
-                    'original' => self::encodePod($original),
+                    'original' => self::encodeArgumentPod($original, $arguments['handle']),
                     'key' => $key,
                 ];
             }
@@ -558,7 +558,7 @@ final class CallableApiAdapter
             }
 
             return [
-                'original' => self::encodePod($original),
+                'original' => self::encodeArgumentPod($original, $arguments['handle']),
                 'key' => $key,
             ];
         }
@@ -603,6 +603,15 @@ final class CallableApiAdapter
             }
 
             $value = $this->registry->resolve($arguments['handle'], 'argument');
+            $resourceInfo = $this->registry->resourceInfo($arguments['handle']);
+            if ($resourceInfo !== null) {
+                return ['supported' => true, 'value' => [
+                    'type' => 'resource', 'handle' => $resourceInfo['handle'],
+                    'identity' => $resourceInfo['identity'],
+                    'resource_type' => $resourceInfo['resource_type'],
+                    'resource_id' => $resourceInfo['resource_id'],
+                ]];
+            }
             if (!self::isHookScalar($value)) {
                 return ['supported' => false, 'value' => null];
             }
@@ -792,7 +801,7 @@ final class CallableApiAdapter
                 ) {
                     throw new RuntimeException('callable_invoke_metadata');
                 }
-                $hookName = self::decodePod($payload['hook']);
+                $hookName = $this->decodePod($payload['hook']);
                 if (!self::isHookScalar($hookName)) {
                     throw new RuntimeException('callable_invoke_hook_scalar');
                 }
@@ -821,7 +830,9 @@ final class CallableApiAdapter
                             $arguments[0] = $arguments[0][0];
                         }
                         if ($payload['call_mode'] === 'all'
-                            && ($arguments === [] || self::encodePod($arguments[0]) !== self::encodePod($hookName))
+                            && ($arguments === [] || (is_resource($hookName)
+                                ? $arguments[0] !== $hookName
+                                : self::encodePod($arguments[0]) !== self::encodePod($hookName)))
                         ) {
                             throw new RuntimeException('callable_all_hook_name_mismatch');
                         }
@@ -831,7 +842,9 @@ final class CallableApiAdapter
                     }
                     $completion = [
                         'kind' => 'value',
-                        'value' => self::encodePod($value),
+                        // WordPress do_action() ignores callback return values.
+                        // Do not serialize a resource returned by an Action listener.
+                        'value' => self::encodePod($payload['action_dispatch'] ? null : $value),
                     ];
                 } catch (Throwable $error) {
                     $completion = $this->throwableCompletion($error);
@@ -946,7 +959,7 @@ final class CallableApiAdapter
 
         if ($completion['kind'] === 'value') {
             expect_payload_keys(['payload' => $completion], ['kind', 'value'], 'callable_value_completion');
-            return self::decodePod($completion['value']);
+            return $this->decodePod($completion['value']);
         }
 
         if ($completion['kind'] === 'php_throwable') {
@@ -1030,10 +1043,22 @@ final class CallableApiAdapter
             return ['type' => 'array', 'entries' => $entries];
         }
 
-        throw new RuntimeException('callable_value_out_of_profile');
+        throw new RuntimeException('callable_value_out_of_profile:' . get_debug_type($value));
     }
 
-    private static function decodePod($node)
+    private function encodeArgumentPod(mixed $value, array $handle): array
+    {
+        $resourceInfo = $this->registry->resourceInfo($handle);
+        if ($resourceInfo !== null) {
+            return ['type' => 'resource', 'handle' => $resourceInfo['handle'],
+                'identity' => $resourceInfo['identity'], 'resource_type' => $resourceInfo['resource_type'],
+                'resource_id' => $resourceInfo['resource_id']];
+        }
+
+        return self::encodePod($value);
+    }
+
+    private function decodePod($node)
     {
         if (!is_array($node) || !isset($node['type']) || !is_string($node['type'])) {
             throw new RuntimeException('callable_pod_shape');
@@ -1061,6 +1086,24 @@ final class CallableApiAdapter
             case 'string':
                 expect_payload_keys(['payload' => $node], ['type', 'hex'], 'callable_pod_string');
                 return self::decodeHexString($node['hex']);
+            case 'resource':
+                expect_payload_keys(['payload' => $node], ['type', 'handle', 'identity', 'resource_type', 'resource_id'], 'callable_pod_resource');
+                if (!is_array($node['handle']) || !is_string($node['resource_type']) || !is_int($node['resource_id'])) {
+                    throw new RuntimeException('callable_pod_resource_shape');
+                }
+                $resource = $this->registry->resolve($node['handle'], 'argument');
+                $resourceInfo = $this->registry->resourceInfo($node['handle']);
+                $closed = get_debug_type($resource) === 'resource (closed)';
+                if ($resourceInfo === null
+                    || !self::sameHandleList([$resourceInfo['identity']], [$node['identity']])
+                    || $resourceInfo['resource_type'] !== $node['resource_type']
+                    || $resourceInfo['resource_id'] !== $node['resource_id']
+                    || (!$closed && (!is_resource($resource)
+                        || get_resource_type($resource) !== $node['resource_type']))
+                    || get_resource_id($resource) !== $node['resource_id']) {
+                    throw new RuntimeException('callable_pod_resource_identity');
+                }
+                return $resource;
             case 'array':
                 expect_payload_keys(['payload' => $node], ['type', 'entries'], 'callable_pod_array');
                 if (!is_array($node['entries']) || !array_is_list($node['entries'])) {
@@ -1083,7 +1126,7 @@ final class CallableApiAdapter
                             throw new RuntimeException('callable_pod_unnormalized_string_key');
                         }
                     }
-                    $result[$key] = self::decodePod($entry['value']);
+                    $result[$key] = $this->decodePod($entry['value']);
                 }
                 return $result;
         }
@@ -1097,7 +1140,7 @@ final class CallableApiAdapter
             throw new RuntimeException('callable_pod_list');
         }
 
-        return array_map(self::decodePod(...), $nodes);
+        return array_map($this->decodePod(...), $nodes);
     }
 
     private function decodeCallableArguments($nodes): array
@@ -1120,7 +1163,7 @@ final class CallableApiAdapter
                 $arguments[] = $this->registry->resolve($node['handle'], 'argument');
                 continue;
             }
-            $arguments[] = self::decodePod($node);
+            $arguments[] = $this->decodePod($node);
         }
 
         return $arguments;
@@ -1170,7 +1213,7 @@ final class CallableApiAdapter
 
     private static function isHookScalar(mixed $value): bool
     {
-        return $value === null || is_bool($value) || is_int($value) || is_float($value) || is_string($value);
+        return $value === null || is_bool($value) || is_int($value) || is_float($value) || is_string($value) || is_resource($value);
     }
 
     private static function decodeInt($value): int
