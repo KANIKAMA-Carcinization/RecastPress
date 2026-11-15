@@ -4006,6 +4006,19 @@ EXPECTED_ACTION_API['singleton_object_unwrap'] = json.loads(json.dumps(ACTION_SI
 EXPECTED_ACTION_API['hook_key_alias'] = json.loads(json.dumps(ACTION_HOOK_KEY_ALIAS_EXPECTATIONS))
 EXPECTED_ACTION_API['hook_key_warning'] = json.loads(json.dumps(ACTION_HOOK_KEY_WARNING_EXPECTATIONS))
 EXPECTED_ACTION_API['hook_key_unusual'] = json.loads(json.dumps(ACTION_HOOK_KEY_UNUSUAL_EXPECTATIONS))
+_resource_id_probe = {
+    'iterations': 128,
+    'unique_ids': 128,
+    'duplicate_count': 0,
+    'strictly_increasing': True,
+    'original_id_reused': False,
+}
+for _event in EXPECTED_ACTION_API['hook_key_unusual']['resource_named']['events']:
+    if _event.get('event') == 'resource_closed':
+        _event['resource_id_probe'] = _resource_id_probe
+        break
+else:
+    raise ValueError('resource hook lifecycle expectation is missing')
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode

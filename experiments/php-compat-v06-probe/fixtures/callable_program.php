@@ -3397,6 +3397,7 @@ function callable_program_action_hook_key_unusual_cases(): array
                     }
                     $events[] = $event;
                     if ($resourceCase && !$resourceClosedRecorded) {
+                        $hookResourceId = get_resource_id($hook);
                         if (is_resource($hook)) {
                             fclose($hook);
                         }
@@ -3408,12 +3409,36 @@ function callable_program_action_hook_key_unusual_cases(): array
                         }
                         $doingOtherResource = doing_action($otherResource);
                         fclose($otherResource);
+                        $probeIds = [];
+                        for ($probeIndex = 0; $probeIndex < 128; $probeIndex++) {
+                            $probeResource = fopen('php://memory', 'r+');
+                            if (!is_resource($probeResource)) {
+                                throw new RuntimeException('callable_action_resource_id_probe_open');
+                            }
+                            $probeIds[] = get_resource_id($probeResource);
+                            fclose($probeResource);
+                        }
+                        $probeIncreasing = true;
+                        for ($probeIndex = 1, $probeCount = count($probeIds); $probeIndex < $probeCount; $probeIndex++) {
+                            if ($probeIds[$probeIndex] <= $probeIds[$probeIndex - 1]) {
+                                $probeIncreasing = false;
+                                break;
+                            }
+                        }
+                        $probeUniqueCount = count(array_unique($probeIds, SORT_NUMERIC));
                         $events[] = ['event' => 'resource_closed',
                             'current_action' => $view($current),
                             'same_current_action' => $current === $hook,
                             'doing_action' => doing_action(),
                             'doing_named' => doing_action($hook),
-                            'doing_other_resource' => $doingOtherResource];
+                            'doing_other_resource' => $doingOtherResource,
+                            'resource_id_probe' => [
+                                'iterations' => count($probeIds),
+                                'unique_ids' => $probeUniqueCount,
+                                'duplicate_count' => count($probeIds) - $probeUniqueCount,
+                                'strictly_increasing' => $probeIncreasing,
+                                'original_id_reused' => in_array($hookResourceId, $probeIds, true),
+                            ]];
                     }
                 };
                 try {
