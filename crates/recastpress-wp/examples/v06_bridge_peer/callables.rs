@@ -227,6 +227,27 @@ fn hook_scalar_from_value(value: PhpValue, label: &str) -> Result<HookScalar, St
     }
 }
 
+/// Project already-supported hook scalars to PHP array keys without performing
+/// another PHP offset operation. The real Action counter boundary owns the
+/// observable key-coercion warnings; this projection only supplies the key the
+/// Rust dispatcher needs before that boundary runs.
+fn hook_scalar_array_key(value: &HookScalar) -> Option<PhpKey> {
+    match value {
+        HookScalar::Null => Some(PhpKey::Bytes(Vec::new())),
+        HookScalar::Bool(value) => Some(PhpKey::Integer(i64::from(*value))),
+        HookScalar::Integer(value) => Some(PhpKey::Integer(*value)),
+        HookScalar::Float(value)
+            if value.is_finite() && *value >= i64::MIN as f64 && *value < (i64::MAX as f64) =>
+        {
+            Some(PhpKey::Integer(*value as i64))
+        }
+        // Let PHP handle exceptional/out-of-range float conversions so their
+        // pinned warning or Throwable behavior remains observable.
+        HookScalar::Float(_) => None,
+        HookScalar::Bytes(value) => Some(PhpKey::from_bytes(value)),
+    }
+}
+
 fn parse_php_key(value: &Value, label: &str) -> Result<PhpKey, String> {
     exact_keys(value, &["type", "hex"], label)?;
     let bytes = decode_hex(string(value, "hex")?, label)?;
@@ -2078,18 +2099,47 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<Completion<PhpValue>, String> {
         exact_keys(payload, &["api", "arguments"], "did_action_call")?;
         let handle = self.current_argument("hook")?;
-        let (hook, array_key) = match self.boundary_array_key(
+        let hook = match self.boundary_scalar_from_argument(
             handle,
-            "isset",
-            false,
             operation,
             parent_wire,
-            "did_action_hook_key",
+            "did_action_hook_scalar",
         )? {
-            Ok(result) => result,
             Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(Some(hook)) => match hook_scalar_array_key(&hook) {
+                Some(array_key) => HookArgument::new(hook, array_key),
+                None => {
+                    let (hook, array_key) = match self.boundary_array_key(
+                        handle,
+                        "project",
+                        false,
+                        operation,
+                        parent_wire,
+                        "did_action_hook_key",
+                    )? {
+                        Ok(result) => result,
+                        Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+                    };
+                    HookArgument::new(hook, array_key)
+                }
+            },
+            Ok(None) => {
+                // Preserve PHP's native illegal-offset Throwable for values
+                // outside the supported scalar hook profile.
+                let (hook, array_key) = match self.boundary_array_key(
+                    handle,
+                    "project",
+                    false,
+                    operation,
+                    parent_wire,
+                    "did_action_hook_key",
+                )? {
+                    Ok(result) => result,
+                    Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+                };
+                HookArgument::new(hook, array_key)
+            }
         };
-        let hook = HookArgument::new(hook, array_key);
         self.remember_hook(hook);
         let value = match self.boundary_value(
             "action_counter_read",
@@ -2113,18 +2163,47 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     ) -> Result<Completion<PhpValue>, String> {
         exact_keys(payload, &["api", "arguments", "args"], "do_action_call")?;
         let handle = self.current_argument("hook")?;
-        let (hook, array_key) = match self.boundary_array_key(
+        let hook = match self.boundary_scalar_from_argument(
             handle,
-            "isset",
-            false,
             operation,
             parent_wire,
-            "do_action_hook_key",
+            "do_action_hook_scalar",
         )? {
-            Ok(result) => result,
             Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+            Ok(Some(hook)) => match hook_scalar_array_key(&hook) {
+                Some(array_key) => HookArgument::new(hook, array_key),
+                None => {
+                    let (hook, array_key) = match self.boundary_array_key(
+                        handle,
+                        "project",
+                        false,
+                        operation,
+                        parent_wire,
+                        "do_action_hook_key",
+                    )? {
+                        Ok(result) => result,
+                        Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+                    };
+                    HookArgument::new(hook, array_key)
+                }
+            },
+            Ok(None) => {
+                // Preserve PHP's native illegal-offset Throwable for arrays,
+                // objects, and other hook values outside the scalar profile.
+                let (hook, array_key) = match self.boundary_array_key(
+                    handle,
+                    "project",
+                    false,
+                    operation,
+                    parent_wire,
+                    "do_action_hook_key",
+                )? {
+                    Ok(result) => result,
+                    Err(handle) => return Ok(Completion::PhpThrowable(handle)),
+                };
+                HookArgument::new(hook, array_key)
+            }
         };
-        let hook = HookArgument::new(hook, array_key);
         self.remember_hook(hook.clone());
         let args = self
             .action_argument_handles()?

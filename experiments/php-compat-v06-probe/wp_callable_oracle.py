@@ -29,7 +29,10 @@ def fixed_inputs():
                  HERE / 'wp_action_singleton_object_poc.py',
                  HERE / 'fixtures/wp-action-singleton-object-poc.php',
                  HERE / 'wp_action_hook_alias_poc.py',
-                 HERE / 'fixtures/wp_action_hook_alias_poc.php'):
+                 HERE / 'fixtures/wp_action_hook_alias_poc.php',
+                 HERE / 'wp_action_hook_key_poc.py',
+                 HERE / 'fixtures/wp_action_hook_key_poc.php',
+                 HERE / 'evidence/wp-action-hook-key-poc-v1.json'):
         inputs[path.relative_to(ROOT).as_posix()] = digest(path)
     return dict(sorted(inputs.items()))
 

@@ -419,14 +419,15 @@ final class CallableApiAdapter
             $hookName = $this->registry->resolve($arguments['handle'], 'argument');
             if ($action === 'action_counter_increment') {
                 if (!isset($GLOBALS['wp_actions'][$hookName])) {
-                    $GLOBALS['wp_actions'][$hookName] = 1;
+                    $counter = 1;
+                    $GLOBALS['wp_actions'][$hookName] = $counter;
                 } else {
-                    ++$GLOBALS['wp_actions'][$hookName];
+                    $counter = ++$GLOBALS['wp_actions'][$hookName];
                 }
                 // WordPress increments before pushing the current hook. Keep the
                 // public PHP stack aligned even when the counter boundary throws.
                 $GLOBALS['wp_current_filter'][] = $hookName;
-                return self::encodePod($GLOBALS['wp_actions'][$hookName]);
+                return self::encodePod($counter);
             }
 
             global $wp_actions;
@@ -442,7 +443,7 @@ final class CallableApiAdapter
             );
             if (!is_array($arguments['handle'])
                 || !is_string($arguments['access'])
-                || !in_array($arguments['access'], ['isset', 'nested_isset', 'read', 'write', 'unset', 'increment'], true)
+                || !in_array($arguments['access'], ['isset', 'nested_isset', 'read', 'write', 'unset', 'increment', 'project'], true)
                 || !is_bool($arguments['null_to_zero'])
             ) {
                 throw new RuntimeException('callable_boundary_array_key_shape');
@@ -455,6 +456,12 @@ final class CallableApiAdapter
 
             if (is_array($original) || is_object($original)) {
                 $target = [];
+                if ($arguments['access'] === 'project') {
+                    // Keep PHP's native invalid-array-key TypeError for the
+                    // projection mode without invoking a scalar offset access.
+                    $projected = $target[$original];
+                    unset($projected);
+                }
                 switch ($arguments['access']) {
                     case 'isset':
                         isset($target[$original]);
@@ -474,6 +481,9 @@ final class CallableApiAdapter
                         break;
                     case 'increment':
                         $target[$original]++;
+                        break;
+                    case 'project':
+                        // Arrays and objects already raised above.
                         break;
                 }
                 throw new RuntimeException('callable_invalid_array_offset_unreachable');
@@ -503,8 +513,18 @@ final class CallableApiAdapter
                     case 'increment':
                         $target[$original]++;
                         break;
+                    case 'project':
+                        $projected = $target[$original];
+                        unset($projected);
+                        break;
                 }
                 throw $normalizationError;
+            }
+            if ($arguments['access'] === 'project') {
+                return [
+                    'original' => self::encodePod($original),
+                    'key' => $key,
+                ];
             }
             $target = [];
             if ($arguments['access'] === 'increment') {

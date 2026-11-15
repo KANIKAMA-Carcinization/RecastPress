@@ -2798,7 +2798,7 @@ impl Dispatcher {
             let Some(slot) = slot else {
                 if phase == DispatchPhase::All {
                     let dispatch = self.resumable.last_mut().expect("active dispatch");
-                    dispatch.phase = if dispatch.effectful && !dispatch.action {
+                    dispatch.phase = if dispatch.effectful {
                         DispatchPhase::NamedHookIsset
                     } else {
                         DispatchPhase::Named
@@ -2819,7 +2819,7 @@ impl Dispatcher {
                 if self
                     .resumable
                     .last()
-                    .is_some_and(|dispatch| dispatch.effectful && !dispatch.action)
+                    .is_some_and(|dispatch| dispatch.effectful)
                 {
                     self.pop_dispatch_hook_if_owned();
                 }
@@ -2832,7 +2832,7 @@ impl Dispatcher {
                     && !self
                         .resumable
                         .last()
-                        .is_some_and(|dispatch| dispatch.effectful && !dispatch.action)
+                        .is_some_and(|dispatch| dispatch.effectful)
                     && key_get(&self.bindings, &all_key).is_none()
                 {
                     self.current.push(hook.original.clone());
@@ -2877,7 +2877,7 @@ impl Dispatcher {
                 dispatch.frame_started = frame_started;
                 if !frame_started {
                     if phase == DispatchPhase::All {
-                        dispatch.phase = if dispatch.effectful && !dispatch.action {
+                        dispatch.phase = if dispatch.effectful {
                             DispatchPhase::MissingOffsetAll
                         } else {
                             DispatchPhase::Named
@@ -2921,7 +2921,7 @@ impl Dispatcher {
                     dispatch.frame_started = false;
                     dispatch.slot = None;
                     if phase == DispatchPhase::All {
-                        dispatch.phase = if dispatch.effectful && !dispatch.action {
+                        dispatch.phase = if dispatch.effectful {
                             DispatchPhase::NamedHookIsset
                         } else {
                             DispatchPhase::Named
@@ -3129,7 +3129,7 @@ impl Dispatcher {
                     dispatch.phase = DispatchPhase::All;
                     dispatch.slot = Some(slot);
                 } else {
-                    dispatch.phase = DispatchPhase::Named;
+                    dispatch.phase = DispatchPhase::NamedHookIsset;
                 }
             }
             DispatchPhase::NamedHookIsset => {

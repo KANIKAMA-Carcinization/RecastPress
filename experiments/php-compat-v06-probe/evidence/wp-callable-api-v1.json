@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-14T02:19:41.784313+00:00",
+  "observed_at_utc": "2026-11-15T14:05:14.619413+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -92,7 +92,7 @@
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "565aec0e20294abab93011d9659e5c332bf72298a0adcc18d53375823da8d4d1",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "80fedb55eed0f82c4a019104a91bf358433ab613094956a942ef791d0c93c622",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
@@ -111,7 +111,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "4455c0d0ee38aecf83745d3c05f2c6843ab0e2fb7ce4d69b8d720c974090c610",
+    "crates/recastpress-wp/src/dispatcher.rs": "700cf83fce630a2bd0866ff97abf32adaf2a34a6a09b0a59ce9c22bee18e7acc",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -171,15 +171,16 @@
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
-    "experiments/php-compat-v06-probe/callable_contract.py": "8e1f21fb6e9e0b82dd62f2d324e2e574c64dfb22e35799a563816bccdcb35483",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "c0ede45f6595c319019a78ad435b2b2b45b1301a802eda52d38478c5ce67e1cb",
+    "experiments/php-compat-v06-probe/callable_contract.py": "85b31f02dbd74e80d4bfeee29eaea3f675c81db916682acd60f7ded55fea7116",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "979e4f52d3d7ec52d6372c8d26de1c38e4ccc3a78fc67624233952e26ff7cbfa",
+    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "e48a09705e662f8128147323ce11cbd7d67b22da6a759173599c1f3880060a04",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "80a661331d1b21261e52202cfa173aced81e068d1facbc75abe8d90ee45e4ada",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6fd055662493b0851f0ae045ec4eb9f3a6a51c3d2a352ce8b3c50a30565458bb",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "16f6691fd77cadbe97293a5a036e57762afaff0eae7db35d3dcf4f71b591905f",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -192,16 +193,18 @@
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "e0f5a784a6f4980eed9c79e94a9bc13704d9bcc868b70b3e72f5bbd89800be9f",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "81398ad3409015ba03c9cd46b2eabf991b13f74347f0abf0403767f9e139ec93",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "61402288b9fce8bb6f3101e5fdc85f95e9adab25883c39e3d917c065d6bda854",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
@@ -294,7 +297,7 @@
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
-    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "565aec0e20294abab93011d9659e5c332bf72298a0adcc18d53375823da8d4d1",
+    "crates/recastpress-wp/examples/v06_bridge_peer/callables.rs": "80fedb55eed0f82c4a019104a91bf358433ab613094956a942ef791d0c93c622",
     "crates/recastpress-wp/examples/v06_bridge_peer/handles.rs": "c25be9136d1331d102e0bce2546642b6a0809d864cde09e79a6bc56d773ee509",
     "crates/recastpress-wp/examples/v06_bridge_peer/hooks.rs": "0178a4729e4408cec469f410bdf0d30b9fcf279afe050c602c616d2c2f4272de",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
@@ -313,7 +316,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "4455c0d0ee38aecf83745d3c05f2c6843ab0e2fb7ce4d69b8d720c974090c610",
+    "crates/recastpress-wp/src/dispatcher.rs": "700cf83fce630a2bd0866ff97abf32adaf2a34a6a09b0a59ce9c22bee18e7acc",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -373,15 +376,16 @@
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
     "experiments/php-compat-v06-probe/README.ja.md": "c4b733ed0bdef03607f3c7d62181c12dd3df3b4707deff6405f3d68b4f251e63",
-    "experiments/php-compat-v06-probe/callable_contract.py": "8e1f21fb6e9e0b82dd62f2d324e2e574c64dfb22e35799a563816bccdcb35483",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "c0ede45f6595c319019a78ad435b2b2b45b1301a802eda52d38478c5ce67e1cb",
+    "experiments/php-compat-v06-probe/callable_contract.py": "85b31f02dbd74e80d4bfeee29eaea3f675c81db916682acd60f7ded55fea7116",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "979e4f52d3d7ec52d6372c8d26de1c38e4ccc3a78fc67624233952e26ff7cbfa",
+    "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "e48a09705e662f8128147323ce11cbd7d67b22da6a759173599c1f3880060a04",
     "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "7263c3fb569ff3e3bc2e06f19b900da745391d8617311a41f80a7f951db8cf25",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "e1b0cdfd8f1eef8d63e8ebbddf4c5d4ac157a45a9d50fb5cd965a6d55ac17ed9",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "80a661331d1b21261e52202cfa173aced81e068d1facbc75abe8d90ee45e4ada",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "6fd055662493b0851f0ae045ec4eb9f3a6a51c3d2a352ce8b3c50a30565458bb",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "16f6691fd77cadbe97293a5a036e57762afaff0eae7db35d3dcf4f71b591905f",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -394,48 +398,50 @@
     "experiments/php-compat-v06-probe/fixtures/surface_oracle.php": "206f97b74578014c24f7539b521745b3df2b507aaecc83c9c8f861b4a4be85e8",
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
-    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "81b269eb7857e1346bbe6e82147f6af53479703feeef502992291f6383943217",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
+    "experiments/php-compat-v06-probe/fixtures/wp_action_hook_key_poc.php": "e0f5a784a6f4980eed9c79e94a9bc13704d9bcc868b70b3e72f5bbd89800be9f",
     "experiments/php-compat-v06-probe/handle_contract.py": "2576861f331a54a187a625fe9f313bd51711da43c3a3eafa1b0f268fa24ef0e2",
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "c7addd97542b61a146a1cac4a1ba8d61684aa1e945ac3ac20397924dc273b219",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
-    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "a4693fbfd0893a4ce189f468025e206ced290bbe7ab4e4a2156ff3a99c1937b6",
+    "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
+    "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "81398ad3409015ba03c9cd46b2eabf991b13f74347f0abf0403767f9e139ec93",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "61402288b9fce8bb6f3101e5fdc85f95e9adab25883c39e3d917c065d6bda854",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "9d0c0e9680f4ce661c84484e17bc23290db34b2fbe802b0068919abaac76e937",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 27432,
+    "pid": 32796,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 26712,
+    "pid": 33108,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-stdout.bin",
       "bytes": 120941,
       "sha256": "7783b1489fa9ef3183b51bfd22a5a6035f90d5940d3a078da36d30bef1cef506"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-action_stdout.bin",
-      "bytes": 41860,
-      "sha256": "aaad484cbe3313e8d5b0c1ef5de869bd9e81ba05ec627fa78546614340a54661"
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-action_stdout.bin",
+      "bytes": 71535,
+      "sha256": "4c725615ccb5423f85c4f5d19519fd6af793d478d10ba15f92e2602cb4aadf01"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261114T021941.764163Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261115T140514.595378Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -8566,6 +8572,558 @@
               "stack": []
             }
           },
+          "false_register_zero_dispatch": {
+            "label": "false_register_zero_dispatch",
+            "registered_hook": {
+              "type": "bool",
+              "value": false
+            },
+            "dispatched_hook": {
+              "type": "int",
+              "value": "0"
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "0"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "zero_register_false_dispatch": {
+            "label": "zero_register_false_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "0"
+            },
+            "dispatched_hook": {
+              "type": "bool",
+              "value": false
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "true_register_one_dispatch": {
+            "label": "true_register_one_dispatch",
+            "registered_hook": {
+              "type": "bool",
+              "value": true
+            },
+            "dispatched_hook": {
+              "type": "int",
+              "value": "1"
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "0"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "one_register_true_dispatch": {
+            "label": "one_register_true_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "1"
+            },
+            "dispatched_hook": {
+              "type": "bool",
+              "value": true
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": true
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": true
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
           "leading_zero_non_alias": {
             "label": "leading_zero_non_alias",
             "registered_hook": {
@@ -8817,6 +9375,1233 @@
               "did_action_leading_zero": {
                 "type": "int",
                 "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          }
+        },
+        "hook_key_warning": {
+          "float_5_7_all_only": {
+            "label": "float_5_7_all_only",
+            "hook": {
+              "type": "float",
+              "bits": "4016cccccccccccd"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "float",
+                    "bits": "4016cccccccccccd"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "float_5_7_named": {
+            "label": "float_5_7_named",
+            "hook": {
+              "type": "float",
+              "bits": "4016cccccccccccd"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "float",
+                    "bits": "4016cccccccccccd"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "warning",
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 8
+              },
+              {
+                "event": "warning",
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 9
+              },
+              {
+                "event": "warning",
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 10
+              },
+              {
+                "event": "warning",
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "warning",
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 12
+              },
+              {
+                "event": "warning",
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 13
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "null_all_only": {
+            "label": "null_all_only",
+            "hook": {
+              "type": "null"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "null_named": {
+            "label": "null_named",
+            "hook": {
+              "type": "null"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "warning",
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 8
+              },
+              {
+                "event": "warning",
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 9
+              },
+              {
+                "event": "warning",
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 10
+              },
+              {
+                "event": "warning",
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "warning",
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 12
+              },
+              {
+                "event": "warning",
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 13
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
               },
               "current_action": {
                 "type": "bool",
@@ -11688,6 +13473,558 @@
               "stack": []
             }
           },
+          "false_register_zero_dispatch": {
+            "label": "false_register_zero_dispatch",
+            "registered_hook": {
+              "type": "bool",
+              "value": false
+            },
+            "dispatched_hook": {
+              "type": "int",
+              "value": "0"
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "0"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "0"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "0"
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "zero_register_false_dispatch": {
+            "label": "zero_register_false_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "0"
+            },
+            "dispatched_hook": {
+              "type": "bool",
+              "value": false
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": false
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "true_register_one_dispatch": {
+            "label": "true_register_one_dispatch",
+            "registered_hook": {
+              "type": "bool",
+              "value": true
+            },
+            "dispatched_hook": {
+              "type": "int",
+              "value": "1"
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "0"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "0"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "stack": [
+                  {
+                    "type": "int",
+                    "value": "1"
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "one_register_true_dispatch": {
+            "label": "one_register_true_dispatch",
+            "registered_hook": {
+              "type": "int",
+              "value": "1"
+            },
+            "dispatched_hook": {
+              "type": "bool",
+              "value": true
+            },
+            "before": {
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "1"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "1"
+              }
+            },
+            "events": [
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": true
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "current_action": {
+                  "type": "bool",
+                  "value": true
+                },
+                "doing_action": true,
+                "doing_registered": false,
+                "doing_dispatched": true,
+                "did_registered": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "did_dispatched": {
+                  "type": "int",
+                  "value": "2"
+                },
+                "stack": [
+                  {
+                    "type": "bool",
+                    "value": true
+                  }
+                ]
+              }
+            ],
+            "after_dispatch": {
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "has_registered": {
+                "type": "int",
+                "value": "10"
+              },
+              "has_dispatched": {
+                "type": "int",
+                "value": "10"
+              }
+            },
+            "removed_by_alias": true,
+            "after": {
+              "has_registered": {
+                "type": "bool",
+                "value": false
+              },
+              "has_dispatched": {
+                "type": "bool",
+                "value": false
+              },
+              "did_registered": {
+                "type": "int",
+                "value": "2"
+              },
+              "did_dispatched": {
+                "type": "int",
+                "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
           "leading_zero_non_alias": {
             "label": "leading_zero_non_alias",
             "registered_hook": {
@@ -11939,6 +14276,1233 @@
               "did_action_leading_zero": {
                 "type": "int",
                 "value": "2"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          }
+        },
+        "hook_key_warning": {
+          "float_5_7_all_only": {
+            "label": "float_5_7_all_only",
+            "hook": {
+              "type": "float",
+              "bits": "4016cccccccccccd"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "float",
+                    "bits": "4016cccccccccccd"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "float_5_7_named": {
+            "label": "float_5_7_named",
+            "hook": {
+              "type": "float",
+              "bits": "4016cccccccccccd"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "float",
+                    "bits": "4016cccccccccccd"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "warning",
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 8
+              },
+              {
+                "event": "warning",
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 9
+              },
+              {
+                "event": "warning",
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 10
+              },
+              {
+                "event": "warning",
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "warning",
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 12
+              },
+              {
+                "event": "warning",
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e",
+                "hook": {
+                  "type": "float",
+                  "bits": "4016cccccccccccd"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 13
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              },
+              {
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "496d706c6963697420636f6e76657273696f6e2066726f6d20666c6f617420352e3720746f20696e74206c6f73657320707265636973696f6e"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "null_all_only": {
+            "label": "null_all_only",
+            "hook": {
+              "type": "null"
+            },
+            "named_listener": false,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
+              },
+              "current_action": {
+                "type": "bool",
+                "value": false
+              },
+              "doing_action": false,
+              "stack": []
+            }
+          },
+          "null_named": {
+            "label": "null_named",
+            "hook": {
+              "type": "null"
+            },
+            "named_listener": true,
+            "events": [
+              {
+                "event": "warning",
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 1
+              },
+              {
+                "event": "warning",
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 2
+              },
+              {
+                "event": "warning",
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 3
+              },
+              {
+                "event": "warning",
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 4
+              },
+              {
+                "event": "warning",
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "null"
+                },
+                "warning_count": 5
+              },
+              {
+                "event": "warning",
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 6
+              },
+              {
+                "event": "warning",
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "all",
+                "args": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 7
+              },
+              {
+                "event": "warning",
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 8
+              },
+              {
+                "event": "warning",
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 9
+              },
+              {
+                "event": "warning",
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 10
+              },
+              {
+                "event": "warning",
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "named",
+                "args": [
+                  {
+                    "type": "string",
+                    "hex": "7061796c6f6164"
+                  }
+                ],
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "null"
+                },
+                "doing_action": true,
+                "did_action": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 11
+              },
+              {
+                "event": "warning",
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 12
+              },
+              {
+                "event": "warning",
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164",
+                "hook": {
+                  "type": "null"
+                },
+                "current_action": {
+                  "type": "bool",
+                  "value": false
+                },
+                "doing_action": false,
+                "counter": {
+                  "type": "int",
+                  "value": "1"
+                },
+                "warning_count": 13
+              }
+            ],
+            "warnings": [
+              {
+                "index": 1,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 2,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 3,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 4,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 5,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 6,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 7,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 8,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 9,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 10,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 11,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 12,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              },
+              {
+                "index": 13,
+                "severity": 8192,
+                "message_hex": "5573696e67206e756c6c20617320616e206172726179206f666673657420697320646570726563617465642c2075736520616e20656d70747920737472696e6720696e7374656164"
+              }
+            ],
+            "throwable": null,
+            "after": {
+              "did_action": {
+                "type": "int",
+                "value": "1"
               },
               "current_action": {
                 "type": "bool",
@@ -13368,11 +16932,11 @@
   },
   "scope": "Existing 87 filter observations plus the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. This is not a full WordPress bootstrap or arbitrary heap-valued filter-argument claim.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-14T02:19:53.788617+00:00",
+    "observed_at_utc": "2026-11-15T14:05:23.208794+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "79420c4253697c05144cc11954171ca624e31b565a88b71c133c8d9823f3f74f",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261114T021648.790374Z-success.json",
-    "wasm_receipt_sha256": "e31cd67b96f91d9f08d98f2a1538aa52e9052f7b55cd8f08d9e85c81695535ec",
+    "native_receipt_sha256": "4084ef527a443050b6b24378bf0e10fdada7681bdff879e816fc99b69e3523f3",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261115T140257.867262Z-success.json",
+    "wasm_receipt_sha256": "75c4417706fa900a9b0fdc18b5e5162a9f21dfcb034a68f253390f438c789606",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -13465,11 +17029,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-14T02:20:41.508732+00:00",
+    "observed_at_utc": "2026-11-15T14:06:18.471770+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "79420c4253697c05144cc11954171ca624e31b565a88b71c133c8d9823f3f74f",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261114T021351.461568Z-success.json",
-    "wasm_receipt_sha256": "80bcf616b4388b229cf7e297d3acf63909ae5738ac61217a24d7b848c6b3ffce",
+    "native_receipt_sha256": "4084ef527a443050b6b24378bf0e10fdada7681bdff879e816fc99b69e3523f3",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261115T135633.671989Z-success.json",
+    "wasm_receipt_sha256": "15e8900c0eafa90757f66758f14d2dd9cf13226f9fffa8d7507cd0fc5da0c016",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",
@@ -13483,6 +17047,7 @@
       "action_api.heap_argument_continuation",
       "action_api.singleton_object_unwrap",
       "action_api.hook_key_alias",
+      "action_api.hook_key_warning",
       "action_api.no_listener_count",
       "action_api.counter_seed_diagnostics",
       "action_api.counter_seed_values",

@@ -7,6 +7,7 @@ from callable_contract import (APIS, SCENARIO, ACTION_APIS, ACTION_SCENARIO, ACT
     ACTION_COUNTER_SEED_HOOKS, ACTION_COUNTER_DIAGNOSTIC_HOOKS, ACTION_COUNTER_DIAGNOSTIC_EXPECTATIONS,
     ACTION_GLOBAL_STATE_EXPECTATIONS, ACTION_COUNTER_COW_EXPECTATIONS, ACTION_HEAP_ARGUMENT_EXPECTATIONS,
     ACTION_SINGLETON_OBJECT_EXPECTATIONS, ACTION_HOOK_KEY_ALIAS_EXPECTATIONS,
+    ACTION_HOOK_KEY_WARNING_EXPECTATIONS,
     ALL_APIS, EXPECTED_OBSERVATION,
     ACTION_COUNTER_COW_HOOKS, action_counter_cow_read_expectations, canonical_hex, canonical_integer,
     validate_key, validate_pod)
@@ -4001,6 +4002,7 @@ EXPECTED_ACTION_API['counter_cow'] = json.loads(json.dumps(ACTION_COUNTER_COW_EX
 EXPECTED_ACTION_API['heap_argument_continuation'] = json.loads(json.dumps(ACTION_HEAP_ARGUMENT_EXPECTATIONS))
 EXPECTED_ACTION_API['singleton_object_unwrap'] = json.loads(json.dumps(ACTION_SINGLETON_OBJECT_EXPECTATIONS))
 EXPECTED_ACTION_API['hook_key_alias'] = json.loads(json.dumps(ACTION_HOOK_KEY_ALIAS_EXPECTATIONS))
+EXPECTED_ACTION_API['hook_key_warning'] = json.loads(json.dumps(ACTION_HOOK_KEY_WARNING_EXPECTATIONS))
 EXPECTED_ACTION_API['process_warnings'] = []
 for _cow_mode, _cow_case in EXPECTED_ACTION_API['counter_cow'].items():
     _target_cow_hook = 'counter-cow-' + _cow_mode
@@ -4456,6 +4458,10 @@ def validate_transcript(streams, result):
         ('string', hook.encode('ascii').hex()): mode
         for mode, hook in ACTION_COUNTER_COW_HOOKS.items()
     }
+    action_hook_key_warning_values = {
+        json.dumps(case['hook'], sort_keys=True, separators=(',', ':'))
+        for case in ACTION_HOOK_KEY_WARNING_EXPECTATIONS.values()
+    }
     action_counter_cow_dispatches = {}
     action_counter_cow_reads = {}
 
@@ -4682,7 +4688,7 @@ def validate_transcript(streams, result):
                 if role not in allowed_roles[action]:
                     raise ValueError('boundary uses the wrong argument role')
                 if action == 'array_key':
-                    if (args['access'] not in ('isset', 'nested_isset', 'read', 'write', 'unset', 'increment')
+                    if (args['access'] not in ('isset', 'nested_isset', 'read', 'write', 'unset', 'increment', 'project')
                             or type(args['null_to_zero']) is not bool
                             or args['null_to_zero'] != (role == 'priority')):
                         raise ValueError('array access mode/normalization role differs')
@@ -4791,6 +4797,7 @@ def validate_transcript(streams, result):
                     raise ValueError('supported flag differs')
                 if value['supported']:
                     scalar(value['value'])
+                    context['hook'] = {'original': value['value'], 'key': normalized_scalar_key(value['value'])}
                 elif value['value'] is not None:
                     raise ValueError('unsupported scalar was substituted')
             elif action == 'action_counter_increment':
@@ -4819,11 +4826,15 @@ def validate_transcript(streams, result):
                     _require_exact(value, expected, 'seeded action counter increment')
                     action_seed_dispatches[key] = step + 1
                 else:
+                    if json.dumps(context['hook']['original'], sort_keys=True, separators=(',', ':')) in action_hook_key_warning_values:
+                        # Each warning fixture resets the public PHP counter array
+                        # before dispatch; the shared Rust peer keeps one lifetime.
+                        action_counts[key] = 0
                     if value['type'] != 'int':
                         raise ValueError('action counter increment result is not an integer')
                     expected = action_counts.get(key, 0) + 1
                     if canonical_integer(value['value'], 'action counter increment') != expected:
-                        raise ValueError('action counter increment differs from the measured dispatch count')
+                        raise ValueError(f'action counter increment differs: key={key!r} value={value!r} expected={expected}')
                     action_counts[key] = expected
             elif action == 'action_counter_read':
                 validate_pod(value)
@@ -4979,7 +4990,8 @@ def self_check():
         'api_counts': counts, 'callback_invocations': 0, 'release_effects': 0, 'boundary_effects': 0,
         'argument_release_effects': 0, 'late_resume_rejected': True, 'late_call_rejected': True,
         'continuation_depth_after': 0, 'state_after': 'Finished', 'php_observation': observation,
-        'registry_observation': {'closed': True, 'live_after_close': 0, 'closed_read_rejected': True}}
+        'registry_observation': {'closed': True, 'live_after_close': 0, 'closed_read_rejected': True},
+        'nested_caught_throw': None}
     try:
         EXPECTED_COERCIONS = sample
         EXPECTED_COUNTER_COW = sample_counter_cow
@@ -5125,13 +5137,17 @@ def reject_action_transcripts(streams, result):
     for boundary_index, item in enumerate(source['rust']):
         payload = item.get('payload', {})
         if (item.get('kind') != 'invoke_php' or payload.get('operation') != 'boundary'
-                or payload.get('action') != 'array_key'):
+                or payload.get('action') not in ('array_key', 'hook_scalar')):
             continue
         handle = payload.get('arguments', {}).get('handle')
         if not isinstance(handle, dict):
             continue
         resume = source['php'][resume_index(boundary_index)]
-        original = resume.get('payload', {}).get('completion', {}).get('value', {}).get('original')
+        completion_value = resume.get('payload', {}).get('completion', {}).get('value', {})
+        if payload.get('action') == 'array_key':
+            original = completion_value.get('original')
+        else:
+            original = completion_value.get('value') if completion_value.get('supported') is True else None
         if isinstance(original, dict) and original.get('type') == 'string':
             hook_names_by_handle[handle_id(handle)] = bytes.fromhex(original['hex']).decode('ascii')
 
@@ -5166,7 +5182,7 @@ def reject_action_transcripts(streams, result):
     if (any(len(seeded_increments[hook]) != 2 for hook in seeded_increments)
             or any(len(seeded_reads[hook]) != 8 for hook in ACTION_COUNTER_SEED_HOOKS.values())
             or any(len(seeded_reads[hook]) != 6 for hook in ACTION_COUNTER_DIAGNOSTIC_HOOKS.values())):
-        raise ValueError('seeded action counter boundary inventory is incomplete')
+        raise ValueError('seeded action counter boundary inventory is incomplete: increments=' + str({hook: len(values) for hook, values in seeded_increments.items()}) + ', reads=' + str({hook: len(values) for hook, values in seeded_reads.items()}))
 
     def encode(frames):
         return {direction: b''.join((json.dumps(item, separators=(',', ':')) + '\n').encode()

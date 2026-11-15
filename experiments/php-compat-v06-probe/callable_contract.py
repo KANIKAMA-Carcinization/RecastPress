@@ -1,7 +1,9 @@
 """Closed result/value checks for PHP standard hook API backed by Rust."""
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 
 from wp_action_global_state_poc import expected_observation as _action_global_state_oracle
 from wp_action_counter_cow_poc import expected_oracle as _action_counter_cow_oracle
@@ -105,6 +107,13 @@ def _action_bool_int_alias_cases():
 
 
 ACTION_HOOK_KEY_ALIAS_EXPECTATIONS.update(_action_bool_int_alias_cases())
+_ACTION_HOOK_KEY_RECEIPT = json.loads(
+    (Path(__file__).resolve().parent / 'evidence/wp-action-hook-key-poc-v1.json').read_text(encoding='utf-8')
+)
+ACTION_HOOK_KEY_WARNING_EXPECTATIONS = {
+    key: _ACTION_HOOK_KEY_RECEIPT['oracle']['cases'][key]
+    for key in ('float_5_7_all_only', 'float_5_7_named', 'null_all_only', 'null_named')
+}
 ACTION_COUNTER_COW_HOOKS = {
     mode: 'callable-action-counter-cow-' + mode for mode in ('live', 'snapshot')
 }

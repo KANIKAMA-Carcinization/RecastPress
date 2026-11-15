@@ -3219,6 +3219,101 @@ function callable_program_action_hook_alias_cases(): array
     return $cases;
 }
 
+function callable_program_action_hook_key_warning_cases(): array
+{
+    $view = static function ($value): array {
+        if ($value === null) return ['type' => 'null'];
+        if (is_bool($value)) return ['type' => 'bool', 'value' => $value];
+        if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
+        if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
+        if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        return ['type' => get_debug_type($value)];
+    };
+    $cases = [];
+    foreach ([
+        'float_5_7_all_only' => [5.7, false],
+        'float_5_7_named' => [5.7, true],
+        'null_all_only' => [null, false],
+        'null_named' => [null, true],
+    ] as $label => [$hook, $hasNamedListener]) {
+        $GLOBALS['wp_filter'] = [];
+        $GLOBALS['wp_actions'] = [];
+        $GLOBALS['wp_filters'] = [];
+        $GLOBALS['wp_current_filter'] = [];
+        $events = [];
+        $warnings = [];
+        $hookView = $view($hook);
+        $observe = static function (string $kind, array $args) use (&$events, &$warnings, $hook, $hookView, $view): void {
+            $events[] = [
+                'event' => $kind,
+                'args' => array_map($view, $args),
+                'hook' => $hookView,
+                'current_action' => $view(current_action()),
+                'doing_action' => doing_action(),
+                'did_action' => $view(did_action($hook)),
+                'counter' => $view(array_values($GLOBALS['wp_actions'])[0] ?? null),
+                'warning_count' => count($warnings),
+            ];
+        };
+        set_error_handler(static function (int $severity, string $message) use (&$events, &$warnings, $hookView, $view): bool {
+            $warning = ['index' => count($warnings) + 1, 'severity' => $severity,
+                'message_hex' => bin2hex($message)];
+            $warnings[] = $warning;
+            $events[] = [
+                'event' => 'warning', ...$warning,
+                'hook' => $hookView,
+                'current_action' => $view(current_action()),
+                'doing_action' => doing_action(),
+                'counter' => is_array($GLOBALS['wp_actions'] ?? null)
+                    ? $view(array_values($GLOBALS['wp_actions'])[0] ?? null) : null,
+                'warning_count' => count($warnings),
+            ];
+            return true;
+        });
+        $thrown = null;
+        $after = null;
+        $namedCallback = null;
+        try {
+            $allListener = static function (...$args) use ($observe): void { $observe('all', $args); };
+            add_action('all', $allListener, 1, 99);
+            if ($hasNamedListener) {
+                $namedCallback = static function (...$args) use ($observe): void { $observe('named', $args); };
+                add_action($hook, $namedCallback, 10, 99);
+            }
+            do_action($hook, 'payload');
+        } catch (Throwable $throwable) {
+            $thrown = ['class' => $throwable::class, 'message_hex' => bin2hex($throwable->getMessage())];
+            $events[] = ['event' => 'throwable', ...$thrown];
+        } finally {
+            $after = [
+                'did_action' => $view(did_action($hook)),
+                'current_action' => $view(current_action()),
+                'doing_action' => doing_action(),
+                'stack' => array_map($view, $GLOBALS['wp_current_filter']),
+            ];
+            restore_error_handler();
+        }
+        $cases[$label] = [
+            'label' => $label, 'hook' => $hookView, 'named_listener' => $hasNamedListener,
+            'events' => $events, 'warnings' => $warnings, 'throwable' => $thrown, 'after' => $after,
+        ];
+        set_error_handler(static function (): bool { return true; });
+        try {
+            remove_action('all', $allListener, 1);
+            if ($namedCallback !== null) {
+                remove_action($hook, $namedCallback, 10);
+            }
+        } finally {
+            restore_error_handler();
+        }
+    }
+    $GLOBALS['wp_filter'] = [];
+    $GLOBALS['wp_actions'] = [];
+    $GLOBALS['wp_filters'] = [];
+    $GLOBALS['wp_current_filter'] = [];
+    return $cases;
+}
+
 function callable_program_action_api_cases(): array
 {
     $GLOBALS['wp_filter'] = [];
@@ -3229,6 +3324,7 @@ function callable_program_action_api_cases(): array
     $heapArgumentContinuation = callable_program_action_heap_argument_continuation();
     $singletonObjectCases = callable_program_action_singleton_object_cases();
     $hookKeyAliasCases = callable_program_action_hook_alias_cases();
+    $hookKeyWarningCases = callable_program_action_hook_key_warning_cases();
 
     $hook = 'callable-action-api';
     $events = [];
@@ -3545,6 +3641,7 @@ function callable_program_action_api_cases(): array
         'heap_argument_continuation' => $heapArgumentContinuation,
         'singleton_object_unwrap' => $singletonObjectCases,
         'hook_key_alias' => $hookKeyAliasCases,
+        'hook_key_warning' => $hookKeyWarningCases,
         'no_listener_count' => ['before' => $noListenerBefore, 'after' => $noListenerAfter],
         'counter_seed_diagnostics' => $counterSeedDiagnostics,
         'counter_seed_values' => $counterSeedValues,
