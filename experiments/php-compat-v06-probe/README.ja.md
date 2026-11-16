@@ -96,6 +96,8 @@ publish scenarioはPHPが読み出しごとに発行した観測番号1〜10を�
 
 固定PHP-WASIX artifactによる別の試行は [Wasm profile](wasm/README.md) に記録します。Windowsでのコンパイル失敗、Linuxでの固定oracle、nativeの双方向bridgeはそれぞれ別の証跡です。Linuxでは共通peerを使った実Wasmの正常系・例外系bridgeにも成功しました。WordPress本体、production handle、workerの終了・資源管理全体の受入は残っています。
 
+2026-11-16のCallable Filter単位で、resourceをhook名にしたnamed／all-only dispatchを固定WordPress、native bridge、実PHP-Wasmで照合した。resource IDの整数key投影とE_WARNING順、`all`／named callbackの引数、`current_filter()`、resource identityによる`doing_filter()`、dispatch中にresourceをcloseした後のstack状態を記録する。nativeとWasmでは実行ごとのresource IDをoracle値へ対応付けて比較し、残りの値とwarning順は完全一致を要求する。priority resourceの挙動はこの単位に含めない。
+
 ## 共通ピア実装
 
 Rust の JSONL protocol 処理と Continuation 操作は [共通peer](../../crates/recastpress-wp/examples/v06_bridge_peer/mod.rs) に切り出し、native CLI と PHP-Wasm host の両方が同じ `run_peer` を呼びます。native runner はプロセス間の PHP pipe を中継し、shared peer のフレーム検証と Continuation state machine を実行します。モジュール自体はデッドラインを設定せず、呼び出し側が deadline 付きストリームを提供します。

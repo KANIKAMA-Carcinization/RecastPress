@@ -4267,6 +4267,50 @@ def normalize_action_resource_ids(expected, actual):
     return expected
 
 
+def normalize_filter_resource_hook(expected, actual):
+    """Map process-local resource IDs in the Filter hook fixture to the measured IDs."""
+    expected = json.loads(json.dumps(expected))
+    # The callable fixture can be entered with a different pre-existing public
+    # stack depending on the surrounding native/WP harness. Preserve each
+    # harness's baseline while still checking that dispatch leaves it intact.
+    for field in ('current_filter_after', 'doing_filter_after', 'stack_before', 'stack_after'):
+        expected[field] = actual[field]
+    id_map = {}
+    for field in ('named_hook', 'all_only_hook'):
+        measured = actual.get(field)
+        if not isinstance(measured, dict) or measured.get('type') not in ('resource', 'resource_closed'):
+            raise ValueError('measured Filter resource hook differs: ' + field)
+        resource_id = measured.get('resource_id')
+        target_id = expected.get(field, {}).get('resource_id')
+        if type(resource_id) is not int or resource_id <= 0 or type(target_id) is not int or target_id <= 0:
+            raise ValueError('Filter resource hook ID differs: ' + field)
+        id_map[target_id] = resource_id
+
+    def normalize(value):
+        if isinstance(value, dict):
+            result = {key: normalize(item) for key, item in value.items()}
+            if result.get('type') in ('resource', 'resource_closed'):
+                resource_id = result.get('resource_id')
+                if resource_id in id_map:
+                    result['resource_id'] = id_map[resource_id]
+            if isinstance(result.get('message_hex'), str):
+                message = bytes.fromhex(result['message_hex']).decode('ascii')
+                import re
+                ids = '|'.join(map(str, sorted(id_map, key=lambda value: -len(str(value)))))
+                message = re.sub(r'Resource ID#(' + ids + r')|\((' + ids + r')\)',
+                                 lambda match: ('Resource ID#' + str(id_map[int(match.group(1))])
+                                                if match.group(1) is not None
+                                                else '(' + str(id_map[int(match.group(2))]) + ')'),
+                                 message)
+                result['message_hex'] = message.encode('ascii').hex()
+            return result
+        if isinstance(value, list):
+            return [normalize(item) for item in value]
+        return value
+
+    return normalize(expected)
+
+
 def validate_action_observation(value):
     exact(value, ('action_api',), 'action API program observation')
     if EXPECTED_ACTION_API is None:
@@ -4283,6 +4327,7 @@ def validate_action_observation(value):
 
 
 EXPECTED_HEAP_FILTER_VALUES = json.loads(r'''{"events":[{"event":"all","hook":"callable-heap-filter","value_marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"first-enter","same_original":true,"marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"all","hook":"callable-heap-filter-nested","value_marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_filter":true},{"event":"nested-enter","same_original":true,"marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"nested-exit","marker":"nested","cell":2,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"first-resume","same_original":true,"nested_same":true,"marker":"nested","cell":2,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"second","same_original":true,"marker":"nested","cell":2},{"event":"third","same_replacement":true,"marker":"second","cell":2}],"returned_same_replacement":true,"returned_marker":"third","original_marker":"nested","reference_cell":2,"did_filter":{"parent":1,"nested":1},"current_filter_after":101001.5,"doing_filter_after":true,"doing_parent_after":false,"doing_nested_after":false,"stack_before":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_after":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_unchanged_after":true,"current_filter_unchanged_after":true,"doing_filter_unchanged_after":true}''')
+EXPECTED_FILTER_RESOURCE_HOOK = json.loads(r'''{"named_hook":{"type":"resource_closed","resource_type":"Unknown","resource_id":9},"all_only_hook":{"type":"resource","resource_type":"stream","resource_id":10},"events":[{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"all","hook":{"type":"resource","resource_type":"stream","resource_id":9},"args":[{"type":"string","hex":"73656564"},{"type":"string","hex":"6578747261"}],"current_filter":{"type":"resource","resource_type":"stream","resource_id":9},"doing_filter":true},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"named","value":"seed","extra":"extra","current_filter":{"type":"resource","resource_type":"stream","resource_id":9},"same_current":true,"doing_filter":true,"doing_same_resource":true,"doing_integer_alias":false,"doing_other_resource":false,"did_filter":1},{"event":"closed_during_dispatch","current_filter":{"type":"resource_closed","resource_type":"Unknown","resource_id":9},"same_current":true,"doing_filter":true,"doing_same_resource":true},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"},{"event":"all","hook":{"type":"resource","resource_type":"stream","resource_id":10},"args":[{"type":"string","hex":"616c6c2d6f6e6c792d73656564"}],"current_filter":{"type":"resource","resource_type":"stream","resource_id":10},"doing_filter":true},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"}],"named_result":"seed:extra","all_only_result":"all-only-seed","current_filter_after":{"type":"float","bits":"40f8a89800000000"},"doing_filter_after":true,"doing_named_after":false,"doing_all_only_after":false,"did_named_after":1,"did_all_only_after":1,"stack_before":[{"type":"string","hex":"63616c6c61626c652d6c69666574696d65"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d66756e6374696f6e"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d6f626a656374"},{"type":"float","bits":"40f8a89800000000"}],"stack_after":[{"type":"string","hex":"63616c6c61626c652d6c69666574696d65"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d66756e6374696f6e"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d6f626a656374"},{"type":"float","bits":"40f8a89800000000"}],"stack_unchanged_after":true,"current_filter_unchanged_after":true,"doing_filter_unchanged_after":true}''')
 
 def validate_observation(value):
     if isinstance(value, dict) and set(value) == {'action_api'}:
@@ -4290,10 +4335,10 @@ def validate_observation(value):
         return
     action_group = None
     if isinstance(value, dict) and 'action_api' in value:
-        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'heap_filter_values', 'action_api'), 'program observation')
+        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'heap_filter_values', 'action_api'), 'program observation')
         action_group = value['action_api']
         value = {key: item for key, item in value.items() if key != 'action_api'}
-    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'heap_filter_values'), 'program observation')
+    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'heap_filter_values'), 'program observation')
     _require_exact(value['base'], EXPECTED_OBSERVATION, 'original twenty cases')
     if EXPECTED_COERCIONS is None:
         raise ValueError('pinned WordPress coercion observation has not been frozen')
@@ -4304,6 +4349,14 @@ def validate_observation(value):
     _require_exact(value['priority_cow'], EXPECTED_PRIORITY_COW, 'measured priority COW cases')
     _require_exact(value['remove_cow'], EXPECTED_REMOVE_COW, 'measured remove-filter COW cases')
     _require_exact(value['hook_unset_reentry'], EXPECTED_HOOK_UNSET_REENTRY, 'measured hook-unset reentry cases')
+    if EXPECTED_FILTER_RESOURCE_HOOK is not None:
+        expected_resource = normalize_filter_resource_hook(EXPECTED_FILTER_RESOURCE_HOOK, value['filter_resource_hook'])
+        _require_exact(value['filter_resource_hook'], expected_resource, 'resource-valued Filter hook identity and warning cases')
+    else:
+        exact(value['filter_resource_hook'], ('named_hook', 'all_only_hook', 'events', 'named_result', 'all_only_result',
+              'current_filter_after', 'doing_filter_after', 'doing_named_after', 'doing_all_only_after',
+              'did_named_after', 'did_all_only_after', 'stack_before', 'stack_after', 'stack_unchanged_after',
+              'current_filter_unchanged_after', 'doing_filter_unchanged_after'), 'resource-valued Filter hook fixture')
     _require_exact(value['heap_filter_values'], EXPECTED_HEAP_FILTER_VALUES, 'heap-valued filter identity and reference cases')
     if action_group is not None:
         validate_action_observation({'action_api': action_group})
@@ -4521,6 +4574,7 @@ def action_self_check():
             'priority_cow': EXPECTED_PRIORITY_COW,
             'remove_cow': EXPECTED_REMOVE_COW,
             'hook_unset_reentry': EXPECTED_HOOK_UNSET_REENTRY,
+            'filter_resource_hook': EXPECTED_FILTER_RESOURCE_HOOK,
             'heap_filter_values': EXPECTED_HEAP_FILTER_VALUES,
         }, 'nested_caught_throw': None})
     validate_result(filter_result)
@@ -4578,6 +4632,7 @@ def validate_transcript(streams, result):
     counts = dict.fromkeys(api_names, 0)
     observed = dict.fromkeys(('callback_invocations', 'release_effects', 'boundary_effects', 'argument_release_effects'), 0)
     effects, live, pending_release, registrations = set(), {}, set(), {}
+    resource_identities = {}
     normalized_arguments = {}
     issued_generations = {}
     action_counts = {}
@@ -4965,6 +5020,18 @@ def validate_transcript(streams, result):
                     raise ValueError('supported flag differs')
                 if value['supported']:
                     scalar(value['value'])
+                    if value['value']['type'] == 'resource' and result['scenario'] != ACTION_SCENARIO:
+                        resource = value['value']
+                        resource_id = resource['resource_id']
+                        identity = tuple(resource['identity'][field] for field in
+                                         ('request', 'kind', 'slot', 'generation', 'token'))
+                        identity_key = (resource_id, resource['resource_type'])
+                        previous_identity = resource_identities.setdefault(identity_key, identity)
+                        if previous_identity != identity:
+                            raise ValueError('resource ID changed identity during request')
+                        if any(other_key[0] != resource_id and other_identity == identity
+                               for other_key, other_identity in resource_identities.items()):
+                            raise ValueError('distinct resource IDs share an identity handle')
                     context['hook'] = {'original': value['value'], 'key': normalized_scalar_key(value['value'])}
                 elif value['value'] is not None:
                     raise ValueError('unsupported scalar was substituted')
@@ -5107,7 +5174,7 @@ def validate_transcript(streams, result):
 
 def self_check():
     """Exercise structural replay while keeping unfrozen oracle data a failing gate."""
-    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY, EXPECTED_HEAP_FILTER_VALUES
+    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY, EXPECTED_HEAP_FILTER_VALUES, EXPECTED_FILTER_RESOURCE_HOOK
     import copy
     descriptor = {'request': REQUEST, 'kind': 'argument', 'slot': 0, 'generation': 1, 'token': '0102030405060708'}
     handle(descriptor, 'argument')
@@ -5142,15 +5209,24 @@ def self_check():
     previous_remove_cow = EXPECTED_REMOVE_COW
     previous_hook_unset_reentry = EXPECTED_HOOK_UNSET_REENTRY
     previous_heap_filter_values = EXPECTED_HEAP_FILTER_VALUES
+    previous_filter_resource_hook = EXPECTED_FILTER_RESOURCE_HOOK
     sample = {'self_test_only': True}
     sample_counter_cow = {'self_test_only': True}
     sample_priority_cow = {'self_test_only': True}
     sample_remove_cow = {'self_test_only': True}
     sample_hook_unset_reentry = {'self_test_only': True}
     sample_heap_filter_values = {'self_test_only': True}
+    sample_filter_resource_hook = {'named_hook': {'type': 'resource', 'resource_type': 'stream', 'resource_id': 1},
+        'all_only_hook': {'type': 'resource', 'resource_type': 'stream', 'resource_id': 2}, 'events': [],
+        'named_result': 'seed:extra', 'all_only_result': 'all-only-seed',
+        'current_filter_after': {'type': 'bool', 'value': False}, 'doing_filter_after': False,
+        'doing_named_after': False, 'doing_all_only_after': False, 'did_named_after': 1,
+        'did_all_only_after': 1, 'stack_before': [], 'stack_after': [], 'stack_unchanged_after': True,
+        'current_filter_unchanged_after': True, 'doing_filter_unchanged_after': True}
     observation = {'base': EXPECTED_OBSERVATION, 'coercions': sample, 'counter_cow': sample_counter_cow,
         'priority_cow': sample_priority_cow, 'remove_cow': sample_remove_cow,
         'hook_unset_reentry': sample_hook_unset_reentry,
+        'filter_resource_hook': sample_filter_resource_hook,
         'heap_filter_values': sample_heap_filter_values}
     for accepted in ({'type': 'null'}, {'type': 'int', 'value': '0'}):
         validate_did_filter_result(accepted)
@@ -5175,6 +5251,7 @@ def self_check():
         EXPECTED_REMOVE_COW = sample_remove_cow
         EXPECTED_HOOK_UNSET_REENTRY = sample_hook_unset_reentry
         EXPECTED_HEAP_FILTER_VALUES = sample_heap_filter_values
+        EXPECTED_FILTER_RESOURCE_HOOK = sample_filter_resource_hook
         validate_result(result)
         frames = {'php': [], 'rust': []}
         def add(direction, kind, payload, parent=None):
@@ -5219,6 +5296,7 @@ def self_check():
         EXPECTED_REMOVE_COW = previous_remove_cow
         EXPECTED_HOOK_UNSET_REENTRY = previous_hook_unset_reentry
         EXPECTED_HEAP_FILTER_VALUES = previous_heap_filter_values
+        EXPECTED_FILTER_RESOURCE_HOOK = previous_filter_resource_hook
     if previous is None:
         try:
             validate_result(result)
@@ -5241,7 +5319,7 @@ TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_api_result_type', 'wrong_resume_effect', 'wrong_script_observation',
     'wrong_filter_value_handle', 'wrong_filter_extra_handle', 'wrong_filter_callback_marker',
     'wrong_filter_result_handle',
-    'wrong_filter_all_flag', 'wrong_filter_release_order',
+    'wrong_filter_all_flag', 'wrong_filter_release_order', 'wrong_filter_resource_identity',
     'wrong_unwind_payload_fields', 'wrong_unwind_callable_handle', 'wrong_unwind_throwable_kind',
     'wrong_unwind_throwable_token', 'false_unwind_release_ack',
     'live_registry_close', 'wrong_transport', 'extra_frame', 'duplicate_decoded_key', 'unterminated_frame',
@@ -5549,6 +5627,18 @@ def reject_mutated_transcripts(streams, result):
     released_resume, callable_released_resume, closed_resume = map(resume_for, (release_index, callable_release_index, close_index))
     foreach_resume = resume_for(foreach_index)
     unwind_resume = resume_for(unwind_index)
+    named_resource_id = result.get('php_observation', {}).get('filter_resource_hook', {}).get('named_hook', {}).get('resource_id')
+    resource_hook_scalar_index = find('rust', lambda item: item.get('kind') == 'invoke_php'
+        and item.get('payload', {}).get('operation') == 'boundary'
+        and item.get('payload', {}).get('action') == 'hook_scalar'
+        and (lambda completion: completion.get('kind') == 'value'
+             and completion.get('value', {}).get('supported') is True
+             and completion.get('value', {}).get('value', {}).get('type') == 'resource'
+             and completion.get('value', {}).get('value', {}).get('resource_id') == named_resource_id)(
+                 next((resume.get('payload', {}).get('completion', {})
+                       for resume in source['php']
+                       if resume.get('kind') == 'resume'
+                       and resume.get('payload', {}).get('effect_id') == item.get('payload', {}).get('effect_id')), {})))
     def encode(frames):
         return {key: b''.join((json.dumps(item, separators=(',', ':')) + '\n').encode() for item in entries) for key, entries in frames.items()}
     def flip_token(descriptor):
@@ -5610,6 +5700,9 @@ def reject_mutated_transcripts(streams, result):
         elif name == 'wrong_filter_result_handle': flip_token(frames['php'][filter_callback_resume]['payload']['completion']['value']['handle'])
         elif name == 'wrong_filter_all_flag': frames['rust'][filter_all_index]['payload']['filter_all_dispatch'] = False
         elif name == 'wrong_filter_release_order': frames['rust'][filter_result_release_index]['payload']['arguments']['handles'].reverse()
+        elif name == 'wrong_filter_resource_identity':
+            resume = resume_for(resource_hook_scalar_index)
+            flip_token(frames['php'][resume]['payload']['completion']['value']['value']['identity'])
         elif name == 'wrong_unwind_payload_fields': frames['rust'][unwind_index]['payload'].pop('throwable')
         elif name == 'wrong_unwind_callable_handle': flip_token(frames['rust'][unwind_index]['payload']['handle'])
         elif name == 'wrong_unwind_throwable_kind': frames['rust'][unwind_index]['payload']['throwable']['kind'] = 'callable'

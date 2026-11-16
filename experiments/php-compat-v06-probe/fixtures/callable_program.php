@@ -3997,8 +3997,115 @@ function callable_program_run(): array
         'priority_cow' => $priorityCow,
         'remove_cow' => callable_program_remove_cow_cases(),
         'hook_unset_reentry' => callable_program_hook_unset_cases(),
+        'filter_resource_hook' => callable_program_filter_resource_hook(),
         'heap_filter_values' => callable_program_heap_filter_values(),
     ];
+}
+
+function callable_program_filter_resource_hook(): array
+{
+    $namedHook = fopen('php://memory', 'r+');
+    $allOnlyHook = fopen('php://memory', 'r+');
+    if (!is_resource($namedHook) || !is_resource($allOnlyHook)) {
+        throw new RuntimeException('callable_filter_resource_hook_open');
+    }
+    $view = static function ($value): array {
+        if ($value === false) return ['type' => 'bool', 'value' => false];
+        if (is_bool($value)) return ['type' => 'bool', 'value' => $value];
+        if (is_int($value)) return ['type' => 'int', 'value' => (string) $value];
+        if (is_float($value)) return ['type' => 'float', 'bits' => bin2hex(pack('E', $value))];
+        if (is_string($value)) return ['type' => 'string', 'hex' => bin2hex($value)];
+        if (is_resource($value)) return ['type' => 'resource', 'resource_type' => get_resource_type($value), 'resource_id' => get_resource_id($value)];
+        if (get_debug_type($value) === 'resource (closed)') return ['type' => 'resource_closed', 'resource_type' => 'Unknown', 'resource_id' => get_resource_id($value)];
+        return ['type' => get_debug_type($value)];
+    };
+    $events = [];
+    $stackBefore = array_values($GLOBALS['wp_current_filter'] ?? []);
+    $currentBefore = current_filter();
+    $doingBefore = doing_filter();
+    set_error_handler(static function (int $severity, string $message) use (&$events): bool {
+        $events[] = ['event' => 'warning', 'severity' => $severity, 'message_hex' => bin2hex($message)];
+        return true;
+    });
+    try {
+        $all = static function (...$args) use (&$events, $view, $namedHook, $allOnlyHook): void {
+            $hook = $args[0] ?? null;
+            if ($hook !== $namedHook && $hook !== $allOnlyHook) {
+                return;
+            }
+            $events[] = [
+                'event' => 'all',
+                'hook' => $view($hook),
+                'args' => array_map($view, array_slice($args, 1)),
+                'current_filter' => $view(current_filter()),
+                'doing_filter' => doing_filter(),
+            ];
+        };
+        add_filter('all', $all, 1, 99);
+        $named = static function ($value, $extra) use (&$events, $view, $namedHook): string {
+            $resourceId = get_resource_id($namedHook);
+            $sameCurrent = current_filter() === $namedHook;
+            $other = fopen('php://memory', 'r+');
+            if (!is_resource($other)) {
+                throw new RuntimeException('callable_filter_resource_other_open');
+            }
+            $doingOther = doing_filter($other);
+            fclose($other);
+            $events[] = [
+                'event' => 'named',
+                'value' => $value,
+                'extra' => $extra,
+                'current_filter' => $view(current_filter()),
+                'same_current' => $sameCurrent,
+                'doing_filter' => doing_filter(),
+                'doing_same_resource' => doing_filter($namedHook),
+                'doing_integer_alias' => doing_filter($resourceId),
+                'doing_other_resource' => $doingOther,
+                'did_filter' => did_filter($namedHook),
+            ];
+            fclose($namedHook);
+            $events[] = [
+                'event' => 'closed_during_dispatch',
+                'current_filter' => $view(current_filter()),
+                'same_current' => current_filter() === $namedHook,
+                'doing_filter' => doing_filter(),
+                'doing_same_resource' => doing_filter($namedHook),
+            ];
+            return $value . ':' . $extra;
+        };
+        add_filter($namedHook, $named, 10, 2);
+        $namedResult = apply_filters($namedHook, 'seed', 'extra');
+        $allOnlyResult = apply_filters($allOnlyHook, 'all-only-seed');
+        $stackAfter = array_values($GLOBALS['wp_current_filter'] ?? []);
+        return [
+            'named_hook' => $view($namedHook),
+            'all_only_hook' => $view($allOnlyHook),
+            'events' => $events,
+            'named_result' => $namedResult,
+            'all_only_result' => $allOnlyResult,
+            'current_filter_after' => $view(current_filter()),
+            'doing_filter_after' => doing_filter(),
+            'doing_named_after' => doing_filter($namedHook),
+            'doing_all_only_after' => doing_filter($allOnlyHook),
+            'did_named_after' => did_filter($namedHook),
+            'did_all_only_after' => did_filter($allOnlyHook),
+            'stack_before' => array_map($view, $stackBefore),
+            'stack_after' => array_map($view, $stackAfter),
+            'stack_unchanged_after' => $stackAfter === $stackBefore,
+            'current_filter_unchanged_after' => current_filter() === $currentBefore,
+            'doing_filter_unchanged_after' => doing_filter() === $doingBefore,
+        ];
+    } finally {
+        restore_error_handler();
+        $GLOBALS['wp_filter'] = [];
+        $GLOBALS['wp_filters'] = [];
+        if (is_resource($namedHook)) {
+            fclose($namedHook);
+        }
+        if (is_resource($allOnlyHook)) {
+            fclose($allOnlyHook);
+        }
+    }
 }
 
 function callable_program_heap_filter_values(): array

@@ -10,7 +10,8 @@ from pathlib import Path
 import sys
 import run_check as native
 import wp_hooks_oracle as hooks
-from callable_v2_contract import validate_observation, validate_action_observation, normalize_action_resource_ids
+from callable_v2_contract import (validate_observation, validate_action_observation,
+                                  normalize_action_resource_ids, normalize_filter_resource_hook)
 from hook_contract import _require_exact, _unique_frame_object
 
 ROOT, HERE = hooks.ROOT, hooks.HERE
@@ -125,7 +126,7 @@ def record():
         'source_sha256_before': before, 'source_sha256_after': after,
         'owned_child': native.CHILD_RUNS[-2], 'action_owned_child': native.CHILD_RUNS[-1],
         'raw_capture': captures, 'oracle': oracle, 'action_oracle': action_oracle,
-        'scope': 'Existing 87 filter observations plus the bounded heap_filter_values fixture and isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The heap case measures object identity across priorities and nested apply_filters, a reference-cell extra argument, final replacement-object identity, and raw hook-stack equality at entry and exit. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.'}
+        'scope': 'Existing filter observations plus bounded resource-valued hook names and heap-valued Filter arguments, together with the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The resource case measures array-key integer projection, warning order, all/named callback state, strict doing_filter identity and current_filter after closing the dispatched resource. The heap case measures identity across priorities and nested apply_filters plus reference-cell mutation. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.'}
     RECEIPT.parent.mkdir(parents=True, exist_ok=True)
     RECEIPT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     verify_receipt()
@@ -144,7 +145,10 @@ def bridge_comparison(report):
     wasm_case = wasm['host_result']['case']['peer']
     filter_cases = {key: item for key, item in report['oracle']['cases'].items() if key != 'action_api'}
     for label, result in (('native', native_case), ('wasm', wasm_case)):
-        _require_exact(result['php_observation'], filter_cases, label + ' callable WP observations')
+        expected = json.loads(json.dumps(filter_cases))
+        expected['filter_resource_hook'] = normalize_filter_resource_hook(
+            expected['filter_resource_hook'], result['php_observation']['filter_resource_hook'])
+        _require_exact(result['php_observation'], expected, label + ' callable WP observations')
     return {'native_receipt': native.RECEIPT.relative_to(ROOT).as_posix(), 'native_receipt_sha256': digest(native.RECEIPT),
         'wasm_receipt': wasm_path.relative_to(ROOT).as_posix(), 'wasm_receipt_sha256': digest(wasm_path),
         'matched_cases': (
@@ -161,6 +165,10 @@ def bridge_comparison(report):
                for case in cases]
             + ['hook_unset_reentry.' + case
                for case in report['oracle']['cases']['hook_unset_reentry']]
+            + ['filter_resource_hook.' + case
+               for case in report['oracle']['cases']['filter_resource_hook']]
+            + ['heap_filter_values.' + case
+               for case in report['oracle']['cases']['heap_filter_values']]
         ), 'all_program_observations_matched': True}
 
 

@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-15T20:40:40.532430+00:00",
+  "observed_at_utc": "2026-11-16T11:43:30.600457+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -170,17 +170,17 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "88d58b0d2824fd0b61eaa7944176332e6a9292c33b9f3b29c54bf926b044dd9c",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "704573aa196de0f6e69a448a8d6c16b3fac677ab7b04a1f9caa3eb0d862b36a3",
+    "experiments/php-compat-v06-probe/README.ja.md": "fc44b476744b62ada44978ca740a2bb739090819bf6518635a60325c0c6aa50d",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "cb4ea0a9805786a3aa49ddffca62fc28ab996516ec704ec1edae49cec912af72",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2d92ac0b92b5ceafd9abcd07d1fba2e4e62a2794dde54ebabea9863e60d056a6",
     "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "ae581dc6bd24742ab37c65e07ac4cb9d28aa08934b40bf564b597ec4f0847d38",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "aeb4a4e7142f1c8897219fb5fe826c0cb5231a9bf6841b825165788d3e97fe4c",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "516f0b69e9a518842f778d51053f1945ac47c2144123e93ef3f9b2f37a716690",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "723a523ee443c03d027f2d7e9193621c63fdee683a1c389dd84b60c44ab1b7b7",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "c022b40f4169bb884019707b43134112ea4f48f4fd69b7d06606775cb162ed5a",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "7a0148c10b0aa720f607062c42e1cde4af99e5ad2b4f8de88e90148b054d332e",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -204,7 +204,7 @@
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "0a5d8798fe2939a934161dedb57e9abefd166060498ec5157d2519aeac1b1f21",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "4391c440af216e251f1182c9070973eb0c1ab2124bbea900f12934c79f9e2e48",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ea3932c01e319449a18891e244cf83b677ff32422436229784dc4538ef55170c",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
@@ -375,17 +375,17 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "88d58b0d2824fd0b61eaa7944176332e6a9292c33b9f3b29c54bf926b044dd9c",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "704573aa196de0f6e69a448a8d6c16b3fac677ab7b04a1f9caa3eb0d862b36a3",
+    "experiments/php-compat-v06-probe/README.ja.md": "fc44b476744b62ada44978ca740a2bb739090819bf6518635a60325c0c6aa50d",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "cb4ea0a9805786a3aa49ddffca62fc28ab996516ec704ec1edae49cec912af72",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2d92ac0b92b5ceafd9abcd07d1fba2e4e62a2794dde54ebabea9863e60d056a6",
     "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "ae581dc6bd24742ab37c65e07ac4cb9d28aa08934b40bf564b597ec4f0847d38",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "aeb4a4e7142f1c8897219fb5fe826c0cb5231a9bf6841b825165788d3e97fe4c",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "516f0b69e9a518842f778d51053f1945ac47c2144123e93ef3f9b2f37a716690",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
     "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "723a523ee443c03d027f2d7e9193621c63fdee683a1c389dd84b60c44ab1b7b7",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "c022b40f4169bb884019707b43134112ea4f48f4fd69b7d06606775cb162ed5a",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "7a0148c10b0aa720f607062c42e1cde4af99e5ad2b4f8de88e90148b054d332e",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -409,39 +409,39 @@
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "0a5d8798fe2939a934161dedb57e9abefd166060498ec5157d2519aeac1b1f21",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "4391c440af216e251f1182c9070973eb0c1ab2124bbea900f12934c79f9e2e48",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ea3932c01e319449a18891e244cf83b677ff32422436229784dc4538ef55170c",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 23952,
+    "pid": 29024,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 35068,
+    "pid": 35572,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T204040.509622Z-stdout.bin",
-      "bytes": 122535,
-      "sha256": "e51e81bd89699caace637a6217882aa6a1905fbe7e79cc1f59d871f8ebae46e2"
+      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-stdout.bin",
+      "bytes": 126450,
+      "sha256": "adb3cca2f72151c3dfcdfa315635fed7a62718464ac7606d3411a46a55f48587"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T204040.509622Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T204040.509622Z-action_stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-action_stdout.bin",
       "bytes": 87294,
       "sha256": "c4180b75023d189cadaf22038e51e7da0e7c176e572296f4417ce10cc402434b"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261115T204040.509622Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -7130,6 +7130,201 @@
           "apply_value": "seed",
           "apply_trace": []
         }
+      },
+      "filter_resource_hook": {
+        "named_hook": {
+          "type": "resource_closed",
+          "resource_type": "Unknown",
+          "resource_id": 9
+        },
+        "all_only_hook": {
+          "type": "resource",
+          "resource_type": "stream",
+          "resource_id": 10
+        },
+        "events": [
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "all",
+            "hook": {
+              "type": "resource",
+              "resource_type": "stream",
+              "resource_id": 9
+            },
+            "args": [
+              {
+                "type": "string",
+                "hex": "73656564"
+              },
+              {
+                "type": "string",
+                "hex": "6578747261"
+              }
+            ],
+            "current_filter": {
+              "type": "resource",
+              "resource_type": "stream",
+              "resource_id": 9
+            },
+            "doing_filter": true
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"
+          },
+          {
+            "event": "named",
+            "value": "seed",
+            "extra": "extra",
+            "current_filter": {
+              "type": "resource",
+              "resource_type": "stream",
+              "resource_id": 9
+            },
+            "same_current": true,
+            "doing_filter": true,
+            "doing_same_resource": true,
+            "doing_integer_alias": false,
+            "doing_other_resource": false,
+            "did_filter": 1
+          },
+          {
+            "event": "closed_during_dispatch",
+            "current_filter": {
+              "type": "resource_closed",
+              "resource_type": "Unknown",
+              "resource_id": 9
+            },
+            "same_current": true,
+            "doing_filter": true,
+            "doing_same_resource": true
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+          },
+          {
+            "event": "all",
+            "hook": {
+              "type": "resource",
+              "resource_type": "stream",
+              "resource_id": 10
+            },
+            "args": [
+              {
+                "type": "string",
+                "hex": "616c6c2d6f6e6c792d73656564"
+              }
+            ],
+            "current_filter": {
+              "type": "resource",
+              "resource_type": "stream",
+              "resource_id": 10
+            },
+            "doing_filter": true
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"
+          }
+        ],
+        "named_result": "seed:extra",
+        "all_only_result": "all-only-seed",
+        "current_filter_after": {
+          "type": "float",
+          "bits": "40f8a89800000000"
+        },
+        "doing_filter_after": true,
+        "doing_named_after": false,
+        "doing_all_only_after": false,
+        "did_named_after": 1,
+        "did_all_only_after": 1,
+        "stack_before": [
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d6c69666574696d65"
+          },
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d696e76616c69642d66756e6374696f6e"
+          },
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d696e76616c69642d6f626a656374"
+          },
+          {
+            "type": "float",
+            "bits": "40f8a89800000000"
+          }
+        ],
+        "stack_after": [
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d6c69666574696d65"
+          },
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d696e76616c69642d66756e6374696f6e"
+          },
+          {
+            "type": "string",
+            "hex": "63616c6c61626c652d696e76616c69642d6f626a656374"
+          },
+          {
+            "type": "float",
+            "bits": "40f8a89800000000"
+          }
+        ],
+        "stack_unchanged_after": true,
+        "current_filter_unchanged_after": true,
+        "doing_filter_unchanged_after": true
       },
       "heap_filter_values": {
         "events": [
@@ -18623,13 +18818,13 @@
       }
     }
   },
-  "scope": "Existing 87 filter observations plus the bounded heap_filter_values fixture and isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The heap case measures object identity across priorities and nested apply_filters, a reference-cell extra argument, final replacement-object identity, and raw hook-stack equality at entry and exit. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.",
+  "scope": "Existing filter observations plus bounded resource-valued hook names and heap-valued Filter arguments, together with the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The resource case measures array-key integer projection, warning order, all/named callback state, strict doing_filter identity and current_filter after closing the dispatched resource. The heap case measures identity across priorities and nested apply_filters plus reference-cell mutation. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-15T20:40:48.645372+00:00",
+    "observed_at_utc": "2026-11-16T12:21:28.493539+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "f0d8cd7d6b5d5b1e4414de8ff17cd18849885b78a966598e2a352d402e5d9d37",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261115T201908.938341Z-success.json",
-    "wasm_receipt_sha256": "951546041fcd28797ecad5b23791a96831a44444e983a716e712295104dd787e",
+    "native_receipt_sha256": "f3504a41c7ce7b43b680c555a5e73fb1c7b108612dc14278951e6dd3a9b00f8d",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261116T115139.492882Z-success.json",
+    "wasm_receipt_sha256": "01d5b5b8f376fedf944bc0b6cef919ecec1ba3ce70d6b020d9de7bfbe5166018",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -18717,16 +18912,47 @@
       "remove_cow.priority_read_unset.unset_warning_adds_replacement",
       "hook_unset_reentry.control",
       "hook_unset_reentry.inject_on_hook_unset",
-      "hook_unset_reentry.throw_during_finally"
+      "hook_unset_reentry.throw_during_finally",
+      "filter_resource_hook.named_hook",
+      "filter_resource_hook.all_only_hook",
+      "filter_resource_hook.events",
+      "filter_resource_hook.named_result",
+      "filter_resource_hook.all_only_result",
+      "filter_resource_hook.current_filter_after",
+      "filter_resource_hook.doing_filter_after",
+      "filter_resource_hook.doing_named_after",
+      "filter_resource_hook.doing_all_only_after",
+      "filter_resource_hook.did_named_after",
+      "filter_resource_hook.did_all_only_after",
+      "filter_resource_hook.stack_before",
+      "filter_resource_hook.stack_after",
+      "filter_resource_hook.stack_unchanged_after",
+      "filter_resource_hook.current_filter_unchanged_after",
+      "filter_resource_hook.doing_filter_unchanged_after",
+      "heap_filter_values.events",
+      "heap_filter_values.returned_same_replacement",
+      "heap_filter_values.returned_marker",
+      "heap_filter_values.original_marker",
+      "heap_filter_values.reference_cell",
+      "heap_filter_values.did_filter",
+      "heap_filter_values.current_filter_after",
+      "heap_filter_values.doing_filter_after",
+      "heap_filter_values.doing_parent_after",
+      "heap_filter_values.doing_nested_after",
+      "heap_filter_values.stack_before",
+      "heap_filter_values.stack_after",
+      "heap_filter_values.stack_unchanged_after",
+      "heap_filter_values.current_filter_unchanged_after",
+      "heap_filter_values.doing_filter_unchanged_after"
     ],
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-15T20:41:51.972252+00:00",
+    "observed_at_utc": "2026-11-16T12:22:36.413620+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "f0d8cd7d6b5d5b1e4414de8ff17cd18849885b78a966598e2a352d402e5d9d37",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261115T202929.075904Z-success.json",
-    "wasm_receipt_sha256": "85d690bfeb6d12e3e6df2d970c13ae580011f200aae8d6b1e790911359f564db",
+    "native_receipt_sha256": "f3504a41c7ce7b43b680c555a5e73fb1c7b108612dc14278951e6dd3a9b00f8d",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261116T120739.776957Z-success.json",
+    "wasm_receipt_sha256": "d1cd11458e3170bce3d28068fbb39a5b91e10a55d438fb9f1921145b8392aaf5",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",

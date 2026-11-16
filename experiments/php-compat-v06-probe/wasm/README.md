@@ -222,14 +222,14 @@ Historical 2026-11-14 source-bound receipts (116-input callable snapshot; 125 in
 |Action|[passed](evidence/actions-20261114T063156.902521Z-success.json)|116|
 |Uncaught Action|[passed](evidence/hooks-uncaught-20261114T064823.023405Z-success.json)|125|
 
-Current-source profile receipts (2026-11-16) after Action callback-mutation parity, resource-ID comparator normalization, and the 128-cycle resource lifecycle probe. All seven profiles were rerun and verified; 119 inputs are bound except 125 for Uncaught Action. Native/Wasm observations match the fixed WordPress oracle, including Action callback mutation and PHP resource-ID lifecycle behavior.
+Current-source profile receipts (2026-11-16) after Action callback-mutation parity, resource-ID comparator normalization, the 128-cycle resource lifecycle probe, and the resource-valued Filter hook unit. All seven profiles were rerun and verified; 119 inputs are bound except 125 for Uncaught Action. The Callable profile now checks resource array-key projection, warning order, strict identity in `doing_filter()`, closed-resource visibility during dispatch, and unchanged outer stack state.
 
 |Profile|Receipt|Bound inputs|
 |---|---|---:|
-|Bridge|[passed](evidence/bridge-20261115T190413.314769Z-success.json)|119|
-|Publish|[passed](evidence/publish-20261115T190559.920383Z-success.json)|119|
-|Handles|[passed](evidence/handles-20261115T190746.458694Z-success.json)|119|
-|Hooks|[passed](evidence/hooks-20261115T190933.793620Z-success.json)|119|
-|Callable Filter|[passed](evidence/callables-20261115T191209.495158Z-success.json)|119|
-|Action|[passed](evidence/actions-20261115T190147.417400Z-success.json)|119|
-|Uncaught Action|[passed](evidence/hooks-uncaught-20261115T191409.793327Z-success.json)|125|
+|Bridge|[passed](evidence/bridge-20261116T121321.469233Z-success.json)|119|
+|Publish|[passed](evidence/publish-20261116T115637.183884Z-success.json)|119|
+|Handles|[passed](evidence/handles-20261116T120125.955593Z-success.json)|119|
+|Hooks|[passed](evidence/hooks-20261116T120422.768532Z-success.json)|119|
+|Callable Filter|[passed](evidence/callables-20261116T115139.492882Z-success.json)|119|
+|Action|[passed](evidence/actions-20261116T120739.776957Z-success.json)|119|
+|Uncaught Action|[passed](evidence/hooks-uncaught-20261116T121050.157017Z-success.json)|125|
