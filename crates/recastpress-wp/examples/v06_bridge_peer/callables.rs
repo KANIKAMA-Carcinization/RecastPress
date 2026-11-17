@@ -136,15 +136,23 @@ fn parse_pod(value: &Value, label: &str) -> Result<PhpValue, String> {
             Ok(PhpValue::Bytes(decode_hex(string(value, "hex")?, label)?))
         }
         "resource" => {
-            exact_keys(value, &["type", "handle", "identity", "resource_type", "resource_id"], label)?;
+            exact_keys(
+                value,
+                &["type", "handle", "identity", "resource_type", "resource_id"],
+                label,
+            )?;
             let handle = parse_handle(
-                value.get("handle").ok_or_else(|| format!("{label}_handle_missing"))?,
+                value
+                    .get("handle")
+                    .ok_or_else(|| format!("{label}_handle_missing"))?,
                 RequestGeneration::new(REQUEST_GENERATION),
                 PhpHandleKind::Argument,
                 label,
             )?;
             let identity = parse_handle(
-                value.get("identity").ok_or_else(|| format!("{label}_identity_missing"))?,
+                value
+                    .get("identity")
+                    .ok_or_else(|| format!("{label}_identity_missing"))?,
                 RequestGeneration::new(REQUEST_GENERATION),
                 PhpHandleKind::Argument,
                 label,
@@ -156,9 +164,17 @@ fn parse_pod(value: &Value, label: &str) -> Result<PhpValue, String> {
             if resource_type.is_empty() {
                 return Err(format!("{label}_resource_type"));
             }
-            let resource_id = value.get("resource_id").and_then(Value::as_i64)
-                .filter(|id| *id > 0).ok_or_else(|| format!("{label}_resource_id"))?;
-            Ok(PhpValue::Resource { handle, identity, resource_type, resource_id })
+            let resource_id = value
+                .get("resource_id")
+                .and_then(Value::as_i64)
+                .filter(|id| *id > 0)
+                .ok_or_else(|| format!("{label}_resource_id"))?;
+            Ok(PhpValue::Resource {
+                handle,
+                identity,
+                resource_type,
+                resource_id,
+            })
         }
         "array" => {
             exact_keys(value, &["type", "entries"], label)?;
@@ -222,7 +238,12 @@ fn pod(value: &PhpValue, label: &str) -> Result<Value, String> {
             "bits":encode_hex(&value.to_bits().to_be_bytes()),
         }),
         PhpValue::Bytes(value) => json!({"type":"string","hex":encode_hex(value)}),
-        PhpValue::Resource { handle, identity, resource_type, resource_id } => json!({
+        PhpValue::Resource {
+            handle,
+            identity,
+            resource_type,
+            resource_id,
+        } => json!({
             "type":"resource", "handle":descriptor(*handle), "identity":descriptor(*identity),
             "resource_type":resource_type, "resource_id":resource_id,
         }),
@@ -253,10 +274,20 @@ fn hook_scalar_from_value(value: PhpValue, label: &str) -> Result<HookScalar, St
         PhpValue::Integer(value) => Ok(HookScalar::Integer(value)),
         PhpValue::Float(value) => Ok(HookScalar::Float(value)),
         PhpValue::Bytes(value) => Ok(HookScalar::Bytes(value)),
-        PhpValue::Resource { handle, identity, resource_type, resource_id } => Ok(HookScalar::Resource {
-            handle, identity, resource_type, resource_id,
+        PhpValue::Resource {
+            handle,
+            identity,
+            resource_type,
+            resource_id,
+        } => Ok(HookScalar::Resource {
+            handle,
+            identity,
+            resource_type,
+            resource_id,
         }),
-        PhpValue::Array(_) | PhpValue::Unsupported | PhpValue::ArgumentHandle(_) => Err(format!("{label}_not_scalar")),
+        PhpValue::Array(_) | PhpValue::Unsupported | PhpValue::ArgumentHandle(_) => {
+            Err(format!("{label}_not_scalar"))
+        }
     }
 }
 
@@ -332,7 +363,12 @@ fn same_scalar_representation(left: &HookScalar, right: &HookScalar) -> bool {
         (HookScalar::Integer(left), HookScalar::Integer(right)) => left == right,
         (HookScalar::Float(left), HookScalar::Float(right)) => left.to_bits() == right.to_bits(),
         (HookScalar::Bytes(left), HookScalar::Bytes(right)) => left == right,
-        (HookScalar::Resource { identity: left, .. }, HookScalar::Resource { identity: right, .. }) => left == right,
+        (
+            HookScalar::Resource { identity: left, .. },
+            HookScalar::Resource {
+                identity: right, ..
+            },
+        ) => left == right,
         _ => false,
     }
 }
@@ -632,15 +668,28 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         if api == "apply_filters" {
             let marker = payload.get("value").ok_or("apply_value_missing")?;
             exact_keys(marker, &["type", "handle"], "apply_value_handle")?;
-            if string(marker, "type")? != "handle" { return Err("apply_value_marker_type".into()); }
-            let handle = self.register_argument(marker.get("handle").ok_or("apply_value_handle_missing")?, "filter_value")?;
+            if string(marker, "type")? != "handle" {
+                return Err("apply_value_marker_type".into());
+            }
+            let handle = self.register_argument(
+                marker.get("handle").ok_or("apply_value_handle_missing")?,
+                "filter_value",
+            )?;
             registered.push(("filter_value".into(), handle));
-            let args = payload.get("args").and_then(Value::as_array).ok_or("apply_args")?;
+            let args = payload
+                .get("args")
+                .and_then(Value::as_array)
+                .ok_or("apply_args")?;
             for (index, marker) in args.iter().enumerate() {
                 let label = format!("filter_arg_{index}");
                 exact_keys(marker, &["type", "handle"], &label)?;
-                if string(marker, "type")? != "handle" { return Err(format!("{label}_marker_type")); }
-                let handle = self.register_argument(marker.get("handle").ok_or("filter_arg_handle_missing")?, &label)?;
+                if string(marker, "type")? != "handle" {
+                    return Err(format!("{label}_marker_type"));
+                }
+                let handle = self.register_argument(
+                    marker.get("handle").ok_or("filter_arg_handle_missing")?,
+                    &label,
+                )?;
                 registered.push((label, handle));
             }
         }
@@ -680,14 +729,24 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
     }
 
     fn filter_argument_handles(&self) -> Result<Option<(PhpHandle, Vec<PhpHandle>)>, String> {
-        let Some(frame) = self.api_arguments.last() else { return Ok(None) };
-        let Some(value) = frame.get("filter_value").copied() else { return Ok(None) };
+        let Some(frame) = self.api_arguments.last() else {
+            return Ok(None);
+        };
+        let Some(value) = frame.get("filter_value").copied() else {
+            return Ok(None);
+        };
         self.check_argument(value, "filter_value")?;
-        let count = frame.keys().filter(|name| name.starts_with("filter_arg_")).count();
+        let count = frame
+            .keys()
+            .filter(|name| name.starts_with("filter_arg_"))
+            .count();
         let mut args = Vec::with_capacity(count);
         for index in 0..count {
             let name = format!("filter_arg_{index}");
-            let handle = frame.get(&name).copied().ok_or_else(|| format!("{name}_missing"))?;
+            let handle = frame
+                .get(&name)
+                .copied()
+                .ok_or_else(|| format!("{name}_missing"))?;
             self.check_argument(handle, &name)?;
             args.push(handle);
         }
@@ -703,30 +762,46 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             if let Some((_value_handle, handles)) = self.filter_argument_handles()? {
                 let (prefix, start) = match call_mode {
                     PhpCallMode::All => {
-                        if args.len() != handles.len() + 2 { return Err("filter_all_argument_count".into()); }
+                        if args.len() != handles.len() + 2 {
+                            return Err("filter_all_argument_count".into());
+                        }
                         (Some(pod(&args[0], "filter_all_hook_prefix")?), 1)
                     }
                     PhpCallMode::Zero => {
-                        if !args.is_empty() { return Err("filter_zero_argument_count".into()); }
+                        if !args.is_empty() {
+                            return Err("filter_zero_argument_count".into());
+                        }
                         return Ok(Vec::new());
                     }
                     PhpCallMode::Array => {
-                        if args.len() > handles.len() + 1 { return Err("filter_named_argument_count".into()); }
+                        if args.len() > handles.len() + 1 {
+                            return Err("filter_named_argument_count".into());
+                        }
                         (None, 0)
                     }
                 };
                 let mut encoded = Vec::with_capacity(args.len());
-                if let Some(prefix) = prefix { encoded.push(prefix); }
+                if let Some(prefix) = prefix {
+                    encoded.push(prefix);
+                }
                 for (offset, value) in args.iter().skip(start).enumerate() {
                     let handle = if offset == 0 {
-                        let PhpValue::ArgumentHandle(candidate) = value else { return Err("filter_value_placeholder_expected".into()) };
+                        let PhpValue::ArgumentHandle(candidate) = value else {
+                            return Err("filter_value_placeholder_expected".into());
+                        };
                         self.check_argument(*candidate, "filter_dispatch_value")?;
-                        let frame = self.api_arguments.last().ok_or("filter_api_argument_frame_missing")?;
-                        if !frame.values().any(|registered| registered == candidate) { return Err("filter_value_handle_outside_frame".into()); }
+                        let frame = self
+                            .api_arguments
+                            .last()
+                            .ok_or("filter_api_argument_frame_missing")?;
+                        if !frame.values().any(|registered| registered == candidate) {
+                            return Err("filter_value_handle_outside_frame".into());
+                        }
                         *candidate
                     } else {
                         let handle = *handles.get(offset - 1).ok_or("filter_arg_order_or_count")?;
-                        if !matches!(value, PhpValue::ArgumentHandle(candidate) if *candidate == handle) {
+                        if !matches!(value, PhpValue::ArgumentHandle(candidate) if *candidate == handle)
+                        {
                             return Err("filter_arg_placeholder_expected".into());
                         }
                         handle
@@ -871,12 +946,28 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     EffectValueMode::Pod => parse_pod(value, label)?,
                     EffectValueMode::ArgumentHandle => {
                         exact_keys(value, &["type", "handle"], label)?;
-                        if string(value, "type")? != "handle" { return Err(format!("{label}_handle_marker")); }
-                        let handle = self.register_argument(value.get("handle").ok_or_else(|| format!("{label}_handle_missing"))?, label)?;
-                        let frame = self.api_arguments.last_mut().ok_or("filter_result_without_api_frame")?;
-                        let index = frame.keys().filter(|name| name.starts_with("filter_result_")).count();
+                        if string(value, "type")? != "handle" {
+                            return Err(format!("{label}_handle_marker"));
+                        }
+                        let handle = self.register_argument(
+                            value
+                                .get("handle")
+                                .ok_or_else(|| format!("{label}_handle_missing"))?,
+                            label,
+                        )?;
+                        let frame = self
+                            .api_arguments
+                            .last_mut()
+                            .ok_or("filter_result_without_api_frame")?;
+                        let index = frame
+                            .keys()
+                            .filter(|name| name.starts_with("filter_result_"))
+                            .count();
                         frame.insert(format!("filter_result_{index}"), handle);
-                        self.api_filter_result_handles.last_mut().ok_or("filter_result_order_frame_missing")?.push(handle);
+                        self.api_filter_result_handles
+                            .last_mut()
+                            .ok_or("filter_result_order_frame_missing")?
+                            .push(handle);
                         PhpValue::ArgumentHandle(handle)
                     }
                     EffectValueMode::ReleaseAck => {
@@ -1188,7 +1279,10 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
             _ => Err("call_core_unknown_api".into()),
         }?;
         if api_name == "apply_filters" {
-            let result_handles = self.api_filter_result_handles.last().ok_or("apply_filter_result_order_missing")?;
+            let result_handles = self
+                .api_filter_result_handles
+                .last()
+                .ok_or("apply_filter_result_order_missing")?;
             for (index, handle) in result_handles.iter().enumerate() {
                 arguments.push((format!("filter_result_{index}"), *handle));
             }
@@ -1197,7 +1291,9 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         self.api_arguments
             .pop()
             .ok_or("api_argument_stack_underflow")?;
-        self.api_filter_result_handles.pop().ok_or("api_filter_result_order_stack_underflow")?;
+        self.api_filter_result_handles
+            .pop()
+            .ok_or("api_filter_result_order_stack_underflow")?;
         self.api_action_argument_counts
             .pop()
             .ok_or("api_action_argument_count_stack_underflow")?;
@@ -1248,7 +1344,11 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                     label,
                 )?;
                 let scalar = hook_scalar_from_value(scalar, label)?;
-                if let HookScalar::Resource { handle: resource_handle, identity, .. } = &scalar
+                if let HookScalar::Resource {
+                    handle: resource_handle,
+                    identity,
+                    ..
+                } = &scalar
                     && (*resource_handle != handle
                         || self.handles.get(resource_handle) != Some(&HandleState::Active)
                         || self.handles.get(identity) != Some(&HandleState::Active))
@@ -2453,9 +2553,14 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         ) {
             return Err("apply_counter_mutation_result_mismatch".into());
         }
-        let (value_handle, extra_handles) = self.filter_argument_handles()?.ok_or("apply_filter_argument_handles_missing")?;
+        let (value_handle, extra_handles) = self
+            .filter_argument_handles()?
+            .ok_or("apply_filter_argument_handles_missing")?;
         let value = PhpValue::ArgumentHandle(value_handle);
-        let extra = extra_handles.into_iter().map(PhpValue::ArgumentHandle).collect::<Vec<_>>();
+        let extra = extra_handles
+            .into_iter()
+            .map(PhpValue::ArgumentHandle)
+            .collect::<Vec<_>>();
         let ticket = self
             .dispatcher
             .begin_filter_after_counter_typed(&hook, value, &extra)
@@ -2498,7 +2603,8 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         .api_action_argument_counts
                         .last()
                         .is_some_and(Option::is_some);
-                    let filter_all_dispatch = !action_dispatch && invocation.call_mode == PhpCallMode::All;
+                    let filter_all_dispatch =
+                        !action_dispatch && invocation.call_mode == PhpCallMode::All;
                     self.wire.send("invoke_php", Some(caller_wire), json!({
                         "operation":"callable","effect_id":effect_wire,"handle":descriptor(invocation.handle),
                         "hook":scalar_pod(&invocation.hook,"callback_hook")?,
@@ -2508,7 +2614,11 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
                         &effect_wire,
                         effect,
                         Some(caller_wire),
-                        if action_dispatch || filter_all_dispatch { EffectValueMode::Pod } else { EffectValueMode::ArgumentHandle },
+                        if action_dispatch || filter_all_dispatch {
+                            EffectValueMode::Pod
+                        } else {
+                            EffectValueMode::ArgumentHandle
+                        },
                     )?;
                     self.dispatcher
                         .resume_php_completion(ticket, completion)

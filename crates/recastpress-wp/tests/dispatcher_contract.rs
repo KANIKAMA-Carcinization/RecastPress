@@ -3340,7 +3340,9 @@ fn nested_effectful_actions_dispatch_while_parent_php_callback_is_suspended() {
     dispatcher
         .resume_boundary(parent, Completion::Value(value("1")))
         .unwrap();
-    let DispatchStep::InvokePhp(invocation) = advance_native_effectful_action(&mut dispatcher, parent) else {
+    let DispatchStep::InvokePhp(invocation) =
+        advance_native_effectful_action(&mut dispatcher, parent)
+    else {
         panic!("expected the parent PHP callback")
     };
     assert_eq!(invocation.callback, id("parent_action_php"));

@@ -28,7 +28,12 @@ pub enum HookScalar {
     Integer(i64),
     Float(f64),
     Bytes(Vec<u8>),
-    Resource { handle: PhpHandle, identity: PhpHandle, resource_type: String, resource_id: i64 },
+    Resource {
+        handle: PhpHandle,
+        identity: PhpHandle,
+        resource_type: String,
+        resource_id: i64,
+    },
 }
 
 impl HookScalar {
@@ -39,8 +44,16 @@ impl HookScalar {
             Self::Integer(value) => PhpValue::Integer(*value),
             Self::Float(value) => PhpValue::Float(*value),
             Self::Bytes(value) => PhpValue::Bytes(value.clone()),
-            Self::Resource { handle, identity, resource_type, resource_id } => PhpValue::Resource {
-                handle: *handle, identity: *identity, resource_type: resource_type.clone(), resource_id: *resource_id,
+            Self::Resource {
+                handle,
+                identity,
+                resource_type,
+                resource_id,
+            } => PhpValue::Resource {
+                handle: *handle,
+                identity: *identity,
+                resource_type: resource_type.clone(),
+                resource_id: *resource_id,
             },
         }
     }
@@ -52,7 +65,12 @@ impl HookScalar {
             (Self::Integer(left), Self::Integer(right)) => left == right,
             (Self::Float(left), Self::Float(right)) => left == right,
             (Self::Bytes(left), Self::Bytes(right)) => left == right,
-            (Self::Resource { identity: left, .. }, Self::Resource { identity: right, .. }) => left == right,
+            (
+                Self::Resource { identity: left, .. },
+                Self::Resource {
+                    identity: right, ..
+                },
+            ) => left == right,
             _ => false,
         }
     }
@@ -1291,7 +1309,10 @@ mod priority_comparison_tests {
         HookScalar, PhpNumber, compare_php_numbers, numeric_prefix, numeric_sort_value,
         numeric_string, php_priority_less,
     };
-    use crate::{continuation::{PhpHandle, PhpHandleKind, RequestGeneration}, value::PhpKey};
+    use crate::{
+        continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
+        value::PhpKey,
+    };
     use std::cmp::Ordering;
 
     #[test]
