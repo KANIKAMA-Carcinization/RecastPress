@@ -20,6 +20,8 @@ ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4ed
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 TIMEOUT = 600
+CHECK_STARTED_AT = datetime.now(timezone.utc)
+SOURCE_INPUTS_AT_START = None
 INPUTS = [
     ".github/workflows/v06-wp-hook-dispatch.yml",
     "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml",
@@ -56,6 +58,7 @@ def digest(path):
 
 
 def main():
+    global SOURCE_INPUTS_AT_START
     if platform.system() != "Linux":
         raise SystemExit("Real PHP-WASIX execution is supported only on the fixed Linux CI runner.")
     if not ARTIFACT.is_file() or ARTIFACT.stat().st_size != ARTIFACT_BYTES or digest(ARTIFACT) != ARTIFACT_SHA256:
@@ -63,6 +66,7 @@ def main():
     if digest(ROOT / ".reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php") != SENTINEL_SHA256:
         raise SystemExit("Pinned WordPress filter sentinel changed.")
     before = {name: digest(ROOT / name) for name in INPUTS}
+    SOURCE_INPUTS_AT_START = before
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -170,11 +174,23 @@ if __name__ == "__main__":
             "source_commit": os.environ.get("GITHUB_SHA", "local"),
             "run_id": os.environ.get("GITHUB_RUN_ID"),
             "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
-            "source_inputs": {name: digest(ROOT / name) for name in INPUTS if (ROOT / name).is_file()},
+            "started_at_utc": CHECK_STARTED_AT.isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "observed_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "source_inputs_before": SOURCE_INPUTS_AT_START,
+            "source_inputs_after": {name: digest(ROOT / name) for name in INPUTS if (ROOT / name).is_file()},
             "artifact": {"bytes": ARTIFACT_BYTES, "sha256": ARTIFACT_SHA256},
+            "partial_output": {
+                "stdout_captured_suffix_bytes": len(stdout),
+                "stdout_captured_suffix_sha256": hashlib.sha256(stdout).hexdigest(),
+                "stderr_captured_suffix_bytes": len(stderr),
+                "stderr_captured_suffix_sha256": hashlib.sha256(stderr).hexdigest(),
+            },
             "capture": capture,
             "capture_bytes": len(raw),
+            "capture_sha256": hashlib.sha256(raw).hexdigest(),
         }
+        if SOURCE_INPUTS_AT_START is not None:
+            report["source_inputs_unchanged"] = SOURCE_INPUTS_AT_START == report["source_inputs_after"]
         (EVIDENCE / "latest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
         print("PHP-WASIX runner timed out; bounded output follows:", file=sys.stderr)
         print(raw.decode("utf-8", "replace")[-8192:], file=sys.stderr)

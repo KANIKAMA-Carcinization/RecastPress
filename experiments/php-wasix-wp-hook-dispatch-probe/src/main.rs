@@ -21,7 +21,7 @@ use recastpress_wp::{
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use wasmer::Module;
-use wasmer_compiler_cranelift::Cranelift;
+use wasmer_compiler_cranelift::{Cranelift, CraneliftOptLevel};
 use wasmer_wasix::{
     Pipe, PluggableRuntime, UnsupportedVirtualNetworking,
     runners::wasi::{RuntimeOrEngine, WasiRunner},
@@ -541,6 +541,7 @@ fn run_dispatch(
 }
 
 fn main() -> Result<()> {
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=artifact_read_start");
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .canonicalize()?;
@@ -550,6 +551,7 @@ fn main() -> Result<()> {
         wasm.len() as u64 == PHP_BYTES && sha256(&wasm) == PHP_SHA256,
         "PHP-WASIX artifact pin mismatch"
     );
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=artifact_read_done");
     let data = HashedModuleData::new(wasm);
     let module_hash = *data.hash();
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -558,13 +560,16 @@ fn main() -> Result<()> {
     let _guard = runtime.enter();
     let tasks = TokioTaskManager::new(runtime.handle().clone());
     let mut wasix = PluggableRuntime::new(Arc::new(tasks));
-    let compiler = Cranelift::default();
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=module_compile_start");
+    let mut compiler = Cranelift::default();
+    compiler.opt_level(CraneliftOptLevel::None);
     wasix.set_engine(compiler.into());
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let module = wasix
         .load_hashed_module_sync(data, None)
         .context("compile pinned PHP-WASIX")?;
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=module_compile_done");
     // Mirror the proven bridge topology: the shared wire is split at the host,
     // while the guest keeps a clone for stdin and the original endpoint for stdout.
     let (host_wire, guest_wire) = Pipe::channel();
@@ -572,6 +577,7 @@ fn main() -> Result<()> {
     let guest_stdin = guest_wire.clone();
     let guest_stdout = guest_wire;
     let (mut host_stderr, guest_stderr) = Pipe::channel();
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=pipes_ready");
     let (stderr_tx, stderr_rx) = mpsc::channel();
     let stderr_thread = thread::Builder::new()
         .name("php-wasix-wp-hook-dispatch-stderr".into())
@@ -596,12 +602,14 @@ fn main() -> Result<()> {
             );
             let _ = done_tx.send(result);
         })?;
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=guest_thread_spawned");
     let mut total_in = 0;
     let mut total_out = 0;
     let mut reader = BufReader::new(DeadlinePipeReader {
         pipe: host_stdout,
         deadline: Instant::now() + TIMEOUT,
     });
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_start");
     let observed = run_dispatch(
         &mut reader,
         &mut DeadlinePipeWriter {
@@ -611,6 +619,7 @@ fn main() -> Result<()> {
         &mut total_in,
         &mut total_out,
     );
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_done");
     let observed = match observed {
         Ok(value) => Ok(value),
         Err(error) => {
@@ -673,13 +682,16 @@ fn run_guest(
     stderr: Pipe,
     fs_map: Arc<FixtureFs>,
 ) -> Result<()> {
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=guest_runtime_start");
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?;
     let _guard = runtime.enter();
     let tasks = TokioTaskManager::new(runtime.handle().clone());
     let mut wasix = PluggableRuntime::new(Arc::new(tasks) as Arc<dyn VirtualTaskManager>);
-    wasix.set_engine(Cranelift::default().into());
+    let mut compiler = Cranelift::default();
+    compiler.opt_level(CraneliftOptLevel::None);
+    wasix.set_engine(compiler.into());
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
@@ -697,6 +709,7 @@ fn run_guest(
         .insecure_allow_all = false;
     runner.capabilities_mut().threading.max_threads = Some(1);
     runner.capabilities_mut().threading.enable_deep_sleep = false;
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=run_wasm_start");
     runner
         .run_wasm(
             RuntimeOrEngine::Runtime(Arc::new(wasix)),
@@ -705,6 +718,7 @@ fn run_guest(
             module_hash,
         )
         .context("run pinned PHP-WASIX WordPress hook fixture")?;
+    eprintln!("PHP_WASIX_WP_HOOK_PHASE=run_wasm_done");
     drop(runner);
     drop(_guard);
     runtime.shutdown_timeout(Duration::from_secs(2));

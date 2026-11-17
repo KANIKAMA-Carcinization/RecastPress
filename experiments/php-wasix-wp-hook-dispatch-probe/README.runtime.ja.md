@@ -17,6 +17,8 @@ python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
 
 `check.py` はLinux専用で、Rust 1.94.0、Wasmer 7.2.0 Cranelift、Wasmer-WASIX 0.702.0を用いる。GitHub Actions workflowはUbuntu 24.04で固定PHP artifact ZIPと展開後Wasm双方のサイズ/hashを確認して実行する。tokenは固定された `api.github.com/repos/wasix-org/php/actions/artifacts/12371010145/zip` だけに送る。
 
+Craneliftは既存の実PHP bridgeと同じく最適化なしで固定する。Rust hostはartifact読込、module compile、guest起動、最初のbridge frame待ちをstderrへ段階表示する。checkerはタイムアウト時にstdout/stderrそれぞれの保存上限1 MiB内の末尾データについてbyte数とSHA-256を記録し、両方を合わせたcaptureのSHA-256も証跡へ残す。これによりPHP fixture開始前の停止もCIログと保存証跡から切り分けられる。
+
 Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起きるため、Windowsのcargo checkやPHP lintを実PHP-Wasm実行の証明とは扱わない。WSLはこのworkflowの実行環境ではない。
 
 ## 範囲
