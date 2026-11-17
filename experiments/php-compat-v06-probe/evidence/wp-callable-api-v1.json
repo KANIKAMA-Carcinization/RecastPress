@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-17T09:54:24.533032+00:00",
+  "observed_at_utc": "2026-11-17T10:06:59.932604+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -111,7 +111,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "7a3c68e97e8437d02835fee6ea7bf4fba4de603551ab9233c0d6ed0bcc02f575",
+    "crates/recastpress-wp/src/dispatcher.rs": "3d5c335381422de3f3bd2c1899de9c0737b4fd053c744cbaf88e89e28a6da6bc",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -317,7 +317,7 @@
     "crates/recastpress-wp/src/credential_input.rs": "f947b12318c55095916773ab72f813c187fbef6e85de460ed361c7f9a8d9523a",
     "crates/recastpress-wp/src/credential_stage.rs": "5b7e0005b9b947eef3983650b71306b2c04d28ba5cf71df86c7c16965824d432",
     "crates/recastpress-wp/src/dates.rs": "e9eb17c6862472fdf2b3667b05de08f29c82e180d38c10d444c5b4c3db3ce17e",
-    "crates/recastpress-wp/src/dispatcher.rs": "7a3c68e97e8437d02835fee6ea7bf4fba4de603551ab9233c0d6ed0bcc02f575",
+    "crates/recastpress-wp/src/dispatcher.rs": "3d5c335381422de3f3bd2c1899de9c0737b4fd053c744cbaf88e89e28a6da6bc",
     "crates/recastpress-wp/src/email.rs": "e504de9676f732c09db8c677dc67ab94a706b1eb88d82c2ff1bc70435ec2b9da",
     "crates/recastpress-wp/src/empty_filter_escaping.rs": "f3beb5256722f2bfad0e0c7cd1b5360d47f7ba039d3500211b2590e5929ef017",
     "crates/recastpress-wp/src/entities.rs": "c5454b1a6afb87f48cd7ed6f626d5204b94a3c8bc03738f9623cb1ee118fc0a5",
@@ -417,33 +417,33 @@
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 38820,
+    "pid": 38100,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 36740,
+    "pid": 34448,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261117T095424.510071Z-stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T100659.910185Z-stdout.bin",
       "bytes": 128780,
       "sha256": "d0e76a860b6ad658dce5d9aefcb166d282a7f81b9f54e458915be376791b24a6"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261117T095424.510071Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T100659.910185Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261117T095424.510071Z-action_stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T100659.910185Z-action_stdout.bin",
       "bytes": 87294,
       "sha256": "c4180b75023d189cadaf22038e51e7da0e7c176e572296f4417ce10cc402434b"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261117T095424.510071Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T100659.910185Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }

@@ -2868,9 +2868,7 @@ impl Dispatcher {
                     .waiting_for_boundary = true;
                 return Ok(DispatchStep::Boundary(boundary));
             }
-            let slot = if started {
-                selected_slot
-            } else if target_is_selected {
+            let slot = if started || target_is_selected {
                 selected_slot
             } else if phase == DispatchPhase::All {
                 key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied()
