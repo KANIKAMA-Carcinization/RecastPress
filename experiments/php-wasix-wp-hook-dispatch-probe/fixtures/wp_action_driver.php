@@ -170,7 +170,7 @@ function recastpress_wp_dispatch_selected_action(
 function rp_action_all(string $hookName, mixed ...$args): void
 {
     $GLOBALS['rp_action_events'][] = [
-        'callback' => 'all', 'hook' => $hookName, 'args' => $args,
+        'callback' => 'all', 'hook' => $hookName, 'args' => func_get_args(),
         'current_action' => current_action(), 'doing_action' => doing_action($hookName),
         'did_action' => did_action($hookName),
     ];
