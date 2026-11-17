@@ -23,6 +23,7 @@ TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
 SOURCE_INPUTS_AT_START = None
+COMPLETED_SCENARIOS = {}
 INPUTS = [
     ".github/workflows/v06-wp-hook-dispatch.yml",
     "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml",
@@ -31,14 +32,15 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md",
     "scripts/wordpress_reference.py",
     "crates/recastpress-wp/Cargo.toml",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/overlay.json",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/plugin.php",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/class-wp-hook.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/overlay.json",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/plugin.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/class-wp-hook.php",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
     "experiments/php-runtime-candidate-probe/artifact.json",
     "crates/recastpress-wp/src/dispatcher.rs",
@@ -59,7 +61,7 @@ def digest(path):
 
 
 def main():
-    global SOURCE_INPUTS_AT_START
+    global SOURCE_INPUTS_AT_START, COMPLETED_SCENARIOS
     if platform.system() != "Linux":
         raise SystemExit("Real PHP-WASIX execution is supported only on the fixed Linux CI runner.")
     if not ARTIFACT.is_file() or ARTIFACT.stat().st_size != ARTIFACT_BYTES or digest(ARTIFACT) != ARTIFACT_SHA256:
@@ -92,31 +94,44 @@ def main():
     if len(build.stdout) > 2 * 1024 * 1024:
         raise SystemExit("Rust build output exceeded the fixed evidence capture bound.")
     status = "build_failed"
-    result = None
+    result = {}
     run_code = None
     run_ms = None
     if build.returncode == 0:
         binary = target / "debug/recastpress-wp-hook-dispatch-probe"
-        t0 = time.monotonic()
-        run = subprocess.run([str(binary)], cwd=ROOT, env=env, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, timeout=RUN_TIMEOUT, check=False)
-        run_ms = int((time.monotonic() - t0) * 1000)
-        run_code = run.returncode
-        output = run.stdout.decode("utf-8", "replace")
-        stderr = run.stderr.decode("utf-8", "replace")
-        if len(run.stdout) > 2 * 1024 * 1024 or len(run.stderr) > 2 * 1024 * 1024:
-            raise SystemExit("PHP-WASIX run output exceeded the fixed evidence capture bound.")
-        if run.returncode == 0:
-            result = json.loads(output)
-            if result.get("status") != "passed":
-                raise SystemExit("runner reported a non-passing status")
-            status = "passed"
-        else:
-            output = output + "\n--- stderr ---\n" + stderr
-            status = "runtime_failed"
-            diagnostic = output[-8192:]
-            print("PHP-WASIX runner failed; bounded diagnostic follows:", file=sys.stderr)
-            print(diagnostic, file=sys.stderr)
+        run_ms = 0
+        outputs = []
+        run_codes = {}
+        scenarios = [("filter", []), ("action", ["action"])]
+        status = "passed"
+        for scenario, args in scenarios:
+            t0 = time.monotonic()
+            run = subprocess.run([str(binary), *args], cwd=ROOT, env=env,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 timeout=RUN_TIMEOUT, check=False)
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            run_ms += duration_ms
+            run_code = run.returncode
+            run_codes[scenario] = run_code
+            stdout = run.stdout.decode("utf-8", "replace")
+            stderr = run.stderr.decode("utf-8", "replace")
+            if len(run.stdout) > 2 * 1024 * 1024 or len(run.stderr) > 2 * 1024 * 1024:
+                raise SystemExit("PHP-WASIX run output exceeded the fixed evidence capture bound.")
+            if run.returncode == 0:
+                scenario_result = json.loads(stdout)
+                if scenario_result.get("status") != "passed" or scenario_result.get("scenario") != scenario:
+                    raise SystemExit(f"{scenario} runner reported a non-passing or mismatched result")
+                result[scenario] = scenario_result
+                COMPLETED_SCENARIOS = result.copy()
+                outputs.append(f"--- {scenario} stdout ---\n{stdout}")
+            else:
+                status = "runtime_failed"
+                outputs.append(f"--- {scenario} stdout ---\n{stdout}\n--- {scenario} stderr ---\n{stderr}")
+                diagnostic = outputs[-1][-8192:]
+                print(f"PHP-WASIX {scenario} runner failed; bounded diagnostic follows:", file=sys.stderr)
+                print(diagnostic, file=sys.stderr)
+                break
+        output = "\n".join(outputs)
     after = {name: digest(ROOT / name) for name in INPUTS}
     unchanged = before == after
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -124,7 +139,7 @@ def main():
     capture = f"run-{stamp}.log"
     (EVIDENCE / capture).write_text(output, encoding="utf-8", newline="\n")
     evidence = {
-        "schema": "recastpress.php-wasix-wp-hook-dispatch.v1",
+        "schema": "recastpress.php-wasix-wp-hook-dispatch.v2",
         "status": status,
         "source_commit": os.environ.get("GITHUB_SHA", "local"),
         "run_id": os.environ.get("GITHUB_RUN_ID"),
@@ -139,7 +154,8 @@ def main():
                          for key in ("declared_php_version", "source_repository", "source_commit", "workflow_run_id", "workflow_run_url", "artifact_id", "artifact_name", "artifact_api_url")},
         "artifact": {"bytes": ARTIFACT_BYTES, "sha256": ARTIFACT_SHA256},
         "build": {"exit_code": build.returncode, "duration_ms": build_ms, "timeout_seconds": TIMEOUT},
-        "run": {"exit_code": run_code, "duration_ms": run_ms, "timeout_seconds": RUN_TIMEOUT, "result": result},
+        "run": {"exit_code": run_code, "exit_codes": run_codes if build.returncode == 0 else {},
+                "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
@@ -168,13 +184,14 @@ if __name__ == "__main__":
         capture = f"run-{stamp}-timeout.log"
         (EVIDENCE / capture).write_bytes(raw)
         report = {
-            "schema": "recastpress.php-wasix-wp-hook-dispatch.v1",
+            "schema": "recastpress.php-wasix-wp-hook-dispatch.v2",
             "status": "timeout",
             "timeout_seconds": error.timeout,
             "command": [str(part) for part in error.cmd] if isinstance(error.cmd, (list, tuple)) else str(error.cmd),
             "source_commit": os.environ.get("GITHUB_SHA", "local"),
             "run_id": os.environ.get("GITHUB_RUN_ID"),
             "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+            "completed_scenarios": COMPLETED_SCENARIOS,
             "started_at_utc": CHECK_STARTED_AT.isoformat(timespec="seconds").replace("+00:00", "Z"),
             "observed_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
             "source_inputs_before": SOURCE_INPUTS_AT_START,

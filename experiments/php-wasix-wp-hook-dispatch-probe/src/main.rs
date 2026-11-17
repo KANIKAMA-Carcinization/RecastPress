@@ -45,8 +45,9 @@ const FRAME_LIMIT: usize = 1024 * 1024;
 const TOTAL_LIMIT: usize = 32 * 1024 * 1024;
 const TIMEOUT: Duration = Duration::from_secs(120);
 const PHP_DRIVER: &str = "/fixture/wp_hook_driver.php";
+const PHP_ACTION_DRIVER: &str = "/fixture/wp_action_driver.php";
 
-const FILES: [(&str, &[u8]); 7] = [
+const FILES: [(&str, &[u8]); 8] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -62,7 +63,7 @@ const FILES: [(&str, &[u8]); 7] = [
     (
         "class-wp-hook.php",
         include_bytes!(
-            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/class-wp-hook.php"
+            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/class-wp-hook.php"
         ),
     ),
     (
@@ -74,12 +75,16 @@ const FILES: [(&str, &[u8]); 7] = [
     (
         "plugin.php",
         include_bytes!(
-            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/plugin.php"
+            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/plugin.php"
         ),
     ),
     (
         "wp_hook_driver.php",
         include_bytes!("../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php"),
+    ),
+    (
+        "wp_action_driver.php",
+        include_bytes!("../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php"),
     ),
 ];
 
@@ -540,7 +545,405 @@ fn run_dispatch(
     }
 }
 
+fn run_action_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, 0)?;
+    expect_frame(
+        &start,
+        0,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["hook"] == "rp-probe-action"
+            && start["payload"]["target"] == "wp-action-1",
+        "selected action identity mismatch"
+    );
+    let name = HookArgument::bytes("rp-probe-action");
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("action rows must be array")?;
+    ensure!(rows.len() == 3, "imported action callback row count");
+    let fingerprint_rows: Vec<Value> = rows
+        .iter()
+        .map(|row| {
+            json!([
+                row["priority"],
+                row["uid"],
+                row["accepted_args"],
+                row["function"],
+                row["handle"]["request"],
+                row["handle"]["kind"],
+                row["handle"]["slot"],
+                row["handle"]["generation"],
+                row["handle"]["token"]
+            ])
+        })
+        .collect();
+    let fingerprint = sha256(&serde_json::to_vec(&fingerprint_rows)?);
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint,
+        "PHP action callback table fingerprint mismatch"
+    );
+    let mut dispatcher = Dispatcher::new();
+    let mut callback_order = Vec::new();
+    let mut handles_by_uid = std::collections::HashMap::new();
+    let mut callback_labels = std::collections::HashMap::new();
+    for row in rows {
+        let object = row
+            .as_object()
+            .context("action callback row must be object")?;
+        ensure!(
+            object.len() == 5
+                && ["priority", "uid", "accepted_args", "function", "handle"]
+                    .iter()
+                    .all(|key| object.contains_key(*key)),
+            "action callback row schema"
+        );
+        let priority = row["priority"]
+            .as_i64()
+            .context("action callback priority")?;
+        let uid = row["uid"].as_str().context("action callback uid")?;
+        let insertion_order = rows
+            .iter()
+            .position(|candidate| candidate["uid"] == uid)
+            .context("action callback insertion order")? as u64;
+        let label = match row["function"].as_str() {
+            Some("rp_action_callback_a") => "rp_action_callback_a",
+            Some("rp_action_callback_b") => "rp_action_callback_b",
+            None => "{closure}",
+            Some(other) => anyhow::bail!("unrecognized PHP action callback: {other}"),
+        };
+        let accepted_args = row["accepted_args"]
+            .as_i64()
+            .context("action accepted_args")?;
+        ensure!(
+            (0..=32).contains(&accepted_args),
+            "action accepted_args outside probe bounds"
+        );
+        callback_order.push((priority, insertion_order, uid.to_string()));
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles_by_uid.insert(uid.to_string(), php_handle).is_none(),
+            "duplicate WordPress action callback uid"
+        );
+        callback_labels.insert(uid.to_string(), label.to_string());
+        let id = CallbackId {
+            module: "wordpress".into(),
+            callback: uid.to_string(),
+        };
+        let callback = ContextCallback::php_callable(id, accepted_args, php_handle)
+            .map_err(|error| anyhow::anyhow!("WP action dispatcher callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+    }
+    let mut sorted = callback_order.clone();
+    sorted.sort_by_key(|(priority, insertion_order, _)| (*priority, *insertion_order));
+    ensure!(
+        callback_order == sorted,
+        "PHP action callback table order mismatch"
+    );
+    let args = start["payload"]["args"]
+        .as_array()
+        .context("action args must be array")?
+        .iter()
+        .map(|value| php_string(value).map(PhpValue::Bytes))
+        .collect::<Result<Vec<_>>>()?;
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("WP action dispatcher start: {error:?}"))?;
+    let mut in_seq = 1;
+    let mut out_seq = 0;
+    let mut imported = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("WP action dispatcher advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode != PhpCallMode::All,
+                    "unexpected all action callback import"
+                );
+                let uid = invocation.callback.callback.as_str();
+                ensure!(
+                    callback_labels.contains_key(uid),
+                    "action invocation callback uid missing"
+                );
+                ensure!(
+                    handles_by_uid.get(uid) == Some(&invocation.handle),
+                    "Action dispatcher handle does not match imported PHP uid"
+                );
+                let priority = match invocation.priority {
+                    PhpKey::Integer(value) => value,
+                    _ => anyhow::bail!("action priority must be integer"),
+                };
+                let php_args = invocation
+                    .args
+                    .iter()
+                    .map(|value| match value {
+                        PhpValue::Bytes(bytes) => Ok(String::from_utf8(bytes.clone())
+                            .context("action callback argument is not UTF-8")?),
+                        _ => anyhow::bail!("action fixture only transports UTF-8 string arguments"),
+                    })
+                    .collect::<Result<Vec<_>>>()?;
+                let payload = json!({
+                    "target":"wp-action-1",
+                    "uid":uid,
+                    "handle":{
+                        "request":HANDLE_REQUEST,
+                        "kind":"callable",
+                        "slot":invocation.handle.slot(),
+                        "generation":invocation.handle.generation(),
+                        "token":format!("{:016x}", invocation.handle.token())
+                    },
+                    "priority":priority,
+                    "call_mode":if matches!(invocation.call_mode, PhpCallMode::Zero) { "zero" } else { "array" },
+                    "args":php_args
+                });
+                ensure!(
+                    payload["call_mode"] == "zero" && invocation.args.is_empty()
+                        || payload["call_mode"] == "array" && !invocation.args.is_empty(),
+                    "action invocation call mode/args mismatch"
+                );
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    payload,
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                ensure!(
+                    reply["payload"]["target"] == "wp-action-1"
+                        && reply["payload"]["uid"] == uid
+                        && reply["payload"]["value"].is_null(),
+                    "action callback must resume with ignored null result"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| anyhow::anyhow!("WP action dispatcher resume: {error:?}"))?;
+                imported.push(callback_labels[uid].clone());
+            }
+            DispatchStep::ReleasePhp(php_handle) => {
+                let descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"callable",
+                    "slot":php_handle.slot(),
+                    "generation":php_handle.generation(),
+                    "token":format!("{:016x}", php_handle.token())
+                });
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == descriptor,
+                    "action callback release ACK mismatch"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, php_handle)
+                    .map_err(|error| {
+                        anyhow::anyhow!("WP action dispatcher release resume: {error:?}")
+                    })?;
+            }
+            DispatchStep::Boundary(_) => {
+                anyhow::bail!("unexpected PHP boundary in named action dispatch")
+            }
+            DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected PHP Throwable in action probe")
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null,
+                    "WordPress action dispatcher returned non-null value"
+                );
+                ensure!(
+                    imported == ["rp_action_callback_a", "{closure}", "rp_action_callback_b"],
+                    "action callback invocation order mismatch"
+                );
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":"wp-action-1","invocations":imported.len()}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let php_done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &php_done,
+                    in_seq,
+                    "request_complete",
+                    &["target", "result", "did_action"],
+                )?;
+                ensure!(
+                    php_done["payload"]["target"] == "wp-action-1"
+                        && php_done["payload"]["result"].is_null()
+                        && php_done["payload"]["did_action"] == 1,
+                    "WordPress action entrypoint completion differs"
+                );
+                in_seq += 1;
+                dispatcher.remove_all_typed(&name, None);
+                for php_handle in dispatcher.take_php_releases() {
+                    let descriptor = json!({
+                        "request":HANDLE_REQUEST,
+                        "kind":"callable",
+                        "slot":php_handle.slot(),
+                        "generation":php_handle.generation(),
+                        "token":format!("{:016x}", php_handle.token())
+                    });
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "action registration release ACK mismatch"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":"wp-action-1","result":null}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "events",
+                        "action_count",
+                        "current_action",
+                        "current_filter",
+                        "doing_action",
+                        "wp_hook_doing_action",
+                        "current_priority",
+                        "table_fingerprint",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "invocations",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["action_count"] == 1
+                        && done["payload"]["current_action"] == false
+                        && done["payload"]["current_filter"] == false
+                        && done["payload"]["doing_action"] == false
+                        && done["payload"]["wp_hook_doing_action"] == false
+                        && done["payload"]["current_priority"] == false
+                        && done["payload"]["table_fingerprint"] == fingerprint
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["invocations"]
+                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
+                    "WordPress action final observation mismatch"
+                );
+                let events = done["payload"]["events"]
+                    .as_array()
+                    .context("action events missing")?;
+                ensure!(
+                    events.len() == 4,
+                    "all plus named action event count mismatch"
+                );
+                ensure!(
+                    events[0]["callback"] == "all"
+                        && events[0]["hook"] == "rp-probe-action"
+                        && events[0]["args"] == json!(["rp-probe-action", "left", "right"])
+                        && events[0]["current_action"] == "rp-probe-action"
+                        && events[0]["doing_action"] == true
+                        && events[0]["did_action"] == 1,
+                    "WordPress all action observation mismatch"
+                );
+                ensure!(
+                    events[1]["callback"] == "a"
+                        && events[1]["args"] == json!(["left", "right"])
+                        && events[1]["current_action"] == "rp-probe-action"
+                        && events[1]["doing_action"] == true
+                        && events[1]["did_action"] == 1
+                        && events[1]["current_priority"] == 5
+                        && events[1]["wp_hook_doing_action"] == true,
+                    "first named action observation mismatch"
+                );
+                ensure!(
+                    events[2]["callback"] == "zero"
+                        && events[2]["args"] == json!([])
+                        && events[2]["current_action"] == "rp-probe-action"
+                        && events[2]["doing_action"] == true
+                        && events[2]["did_action"] == 1
+                        && events[2]["current_priority"] == 5
+                        && events[2]["wp_hook_doing_action"] == true,
+                    "zero-argument action observation mismatch"
+                );
+                ensure!(
+                    events[3]["callback"] == "b"
+                        && events[3]["args"] == json!(["left"])
+                        && events[3]["current_action"] == "rp-probe-action"
+                        && events[3]["doing_action"] == true
+                        && events[3]["did_action"] == 1
+                        && events[3]["current_priority"] == 10
+                        && events[3]["wp_hook_doing_action"] == true,
+                    "last named action observation mismatch"
+                );
+                return Ok(json!({
+                    "status":"passed",
+                    "result":null,
+                    "callbacks":imported,
+                    "guest":done["payload"],
+                    "bridge":{
+                        "input_frames":in_seq + 1,
+                        "output_frames":out_seq,
+                        "input_bytes":*total_in,
+                        "output_bytes":*total_out,
+                        "timeout_seconds":TIMEOUT.as_secs()
+                    }
+                }));
+            }
+        }
+    }
+}
+
 fn main() -> Result<()> {
+    let action_mode = std::env::args().nth(1).as_deref() == Some("action");
+    let php_driver = if action_mode {
+        PHP_ACTION_DRIVER
+    } else {
+        PHP_DRIVER
+    };
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=artifact_read_start");
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -598,6 +1001,7 @@ fn main() -> Result<()> {
                 guest_stdin,
                 guest_stdout,
                 guest_stderr,
+                php_driver,
                 done_fs,
             );
             let _ = done_tx.send(result);
@@ -610,15 +1014,27 @@ fn main() -> Result<()> {
         deadline: Instant::now() + TIMEOUT,
     });
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_start");
-    let observed = run_dispatch(
-        &mut reader,
-        &mut DeadlinePipeWriter {
-            pipe: &mut host_stdin,
-            deadline: Instant::now() + TIMEOUT,
-        },
-        &mut total_in,
-        &mut total_out,
-    );
+    let observed = if action_mode {
+        run_action_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
+        )
+    } else {
+        run_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
+        )
+    };
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_done");
     let observed = match observed {
         Ok(value) => Ok(value),
@@ -660,7 +1076,7 @@ fn main() -> Result<()> {
     let stderr_text = String::from_utf8_lossy(&stderr);
     let unexpected_stderr = stderr_text
         .lines()
-        .filter(|line| !line.starts_with("RP_HOOK_PHASE="))
+        .filter(|line| !line.starts_with("RP_HOOK_PHASE=") && !line.starts_with("RP_ACTION_PHASE="))
         .collect::<Vec<_>>();
     ensure!(
         unexpected_stderr.is_empty(),
@@ -669,7 +1085,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_mode {"action"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -680,6 +1096,7 @@ fn run_guest(
     stdin: Pipe,
     stdout: Pipe,
     stderr: Pipe,
+    driver: &'static str,
     fs_map: Arc<FixtureFs>,
 ) -> Result<()> {
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=guest_runtime_start");
@@ -702,7 +1119,7 @@ fn run_guest(
         .with_stdin(Box::new(stdin))
         .with_stdout(Box::new(stdout))
         .with_stderr(Box::new(stderr))
-        .with_args(["-n", PHP_DRIVER])
+        .with_args(["-n", driver])
         .with_current_dir("/fixture")
         .with_mount("/fixture".to_string(), fs_map)
         .capabilities_mut()
