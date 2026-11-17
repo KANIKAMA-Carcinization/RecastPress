@@ -4,8 +4,10 @@ declare(strict_types=1);
 fwrite(STDERR, "RP_HOOK_PHASE=driver_start\n");
 require_once __DIR__ . '/bridge_driver.php';
 fwrite(STDERR, "RP_HOOK_PHASE=bridge_loaded\n");
-require_once __DIR__ . '/class-wp-hook.php';
-fwrite(STDERR, "RP_HOOK_PHASE=hook_loaded\n");
+$GLOBALS['wp_filter'] = [];
+$GLOBALS['wp_actions'] = [];
+$GLOBALS['wp_filters'] = [];
+$GLOBALS['wp_current_filter'] = [];
 require_once __DIR__ . '/plugin.php';
 fwrite(STDERR, "RP_HOOK_PHASE=plugin_loaded\n");
 
