@@ -859,6 +859,18 @@ final class CallableApiAdapter
                 }
                 $priority = self::decodePhpKey($payload['priority']);
                 $callable = $this->registry->resolve($payload['handle'], 'callable');
+                $priorityGlobalExisted = array_key_exists('callable_program_current_priority', $GLOBALS);
+                $previousPriorityMap = $GLOBALS['callable_program_current_priority'] ?? null;
+                $priorityMapExisted = isset($GLOBALS['callable_program_current_priority'])
+                    && is_array($GLOBALS['callable_program_current_priority']);
+                if (!$priorityMapExisted) {
+                    $GLOBALS['callable_program_current_priority'] = [];
+                }
+                $priorityMap = &$GLOBALS['callable_program_current_priority'];
+                $priorityKey = is_resource($hookName) ? 'resource:' . get_resource_id($hookName) : 'scalar:' . serialize($hookName);
+                $priorityExisted = array_key_exists($priorityKey, $priorityMap);
+                $previousPriority = $priorityMap[$priorityKey] ?? null;
+                $priorityMap[$priorityKey] = is_int($priority) ? $priority : null;
                 try {
                     $arguments = $this->decodeCallableArguments($payload['args']);
                     if ($payload['call_mode'] === 'zero') {
@@ -913,6 +925,19 @@ final class CallableApiAdapter
                 } catch (Throwable $error) {
                     $completion = $this->throwableCompletion($error);
                 } finally {
+                    if ($priorityExisted) {
+                        $priorityMap[$priorityKey] = $previousPriority;
+                    } else {
+                        unset($priorityMap[$priorityKey]);
+                    }
+                    unset($priorityMap);
+                    if (!$priorityMapExisted) {
+                        if ($priorityGlobalExisted) {
+                            $GLOBALS['callable_program_current_priority'] = $previousPriorityMap;
+                        } else {
+                            unset($GLOBALS['callable_program_current_priority']);
+                        }
+                    }
                     unset($callable, $arguments, $hookName, $priority, $value);
                 }
             });

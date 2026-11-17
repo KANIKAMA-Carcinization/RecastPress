@@ -222,7 +222,7 @@ Historical 2026-11-14 source-bound receipts (116-input callable snapshot; 125 in
 |Action|[passed](evidence/actions-20261114T063156.902521Z-success.json)|116|
 |Uncaught Action|[passed](evidence/hooks-uncaught-20261114T064823.023405Z-success.json)|125|
 
-Current-source profile receipts (2026-11-16) after Action callback-mutation parity, resource-ID comparator normalization, the 128-cycle resource lifecycle probe, and the resource-valued Filter hook unit. All seven profiles were rerun and verified; 119 inputs are bound except 125 for Uncaught Action. The Callable profile now checks resource array-key projection, warning order, strict identity in `doing_filter()`, closed-resource visibility during dispatch, and unchanged outer stack state.
+Current-source profile receipts (2026-11-17) after resource-valued Filter priority parity. All seven profiles were rerun and verified; 119 inputs are bound except 125 for Uncaught Action. The Callable profile checks Filter priority resource array-key projection, warning order (two registration and four resource-priority removal warnings), integer-ID dispatch ordering, `current_priority()`, `has_filter()` return values, integer-priority alias removal, and the earlier resource-hook identity/close behavior. The new Callable receipt is [callables-20261117T045103.510279Z-success.json](evidence/callables-20261117T045103.510279Z-success.json). The fixed WordPress oracle and native/Wasm comparison passed; see [wp-callable-api-v1.json](../evidence/wp-callable-api-v1.json) and [native-continuation-v1.json](../evidence/native-continuation-v1.json). Active-iteration mutation of a resource priority remains outside this unit.
 
 |Profile|Receipt|Bound inputs|
 |---|---|---:|

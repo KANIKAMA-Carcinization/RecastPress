@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.wp-callable-api-oracle.v1",
   "status": "passed",
-  "observed_at_utc": "2026-11-16T11:43:30.600457+00:00",
+  "observed_at_utc": "2026-11-17T04:36:18.110229+00:00",
   "wordpress_version": "7.1.3",
   "archive_sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5",
   "source_sha256_before": {
@@ -119,7 +119,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "4e4244fd5e71a2c1f020496bdf246fd5f25464c62b2394b2e988c558397ba517",
+    "crates/recastpress-wp/src/hooks.rs": "742bb7e8d27e9afd0dfbeb126d54492a05ee5277c3564bdd291a8c5c2cef321f",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -170,17 +170,17 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "88d58b0d2824fd0b61eaa7944176332e6a9292c33b9f3b29c54bf926b044dd9c",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "fc44b476744b62ada44978ca740a2bb739090819bf6518635a60325c0c6aa50d",
+    "experiments/php-compat-v06-probe/README.ja.md": "76b65cfd8044c64d709f4519f75dd36e993870c4439d20b6682ce17bcd2d614c",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2d92ac0b92b5ceafd9abcd07d1fba2e4e62a2794dde54ebabea9863e60d056a6",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "659e45f4ae39433ca48c9d6e51c9004d0186255136a7b993896039e2e42d7bd4",
     "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "ae581dc6bd24742ab37c65e07ac4cb9d28aa08934b40bf564b597ec4f0847d38",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "516f0b69e9a518842f778d51053f1945ac47c2144123e93ef3f9b2f37a716690",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "f91437e6a01650934bed12599a5b00da58be95e94349667205e53cf8a51e6fba",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "723a523ee443c03d027f2d7e9193621c63fdee683a1c389dd84b60c44ab1b7b7",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "52943efd787e02f05b0ebd4c284d40b39c3c754651634dab098fb71a1f57f544",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "7a0148c10b0aa720f607062c42e1cde4af99e5ad2b4f8de88e90148b054d332e",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "0d3dd5418adf2eca7de62e430035ee3126bf201726027a6b8987d88449da1e52",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -199,12 +199,13 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "9b389ac8e763c3623817ca647f79996a555f7ca7958ae27deb458030f43c8287",
+    "experiments/php-compat-v06-probe/wasm/bridge_check.py": "a5423d2beb6d51a4dc8e141bf937bc232617b4091680bbd00193f119164d70e0",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "0a5d8798fe2939a934161dedb57e9abefd166060498ec5157d2519aeac1b1f21",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ea3932c01e319449a18891e244cf83b677ff32422436229784dc4538ef55170c",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e5e8919abe73d3abf059b59edcec6267e4694a96b7d1b388e447cd0b49b60ad7",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
@@ -324,7 +325,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "4e4244fd5e71a2c1f020496bdf246fd5f25464c62b2394b2e988c558397ba517",
+    "crates/recastpress-wp/src/hooks.rs": "742bb7e8d27e9afd0dfbeb126d54492a05ee5277c3564bdd291a8c5c2cef321f",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -375,17 +376,17 @@
     "crates/recastpress-wp/tests/dispatcher_contract.rs": "88d58b0d2824fd0b61eaa7944176332e6a9292c33b9f3b29c54bf926b044dd9c",
     "crates/recastpress-wp/tests/hooks_contract.rs": "f52afa089a91cf6b50c203064e6621985868581b5d65ee39b4b0b97689a4d1d3",
     "crates/recastpress-wp/tests/public_state_contract.rs": "36d83c096991b82dc43fe251b199442227fcd654875b020f774f92a08758a9c4",
-    "experiments/php-compat-v06-probe/README.ja.md": "fc44b476744b62ada44978ca740a2bb739090819bf6518635a60325c0c6aa50d",
+    "experiments/php-compat-v06-probe/README.ja.md": "76b65cfd8044c64d709f4519f75dd36e993870c4439d20b6682ce17bcd2d614c",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2d92ac0b92b5ceafd9abcd07d1fba2e4e62a2794dde54ebabea9863e60d056a6",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "659e45f4ae39433ca48c9d6e51c9004d0186255136a7b993896039e2e42d7bd4",
     "experiments/php-compat-v06-probe/evidence/wp-action-hook-key-poc-v1.json": "ae581dc6bd24742ab37c65e07ac4cb9d28aa08934b40bf564b597ec4f0847d38",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "516f0b69e9a518842f778d51053f1945ac47c2144123e93ef3f9b2f37a716690",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "f91437e6a01650934bed12599a5b00da58be95e94349667205e53cf8a51e6fba",
     "experiments/php-compat-v06-probe/fixtures/CONTRACT.md": "f296d6c7cd8520f81b8cee67c18277c683c3420ecf367cc67f823bbfe960060f",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php": "7ac5a500712bbb3edbf0bbabd86736a6f4879dd3ca8caac873ce5b24e4213c15",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "723a523ee443c03d027f2d7e9193621c63fdee683a1c389dd84b60c44ab1b7b7",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "52943efd787e02f05b0ebd4c284d40b39c3c754651634dab098fb71a1f57f544",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "7a0148c10b0aa720f607062c42e1cde4af99e5ad2b4f8de88e90148b054d332e",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "0d3dd5418adf2eca7de62e430035ee3126bf201726027a6b8987d88449da1e52",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
     "experiments/php-compat-v06-probe/fixtures/dispatcher.php": "ab36117075f8e7a27ccb54c792e58779cab86565add8948db4b7b9706056d7c1",
     "experiments/php-compat-v06-probe/fixtures/handle_driver.php": "aa5d6b67b18e8989bd481d02abff695042b3307dbc856844442e7e878e3910db",
@@ -404,44 +405,45 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/publish_contract.py": "b92c0de2ff08777d8700324d6f73f7c109b13f9b14f6f5eb2209d831d0f101da",
     "experiments/php-compat-v06-probe/run_check.py": "9b389ac8e763c3623817ca647f79996a555f7ca7958ae27deb458030f43c8287",
+    "experiments/php-compat-v06-probe/wasm/bridge_check.py": "a5423d2beb6d51a4dc8e141bf937bc232617b4091680bbd00193f119164d70e0",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/wp_action_hook_key_poc.py": "0a5d8798fe2939a934161dedb57e9abefd166060498ec5157d2519aeac1b1f21",
     "experiments/php-compat-v06-probe/wp_action_singleton_object_poc.py": "b452234854f4ff4d1d21c5a6294f5153d718d2d83bb47b9fd68b989016220c53",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ea3932c01e319449a18891e244cf83b677ff32422436229784dc4538ef55170c",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e5e8919abe73d3abf059b59edcec6267e4694a96b7d1b388e447cd0b49b60ad7",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "scripts/wordpress_reference.py": "b1ef6a84c6fd704913fa6dc1e87877f951ca808a10d48a5aab1882f25e969303"
   },
   "owned_child": {
-    "pid": 29024,
+    "pid": 36800,
     "returncode": 0,
     "reaped": true
   },
   "action_owned_child": {
-    "pid": 35572,
+    "pid": 25524,
     "returncode": 0,
     "reaped": true
   },
   "raw_capture": {
     "stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-stdout.bin",
-      "bytes": 126450,
-      "sha256": "adb3cca2f72151c3dfcdfa315635fed7a62718464ac7606d3411a46a55f48587"
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T043618.089344Z-stdout.bin",
+      "bytes": 127990,
+      "sha256": "1704beb92be05e01d6e5d6cfeec22c04dc90a4d828590f6f92aec3eea8ca3ae3"
     },
     "stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T043618.089344Z-stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "action_stdout": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-action_stdout.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T043618.089344Z-action_stdout.bin",
       "bytes": 87294,
       "sha256": "c4180b75023d189cadaf22038e51e7da0e7c176e572296f4417ce10cc402434b"
     },
     "action_stderr": {
-      "path": "target/php-compat-v06-probe/wp-callables-20261116T114330.572337Z-action_stderr.bin",
+      "path": "target/php-compat-v06-probe/wp-callables-20261117T043618.089344Z-action_stderr.bin",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
@@ -7325,6 +7327,72 @@
         "stack_unchanged_after": true,
         "current_filter_unchanged_after": true,
         "doing_filter_unchanged_after": true
+      },
+      "filter_resource_priority": {
+        "priority_resource": {
+          "type": "resource",
+          "resource_type": "stream",
+          "resource_id": 12
+        },
+        "events": [
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          },
+          {
+            "event": "low",
+            "value": "seed"
+          },
+          {
+            "event": "resource",
+            "value": "seed:low",
+            "priority": 12,
+            "priority_type": "int",
+            "same_resource": true,
+            "resource_id": 12
+          },
+          {
+            "event": "integer_alias",
+            "value": "seed:low:resource"
+          },
+          {
+            "event": "high",
+            "value": "seed:low:resource:integer-alias"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          },
+          {
+            "event": "warning",
+            "severity": 2,
+            "message_hex": "5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"
+          }
+        ],
+        "has_any_before": true,
+        "has_resource_callback": 12,
+        "has_integer_priority_callback": 12,
+        "filtered": "seed:low:resource:integer-alias:high",
+        "removed_integer_alias": true,
+        "removed": true,
+        "has_callback_after_remove": false
       },
       "heap_filter_values": {
         "events": [
@@ -18820,11 +18888,11 @@
   },
   "scope": "Existing filter observations plus bounded resource-valued hook names and heap-valued Filter arguments, together with the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The resource case measures array-key integer projection, warning order, all/named callback state, strict doing_filter identity and current_filter after closing the dispatched resource. The heap case measures identity across priorities and nested apply_filters plus reference-cell mutation. This is a focused fixture claim, not arbitrary heap graph or full WordPress bootstrap acceptance.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-16T12:21:28.493539+00:00",
+    "observed_at_utc": "2026-11-17T04:57:27.933638+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "f3504a41c7ce7b43b680c555a5e73fb1c7b108612dc14278951e6dd3a9b00f8d",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261116T115139.492882Z-success.json",
-    "wasm_receipt_sha256": "01d5b5b8f376fedf944bc0b6cef919ecec1ba3ce70d6b020d9de7bfbe5166018",
+    "native_receipt_sha256": "b0473f41f42cdd317bb3ecbfe552fb1cf62a0a74b45b253c8ab28b3ff4e351f9",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261117T045103.510279Z-success.json",
+    "wasm_receipt_sha256": "e6dda21414e9ca3f452afb29db665d4b5b483eff4c54cd201a095f150829f87b",
     "matched_cases": [
       "base.identity_matrix",
       "base.function_string",
@@ -18929,6 +18997,15 @@
       "filter_resource_hook.stack_unchanged_after",
       "filter_resource_hook.current_filter_unchanged_after",
       "filter_resource_hook.doing_filter_unchanged_after",
+      "filter_resource_priority.priority_resource",
+      "filter_resource_priority.events",
+      "filter_resource_priority.has_any_before",
+      "filter_resource_priority.has_resource_callback",
+      "filter_resource_priority.has_integer_priority_callback",
+      "filter_resource_priority.filtered",
+      "filter_resource_priority.removed_integer_alias",
+      "filter_resource_priority.removed",
+      "filter_resource_priority.has_callback_after_remove",
       "heap_filter_values.events",
       "heap_filter_values.returned_same_replacement",
       "heap_filter_values.returned_marker",
@@ -18948,11 +19025,11 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-16T12:22:36.413620+00:00",
+    "observed_at_utc": "2026-11-17T04:58:35.256301+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
-    "native_receipt_sha256": "f3504a41c7ce7b43b680c555a5e73fb1c7b108612dc14278951e6dd3a9b00f8d",
-    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261116T120739.776957Z-success.json",
-    "wasm_receipt_sha256": "d1cd11458e3170bce3d28068fbb39a5b91e10a55d438fb9f1921145b8392aaf5",
+    "native_receipt_sha256": "b0473f41f42cdd317bb3ecbfe552fb1cf62a0a74b45b253c8ab28b3ff4e351f9",
+    "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261117T045303.238956Z-success.json",
+    "wasm_receipt_sha256": "e48f407d2f54610d9516c2d387a21a879ecba04d0d4c6979de66df59df829721",
     "matched_cases": [
       "action_api.aliases",
       "action_api.do_action_returns",

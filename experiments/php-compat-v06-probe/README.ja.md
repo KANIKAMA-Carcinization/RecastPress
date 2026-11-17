@@ -56,7 +56,7 @@ remove_filterのpriority操作もWordPressの各PHP境界ごとにmap版を保�
 
 実行中のforeachは、既に呼び終えたcallbackも含め、bucket全体のsnapshotを末尾まで保持します。削除済みobjectのdestructorはsnapshotが終わってから、次の優先度のnative／PHP callbackへ進む前に実行します。例外中の解放には明示的なrelease_callable_unwind effectを使い、PHP自身のtry/finallyでpending Throwable Aの下で最終leaseを解放します。通常解放ならAを維持し、destructorがBを投げればPHPが作るprevious chainを持った同じBを返します。normal／unwindのどちらもcallable slotの最終解放ACKを要求します。これらは測定した有限のpriority／解放ケースであり、全callback property・PHP heapの受入は示しません。
 
-filter valueと追加引数は、scalar／ordered arrayをmaterializeするPOD形式に加え、request-scoped Argument handleでPHP heap値を保持します。新しいfixtureはobject identityとpriority間の返値伝播、reference cell配列の更新、nested `apply_filters()`後の親callback再開、raw `$wp_current_filter` stackのentry／exit一致を固定WordPressで記録し、native／PHP-Wasm bridgeでも同じ観測を照合します。対象はこのbounded fixtureであり、一般heap codecや任意のPHP値グラフ全体は主張しません。hook名とpriorityにはnull／bool／int／float／byte stringを扱い、正規化済みの配列キーと元のscalarを分離します。current_filterとall listenerは元のscalar、doing_filterはPHPの厳密比較を使い、NaNは自分自身とも一致しません。priorityの安定したSORT_NUMERIC順と、実行中のmin／比較・厳密一致による反復位置の補正を区別します。配列／objectの不正なhook・priorityは該当するPHPアクセスから実TypeErrorを返します。成功するresource hook／priority、WordPress global変数の直接読書き、production WP dispatcherとhook／Queryの受入はこのfixtureに含みません。registry closure前は全callback releaseを実行し、registry close後の利用を拒否します。
+filter valueと追加引数は、scalar／ordered arrayをmaterializeするPOD形式に加え、request-scoped Argument handleでPHP heap値を保持します。新しいfixtureはobject identityとpriority間の返値伝播、reference cell配列の更新、nested `apply_filters()`後の親callback再開、raw `$wp_current_filter` stackのentry／exit一致を固定WordPressで記録し、native／PHP-Wasm bridgeでも同じ観測を照合します。対象はこのbounded fixtureであり、一般heap codecや任意のPHP値グラフ全体は主張しません。hook名とpriorityにはnull／bool／int／float／byte stringに加えてresource priorityを扱い、正規化済みの配列キーと元のscalarを分離します。resource priorityは整数resource IDへのkey投影、警告順、dispatch/current_priority、has_filter、remove_filterを観測します。current_filterとall listenerは元のscalar、doing_filterはPHPの厳密比較を使い、NaNは自分自身とも一致しません。priorityの安定したSORT_NUMERIC順と、実行中のmin／比較・厳密一致による反復位置の補正を区別します。配列／objectの不正なhook・priorityは該当するPHPアクセスから実TypeErrorを返します。resource hook/priorityのactive iteration中の変更、WordPress global変数の直接読書き、production WP dispatcherとhook／Queryの受入はこのfixtureに含みません。registry closure前は全callback releaseを実行し、registry close後の利用を拒否します。
 
 ### Action API family / isolated native and Wasm profile
 
@@ -96,7 +96,9 @@ publish scenarioはPHPが読み出しごとに発行した観測番号1〜10を�
 
 固定PHP-WASIX artifactによる別の試行は [Wasm profile](wasm/README.md) に記録します。Windowsでのコンパイル失敗、Linuxでの固定oracle、nativeの双方向bridgeはそれぞれ別の証跡です。Linuxでは共通peerを使った実Wasmの正常系・例外系bridgeにも成功しました。WordPress本体、production handle、workerの終了・資源管理全体の受入は残っています。
 
-2026-11-16のCallable Filter単位で、resourceをhook名にしたnamed／all-only dispatchを固定WordPress、native bridge、実PHP-Wasmで照合した。resource IDの整数key投影とE_WARNING順、`all`／named callbackの引数、`current_filter()`、resource identityによる`doing_filter()`、dispatch中にresourceをcloseした後のstack状態を記録する。nativeとWasmでは実行ごとのresource IDをoracle値へ対応付けて比較し、残りの値とwarning順は完全一致を要求する。priority resourceの挙動はこの単位に含めない。
+2026-11-16のCallable Filter単位で、resourceをhook名にしたnamed／all-only dispatchを固定WordPress、native bridge、実PHP-Wasmで照合した。resource IDの整数key投影とE_WARNING順、`all`／named callbackの引数、`current_filter()`、resource identityによる`doing_filter()`、dispatch中にresourceをcloseした後のstack状態を記録する。nativeとWasmでは実行ごとのresource IDをoracle値へ対応付けて比較し、残りの値とwarning順は完全一致を要求する。
+
+2026-11-17のCallable Filter priority単位では、resource priorityの配列key化、登録時2件／remove時4件のE_WARNING順、整数resource ID順のdispatch、`current_priority()`、`has_filter()`のresource/int別結果、remove後の状態を固定WordPress、native bridge、実PHP-Wasmで照合する。active iteration中にpriorityを変更するケースは別単位に残す。
 
 ## 共通ピア実装
 

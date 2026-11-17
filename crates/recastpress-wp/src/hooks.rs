@@ -61,7 +61,6 @@ impl HookScalar {
         match (self, key) {
             (Self::Integer(left), PhpKey::Integer(right)) => left == right,
             (Self::Bytes(left), PhpKey::Bytes(right)) => left == right,
-            (Self::Resource { resource_id, .. }, PhpKey::Integer(right)) => resource_id == right,
             _ => false,
         }
     }
@@ -1289,10 +1288,10 @@ impl Hook {
 #[cfg(test)]
 mod priority_comparison_tests {
     use super::{
-        PhpNumber, compare_php_numbers, numeric_prefix, numeric_sort_value, numeric_string,
-        php_priority_less,
+        HookScalar, PhpNumber, compare_php_numbers, numeric_prefix, numeric_sort_value,
+        numeric_string, php_priority_less,
     };
-    use crate::value::PhpKey;
+    use crate::{continuation::{PhpHandle, PhpHandleKind, RequestGeneration}, value::PhpKey};
     use std::cmp::Ordering;
 
     #[test]
@@ -1369,5 +1368,18 @@ mod priority_comparison_tests {
             numeric_string(b"-1e309"),
             Some(PhpNumber::Float(f64::NEG_INFINITY))
         );
+    }
+
+    #[test]
+    fn resource_priority_is_not_strictly_equal_to_its_integer_array_key() {
+        let handle = PhpHandle::new(RequestGeneration::new(71), PhpHandleKind::Argument, 0, 1, 1);
+        let resource = HookScalar::Resource {
+            handle,
+            identity: handle,
+            resource_type: "stream".into(),
+            resource_id: 8,
+        };
+        assert!(!resource.strict_eq_key(&PhpKey::Integer(8)));
+        assert!(!resource.strict_eq_key(&PhpKey::Integer(9)));
     }
 }

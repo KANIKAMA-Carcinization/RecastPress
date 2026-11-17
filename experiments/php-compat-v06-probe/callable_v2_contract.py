@@ -4311,6 +4311,40 @@ def normalize_filter_resource_hook(expected, actual):
     return normalize(expected)
 
 
+def normalize_filter_resource_priority(expected, actual):
+    """Normalize only the process-local ID of the priority resource."""
+    expected = json.loads(json.dumps(expected))
+    expected_id = expected['priority_resource']['resource_id']
+    actual_id = actual['priority_resource']['resource_id']
+    if type(expected_id) is not int or expected_id <= 0 or type(actual_id) is not int or actual_id <= 0:
+        raise ValueError('Filter resource priority ID differs')
+    replacements = ((f'Resource ID#{expected_id}', f'Resource ID#{actual_id}'),
+                    (f'({expected_id})', f'({actual_id})'))
+
+    def normalize(value, field=None):
+        if isinstance(value, dict):
+            result = {key: normalize(item, key) for key, item in value.items()}
+            if result.get('type') in ('resource', 'resource_closed') and result.get('resource_id') == expected_id:
+                result['resource_id'] = actual_id
+            if field in ('priority', 'resource_id', 'priority_id', 'callback_priority',
+                         'has_resource_callback', 'has_integer_priority_callback') and type(value) is int and value == expected_id:
+                return actual_id
+            if isinstance(result.get('message_hex'), str):
+                message = bytes.fromhex(result['message_hex']).decode('ascii')
+                for old, new in replacements:
+                    message = message.replace(old, new)
+                result['message_hex'] = message.encode('ascii').hex()
+            return result
+        if isinstance(value, list):
+            return [normalize(item, field) for item in value]
+        if field in ('priority', 'resource_id', 'priority_id', 'callback_priority',
+                     'has_resource_callback', 'has_integer_priority_callback') and type(value) is int and value == expected_id:
+            return actual_id
+        return value
+
+    return normalize(expected)
+
+
 def validate_action_observation(value):
     exact(value, ('action_api',), 'action API program observation')
     if EXPECTED_ACTION_API is None:
@@ -4329,16 +4363,19 @@ def validate_action_observation(value):
 EXPECTED_HEAP_FILTER_VALUES = json.loads(r'''{"events":[{"event":"all","hook":"callable-heap-filter","value_marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"first-enter","same_original":true,"marker":"seed","cell":0,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"all","hook":"callable-heap-filter-nested","value_marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_filter":true},{"event":"nested-enter","same_original":true,"marker":"first","cell":1,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"nested-exit","marker":"nested","cell":2,"current_filter":"callable-heap-filter-nested","doing_parent":true,"doing_nested":true},{"event":"first-resume","same_original":true,"nested_same":true,"marker":"nested","cell":2,"current_filter":"callable-heap-filter","doing_filter":true},{"event":"second","same_original":true,"marker":"nested","cell":2},{"event":"third","same_replacement":true,"marker":"second","cell":2}],"returned_same_replacement":true,"returned_marker":"third","original_marker":"nested","reference_cell":2,"did_filter":{"parent":1,"nested":1},"current_filter_after":101001.5,"doing_filter_after":true,"doing_parent_after":false,"doing_nested_after":false,"stack_before":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_after":["callable-lifetime","callable-invalid-function","callable-invalid-object",101001.5],"stack_unchanged_after":true,"current_filter_unchanged_after":true,"doing_filter_unchanged_after":true}''')
 EXPECTED_FILTER_RESOURCE_HOOK = json.loads(r'''{"named_hook":{"type":"resource_closed","resource_type":"Unknown","resource_id":9},"all_only_hook":{"type":"resource","resource_type":"stream","resource_id":10},"events":[{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"all","hook":{"type":"resource","resource_type":"stream","resource_id":9},"args":[{"type":"string","hex":"73656564"},{"type":"string","hex":"6578747261"}],"current_filter":{"type":"resource","resource_type":"stream","resource_id":9},"doing_filter":true},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"warning","severity":2,"message_hex":"5265736f7572636520494423392075736564206173206f66667365742c2063617374696e6720746f20696e746567657220283929"},{"event":"named","value":"seed","extra":"extra","current_filter":{"type":"resource","resource_type":"stream","resource_id":9},"same_current":true,"doing_filter":true,"doing_same_resource":true,"doing_integer_alias":false,"doing_other_resource":false,"did_filter":1},{"event":"closed_during_dispatch","current_filter":{"type":"resource_closed","resource_type":"Unknown","resource_id":9},"same_current":true,"doing_filter":true,"doing_same_resource":true},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"},{"event":"all","hook":{"type":"resource","resource_type":"stream","resource_id":10},"args":[{"type":"string","hex":"616c6c2d6f6e6c792d73656564"}],"current_filter":{"type":"resource","resource_type":"stream","resource_id":10},"doing_filter":true},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331302075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313029"}],"named_result":"seed:extra","all_only_result":"all-only-seed","current_filter_after":{"type":"float","bits":"40f8a89800000000"},"doing_filter_after":true,"doing_named_after":false,"doing_all_only_after":false,"did_named_after":1,"did_all_only_after":1,"stack_before":[{"type":"string","hex":"63616c6c61626c652d6c69666574696d65"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d66756e6374696f6e"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d6f626a656374"},{"type":"float","bits":"40f8a89800000000"}],"stack_after":[{"type":"string","hex":"63616c6c61626c652d6c69666574696d65"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d66756e6374696f6e"},{"type":"string","hex":"63616c6c61626c652d696e76616c69642d6f626a656374"},{"type":"float","bits":"40f8a89800000000"}],"stack_unchanged_after":true,"current_filter_unchanged_after":true,"doing_filter_unchanged_after":true}''')
 
+EXPECTED_FILTER_RESOURCE_PRIORITY = json.loads(r'''{"priority_resource":{"type":"resource","resource_type":"stream","resource_id":12},"events":[{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"},{"event":"low","value":"seed"},{"event":"resource","value":"seed:low","priority":12,"priority_type":"int","same_resource":true,"resource_id":12},{"event":"integer_alias","value":"seed:low:resource"},{"event":"high","value":"seed:low:resource:integer-alias"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"},{"event":"warning","severity":2,"message_hex":"5265736f757263652049442331322075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313229"}],"has_any_before":true,"has_resource_callback":12,"has_integer_priority_callback":12,"filtered":"seed:low:resource:integer-alias:high","removed_integer_alias":true,"removed":true,"has_callback_after_remove":false}''')
+
+
 def validate_observation(value):
     if isinstance(value, dict) and set(value) == {'action_api'}:
         validate_action_observation(value)
         return
     action_group = None
     if isinstance(value, dict) and 'action_api' in value:
-        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'heap_filter_values', 'action_api'), 'program observation')
+        exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'filter_resource_priority', 'heap_filter_values', 'action_api'), 'program observation')
         action_group = value['action_api']
         value = {key: item for key, item in value.items() if key != 'action_api'}
-    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'heap_filter_values'), 'program observation')
+    exact(value, ('base', 'coercions', 'counter_cow', 'priority_cow', 'remove_cow', 'hook_unset_reentry', 'filter_resource_hook', 'filter_resource_priority', 'heap_filter_values'), 'program observation')
     _require_exact(value['base'], EXPECTED_OBSERVATION, 'original twenty cases')
     if EXPECTED_COERCIONS is None:
         raise ValueError('pinned WordPress coercion observation has not been frozen')
@@ -4357,6 +4394,14 @@ def validate_observation(value):
               'current_filter_after', 'doing_filter_after', 'doing_named_after', 'doing_all_only_after',
               'did_named_after', 'did_all_only_after', 'stack_before', 'stack_after', 'stack_unchanged_after',
               'current_filter_unchanged_after', 'doing_filter_unchanged_after'), 'resource-valued Filter hook fixture')
+    if EXPECTED_FILTER_RESOURCE_PRIORITY is not None:
+        expected_priority = normalize_filter_resource_priority(EXPECTED_FILTER_RESOURCE_PRIORITY, value['filter_resource_priority'])
+        _require_exact(value['filter_resource_priority'], expected_priority,
+                       'resource-valued Filter priority identity and warning cases')
+    else:
+        exact(value['filter_resource_priority'], ('priority_resource', 'events', 'has_any_before',
+              'has_resource_callback', 'has_integer_priority_callback', 'filtered', 'removed',
+              'removed_integer_alias', 'has_callback_after_remove'), 'resource-valued Filter priority fixture')
     _require_exact(value['heap_filter_values'], EXPECTED_HEAP_FILTER_VALUES, 'heap-valued filter identity and reference cases')
     if action_group is not None:
         validate_action_observation({'action_api': action_group})
@@ -4575,6 +4620,7 @@ def action_self_check():
             'remove_cow': EXPECTED_REMOVE_COW,
             'hook_unset_reentry': EXPECTED_HOOK_UNSET_REENTRY,
             'filter_resource_hook': EXPECTED_FILTER_RESOURCE_HOOK,
+            'filter_resource_priority': EXPECTED_FILTER_RESOURCE_PRIORITY,
             'heap_filter_values': EXPECTED_HEAP_FILTER_VALUES,
         }, 'nested_caught_throw': None})
     validate_result(filter_result)
@@ -4989,6 +5035,23 @@ def validate_transcript(streams, result):
                 if payload['arguments']['null_to_zero'] and value['original']['type'] == 'null':
                     raise ValueError('null priority was not normalized to effective int zero')
                 _require_exact(value['key'], normalized_scalar_key(value['original']), 'PHP scalar/key relationship')
+                if value['original']['type'] == 'resource':
+                    resource = value['original']
+                    resource_id = resource.get('resource_id')
+                    if type(resource_id) is not int or resource_id <= 0 or value['key'] != {
+                            'type': 'int', 'hex': str(resource_id).encode().hex()}:
+                        raise ValueError('resource priority array key projection differs')
+                    if resource.get('handle') != payload['arguments']['handle']:
+                        raise ValueError('resource priority argument handle differs')
+                    identity = handle(resource.get('identity'), 'argument')
+                    identity_key = (resource_id, resource.get('resource_type'))
+                    observed_identities = context.setdefault('resource_priority_identities', {})
+                    previous_identity = observed_identities.setdefault(identity_key, identity)
+                    if previous_identity != identity:
+                        raise ValueError('resource priority ID changed identity within API call')
+                    if any(other_key[0] != resource_id and other_identity == identity
+                           for other_key, other_identity in observed_identities.items()):
+                        raise ValueError('distinct resource priorities share an identity handle')
                 previous_key = normalized_arguments.get((argument_id, payload['arguments']['null_to_zero']))
                 if previous_key is not None:
                     _require_exact(value, previous_key, 'immutable argument normalization across phases')
@@ -5174,7 +5237,7 @@ def validate_transcript(streams, result):
 
 def self_check():
     """Exercise structural replay while keeping unfrozen oracle data a failing gate."""
-    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY, EXPECTED_HEAP_FILTER_VALUES, EXPECTED_FILTER_RESOURCE_HOOK
+    global EXPECTED_COERCIONS, EXPECTED_COUNTER_COW, EXPECTED_PRIORITY_COW, EXPECTED_REMOVE_COW, EXPECTED_HOOK_UNSET_REENTRY, EXPECTED_HEAP_FILTER_VALUES, EXPECTED_FILTER_RESOURCE_HOOK, EXPECTED_FILTER_RESOURCE_PRIORITY
     import copy
     descriptor = {'request': REQUEST, 'kind': 'argument', 'slot': 0, 'generation': 1, 'token': '0102030405060708'}
     handle(descriptor, 'argument')
@@ -5210,6 +5273,7 @@ def self_check():
     previous_hook_unset_reentry = EXPECTED_HOOK_UNSET_REENTRY
     previous_heap_filter_values = EXPECTED_HEAP_FILTER_VALUES
     previous_filter_resource_hook = EXPECTED_FILTER_RESOURCE_HOOK
+    previous_filter_resource_priority = EXPECTED_FILTER_RESOURCE_PRIORITY
     sample = {'self_test_only': True}
     sample_counter_cow = {'self_test_only': True}
     sample_priority_cow = {'self_test_only': True}
@@ -5223,10 +5287,16 @@ def self_check():
         'doing_named_after': False, 'doing_all_only_after': False, 'did_named_after': 1,
         'did_all_only_after': 1, 'stack_before': [], 'stack_after': [], 'stack_unchanged_after': True,
         'current_filter_unchanged_after': True, 'doing_filter_unchanged_after': True}
+    sample_filter_resource_priority = {'priority_resource': {'type': 'resource', 'resource_type': 'stream', 'resource_id': 3},
+        'events': [], 'has_any_before': True, 'has_resource_callback': 3,
+        'has_integer_priority_callback': 3, 'filtered': 'seed:low:resource:integer-alias:high',
+        'removed_integer_alias': True, 'removed': True,
+        'has_callback_after_remove': False}
     observation = {'base': EXPECTED_OBSERVATION, 'coercions': sample, 'counter_cow': sample_counter_cow,
         'priority_cow': sample_priority_cow, 'remove_cow': sample_remove_cow,
         'hook_unset_reentry': sample_hook_unset_reentry,
         'filter_resource_hook': sample_filter_resource_hook,
+        'filter_resource_priority': sample_filter_resource_priority,
         'heap_filter_values': sample_heap_filter_values}
     for accepted in ({'type': 'null'}, {'type': 'int', 'value': '0'}):
         validate_did_filter_result(accepted)
@@ -5252,6 +5322,7 @@ def self_check():
         EXPECTED_HOOK_UNSET_REENTRY = sample_hook_unset_reentry
         EXPECTED_HEAP_FILTER_VALUES = sample_heap_filter_values
         EXPECTED_FILTER_RESOURCE_HOOK = sample_filter_resource_hook
+        EXPECTED_FILTER_RESOURCE_PRIORITY = sample_filter_resource_priority
         validate_result(result)
         frames = {'php': [], 'rust': []}
         def add(direction, kind, payload, parent=None):
@@ -5297,6 +5368,7 @@ def self_check():
         EXPECTED_HOOK_UNSET_REENTRY = previous_hook_unset_reentry
         EXPECTED_HEAP_FILTER_VALUES = previous_heap_filter_values
         EXPECTED_FILTER_RESOURCE_HOOK = previous_filter_resource_hook
+        EXPECTED_FILTER_RESOURCE_PRIORITY = previous_filter_resource_priority
     if previous is None:
         try:
             validate_result(result)
@@ -5320,6 +5392,7 @@ TRANSCRIPT_NEGATIVE_INVENTORY = (
     'wrong_filter_value_handle', 'wrong_filter_extra_handle', 'wrong_filter_callback_marker',
     'wrong_filter_result_handle',
     'wrong_filter_all_flag', 'wrong_filter_release_order', 'wrong_filter_resource_identity',
+    'wrong_filter_resource_priority_identity',
     'wrong_unwind_payload_fields', 'wrong_unwind_callable_handle', 'wrong_unwind_throwable_kind',
     'wrong_unwind_throwable_token', 'false_unwind_release_ack',
     'live_registry_close', 'wrong_transport', 'extra_frame', 'duplicate_decoded_key', 'unterminated_frame',
@@ -5639,6 +5712,18 @@ def reject_mutated_transcripts(streams, result):
                        for resume in source['php']
                        if resume.get('kind') == 'resume'
                        and resume.get('payload', {}).get('effect_id') == item.get('payload', {}).get('effect_id')), {})))
+    resource_priority_key_index = find('rust', lambda item: item.get('kind') == 'invoke_php'
+        and item.get('payload', {}).get('operation') == 'boundary'
+        and item.get('payload', {}).get('action') == 'array_key'
+        and item.get('payload', {}).get('arguments', {}).get('access') == 'write'
+        and (lambda completion: completion.get('kind') == 'value'
+             and completion.get('value', {}).get('original', {}).get('type') == 'resource'
+             and completion.get('value', {}).get('original', {}).get('resource_id')
+                 == result.get('php_observation', {}).get('filter_resource_priority', {})
+                    .get('priority_resource', {}).get('resource_id'))(
+                 next((resume.get('payload', {}).get('completion', {})
+                       for resume in source['php'] if resume.get('kind') == 'resume'
+                       and resume.get('payload', {}).get('effect_id') == item.get('payload', {}).get('effect_id')), {})))
     def encode(frames):
         return {key: b''.join((json.dumps(item, separators=(',', ':')) + '\n').encode() for item in entries) for key, entries in frames.items()}
     def flip_token(descriptor):
@@ -5703,6 +5788,9 @@ def reject_mutated_transcripts(streams, result):
         elif name == 'wrong_filter_resource_identity':
             resume = resume_for(resource_hook_scalar_index)
             flip_token(frames['php'][resume]['payload']['completion']['value']['value']['identity'])
+        elif name == 'wrong_filter_resource_priority_identity':
+            resume = resume_for(resource_priority_key_index)
+            flip_token(frames['php'][resume]['payload']['completion']['value']['original']['identity'])
         elif name == 'wrong_unwind_payload_fields': frames['rust'][unwind_index]['payload'].pop('throwable')
         elif name == 'wrong_unwind_callable_handle': flip_token(frames['rust'][unwind_index]['payload']['handle'])
         elif name == 'wrong_unwind_throwable_kind': frames['rust'][unwind_index]['payload']['throwable']['kind'] = 'callable'

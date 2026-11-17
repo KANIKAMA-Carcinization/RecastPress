@@ -2,12 +2,12 @@
   "schema": "recastpress.native-php-continuation-probe.v1",
   "status": "passed",
   "evidence_scope": "native PHP 8.5.12 JSONL ↔ Rust in-memory continuation state machine; not WordPress and not PHP-Wasm",
-  "recorded_at_utc": "2026-11-16T11:43:20+00:00",
+  "recorded_at_utc": "2026-11-17T04:41:12+00:00",
   "source_sha256": {
     "experiments/php-compat-v06-probe/run_check.py": "9b389ac8e763c3623817ca647f79996a555f7ca7958ae27deb458030f43c8287",
     "crates/recastpress-wp/examples/v06_bridge_probe.rs": "c4bc3c6e3dee3452d429931ccbea3675c526300b218e98c3802db1ea4d38d366",
     "crates/recastpress-wp/examples/v06_bridge_peer/mod.rs": "b377207ffa59a1358e41e0f178fd1a1f76010fa9a23b1da00ee7bfab8bb99b5b",
-    "experiments/php-compat-v06-probe/README.ja.md": "fc44b476744b62ada44978ca740a2bb739090819bf6518635a60325c0c6aa50d",
+    "experiments/php-compat-v06-probe/README.ja.md": "76b65cfd8044c64d709f4519f75dd36e993870c4439d20b6682ce17bcd2d614c",
     "Cargo.toml": "70918d649e253d64c1d9de3107cc5543c502763a1aa6ab82c7be706b32bb4429",
     "Cargo.lock": "2ece7572d384a23acf3ee6b85fa10582908167103d7032884b4a3dea9de34251",
     "crates/recastpress-wp/Cargo.toml": "68d276189527943d04ef52bf13e5664ccd448104b901c2a8c5db97c8662be104",
@@ -24,8 +24,8 @@
     "experiments/php-compat-v06-probe/hook_contract.py": "705df7e69d9cad10dd3377d31d2289b03173b6e79c941c54b7a72c83e57e6e58",
     "experiments/php-compat-v06-probe/fixtures/hooks_driver.php": "6aa10c5e7bb21c748422ea25df53e30774f0ef8132eb48c3382721af32b5d45f",
     "experiments/php-compat-v06-probe/callable_contract.py": "da1391b4188fef25e106ac3bfac05ff4b20e98eaba653c98dea247dceed1f870",
-    "experiments/php-compat-v06-probe/callable_v2_contract.py": "2d92ac0b92b5ceafd9abcd07d1fba2e4e62a2794dde54ebabea9863e60d056a6",
-    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "ea3932c01e319449a18891e244cf83b677ff32422436229784dc4538ef55170c",
+    "experiments/php-compat-v06-probe/callable_v2_contract.py": "659e45f4ae39433ca48c9d6e51c9004d0186255136a7b993896039e2e42d7bd4",
+    "experiments/php-compat-v06-probe/wp_callable_oracle.py": "e5e8919abe73d3abf059b59edcec6267e4694a96b7d1b388e447cd0b49b60ad7",
     "experiments/php-compat-v06-probe/wp_action_global_state_poc.py": "b84ec0becd3fe8723f4ccd7414f6071e8b1ebe0135ac3f45900ad0b097bd1684",
     "experiments/php-compat-v06-probe/wp_action_counter_cow_poc.py": "406021a8f7a2f347ef3fa2332e3b2b2b4ac1cf8bed3bf67af9960da5e2c42951",
     "experiments/php-compat-v06-probe/fixtures/wp_action_counter_cow_poc.php": "d7dcfcadc635eb29cd8558afb2800f10549465ea8677aa067cf7784d9f77f329",
@@ -33,11 +33,11 @@
     "experiments/php-compat-v06-probe/fixtures/wp-action-singleton-object-poc.php": "767d23d58e5d363d3540614f982adca78959386871292d98929b9173ae7c8c6b",
     "experiments/php-compat-v06-probe/wp_action_hook_alias_poc.py": "ed68cae411890aa56c58f570f07532bf6e66ce51b018771350df5280280a5f0a",
     "experiments/php-compat-v06-probe/fixtures/wp_action_hook_alias_poc.php": "19638a476bdd8b8ab603e459c4c6b1a9da4f578daf9614cb76b784c942d026c5",
-    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "723a523ee443c03d027f2d7e9193621c63fdee683a1c389dd84b60c44ab1b7b7",
+    "experiments/php-compat-v06-probe/fixtures/callable_adapter.php": "52943efd787e02f05b0ebd4c284d40b39c3c754651634dab098fb71a1f57f544",
     "experiments/php-compat-v06-probe/fixtures/callable_driver.php": "b17e3f2ab6eb50144d213e0f1783a7989c5e4458280f6605d148c622b0dc8e94",
-    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "7a0148c10b0aa720f607062c42e1cde4af99e5ad2b4f8de88e90148b054d332e",
+    "experiments/php-compat-v06-probe/fixtures/callable_program.php": "0d3dd5418adf2eca7de62e430035ee3126bf201726027a6b8987d88449da1e52",
     "experiments/php-compat-v06-probe/fixtures/callable_wp_oracle.php": "94f2985e25ed6ee3bfb1e0fab4a37a16c01aa08aadd580ca2f32479661c52304",
-    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "516f0b69e9a518842f778d51053f1945ac47c2144123e93ef3f9b2f37a716690",
+    "experiments/php-compat-v06-probe/fixtures/CALLABLE_API_CONTRACT.md": "f91437e6a01650934bed12599a5b00da58be95e94349667205e53cf8a51e6fba",
     "experiments/php-compat-v06-probe/wp_hooks_oracle.py": "29a8f54cb0197a98488fa025e8906e39ec382666af9d3766b109b9048f85dcfa",
     "experiments/php-compat-v06-probe/fixtures/hooks_wp_oracle.php": "4f64aefd5e9ee07cc72ef2190fc05bdfdb4e3ecd8edd4f1a7bfa6f9e0feb2389",
     "experiments/php-compat-v06-probe/fixtures/HOOKS_THROWABLE_CONTRACT.md": "9ef742de412945b403a6b33ae3897c9f74a869b2861038a6598ad797d5ae9fdc",
@@ -75,7 +75,7 @@
     "crates/recastpress-wp/src/entity_names.rs": "e9fc409f3ff9276044b7948ae7e07b848fd958922bf392ce6e451642a7514ca2",
     "crates/recastpress-wp/src/filtered.rs": "6b2c8cab786e20c3926e85265194289fdd8bce4bc81da8d2363e68a20c7714e3",
     "crates/recastpress-wp/src/form_attributes.rs": "5bad6b25ff4f11014c0f7f6a56ccf0096831e2207db549fe5041759d9efd21f3",
-    "crates/recastpress-wp/src/hooks.rs": "4e4244fd5e71a2c1f020496bdf246fd5f25464c62b2394b2e988c558397ba517",
+    "crates/recastpress-wp/src/hooks.rs": "742bb7e8d27e9afd0dfbeb126d54492a05ee5277c3564bdd291a8c5c2cef321f",
     "crates/recastpress-wp/src/hr_bytes.rs": "ff7fb7c92b38192b7c79668ecf64e7dc398e94d1f43344b324998c91e93ca980",
     "crates/recastpress-wp/src/html.rs": "8c6af39ef6f803a5a675f3dc3c4496217ec32e44bf9d9495a7f7c152b215099a",
     "crates/recastpress-wp/src/html_class.rs": "08cde3029e618976901c409b5927d065ef58c2701b11149a0a54c7d46e9a0763",
@@ -216,7 +216,7 @@
     "cargo_profile": "debug",
     "features": "--no-default-features"
   },
-  "adapter_binary_sha256": "938f3124fd3bc7815ecdc0d8ad75159e18e64d02574de63dc9e24a538fbed47f",
+  "adapter_binary_sha256": "c0695be6ceef402cb312e6b37586571375e8d7613f85f8aaa7a4573bd1638a97",
   "limits": {
     "max_frame_bytes": 1048576,
     "max_total_bytes": 33554432,
@@ -254,8 +254,8 @@
   },
   "interactive_bridge": {
     "processes": {
-      "php": 11868,
-      "rust": 12908
+      "php": 37840,
+      "rust": 23728
     },
     "returncodes": {
       "php": 0,
@@ -312,12 +312,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-d9bdff2338c742af9ecfbd5b9c075eeb-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-d9bdff2338c742af9ecfbd5b9c075eeb-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-eec6fff2ac054c53a2232672dbbf288e-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-eec6fff2ac054c53a2232672dbbf288e-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/surface-d9bdff2338c742af9ecfbd5b9c075eeb-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/surface-d9bdff2338c742af9ecfbd5b9c075eeb-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/surface-eec6fff2ac054c53a2232672dbbf288e-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/surface-eec6fff2ac054c53a2232672dbbf288e-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -337,8 +337,8 @@
   },
   "throwable_abort_bridge": {
     "processes": {
-      "php": 9476,
-      "rust": 32888
+      "php": 33484,
+      "rust": 39292
     },
     "returncodes": {
       "php": 0,
@@ -401,12 +401,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-cce78494817f4838b00b59130f68e098-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-cce78494817f4838b00b59130f68e098-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-faedad8b4f5f4061a24c0b6fc8b02e49-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-faedad8b4f5f4061a24c0b6fc8b02e49-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/throwable-cce78494817f4838b00b59130f68e098-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/throwable-cce78494817f4838b00b59130f68e098-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/throwable-faedad8b4f5f4061a24c0b6fc8b02e49-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/throwable-faedad8b4f5f4061a24c0b6fc8b02e49-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -426,8 +426,8 @@
   },
   "public_state_publish_bridge": {
     "processes": {
-      "php": 25660,
-      "rust": 34740
+      "php": 17116,
+      "rust": 2252
     },
     "returncodes": {
       "php": 0,
@@ -575,12 +575,12 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-f0eda15036df4295b5391a8fd063e870-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-f0eda15036df4295b5391a8fd063e870-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-f3f2e4cb1ea34e26bcb58566fc07a3e2-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-f3f2e4cb1ea34e26bcb58566fc07a3e2-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/publish-f0eda15036df4295b5391a8fd063e870-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/publish-f0eda15036df4295b5391a8fd063e870-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/publish-f3f2e4cb1ea34e26bcb58566fc07a3e2-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/publish-f3f2e4cb1ea34e26bcb58566fc07a3e2-rust-stderr.bin"
       }
     },
     "process_output": {
@@ -601,8 +601,8 @@
   "handle_registry_bridges": {
     "handles": {
       "processes": {
-        "php": 24000,
-        "rust": 25000
+        "php": 34692,
+        "rust": 32436
       },
       "returncodes": {
         "php": 0,
@@ -677,18 +677,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-b23a5ad66a4b4e969357ad34b50f9324-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-b23a5ad66a4b4e969357ad34b50f9324-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-d81cbb09fec04987afd4ce62fadf62aa-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-d81cbb09fec04987afd4ce62fadf62aa-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles-b23a5ad66a4b4e969357ad34b50f9324-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles-b23a5ad66a4b4e969357ad34b50f9324-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles-d81cbb09fec04987afd4ce62fadf62aa-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles-d81cbb09fec04987afd4ce62fadf62aa-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3009,
-          "stdout_sha256": "fd7cad8b0af17fe2c6390e71ab6b498182e1647ea4b60d62a606e33e37f94683",
+          "stdout_sha256": "874f3fd86572ef5051ed6c014d48893a4ef310328f5ce3e0ac630e2293921cbf",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -702,8 +702,8 @@
     },
     "handles_abort": {
       "processes": {
-        "php": 12860,
-        "rust": 32676
+        "php": 35976,
+        "rust": 3104
       },
       "returncodes": {
         "php": 0,
@@ -781,18 +781,18 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-6c832ca0b2ec4f75bd7c134a51065451-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-6c832ca0b2ec4f75bd7c134a51065451-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-befe1f9cab254bb48b913f106b23a056-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-befe1f9cab254bb48b913f106b23a056-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/handles_abort-6c832ca0b2ec4f75bd7c134a51065451-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/handles_abort-6c832ca0b2ec4f75bd7c134a51065451-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/handles_abort-befe1f9cab254bb48b913f106b23a056-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/handles_abort-befe1f9cab254bb48b913f106b23a056-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3013,
-          "stdout_sha256": "4288d87a1889a193987105ee67f4795ce938278485303a6a4eee50cc2f60e87d",
+          "stdout_sha256": "7b5968fa5be141b8345824b7a52d4e5468eda2756e00751111fb9f6117e1c3cc",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
@@ -807,8 +807,8 @@
   },
   "resumable_hooks_bridge": {
     "processes": {
-      "php": 35888,
-      "rust": 10432
+      "php": 19860,
+      "rust": 38780
     },
     "returncodes": {
       "php": 0,
@@ -893,24 +893,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-dbbe387b8dae46b28dd1d1fb795cebdd-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-dbbe387b8dae46b28dd1d1fb795cebdd-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-fb1a941913f34868ba9269fd7c230a09-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-fb1a941913f34868ba9269fd7c230a09-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/hooks-dbbe387b8dae46b28dd1d1fb795cebdd-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/hooks-dbbe387b8dae46b28dd1d1fb795cebdd-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/hooks-fb1a941913f34868ba9269fd7c230a09-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/hooks-fb1a941913f34868ba9269fd7c230a09-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 2614,
-        "stdout_sha256": "77a218681ae6aeef454f804462658489d2f9190afb29b1ccae0342c107da2cd7",
+        "stdout_sha256": "04838095b0efd8964b5f441bd9f40ed4cf389914a2ab68a28ce1665a33ef8bdd",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1731,
-        "stdout_sha256": "fe9474837436091e59e023c7d700c3af63ed16011882a49e44451c775097d597",
+        "stdout_sha256": "142ccc2da22e3af23623ac6f70da5ba3e03631160725e8351de087dad019aae2",
         "stderr_bytes": 989,
         "stderr_sha256": "b2170e8dbd9b2d8283ab40889c57b9ca8bc7ea929d3aa33956624d410881bdd6"
       }
@@ -919,8 +919,8 @@
   "resumable_hook_throwable_bridges": {
     "hooks_catch": {
       "processes": {
-        "php": 21644,
-        "rust": 36916
+        "php": 25604,
+        "rust": 10440
       },
       "returncodes": {
         "php": 0,
@@ -1042,24 +1042,24 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c2084d2214d443799cdfe50b45617a01-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c2084d2214d443799cdfe50b45617a01-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-5fc1ac9d06564aee903fe100bb52cb17-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-5fc1ac9d06564aee903fe100bb52cb17-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-c2084d2214d443799cdfe50b45617a01-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-c2084d2214d443799cdfe50b45617a01-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_catch-5fc1ac9d06564aee903fe100bb52cb17-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_catch-5fc1ac9d06564aee903fe100bb52cb17-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 3123,
-          "stdout_sha256": "0d4ecb4bd68f3fdea421d61d21ddff3a1e1709ea3b0e6f4106308c1417fdb6ed",
+          "stdout_sha256": "4e07ce48ff81ed78d96dc774f180dc11288b2954758b61b77b2494577c9bf399",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1851,
-          "stdout_sha256": "f5f5164bcc55599ea8528663286aba7d188aafc51e893c5b874fb0842f86f1d6",
+          "stdout_sha256": "f82dd9f909f96cd53cd25e874e5a61adbb6e032ba571af52fe71f18718d29da2",
           "stderr_bytes": 1582,
           "stderr_sha256": "0f11d9444207a073ab9ae99a4eb3deca9f9980079e90beacc31b1d92d9aca5fc"
         }
@@ -1087,8 +1087,8 @@
     },
     "hooks_abort": {
       "processes": {
-        "php": 28488,
-        "rust": 26996
+        "php": 39172,
+        "rust": 38232
       },
       "returncodes": {
         "php": 0,
@@ -1112,7 +1112,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "eecf5e807bf98e33"
+              "token": "202c43391c020534"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1175,7 +1175,7 @@
               "kind": "throwable",
               "request": "51",
               "slot": 6,
-              "token": "eecf5e807bf98e33"
+              "token": "202c43391c020534"
             },
             "kind": "php_throwable",
             "message": "hooks child fixture throwable"
@@ -1249,26 +1249,26 @@
       },
       "raw_capture": {
         "php": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-74d682bff4b7447abfffeb562471035d-php-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-74d682bff4b7447abfffeb562471035d-php-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-7958d490a5114b75a4026e521cfaeb3f-php-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-7958d490a5114b75a4026e521cfaeb3f-php-stderr.bin"
         },
         "rust": {
-          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-74d682bff4b7447abfffeb562471035d-rust-stdout.bin",
-          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-74d682bff4b7447abfffeb562471035d-rust-stderr.bin"
+          "stdout": "target/php-compat-v06-probe/captures/hooks_abort-7958d490a5114b75a4026e521cfaeb3f-rust-stdout.bin",
+          "stderr": "target/php-compat-v06-probe/captures/hooks_abort-7958d490a5114b75a4026e521cfaeb3f-rust-stderr.bin"
         }
       },
       "process_output": {
         "php": {
           "stdout_bytes": 2526,
-          "stdout_sha256": "e18445a4cedaeacaa7402b75abe3a6b171b8ceec352a5b4b0c6b6ccfc931cefc",
+          "stdout_sha256": "49ea756fe1c2b9c7f40262df764d1bb8164d70f62aa3fbf211587c746271d0d8",
           "stderr_bytes": 0,
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rust": {
           "stdout_bytes": 1489,
-          "stdout_sha256": "ebc8e3d07d77ba9575c465ab3a5e7662e6d6d08e52807a7703f2a1100c985cf4",
+          "stdout_sha256": "a5776665d666f30d91f330852167d9972491452a8ecd4c036271d6e85e9ca565",
           "stderr_bytes": 1817,
-          "stderr_sha256": "0db30b5d892f5bd5aaea27a8f24c0cc0ce3351bacdecce8e59738c70b6256036"
+          "stderr_sha256": "f40ba54d9fa2ea14578c8e6c4b5bbb11d662800c9ded6e364c3a3da1bcb8fb31"
         }
       },
       "hook_transcript_rejections": [
@@ -1295,8 +1295,8 @@
   },
   "callable_api_bridge": {
     "processes": {
-      "php": 35736,
-      "rust": 11156
+      "php": 23472,
+      "rust": 31408
     },
     "returncodes": {
       "php": 0,
@@ -1304,9 +1304,9 @@
     },
     "scenario": "callable_api",
     "rust_marker": "V06_CALLABLES_OK continuation_peer=true",
-    "frames_from_php": 9063,
-    "frames_from_rust": 9062,
-    "relayed_bytes": 5923676,
+    "frames_from_php": 9153,
+    "frames_from_rust": 9152,
+    "relayed_bytes": 5985696,
     "all_reaped": true,
     "observations": {
       "rust_child": null,
@@ -8183,6 +8183,72 @@
           "current_filter_unchanged_after": true,
           "doing_filter_unchanged_after": true
         },
+        "filter_resource_priority": {
+          "priority_resource": {
+            "type": "resource",
+            "resource_type": "stream",
+            "resource_id": 13
+          },
+          "events": [
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            },
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            },
+            {
+              "event": "low",
+              "value": "seed"
+            },
+            {
+              "event": "resource",
+              "value": "seed:low",
+              "priority": 13,
+              "priority_type": "int",
+              "same_resource": true,
+              "resource_id": 13
+            },
+            {
+              "event": "integer_alias",
+              "value": "seed:low:resource"
+            },
+            {
+              "event": "high",
+              "value": "seed:low:resource:integer-alias"
+            },
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            },
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            },
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            },
+            {
+              "event": "warning",
+              "severity": 2,
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329"
+            }
+          ],
+          "has_any_before": true,
+          "has_resource_callback": 13,
+          "has_integer_priority_callback": 13,
+          "filtered": "seed:low:resource:integer-alias:high",
+          "removed_integer_alias": true,
+          "removed": true,
+          "has_callback_after_remove": false
+        },
         "heap_filter_values": {
           "events": [
             {
@@ -8279,26 +8345,26 @@
       }
     },
     "expected_frame_counts": {
-      "php": 9063,
-      "rust": 9062
+      "php": 9153,
+      "rust": 9152
     },
     "callable_result": {
       "api_counts": {
-        "add_filter": 292,
-        "apply_filters": 153,
+        "add_filter": 296,
+        "apply_filters": 154,
         "current_filter": 83,
         "did_filter": 97,
         "doing_filter": 365,
-        "has_filter": 468,
-        "remove_filter": 110
+        "has_filter": 472,
+        "remove_filter": 112
       },
-      "argument_release_effects": 1485,
-      "boundary_effects": 5427,
-      "callback_invocations": 300,
+      "argument_release_effects": 1496,
+      "boundary_effects": 5486,
+      "callback_invocations": 305,
       "continuation_depth_after": 0,
       "continuation_peer": true,
-      "frames_from_php": 9063,
-      "frames_from_rust": 9062,
+      "frames_from_php": 9153,
+      "frames_from_rust": 9152,
       "late_call_rejected": true,
       "late_resume_rejected": true,
       "nested_caught_throw": null,
@@ -12432,6 +12498,72 @@
           ],
           "stack_unchanged_after": true
         },
+        "filter_resource_priority": {
+          "events": [
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            },
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            },
+            {
+              "event": "low",
+              "value": "seed"
+            },
+            {
+              "event": "resource",
+              "priority": 13,
+              "priority_type": "int",
+              "resource_id": 13,
+              "same_resource": true,
+              "value": "seed:low"
+            },
+            {
+              "event": "integer_alias",
+              "value": "seed:low:resource"
+            },
+            {
+              "event": "high",
+              "value": "seed:low:resource:integer-alias"
+            },
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            },
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            },
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            },
+            {
+              "event": "warning",
+              "message_hex": "5265736f757263652049442331332075736564206173206f66667365742c2063617374696e6720746f20696e74656765722028313329",
+              "severity": 2
+            }
+          ],
+          "filtered": "seed:low:resource:integer-alias:high",
+          "has_any_before": true,
+          "has_callback_after_remove": false,
+          "has_integer_priority_callback": 13,
+          "has_resource_callback": 13,
+          "priority_resource": {
+            "resource_id": 13,
+            "resource_type": "stream",
+            "type": "resource"
+          },
+          "removed": true,
+          "removed_integer_alias": true
+        },
         "heap_filter_values": {
           "current_filter_after": 101001.5,
           "current_filter_unchanged_after": true,
@@ -15271,32 +15403,32 @@
         "closed_read_rejected": true,
         "live_after_close": 0
       },
-      "release_effects": 279,
+      "release_effects": 283,
       "scenario": "callable_api",
       "state_after": "Finished"
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-ac54966ae9fa4640b3c98baa6068b943-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-ac54966ae9fa4640b3c98baa6068b943-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-b5c6e19688974089947a13792328863b-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-b5c6e19688974089947a13792328863b-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/callable_api-ac54966ae9fa4640b3c98baa6068b943-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/callable_api-ac54966ae9fa4640b3c98baa6068b943-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/callable_api-b5c6e19688974089947a13792328863b-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/callable_api-b5c6e19688974089947a13792328863b-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
-        "stdout_bytes": 2989604,
-        "stdout_sha256": "3ce129bdd044536f298d08eb095fbcd10faea7df93afaf9ec625f71a4affa598",
+        "stdout_bytes": 3020950,
+        "stdout_sha256": "ac70ba06e64bd5b59f5c114416854639debd7b74d2a9eb211e88e512cf4dcc8d",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
-        "stdout_bytes": 2934072,
-        "stdout_sha256": "a7c6162f429a32bbc76acdf282d4f6d4386b9419eb83efd1613ef71cbc2a089d",
-        "stderr_bytes": 127023,
-        "stderr_sha256": "6a88b58dc7471ef604bf02c48092e9186544d18d89f5dc45d1772e11e3743a02"
+        "stdout_bytes": 2964746,
+        "stdout_sha256": "faccb607258062c3665b3a178ce485f16aada6034debf551ad510a78b081a2cc",
+        "stderr_bytes": 128563,
+        "stderr_sha256": "d8324b472ff3e5ccedacff3faeabdbde6ed6064c6f0c9a74bc80e3e37663a7a3"
       }
     },
     "callable_transcript_rejections": [
@@ -15339,6 +15471,7 @@
       "wrong_filter_all_flag",
       "wrong_filter_release_order",
       "wrong_filter_resource_identity",
+      "wrong_filter_resource_priority_identity",
       "wrong_unwind_payload_fields",
       "wrong_unwind_callable_handle",
       "wrong_unwind_throwable_kind",
@@ -15353,8 +15486,8 @@
   },
   "action_api_bridge": {
     "processes": {
-      "php": 30056,
-      "rust": 34840
+      "php": 30948,
+      "rust": 30932
     },
     "returncodes": {
       "php": 0,
@@ -26826,24 +26959,24 @@
     },
     "raw_capture": {
       "php": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-260b42b414c44b15aab780813f4453d3-php-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-260b42b414c44b15aab780813f4453d3-php-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-fbec2ffded274fc1b5e4357ffcb95b16-php-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-fbec2ffded274fc1b5e4357ffcb95b16-php-stderr.bin"
       },
       "rust": {
-        "stdout": "target/php-compat-v06-probe/captures/action_api-260b42b414c44b15aab780813f4453d3-rust-stdout.bin",
-        "stderr": "target/php-compat-v06-probe/captures/action_api-260b42b414c44b15aab780813f4453d3-rust-stderr.bin"
+        "stdout": "target/php-compat-v06-probe/captures/action_api-fbec2ffded274fc1b5e4357ffcb95b16-rust-stdout.bin",
+        "stderr": "target/php-compat-v06-probe/captures/action_api-fbec2ffded274fc1b5e4357ffcb95b16-rust-stderr.bin"
       }
     },
     "process_output": {
       "php": {
         "stdout_bytes": 1284640,
-        "stdout_sha256": "b60aefc57d1291d4330e4e1c93322598b4e04f4823e61e5c2bfaecb35b442650",
+        "stdout_sha256": "f3ca225f6750dedbc31496d2409854fe72c7f13a8d7c62ab637b7f32f763a942",
         "stderr_bytes": 0,
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "rust": {
         "stdout_bytes": 1522498,
-        "stdout_sha256": "e4a83d2511aa985419ee01d972b98f1f23fcab6ff4a9673eef15a6ba143b1e10",
+        "stdout_sha256": "2ad8a86d66315f9489fe6ce16889f585083690f0dd8804102b791319cc3846e8",
         "stderr_bytes": 88426,
         "stderr_sha256": "83cf6ece9cc17efa2c4a89f9473dd93623db9876285bb577b34738ca37767c60"
       }
@@ -26906,72 +27039,72 @@
     "all_reaped": true,
     "captured_children": [
       {
-        "pid": 23588,
+        "pid": 2480,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 31584,
+        "pid": 32772,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 38748,
+        "pid": 25892,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 31120,
+        "pid": 37664,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 33992,
+        "pid": 37624,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 19200,
+        "pid": 25524,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 24496,
+        "pid": 37656,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 38800,
+        "pid": 12540,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 21644,
+        "pid": 10508,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 28208,
+        "pid": 27080,
         "returncode": 2,
         "reaped": true
       },
       {
-        "pid": 3128,
+        "pid": 28824,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 36240,
+        "pid": 37664,
         "returncode": 255,
         "reaped": true
       },
       {
-        "pid": 35544,
+        "pid": 22136,
         "returncode": 0,
         "reaped": true
       },
       {
-        "pid": 11464,
+        "pid": 31492,
         "returncode": 0,
         "reaped": true
       }

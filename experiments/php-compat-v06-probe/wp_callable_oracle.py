@@ -11,7 +11,8 @@ import sys
 import run_check as native
 import wp_hooks_oracle as hooks
 from callable_v2_contract import (validate_observation, validate_action_observation,
-                                  normalize_action_resource_ids, normalize_filter_resource_hook)
+                                  normalize_action_resource_ids, normalize_filter_resource_hook,
+                                  normalize_filter_resource_priority)
 from hook_contract import _require_exact, _unique_frame_object
 
 ROOT, HERE = hooks.ROOT, hooks.HERE
@@ -25,6 +26,7 @@ def fixed_inputs():
     inputs = hooks.fixed_inputs()
     for path in (Path(__file__), FIXTURE, HERE / 'fixtures/callable_program.php', HERE / 'run_check.py',
                  HERE / 'callable_contract.py', HERE / 'callable_v2_contract.py',
+                 HERE / 'wasm/bridge_check.py',
                  HERE / 'wp_action_global_state_poc.py', HERE / 'wp_action_counter_cow_poc.py',
                  HERE / 'fixtures/wp_action_counter_cow_poc.php',
                  HERE / 'wp_action_singleton_object_poc.py',
@@ -148,6 +150,8 @@ def bridge_comparison(report):
         expected = json.loads(json.dumps(filter_cases))
         expected['filter_resource_hook'] = normalize_filter_resource_hook(
             expected['filter_resource_hook'], result['php_observation']['filter_resource_hook'])
+        expected['filter_resource_priority'] = normalize_filter_resource_priority(
+            expected['filter_resource_priority'], result['php_observation']['filter_resource_priority'])
         _require_exact(result['php_observation'], expected, label + ' callable WP observations')
     return {'native_receipt': native.RECEIPT.relative_to(ROOT).as_posix(), 'native_receipt_sha256': digest(native.RECEIPT),
         'wasm_receipt': wasm_path.relative_to(ROOT).as_posix(), 'wasm_receipt_sha256': digest(wasm_path),
@@ -167,6 +171,8 @@ def bridge_comparison(report):
                for case in report['oracle']['cases']['hook_unset_reentry']]
             + ['filter_resource_hook.' + case
                for case in report['oracle']['cases']['filter_resource_hook']]
+            + ['filter_resource_priority.' + case
+               for case in report['oracle']['cases']['filter_resource_priority']]
             + ['heap_filter_values.' + case
                for case in report['oracle']['cases']['heap_filter_values']]
         ), 'all_program_observations_matched': True}

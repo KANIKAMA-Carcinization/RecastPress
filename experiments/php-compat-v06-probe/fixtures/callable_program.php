@@ -3998,8 +3998,85 @@ function callable_program_run(): array
         'remove_cow' => callable_program_remove_cow_cases(),
         'hook_unset_reentry' => callable_program_hook_unset_cases(),
         'filter_resource_hook' => callable_program_filter_resource_hook(),
+        'filter_resource_priority' => callable_program_filter_resource_priority(),
         'heap_filter_values' => callable_program_heap_filter_values(),
     ];
+}
+
+function callable_program_filter_resource_priority(): array
+{
+    $hook = 'callable-filter-resource-priority';
+    $priorityResource = fopen('php://memory', 'r+');
+    if (!is_resource($priorityResource)) {
+        throw new RuntimeException('callable_filter_resource_priority_open');
+    }
+    $priorityId = get_resource_id($priorityResource);
+    $events = [];
+    set_error_handler(static function (int $severity, string $message) use (&$events): bool {
+        $events[] = ['event' => 'warning', 'severity' => $severity, 'message_hex' => bin2hex($message)];
+        return true;
+    });
+    try {
+        $low = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'low', 'value' => $value];
+            return $value . ':low';
+        };
+        $resource = static function ($value) use (&$events, $hook, $priorityResource, $priorityId): string {
+            global $wp_filter;
+            $currentPriority = isset($wp_filter[$hook]) && is_object($wp_filter[$hook])
+                && method_exists($wp_filter[$hook], 'current_priority')
+                ? $wp_filter[$hook]->current_priority()
+                : ($GLOBALS['callable_program_current_priority']['scalar:' . serialize($hook)] ?? null);
+            $events[] = [
+                'event' => 'resource',
+                'value' => $value,
+                'priority' => $currentPriority,
+                'priority_type' => get_debug_type($currentPriority),
+                'same_resource' => is_resource($priorityResource),
+                'resource_id' => $priorityId,
+            ];
+            return $value . ':resource';
+        };
+        $integerAlias = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'integer_alias', 'value' => $value];
+            return $value . ':integer-alias';
+        };
+        $high = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'high', 'value' => $value];
+            return $value . ':high';
+        };
+        add_filter($hook, $low, -5, 1);
+        add_filter($hook, $resource, $priorityResource, 1);
+        add_filter($hook, $integerAlias, $priorityId, 1);
+        add_filter($hook, $high, PHP_INT_MAX, 1);
+
+        $hasAnyBefore = has_filter($hook);
+        $hasResourceCallback = has_filter($hook, $resource);
+        $hasIntegerPriorityCallback = has_filter($hook, $integerAlias);
+        $filtered = apply_filters($hook, 'seed');
+        $removedIntegerAlias = remove_filter($hook, $integerAlias, $priorityId);
+        $removed = remove_filter($hook, $resource, $priorityResource);
+        $hasCallbackAfterRemove = has_filter($hook, $resource);
+
+        return [
+            'priority_resource' => ['type' => 'resource', 'resource_type' => get_resource_type($priorityResource), 'resource_id' => $priorityId],
+            'events' => $events,
+            'has_any_before' => $hasAnyBefore,
+            'has_resource_callback' => $hasResourceCallback,
+            'has_integer_priority_callback' => $hasIntegerPriorityCallback,
+            'filtered' => $filtered,
+            'removed_integer_alias' => $removedIntegerAlias,
+            'removed' => $removed,
+            'has_callback_after_remove' => $hasCallbackAfterRemove,
+        ];
+    } finally {
+        restore_error_handler();
+        unset($GLOBALS['wp_filter'][$hook], $GLOBALS['wp_filters'][$hook]);
+        unset($GLOBALS['callable_program_current_priority']['scalar:' . serialize($hook)]);
+        if (is_resource($priorityResource)) {
+            fclose($priorityResource);
+        }
+    }
 }
 
 function callable_program_filter_resource_hook(): array
