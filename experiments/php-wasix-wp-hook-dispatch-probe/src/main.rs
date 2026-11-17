@@ -847,6 +847,7 @@ fn run_action_dispatch(
                     &[
                         "events",
                         "action_count",
+                        "empty_action_count",
                         "current_action",
                         "current_filter",
                         "doing_action",
@@ -856,11 +857,14 @@ fn run_action_dispatch(
                         "live_handles",
                         "live_handles_before_close",
                         "invocations",
+                        "empty_action_current_priority",
+                        "empty_action_wp_hook_doing_action",
                         "frames",
                     ],
                 )?;
                 ensure!(
                     done["payload"]["action_count"] == 1
+                        && done["payload"]["empty_action_count"] == 1
                         && done["payload"]["current_action"] == false
                         && done["payload"]["current_filter"] == false
                         && done["payload"]["doing_action"] == false
@@ -869,6 +873,8 @@ fn run_action_dispatch(
                         && done["payload"]["table_fingerprint"] == fingerprint
                         && done["payload"]["live_handles"] == 0
                         && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["empty_action_current_priority"] == false
+                        && done["payload"]["empty_action_wp_hook_doing_action"] == false
                         && done["payload"]["invocations"]
                             == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
                     "WordPress action final observation mismatch"
@@ -877,7 +883,7 @@ fn run_action_dispatch(
                     .as_array()
                     .context("action events missing")?;
                 ensure!(
-                    events.len() == 4,
+                    events.len() == 6,
                     "all plus named action event count mismatch"
                 );
                 ensure!(
@@ -918,6 +924,25 @@ fn run_action_dispatch(
                         && events[3]["current_priority"] == 10
                         && events[3]["wp_hook_doing_action"] == true,
                     "last named action observation mismatch"
+                );
+                ensure!(
+                    events[4]["callback"] == "all"
+                        && events[4]["hook"] == "rp-probe-empty-action"
+                        && events[4]["args"] == json!(["rp-probe-empty-action"])
+                        && events[4]["current_action"] == "rp-probe-empty-action"
+                        && events[4]["doing_action"] == true
+                        && events[4]["did_action"] == 1,
+                    "empty action all-hook observation mismatch"
+                );
+                ensure!(
+                    events[5]["callback"] == "empty"
+                        && events[5]["args"] == json!([""])
+                        && events[5]["current_action"] == "rp-probe-empty-action"
+                        && events[5]["doing_action"] == true
+                        && events[5]["did_action"] == 1
+                        && events[5]["current_priority"] == 10
+                        && events[5]["wp_hook_doing_action"] == true,
+                    "empty action placeholder observation mismatch"
                 );
                 return Ok(json!({
                     "status":"passed",

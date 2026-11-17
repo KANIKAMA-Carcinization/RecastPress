@@ -4,7 +4,7 @@
 
 PHPはcallable自体をtransportへ出さず、request-scoped `HandleRegistry` のdescriptorだけを渡す。Rust側は元のcallback UID、priority、insertion order、accepted args、handle identityを検証する。各PHP callback直前にWP_Hookのprivate current priorityをmethod内closureから同期する。filterの戻り値はchainへ戻し、action callbackの戻り値は捨てる。`all` callback、`$wp_actions` counter、`$wp_current_filter` stackはWordPressの元 `plugin.php` が先に処理し、Rustには選択された名前付きhookだけを渡す。
 
-完了時はWP_Hook iterationを正常終了させ、callback tableを前後比較する。Rust dispatcherからregistration leaseを解放し、PHP registryのhandle release ACKを受け取ってからrequest registryをcloseする。filter fixtureはcallback順、引数、priority、`current_filter()`、`doing_filter()`、`did_filter()`、filter結果を検証する。action fixtureは`all`の実行順、accepted args、`current_action()`、`doing_action()`、`did_action()`、WP_Hookのaction state、無視される戻り値と最終cleanupを検証する。
+完了時はWP_Hook iterationを正常終了させ、callback tableを前後比較する。Rust dispatcherからregistration leaseを解放し、PHP registryのhandle release ACKを受け取ってからrequest registryをcloseする。filter fixtureはcallback順、引数、priority、`current_filter()`、`doing_filter()`、`did_filter()`、filter結果を検証する。action fixtureは`all`の実行順、accepted args、`current_action()`、`doing_action()`、`did_action()`、WP_Hookのaction state、無視される戻り値と最終cleanupを検証する。引数なしactionではWordPress標準loopの空文字placeholderと`all`側の引数形も確認する。
 
 ## 実行
 

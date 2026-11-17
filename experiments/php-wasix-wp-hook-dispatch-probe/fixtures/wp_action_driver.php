@@ -11,6 +11,7 @@ use RecastPress\V06\Handles\HandleRegistry;
 const RP_ACTION_REQUEST = '81';
 const RP_ACTION_TARGET = 'wp-action-1';
 const RP_ACTION_NAME = 'rp-probe-action';
+const RP_EMPTY_ACTION_NAME = 'rp-probe-empty-action';
 
 function recastpress_wp_should_dispatch_selected_action(string $hookName, object $hook): bool
 {
@@ -200,6 +201,18 @@ function rp_action_callback_b(string $left): string
     return 'ignored-b';
 }
 
+function rp_action_empty_callback(string $placeholder): void
+{
+    $hook = $GLOBALS['wp_filter'][RP_EMPTY_ACTION_NAME];
+    $GLOBALS['rp_action_events'][] = [
+        'callback' => 'empty', 'args' => func_get_args(),
+        'current_action' => current_action(), 'doing_action' => doing_action(RP_EMPTY_ACTION_NAME),
+        'did_action' => did_action(RP_EMPTY_ACTION_NAME),
+        'current_priority' => $hook->current_priority(),
+        'wp_hook_doing_action' => rp_action_wp_hook_is_doing_action($hook),
+    ];
+}
+
 try {
     fwrite(STDERR, "RP_ACTION_PHASE=protocol_start\n");
     $wire = new BridgeProtocol();
@@ -227,6 +240,7 @@ try {
     };
     add_action(RP_ACTION_NAME, $zero, 5, 0);
     add_action(RP_ACTION_NAME, 'rp_action_callback_b', 10, 1);
+    add_action(RP_EMPTY_ACTION_NAME, 'rp_action_empty_callback', 10, 1);
     fwrite(STDERR, "RP_ACTION_PHASE=callbacks_registered\n");
 
     $selected = $GLOBALS['wp_filter'][RP_ACTION_NAME];
@@ -250,8 +264,22 @@ try {
         throw new RuntimeException('wp_action_final_observation');
     }
 
+    // WordPress adds an empty-string placeholder to the named action callback
+    // args, while the all callback receives only the hook name.
+    do_action(RP_EMPTY_ACTION_NAME);
+    $emptyHook = $GLOBALS['wp_filter'][RP_EMPTY_ACTION_NAME];
+    if (current_action() !== false
+        || current_filter() !== false
+        || doing_action()
+        || did_action(RP_EMPTY_ACTION_NAME) !== 1
+        || $emptyHook->current_priority() !== false
+        || rp_action_wp_hook_is_doing_action($emptyHook) !== false
+    ) {
+        throw new RuntimeException('wp_action_empty_final_observation');
+    }
+
     $events = $GLOBALS['rp_action_events'];
-    if (array_column($events, 'callback') !== ['all', 'a', 'zero', 'b']
+    if (array_column($events, 'callback') !== ['all', 'a', 'zero', 'b', 'all', 'empty']
         || $events[0] !== [
             'callback' => 'all', 'hook' => RP_ACTION_NAME, 'args' => [RP_ACTION_NAME, 'left', 'right'],
             'current_action' => RP_ACTION_NAME, 'doing_action' => true, 'did_action' => 1,
@@ -274,6 +302,17 @@ try {
         || $events[3]['did_action'] !== 1
         || $events[3]['current_priority'] !== 10
         || $events[3]['wp_hook_doing_action'] !== true
+        || $events[4] !== [
+            'callback' => 'all', 'hook' => RP_EMPTY_ACTION_NAME,
+            'args' => [RP_EMPTY_ACTION_NAME],
+            'current_action' => RP_EMPTY_ACTION_NAME, 'doing_action' => true, 'did_action' => 1,
+        ]
+        || $events[5]['args'] !== ['']
+        || $events[5]['current_action'] !== RP_EMPTY_ACTION_NAME
+        || $events[5]['doing_action'] !== true
+        || $events[5]['did_action'] !== 1
+        || $events[5]['current_priority'] !== 10
+        || $events[5]['wp_hook_doing_action'] !== true
     ) {
         throw new RuntimeException(
             'wp_action_callback_observation:'
@@ -310,6 +349,7 @@ try {
             $wire->send('guest_done', [
                 'events' => $GLOBALS['rp_action_events'],
                 'action_count' => did_action(RP_ACTION_NAME),
+                'empty_action_count' => did_action(RP_EMPTY_ACTION_NAME),
                 'current_action' => current_action(),
                 'current_filter' => current_filter(),
                 'doing_action' => doing_action(),
@@ -319,6 +359,8 @@ try {
                 'live_handles' => $registry->liveCount(),
                 'live_handles_before_close' => $liveHandlesBeforeClose,
                 'invocations' => $GLOBALS['rp_action_invocations'],
+                'empty_action_current_priority' => $emptyHook->current_priority(),
+                'empty_action_wp_hook_doing_action' => rp_action_wp_hook_is_doing_action($emptyHook),
                 'frames' => $wire->stats(),
             ]);
             break;
