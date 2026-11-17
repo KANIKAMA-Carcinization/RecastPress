@@ -18931,7 +18931,7 @@
   },
   "scope": "Existing filter observations plus bounded resource-valued hook names and priorities, active priority re-add mutation, and heap-valued Filter arguments, together with the isolated action_api group, each executed in a fresh process against pinned native plugin.php/WP_Hook. The resource cases measure array-key integer projection, warning order, callback dispatch/removal, current_priority and has_filter; the active-mutation case retains a lower callback and future tail, removes the sole callback from its running integer resource-ID bucket, re-adds through the resource priority, confirms replacement and tail suppression for that pass, then confirms ordered replacement/tail execution on the next pass. The hook case measures all/named callback state, strict doing_filter identity and current_filter after closing the dispatched resource. The heap case measures identity across priorities and nested apply_filters plus reference-cell mutation. These are focused fixture claims, not arbitrary mutation, heap graph or full WordPress bootstrap acceptance.",
   "bridge_comparison": {
-    "observed_at_utc": "2026-11-17T08:40:27.187629+00:00",
+    "observed_at_utc": "2026-11-17T09:06:51.665538+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
     "native_receipt_sha256": "57224b6ecc63da4fdacb9a1316f3333d056ea738839773d2a5efca471216477d",
     "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/callables-20261117T081959.941718Z-success.json",
@@ -19069,7 +19069,7 @@
     "all_program_observations_matched": true
   },
   "action_comparison": {
-    "observed_at_utc": "2026-11-17T08:41:33.159156+00:00",
+    "observed_at_utc": "2026-11-17T09:07:58.848534+00:00",
     "native_receipt": "experiments/php-compat-v06-probe/evidence/native-continuation-v1.json",
     "native_receipt_sha256": "57224b6ecc63da4fdacb9a1316f3333d056ea738839773d2a5efca471216477d",
     "wasm_receipt": "experiments/php-compat-v06-probe/wasm/evidence/actions-20261117T082220.277244Z-success.json",
