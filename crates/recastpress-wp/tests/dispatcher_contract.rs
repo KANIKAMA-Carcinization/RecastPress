@@ -333,6 +333,24 @@ fn active_priority_readdition_uses_original_priority_identity_not_only_array_key
     );
     assert_eq!(boolean_output, "seed");
     assert_eq!(boolean_trace, ["lower", "trigger"]);
+
+    let generation = RequestGeneration::new(992);
+    let resource_handle = PhpHandle::new(generation, PhpHandleKind::Resource, 1, 1, 11);
+    let resource_identity = PhpHandle::new(generation, PhpHandleKind::Resource, 2, 1, 12);
+    let resource_output = run_case(
+        HookPriority::new(
+            HookScalar::Resource {
+                handle: resource_handle,
+                identity: resource_identity,
+                resource_type: "stream".to_owned(),
+                resource_id: 7,
+            },
+            PhpKey::Integer(7),
+        ),
+        7,
+    );
+    assert_eq!(resource_output.0, "seed");
+    assert_eq!(resource_output.1, ["lower", "trigger"]);
 }
 
 #[test]

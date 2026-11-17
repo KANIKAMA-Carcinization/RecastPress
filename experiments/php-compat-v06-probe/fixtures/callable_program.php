@@ -4058,9 +4058,47 @@ function callable_program_filter_resource_priority(): array
         $removed = remove_filter($hook, $resource, $priorityResource);
         $hasCallbackAfterRemove = has_filter($hook, $resource);
 
+        $eventsBeforeActiveMutation = $events;
+        $events = [];
+        $activeHook = $hook . '-active-mutation';
+        $activeTrigger = null;
+        $activeReplacement = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'active_replacement', 'value' => $value];
+            return $value . ':replacement';
+        };
+        $activeTail = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'active_tail', 'value' => $value];
+            return $value . ':tail';
+        };
+        $activeLow = static function ($value) use (&$events): string {
+            $events[] = ['event' => 'active_low', 'value' => $value];
+            return $value . ':low';
+        };
+        $activeTrigger = static function ($value) use (&$events, &$activeTrigger, $activeHook,
+            $priorityResource, $priorityId, $activeReplacement): string {
+            global $wp_filter;
+            $currentPriority = isset($wp_filter[$activeHook]) && is_object($wp_filter[$activeHook])
+                && method_exists($wp_filter[$activeHook], 'current_priority')
+                ? $wp_filter[$activeHook]->current_priority()
+                : ($GLOBALS['callable_program_current_priority']['scalar:' . serialize($activeHook)] ?? null);
+            $events[] = ['event' => 'active_trigger', 'priority' => $currentPriority,
+                'priority_type' => get_debug_type($currentPriority), 'resource_id' => $priorityId];
+            $removed = remove_filter($activeHook, $activeTrigger, $priorityId);
+            $added = add_filter($activeHook, $activeReplacement, $priorityResource, 1);
+            $events[] = ['event' => 'active_mutation', 'removed' => $removed, 'added' => $added];
+            return $value . ':trigger';
+        };
+        add_filter($activeHook, $activeLow, $priorityId - 3, 1);
+        add_filter($activeHook, $activeTrigger, $priorityId, 1);
+        add_filter($activeHook, $activeTail, $priorityId + 3, 1);
+        $activeFiltered = apply_filters($activeHook, 'active-seed');
+        $activeFilteredAgain = apply_filters($activeHook, 'active-second');
+
         return [
             'priority_resource' => ['type' => 'resource', 'resource_type' => get_resource_type($priorityResource), 'resource_id' => $priorityId],
-            'events' => $events,
+            'events' => $eventsBeforeActiveMutation,
+            'active_mutation' => ['events' => $events, 'filtered' => $activeFiltered,
+                'second_filtered' => $activeFilteredAgain],
             'has_any_before' => $hasAnyBefore,
             'has_resource_callback' => $hasResourceCallback,
             'has_integer_priority_callback' => $hasIntegerPriorityCallback,
