@@ -1,0 +1,104 @@
+name: v0.6 real PHP-WASIX WordPress hook dispatch
+
+"on":
+  push:
+    branches: ["dev/v0.6"]
+    paths:
+      - "crates/recastpress-wp/src/**"
+      - "crates/recastpress-wp/Cargo.toml"
+      - "experiments/php-compat-v06-probe/fixtures/bridge_driver.php"
+      - "experiments/php-compat-v06-probe/fixtures/strict_json.php"
+      - "experiments/php-compat-v06-probe/fixtures/handle_registry.php"
+      - "experiments/php-runtime-candidate-probe/artifact.json"
+      - "experiments/php-wasix-wp-hook-dispatch-probe/**"
+      - "scripts/wordpress_reference.py"
+      - ".github/workflows/v06-wp-hook-dispatch.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: v06-wp-hook-dispatch-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  php-wasix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_TARGET_DIR: target/php-wasix-wp-hook-dispatch-probe
+      RUSTUP_TOOLCHAIN: "1.94.0"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install fixed Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.94.0 --profile minimal --no-self-update
+          rustc +1.94.0 --version
+          cargo +1.94.0 --version
+      - name: Install host PHP CLI for fixture syntax checks
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y php-cli
+          php --version
+      - name: Fetch and verify pinned WordPress 7.1.3
+        run: python3 scripts/wordpress_reference.py fetch
+      - name: Fetch the fixed upstream PHP-WASIX artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .reference/php-wasix-8.5.12
+          PHP_ARTIFACT_URL="$(python3 - <<'PY'
+          import json
+          from urllib.parse import urlsplit
+          with open('experiments/php-runtime-candidate-probe/artifact.json', encoding='utf-8') as source:
+              identity = json.load(source)
+          url = identity['artifact_api_url']
+          parsed = urlsplit(url)
+          expected = f"/repos/wasix-org/php/actions/artifacts/{identity['artifact_id']}/zip"
+          if parsed.scheme != 'https' or parsed.netloc != 'api.github.com' or parsed.path != expected or parsed.query or parsed.fragment:
+              raise SystemExit('Refusing to send job token to unexpected artifact endpoint')
+          print(url)
+          PY
+          )"
+          if ! curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 30 --max-time 180 --retry 3 --retry-max-time 300 \
+            --max-filesize 10202404 --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --output .reference/php-wasix-8.5.12/php-wasix-64.zip "$PHP_ARTIFACT_URL"; then
+            printf '%s\n' '::error::Fixed upstream PHP Actions artifact download failed; no alternate source is used.'
+            exit 1
+          fi
+          python3 experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py
+      - name: Verify source overlay and PHP fixture syntax
+        run: |
+          set -euo pipefail
+          python3 experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/plugin.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v2/wp-includes/class-wp-hook.php
+          php -n -l .reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php
+      - name: Fetch locked Rust dependencies
+        run: cargo +1.94.0 fetch --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml
+      - name: Execute the actual pinned PHP-WASIX dispatcher probe
+        run: python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
+      - name: Upload bounded source-bound evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: v06-wp-hook-dispatch-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            experiments/php-wasix-wp-hook-dispatch-probe/evidence/latest.json
+            experiments/php-wasix-wp-hook-dispatch-probe/evidence/run-*.log
+          if-no-files-found: warn
+          retention-days: 14

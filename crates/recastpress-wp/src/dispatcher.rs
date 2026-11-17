@@ -2209,6 +2209,12 @@ impl Dispatcher {
             self.collect_unused();
         }
     }
+
+    /// Drain request-scoped PHP handle releases created by direct registry mutations.
+    /// Adapters must acknowledge every returned handle before closing the PHP request.
+    pub fn take_php_releases(&mut self) -> Vec<PhpHandle> {
+        self.releases.drain().into_iter().collect()
+    }
     fn unbind_empty(&mut self, key: &PhpKey, slot: usize) {
         if key_get(&self.bindings, key) == Some(&slot) && self.storage(slot).callbacks_empty() {
             self.bindings.remove(key);

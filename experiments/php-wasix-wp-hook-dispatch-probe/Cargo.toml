@@ -1,0 +1,35 @@
+[package]
+name = "recastpress-wp-hook-dispatch-probe"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.94"
+license = "GPL-2.0-or-later"
+publish = false
+
+[workspace]
+
+[[bin]]
+name = "recastpress-wp-hook-dispatch-probe"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+recastpress-wp = { path = "../../crates/recastpress-wp", default-features = false }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+sha2 = "=0.10.9"
+wasmer = { version = "=7.2.0", default-features = false, features = ["sys"] }
+wasmer-compiler-cranelift = { version = "=7.2.0", optional = true }
+wasmer-compiler-llvm = { version = "=7.2.0", optional = true }
+wasmer-middlewares = { version = "=7.2.0", default-features = false }
+wasmer-types = "=7.2.0"
+wasmer-wasix = { version = "=0.702.0", default-features = false, features = ["sys-minimal"] }
+tokio = { version = "1", features = ["rt-multi-thread", "time", "sync", "io-util"] }
+
+[features]
+default = ["cranelift"]
+cranelift = ["wasmer/cranelift", "dep:wasmer-compiler-cranelift"]
+llvm = ["wasmer/llvm", "dep:wasmer-compiler-llvm"]
+
+[lints.rust]
+unsafe_code = "forbid"
