@@ -109,6 +109,9 @@ def main():
         else:
             output = output + "\n--- stderr ---\n" + stderr
             status = "runtime_failed"
+            diagnostic = output[-8192:]
+            print("PHP-WASIX runner failed; bounded diagnostic follows:", file=sys.stderr)
+            print(diagnostic, file=sys.stderr)
     after = {name: digest(ROOT / name) for name in INPUTS}
     unchanged = before == after
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")

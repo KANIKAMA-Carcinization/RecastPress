@@ -569,6 +569,14 @@ fn main() -> Result<()> {
     let (mut host_stdin, host_stdout) = host_wire.split();
     let guest_stdin = guest_wire.clone();
     let guest_stdout = guest_wire;
+    let (mut host_stderr, guest_stderr) = Pipe::channel();
+    let (stderr_tx, stderr_rx) = mpsc::channel();
+    let stderr_thread = thread::Builder::new()
+        .name("php-wasix-wp-hook-dispatch-stderr".into())
+        .spawn(move || {
+            let result = drain_stderr(&mut host_stderr);
+            let _ = stderr_tx.send(result);
+        })?;
     let fs_map = Arc::new(FixtureFs);
     let done_fs = fs_map.clone();
     let (done_tx, done_rx) = mpsc::channel();
@@ -581,6 +589,7 @@ fn main() -> Result<()> {
                 module_hash,
                 guest_stdin,
                 guest_stdout,
+                guest_stderr,
                 done_fs,
             );
             let _ = done_tx.send(result);
@@ -619,11 +628,29 @@ fn main() -> Result<()> {
             .join()
             .map_err(|_| anyhow::anyhow!("PHP guest thread panicked"))?;
     }
+    let (stderr, stderr_overflow) = stderr_rx
+        .recv_timeout(Duration::from_secs(15))
+        .context("PHP stderr drainer did not finish")??;
+    stderr_thread
+        .join()
+        .map_err(|_| anyhow::anyhow!("PHP stderr drainer thread panicked"))?;
+    ensure!(!stderr_overflow, "PHP stderr exceeded fixed capture bound");
     drop(wasix);
     drop(_guard);
     runtime.shutdown_timeout(Duration::from_secs(2));
     let observed = observed?;
-    guest??;
+    match guest? {
+        Ok(()) => {}
+        Err(error) => anyhow::bail!(
+            "PHP guest failed: {error:#}; stderr: {}",
+            String::from_utf8_lossy(&stderr)
+        ),
+    }
+    ensure!(
+        stderr.is_empty(),
+        "PHP guest wrote stderr: {}",
+        String::from_utf8_lossy(&stderr)
+    );
     println!(
         "{}",
         json!({"status":"passed","php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
@@ -636,6 +663,7 @@ fn run_guest(
     module_hash: wasmer_types::ModuleHash,
     stdin: Pipe,
     stdout: Pipe,
+    stderr: Pipe,
     fs_map: Arc<FixtureFs>,
 ) -> Result<()> {
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -654,6 +682,7 @@ fn run_guest(
         .with_asynchronous_threading(false)
         .with_stdin(Box::new(stdin))
         .with_stdout(Box::new(stdout))
+        .with_stderr(Box::new(stderr))
         .with_args(["-n", PHP_DRIVER])
         .with_current_dir("/fixture")
         .with_mount("/fixture".to_string(), fs_map)
@@ -673,6 +702,25 @@ fn run_guest(
     drop(_guard);
     runtime.shutdown_timeout(Duration::from_secs(2));
     Ok(())
+}
+
+fn drain_stderr(pipe: &mut Pipe) -> Result<(Vec<u8>, bool)> {
+    const STDERR_LIMIT: usize = 1024 * 1024;
+    let mut captured = Vec::new();
+    let mut overflow = false;
+    let mut buffer = [0u8; 4096];
+    loop {
+        while let Some(n) = pipe.try_read(&mut buffer) {
+            if n == 0 {
+                return Ok((captured, overflow));
+            }
+            let remaining = STDERR_LIMIT.saturating_sub(captured.len());
+            let keep = n.min(remaining);
+            captured.extend_from_slice(&buffer[..keep]);
+            overflow |= keep < n;
+        }
+        thread::sleep(Duration::from_millis(1));
+    }
 }
 
 struct DeadlinePipeReader {
