@@ -222,6 +222,9 @@ function run_throwable_probe(): void {
     ], 'transport' => $wire->stats()]);
 }
 
+// This file is also required as a library by focused PHP-WASIX fixtures. Only
+// run its original probe body when PHP launched this file as the entry script.
+if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'bridge_driver.php') {
 if (in_array(($argv[1] ?? null), ['hooks', 'hooks_catch', 'hooks_abort', 'callable_api'], true)) return;
 
 if (($argv[1] ?? 'surface') === 'throwable') {
@@ -347,3 +350,4 @@ if (($argv[1] ?? 'surface') === 'throwable') {
         'rust_root_observation' => $rootObservation,
     ], 'transport' => $wire->stats()]);
 } catch (Throwable $e) { fail_bridge($e); }
+}
