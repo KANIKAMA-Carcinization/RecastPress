@@ -12,3 +12,8 @@ python -B experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
 ```
 
 このbounded sliceではdispatch中のcallback table mutationをfixtureの前提として発生させず、runtimeでdispatch前後のtable fingerprintを照合して発生有無を検出する。`WP_Hook::apply_filters()` の直接呼出しへ第三引数を渡す経路は対象外で、その呼出しがbridge predicateを満たした場合の挙動は保証しない。対象とするのはWordPress `apply_filters()` が選択したobjectを渡す経路である。runtimeはpredicate/adapterを `plugin.php` 読込前に定義する。`.github/workflows/v06-wp-hook-overlay.yml` は固定WP sourceを取得・検証し、overlayの再生成結果とcommitted evidenceを比較する。これはsource overlay準備の証跡であり、callback table import、PHP-Wasm実行、native比較、closure駆動のpriority更新実測、Throwable cleanup実測、CGI channel、製品採用を証明しない。`apply_filters_ref_array()` とactionsもこの段階では未接続である。runtimeを実装し同じoverlayでnativeとPHP-Wasmを比較するまでprobeは未完了である。
+
+## Validation record
+
+- `python -B experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py` passed: 3,782 pinned WordPress source files verified and the v2 receipt plus both overlay files reproduced byte-for-byte.
+- [GitHub Actions run 44066575473](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44066575473) succeeded on 2026-11-17. It verifies the pinned source overlay only; it does not execute PHP-Wasm or the Dispatcher adapter.
