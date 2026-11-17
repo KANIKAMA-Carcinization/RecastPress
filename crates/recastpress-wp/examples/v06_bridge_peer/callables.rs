@@ -758,58 +758,58 @@ impl<R: BufRead, W: Write> CallablePeer<'_, R, W> {
         call_mode: PhpCallMode,
         args: &[PhpValue],
     ) -> Result<Vec<Value>, String> {
-        if self.action_argument_handles()?.is_none() {
-            if let Some((_value_handle, handles)) = self.filter_argument_handles()? {
-                let (prefix, start) = match call_mode {
-                    PhpCallMode::All => {
-                        if args.len() != handles.len() + 2 {
-                            return Err("filter_all_argument_count".into());
-                        }
-                        (Some(pod(&args[0], "filter_all_hook_prefix")?), 1)
+        if self.action_argument_handles()?.is_none()
+            && let Some((_value_handle, handles)) = self.filter_argument_handles()?
+        {
+            let (prefix, start) = match call_mode {
+                PhpCallMode::All => {
+                    if args.len() != handles.len() + 2 {
+                        return Err("filter_all_argument_count".into());
                     }
-                    PhpCallMode::Zero => {
-                        if !args.is_empty() {
-                            return Err("filter_zero_argument_count".into());
-                        }
-                        return Ok(Vec::new());
-                    }
-                    PhpCallMode::Array => {
-                        if args.len() > handles.len() + 1 {
-                            return Err("filter_named_argument_count".into());
-                        }
-                        (None, 0)
-                    }
-                };
-                let mut encoded = Vec::with_capacity(args.len());
-                if let Some(prefix) = prefix {
-                    encoded.push(prefix);
+                    (Some(pod(&args[0], "filter_all_hook_prefix")?), 1)
                 }
-                for (offset, value) in args.iter().skip(start).enumerate() {
-                    let handle = if offset == 0 {
-                        let PhpValue::ArgumentHandle(candidate) = value else {
-                            return Err("filter_value_placeholder_expected".into());
-                        };
-                        self.check_argument(*candidate, "filter_dispatch_value")?;
-                        let frame = self
-                            .api_arguments
-                            .last()
-                            .ok_or("filter_api_argument_frame_missing")?;
-                        if !frame.values().any(|registered| registered == candidate) {
-                            return Err("filter_value_handle_outside_frame".into());
-                        }
-                        *candidate
-                    } else {
-                        let handle = *handles.get(offset - 1).ok_or("filter_arg_order_or_count")?;
-                        if !matches!(value, PhpValue::ArgumentHandle(candidate) if *candidate == handle)
-                        {
-                            return Err("filter_arg_placeholder_expected".into());
-                        }
-                        handle
-                    };
-                    encoded.push(json!({"type":"handle","handle":descriptor(handle)}));
+                PhpCallMode::Zero => {
+                    if !args.is_empty() {
+                        return Err("filter_zero_argument_count".into());
+                    }
+                    return Ok(Vec::new());
                 }
-                return Ok(encoded);
+                PhpCallMode::Array => {
+                    if args.len() > handles.len() + 1 {
+                        return Err("filter_named_argument_count".into());
+                    }
+                    (None, 0)
+                }
+            };
+            let mut encoded = Vec::with_capacity(args.len());
+            if let Some(prefix) = prefix {
+                encoded.push(prefix);
             }
+            for (offset, value) in args.iter().skip(start).enumerate() {
+                let handle = if offset == 0 {
+                    let PhpValue::ArgumentHandle(candidate) = value else {
+                        return Err("filter_value_placeholder_expected".into());
+                    };
+                    self.check_argument(*candidate, "filter_dispatch_value")?;
+                    let frame = self
+                        .api_arguments
+                        .last()
+                        .ok_or("filter_api_argument_frame_missing")?;
+                    if !frame.values().any(|registered| registered == candidate) {
+                        return Err("filter_value_handle_outside_frame".into());
+                    }
+                    *candidate
+                } else {
+                    let handle = *handles.get(offset - 1).ok_or("filter_arg_order_or_count")?;
+                    if !matches!(value, PhpValue::ArgumentHandle(candidate) if *candidate == handle)
+                    {
+                        return Err("filter_arg_placeholder_expected".into());
+                    }
+                    handle
+                };
+                encoded.push(json!({"type":"handle","handle":descriptor(handle)}));
+            }
+            return Ok(encoded);
         }
         let Some(handles) = self.action_argument_handles()? else {
             return args
