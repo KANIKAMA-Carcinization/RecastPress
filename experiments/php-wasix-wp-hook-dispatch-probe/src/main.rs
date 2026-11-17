@@ -563,10 +563,12 @@ fn main() -> Result<()> {
     let module = wasix
         .load_hashed_module_sync(data, None)
         .context("compile pinned PHP-WASIX")?;
-    let (host, guest) = Pipe::channel();
-    let (mut host_tx, host_rx) = host.split();
-    let guest_stdin = guest.clone();
-    let guest_stdout = guest;
+    // Mirror the proven bridge topology: the shared wire is split at the host,
+    // while the guest keeps a clone for stdin and the original endpoint for stdout.
+    let (host_wire, guest_wire) = Pipe::channel();
+    let (mut host_stdin, host_stdout) = host_wire.split();
+    let guest_stdin = guest_wire.clone();
+    let guest_stdout = guest_wire;
     let fs_map = Arc::new(FixtureFs);
     let done_fs = fs_map.clone();
     let (done_tx, done_rx) = mpsc::channel();
@@ -586,13 +588,13 @@ fn main() -> Result<()> {
     let mut total_in = 0;
     let mut total_out = 0;
     let mut reader = BufReader::new(DeadlinePipeReader {
-        pipe: host_rx,
+        pipe: host_stdout,
         deadline: Instant::now() + TIMEOUT,
     });
     let observed = run_dispatch(
         &mut reader,
         &mut DeadlinePipeWriter {
-            pipe: &mut host_tx,
+            pipe: &mut host_stdin,
             deadline: Instant::now() + TIMEOUT,
         },
         &mut total_in,
@@ -601,11 +603,11 @@ fn main() -> Result<()> {
     let observed = match observed {
         Ok(value) => Ok(value),
         Err(error) => {
-            host_tx.close();
+            host_stdin.close();
             Err(error)
         }
     };
-    host_tx.close();
+    host_stdin.close();
     drop(reader);
     let guest = done_rx
         .recv_timeout(Duration::from_secs(15))
