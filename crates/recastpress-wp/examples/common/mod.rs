@@ -91,6 +91,10 @@ pub fn encode(value: &PhpValue) -> Result<Value, String> {
                 .collect();
             json!({"type": "array", "entries": entries?})
         }
+        PhpValue::Resource { .. } => return Err("cannot encode resource value".into()),
+        PhpValue::ArgumentHandle(_) => {
+            return Err("cannot encode opaque argument handle".into());
+        }
         PhpValue::Unsupported => return Err("cannot encode unsupported value".into()),
     })
 }
