@@ -20,6 +20,7 @@ ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4ed
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 TIMEOUT = 600
+RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
 SOURCE_INPUTS_AT_START = None
 INPUTS = [
@@ -98,7 +99,7 @@ def main():
         binary = target / "debug/recastpress-wp-hook-dispatch-probe"
         t0 = time.monotonic()
         run = subprocess.run([str(binary)], cwd=ROOT, env=env, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, timeout=180, check=False)
+                             stderr=subprocess.PIPE, timeout=RUN_TIMEOUT, check=False)
         run_ms = int((time.monotonic() - t0) * 1000)
         run_code = run.returncode
         output = run.stdout.decode("utf-8", "replace")
@@ -138,7 +139,7 @@ def main():
                          for key in ("declared_php_version", "source_repository", "source_commit", "workflow_run_id", "workflow_run_url", "artifact_id", "artifact_name", "artifact_api_url")},
         "artifact": {"bytes": ARTIFACT_BYTES, "sha256": ARTIFACT_SHA256},
         "build": {"exit_code": build.returncode, "duration_ms": build_ms, "timeout_seconds": TIMEOUT},
-        "run": {"exit_code": run_code, "duration_ms": run_ms, "timeout_seconds": 180, "result": result},
+        "run": {"exit_code": run_code, "duration_ms": run_ms, "timeout_seconds": RUN_TIMEOUT, "result": result},
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
