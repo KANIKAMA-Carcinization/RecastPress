@@ -1,0 +1,30 @@
+name: v0.6 pinned WordPress hook overlay
+
+"on":
+  push:
+    branches: ["dev/v0.6"]
+    paths:
+      - "experiments/php-wasix-wp-hook-dispatch-probe/**"
+      - "scripts/wordpress_reference.py"
+      - ".github/workflows/v06-wp-hook-overlay.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v06-wp-hook-overlay-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  overlay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Fetch and verify pinned WordPress source
+        run: python3 scripts/wordpress_reference.py fetch
+      - name: Rebuild and verify the committed source overlay
+        run: python3 experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
