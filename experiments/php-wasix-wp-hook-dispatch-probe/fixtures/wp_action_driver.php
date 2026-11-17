@@ -275,7 +275,10 @@ try {
         || $events[3]['current_priority'] !== 10
         || $events[3]['wp_hook_doing_action'] !== true
     ) {
-        throw new RuntimeException('wp_action_callback_observation');
+        throw new RuntimeException(
+            'wp_action_callback_observation:'
+            . json_encode($events, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+        );
     }
 
     $wire->send('request_complete', [
