@@ -48,6 +48,158 @@ fn typed_all_return_cannot_replace_or_mutate_named_filter_value() {
     assert_eq!(dispatcher.hook_stack_depth(), 0);
 }
 
+#[test]
+fn selected_target_filter_dispatch_leaves_plugin_php_scope_to_wrapper() {
+    let mut dispatcher = Dispatcher::new();
+    let all_calls = Arc::new(Mutex::new(0));
+    let all_calls_callback = Arc::clone(&all_calls);
+    dispatcher.add(
+        "all",
+        1,
+        DispatcherCallback::new(id("all"), 99, move |_, _| {
+            *all_calls_callback.lock().unwrap() += 1;
+            Ok(PhpValue::Null)
+        }),
+    );
+    dispatcher.add(
+        "bounded-target",
+        10,
+        DispatcherCallback::new(id("first"), 2, |_, args| {
+            assert_eq!(args, [value("seed"), value("extra")]);
+            Ok(value("filtered"))
+        }),
+    );
+    dispatcher.add(
+        "bounded-target",
+        20,
+        DispatcherCallback::new(id("second"), 1, |_, args| {
+            assert_eq!(args, [value("filtered")]);
+            Ok(value("done"))
+        }),
+    );
+    let name = HookArgument::bytes("bounded-target");
+    let target = dispatcher.capture_current_target(&name).unwrap().unwrap();
+
+    let ticket = dispatcher
+        .begin_filter_on_target_typed(&name, target, value("seed"), &[value("extra")])
+        .unwrap();
+    assert_eq!(drive_native_ticket(&mut dispatcher, ticket), value("done"));
+    assert_eq!(*all_calls.lock().unwrap(), 0);
+    assert_eq!(dispatcher.did_filter("bounded-target"), 0);
+    assert_eq!(dispatcher.did_filter("all"), 0);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn selected_target_filter_rejects_a_different_hook_key() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "registered-target",
+        10,
+        DispatcherCallback::new(id("registered"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let registered = HookArgument::bytes("registered-target");
+    let target = dispatcher
+        .capture_current_target(&registered)
+        .unwrap()
+        .unwrap();
+
+    assert!(matches!(
+        dispatcher.begin_filter_on_target_typed(
+            &HookArgument::bytes("different-target"),
+            target,
+            value("seed"),
+            &[],
+        ),
+        Err(HookError::InvalidHookTarget)
+    ));
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
+#[test]
+fn selected_target_filter_uses_the_pinned_object_after_rebind_and_unbind() {
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "rebound-target",
+        10,
+        DispatcherCallback::new(id("original-object"), 1, |_, _| Ok(value("original"))),
+    );
+    let name = HookArgument::bytes("rebound-target");
+    let original = dispatcher.capture_current_target(&name).unwrap().unwrap();
+    let ticket = dispatcher
+        .begin_filter_on_target_typed(&name, original, value("seed"), &[])
+        .unwrap();
+
+    let mut replace = dispatcher.begin_write_hook(&name).unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut replace),
+        ControlResult::HookWritten
+    );
+    let replacement = dispatcher.capture_current_target(&name).unwrap().unwrap();
+    dispatcher
+        .add_target(
+            replacement,
+            HookPriority::integer(10),
+            DispatcherCallback::new(id("replacement-object"), 1, |_, _| Ok(value("replacement"))),
+        )
+        .unwrap();
+    let mut unbind = dispatcher.begin_unbind_hook(&name).unwrap();
+    assert_eq!(
+        finish_control(&mut dispatcher, &mut unbind),
+        ControlResult::HookUnbound
+    );
+
+    assert_eq!(
+        drive_native_ticket(&mut dispatcher, ticket),
+        value("original")
+    );
+    assert!(!dispatcher.hook_is_set(&name));
+}
+
+#[test]
+fn selected_target_filter_yields_the_retained_php_callable() {
+    use recastpress_wp::hooks::PhpCallMode;
+
+    let mut dispatcher = Dispatcher::new();
+    dispatcher.add(
+        "php-target",
+        10,
+        DispatcherCallback::new(id("seed"), 1, |_, args| Ok(args[0].clone())),
+    );
+    let name = HookArgument::bytes("php-target");
+    let target = dispatcher.capture_current_target(&name).unwrap().unwrap();
+    let handle = callable_handle(978);
+    dispatcher
+        .add_target(
+            target,
+            HookPriority::integer(20),
+            DispatcherCallback::php_callable(id("retained"), 2, handle).unwrap(),
+        )
+        .unwrap();
+
+    let ticket = dispatcher
+        .begin_filter_on_target_typed(&name, target, value("seed"), &[value("extra")])
+        .unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::InvokePhp(recastpress_wp::hooks::PhpInvocation {
+            callback: id("retained"),
+            handle,
+            hook: HookScalar::Bytes(b"php-target".to_vec()),
+            priority: PhpKey::Integer(20),
+            call_mode: PhpCallMode::Array,
+            args: vec![value("seed"), value("extra")],
+        })
+    );
+    dispatcher.resume_php(ticket, value("php-result")).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(value("php-result"))
+    );
+    assert_eq!(dispatcher.did_filter("php-target"), 0);
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+}
+
 fn id(name: &str) -> CallbackId {
     CallbackId {
         module: "fixture".into(),

@@ -558,6 +558,8 @@ struct ResumableDispatch {
     extra: Vec<PhpValue>,
     base_depth: usize,
     current_pushes: usize,
+    owns_current_scope: bool,
+    selected_target: bool,
     phase: DispatchPhase,
     slot: Option<usize>,
     frame_started: bool,
@@ -2418,6 +2420,8 @@ impl Dispatcher {
             extra: extra.to_vec(),
             base_depth,
             current_pushes: usize::from(all_slot.is_some()),
+            owns_current_scope: true,
+            selected_target: false,
             phase: if all_slot.is_some() {
                 DispatchPhase::All
             } else {
@@ -2483,6 +2487,8 @@ impl Dispatcher {
             extra: extra.to_vec(),
             base_depth: self.current.len(),
             current_pushes: 0,
+            owns_current_scope: true,
+            selected_target: false,
             phase,
             slot: None,
             frame_started: false,
@@ -2544,6 +2550,8 @@ impl Dispatcher {
             extra: extra.to_vec(),
             base_depth,
             current_pushes: usize::from(all_slot.is_some()),
+            owns_current_scope: true,
+            selected_target: false,
             phase: if all_slot.is_some() {
                 DispatchPhase::All
             } else {
@@ -2559,6 +2567,73 @@ impl Dispatcher {
             pending_throwable: None,
             throwable_abandoned: false,
             effectful: true,
+            action: false,
+            binding_operand: None,
+        });
+        Ok(ticket)
+    }
+
+    /// Dispatch only the callbacks of an already selected hook target.
+    ///
+    /// This is the seam for a PHP wrapper that has already performed
+    /// `plugin.php` bookkeeping (filter counters, `all`, and
+    /// `$wp_current_filter`) and selected the exact `WP_Hook` object. The Rust
+    /// dispatcher owns callback ordering and filter-value threading, while the
+    /// wrapper retains ownership of those surrounding WordPress globals.
+    pub fn begin_filter_on_target_typed(
+        &mut self,
+        name: &HookArgument,
+        target: HookTarget,
+        value: PhpValue,
+        extra: &[PhpValue],
+    ) -> Result<DispatchTicket, HookError> {
+        if !self.resumable.is_empty()
+            && !self.resumable.last().is_some_and(|dispatch| {
+                (dispatch.waiting_for_php
+                    || dispatch.waiting_for_boundary
+                    || dispatch.waiting_for_release)
+                    && dispatch.pending_throwable.is_none()
+            })
+        {
+            return Err(HookError::DispatchParentNotPending);
+        }
+        if self.active_calls >= MAX_NESTING {
+            return Err(HookError::NestingLimit);
+        }
+        let (target_key, slot) = self.target_parts(target)?;
+        if target_key != name.array_key {
+            return Err(HookError::InvalidHookTarget);
+        }
+        let sequence = self.next_ticket;
+        self.next_ticket = self
+            .next_ticket
+            .checked_add(1)
+            .ok_or(HookError::InvalidDispatchTicket)?;
+        let ticket = DispatchTicket {
+            dispatcher: self.dispatcher_id,
+            sequence,
+        };
+        self.active_calls += 1;
+        self.resumable.push(ResumableDispatch {
+            ticket,
+            hook: name.clone(),
+            value,
+            extra: extra.to_vec(),
+            base_depth: self.current.len(),
+            current_pushes: 0,
+            owns_current_scope: false,
+            selected_target: true,
+            phase: DispatchPhase::Named,
+            slot: Some(slot),
+            frame_started: false,
+            waiting_for_php: false,
+            waiting_for_boundary: false,
+            waiting_for_release: false,
+            pending_releases: VecDeque::new(),
+            pending_release: None,
+            pending_throwable: None,
+            throwable_abandoned: false,
+            effectful: false,
             action: false,
             binding_operand: None,
         });
@@ -2634,6 +2709,8 @@ impl Dispatcher {
             extra: args.to_vec(),
             base_depth,
             current_pushes: usize::from(!effectful && all_slot.is_some()),
+            owns_current_scope: true,
+            selected_target: false,
             phase: if effectful {
                 DispatchPhase::ActionCounterIncrement
             } else if all_slot.is_some() {
@@ -2741,7 +2818,7 @@ impl Dispatcher {
             return Err(HookError::PhpBoundaryPending);
         }
         loop {
-            let (phase, hook, value, extra, started, selected_slot) = {
+            let (phase, hook, value, extra, started, selected_slot, target_is_selected) = {
                 let dispatch = self.resumable.last().expect("validated dispatch ticket");
                 (
                     dispatch.phase,
@@ -2750,6 +2827,7 @@ impl Dispatcher {
                     dispatch.extra.clone(),
                     dispatch.frame_started,
                     dispatch.slot,
+                    dispatch.selected_target,
                 )
             };
             let boundary = match phase {
@@ -2791,6 +2869,8 @@ impl Dispatcher {
                 return Ok(DispatchStep::Boundary(boundary));
             }
             let slot = if started {
+                selected_slot
+            } else if target_is_selected {
                 selected_slot
             } else if phase == DispatchPhase::All {
                 key_get(&self.bindings, &PhpKey::Bytes(b"all".to_vec())).copied()
@@ -2838,7 +2918,7 @@ impl Dispatcher {
                     && !self
                         .resumable
                         .last()
-                        .is_some_and(|dispatch| dispatch.effectful)
+                        .is_some_and(|dispatch| dispatch.effectful || !dispatch.owns_current_scope)
                     && key_get(&self.bindings, &all_key).is_none()
                 {
                     self.current.push(hook.original.clone());
