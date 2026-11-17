@@ -1,9 +1,13 @@
 <?php
 declare(strict_types=1);
 
+fwrite(STDERR, "RP_HOOK_PHASE=driver_start\n");
 require_once __DIR__ . '/bridge_driver.php';
+fwrite(STDERR, "RP_HOOK_PHASE=bridge_loaded\n");
 require_once __DIR__ . '/class-wp-hook.php';
+fwrite(STDERR, "RP_HOOK_PHASE=hook_loaded\n");
 require_once __DIR__ . '/plugin.php';
+fwrite(STDERR, "RP_HOOK_PHASE=plugin_loaded\n");
 
 use RecastPress\V06\Handles\HandleRegistry;
 
@@ -178,6 +182,7 @@ function rp_probe_all(string $hookName, mixed ...$args): void
 }
 
 try {
+    fwrite(STDERR, "RP_HOOK_PHASE=protocol_start\n");
     $wire = new BridgeProtocol();
     $registry = new HandleRegistry(RP_HOOK_REQUEST, 64, 64);
     $GLOBALS['rp_hook_wire'] = $wire;
@@ -201,6 +206,7 @@ try {
     };
     add_filter('rp-probe-filter', $zero, 5, 0);
     add_filter('rp-probe-filter', 'rp_probe_callback_b', 10, 3);
+    fwrite(STDERR, "RP_HOOK_PHASE=callbacks_registered\n");
 
     $selected = $GLOBALS['wp_filter']['rp-probe-filter'];
     $tokens = new WeakMap();
@@ -208,7 +214,9 @@ try {
     $GLOBALS['rp_hook_token_by_object'] = $tokens;
     $GLOBALS['rp_hook_selected_object'] = $selected;
 
+    fwrite(STDERR, "RP_HOOK_PHASE=apply_filters_start\n");
     $result = apply_filters('rp-probe-filter', 'seed', 'left', 'right');
+    fwrite(STDERR, "RP_HOOK_PHASE=apply_filters_done\n");
     if ($result !== 'B(Z|left|right)'
         || current_filter() !== false
         || doing_filter()

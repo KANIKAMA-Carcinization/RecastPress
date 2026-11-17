@@ -150,10 +150,15 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except subprocess.TimeoutExpired as error:
         EVIDENCE.mkdir(parents=True, exist_ok=True)
-        raw = error.stdout or b""
-        if isinstance(raw, str):
-            raw = raw.encode("utf-8", "replace")
-        raw = raw[: 2 * 1024 * 1024]
+        stdout = error.stdout or b""
+        stderr = error.stderr or b""
+        if isinstance(stdout, str):
+            stdout = stdout.encode("utf-8", "replace")
+        if isinstance(stderr, str):
+            stderr = stderr.encode("utf-8", "replace")
+        stdout = stdout[-1024 * 1024 :]
+        stderr = stderr[-1024 * 1024 :]
+        raw = b"--- stdout ---\n" + stdout + b"\n--- stderr ---\n" + stderr
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         capture = f"run-{stamp}-timeout.log"
         (EVIDENCE / capture).write_bytes(raw)
@@ -171,5 +176,7 @@ if __name__ == "__main__":
             "capture_bytes": len(raw),
         }
         (EVIDENCE / "latest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+        print("PHP-WASIX runner timed out; bounded output follows:", file=sys.stderr)
+        print(raw.decode("utf-8", "replace")[-8192:], file=sys.stderr)
         print(json.dumps(report, ensure_ascii=False, separators=(",", ":")))
         raise SystemExit(124)

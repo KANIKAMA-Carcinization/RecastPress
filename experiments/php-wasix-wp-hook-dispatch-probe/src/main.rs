@@ -574,7 +574,7 @@ fn main() -> Result<()> {
     let stderr_thread = thread::Builder::new()
         .name("php-wasix-wp-hook-dispatch-stderr".into())
         .spawn(move || {
-            let result = drain_stderr(&mut host_stderr);
+            let result = drain_stderr(&mut host_stderr, true);
             let _ = stderr_tx.send(result);
         })?;
     let fs_map = Arc::new(FixtureFs);
@@ -646,10 +646,15 @@ fn main() -> Result<()> {
             String::from_utf8_lossy(&stderr)
         ),
     }
+    let stderr_text = String::from_utf8_lossy(&stderr);
+    let unexpected_stderr = stderr_text
+        .lines()
+        .filter(|line| !line.starts_with("RP_HOOK_PHASE="))
+        .collect::<Vec<_>>();
     ensure!(
-        stderr.is_empty(),
+        unexpected_stderr.is_empty(),
         "PHP guest wrote stderr: {}",
-        String::from_utf8_lossy(&stderr)
+        unexpected_stderr.join("\n")
     );
     println!(
         "{}",
@@ -704,15 +709,26 @@ fn run_guest(
     Ok(())
 }
 
-fn drain_stderr(pipe: &mut Pipe) -> Result<(Vec<u8>, bool)> {
+fn drain_stderr(pipe: &mut Pipe, forward_phase_markers: bool) -> Result<(Vec<u8>, bool)> {
     const STDERR_LIMIT: usize = 1024 * 1024;
     let mut captured = Vec::new();
     let mut overflow = false;
+    let mut forwarded = 0usize;
     let mut buffer = [0u8; 4096];
     loop {
         while let Some(n) = pipe.try_read(&mut buffer) {
             if n == 0 {
                 return Ok((captured, overflow));
+            }
+            if forward_phase_markers {
+                const FORWARD_LIMIT: usize = 8192;
+                let remaining = FORWARD_LIMIT.saturating_sub(forwarded);
+                let keep = n.min(remaining);
+                if keep > 0 {
+                    let _ = std::io::stderr().write_all(&buffer[..keep]);
+                    let _ = std::io::stderr().flush();
+                    forwarded += keep;
+                }
             }
             let remaining = STDERR_LIMIT.saturating_sub(captured.len());
             let keep = n.min(remaining);
