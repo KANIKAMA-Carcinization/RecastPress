@@ -24,3 +24,7 @@ Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起
 ## 範囲
 
 対象は通常の `apply_filters()` と `do_action()`、および静的callback tableに限定する。Actionの`all` hookはWordPress内で実行し、Rustへは渡さない。dispatch中の登録変更、nested action、`do_action_ref_array()`、`apply_filters_ref_array()`、Throwable時の復旧、CGI channel、製品採用は証明しない。このprobeの成功は対象fixtureでの実行証拠であり、WordPress全体のPHP互換性や製品ランタイム完成を意味しない。
+
+## 実行済み証跡
+
+2026-11-17の[実PHP-WASIX workflow run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44093716241)は両シナリオ成功。source-bound overlayとPHP lint、3,782個の未変更WordPress source file、filter結果、actionの`all`引数・callback順・終了時cleanupを検証した。固定結果と取得用artifactのID・digestは[証跡JSON](evidence/real-php-wasix-action-run-44093716241.json)に記録した。
