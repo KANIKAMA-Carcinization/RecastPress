@@ -146,7 +146,9 @@ fn send_frame(
 fn expect_frame(frame: &Value, seq: u64, kind: &str, keys: &[&str]) -> Result<()> {
     ensure!(
         frame["seq"] == seq && frame["kind"] == kind,
-        "unexpected frame {kind} at sequence {seq}"
+        "unexpected frame: received seq={:?} kind={:?}; expected seq={seq} kind={kind}",
+        frame["seq"],
+        frame["kind"]
     );
     let payload = frame["payload"]
         .as_object()
