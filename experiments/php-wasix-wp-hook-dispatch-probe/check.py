@@ -19,6 +19,7 @@ ARTIFACT = ROOT / ".reference/php-wasix-8.5.12/php.wasm"
 ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
 TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
@@ -33,6 +34,7 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_ref_array_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md",
@@ -49,6 +51,8 @@ INPUTS = [
     "experiments/php-compat-v06-probe/fixtures/bridge_driver.php",
     "experiments/php-compat-v06-probe/fixtures/strict_json.php",
     "experiments/php-compat-v06-probe/fixtures/handle_registry.php",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php",
 ]
 INPUTS.extend(
     path.relative_to(ROOT).as_posix()
@@ -70,6 +74,23 @@ def main():
         raise SystemExit("Pinned WordPress filter sentinel changed.")
     before = {name: digest(ROOT / name) for name in INPUTS}
     SOURCE_INPUTS_AT_START = before
+    oracle = subprocess.run(
+        ["php", "-n", str(REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT,
+        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if oracle.returncode != 0 or oracle.stderr:
+        raise SystemExit(
+            "pinned WordPress apply_filters_ref_array oracle failed:\n"
+            + oracle.stderr.decode("utf-8", "replace")[-8192:]
+        )
+    reference_oracle = json.loads(oracle.stdout.decode("utf-8", "strict"))
+    if reference_oracle.get("status") != "passed" or reference_oracle.get("scenario") != "wp_ref_array_native_oracle":
+        raise SystemExit("pinned WordPress apply_filters_ref_array oracle reported an unexpected result")
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -156,6 +177,7 @@ def main():
         "build": {"exit_code": build.returncode, "duration_ms": build_ms, "timeout_seconds": TIMEOUT},
         "run": {"exit_code": run_code, "exit_codes": run_codes if build.returncode == 0 else {},
                 "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
+        "reference_oracle": reference_oracle,
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,

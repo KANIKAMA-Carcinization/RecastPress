@@ -21,9 +21,13 @@ Craneliftは既存の実PHP bridgeと同じく最適化なしで固定する。R
 
 Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起きるため、Windowsのcargo checkやPHP lintを実PHP-Wasm実行の証明とは扱わない。WSLはこのworkflowの実行環境ではない。
 
+## 参照配列FilterのWordPress oracle
+
+`check.py` はPHP-WASIX runの前に、固定WordPress 7.1.3のnative `apply_filters_ref_array()` fixtureを実行し、参照されたfilter値と追加引数を二つのcallbackが順に変更する挙動、次callbackへの引継ぎ、呼出し元scalarへの反映、`all`の引数、filter stack cleanupをsource hash付きで証跡JSONへ記録する。このoracleはRust dispatcherを通らず、PHP-WASIXでの参照配列dispatchやproduction integrationの検証ではない。参照cellを保つWasm bridgeは別の未完了単位である。
+
 ## 範囲
 
-対象は通常の `apply_filters()` と `do_action()`、および静的callback tableに限定する。Actionの`all` hookはWordPress内で実行し、Rustへは渡さない。dispatch中の登録変更、nested action、`do_action_ref_array()`、`apply_filters_ref_array()`、Throwable時の復旧、CGI channel、製品採用は証明しない。このprobeの成功は対象fixtureでの実行証拠であり、WordPress全体のPHP互換性や製品ランタイム完成を意味しない。
+PHP-WASIXからRustへ渡す対象は通常の `apply_filters()` と `do_action()`、および静的callback tableに限定する。Actionの`all` hookはWordPress内で実行し、Rustへは渡さない。dispatch中の登録変更、nested action、`do_action_ref_array()`、`apply_filters_ref_array()` のWasm bridge、Throwable時の復旧、CGI channel、製品採用は証明しない。native `apply_filters_ref_array()` oracleの成功も、その固定fixtureのWordPress参照意味を記録するだけである。このprobeの成功は対象fixtureでの実行証拠であり、WordPress全体のPHP互換性や製品ランタイム完成を意味しない。
 
 ## 実行済み証跡
 
