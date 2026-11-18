@@ -101,6 +101,7 @@ jobs:
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_oracle.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_driver.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_oracle.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_deferred_add_oracle.php
       - name: Fetch locked Rust dependencies
         run: cargo +1.94.0 fetch --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml
       - name: Execute the actual pinned PHP-WASIX dispatcher probe

@@ -6,19 +6,21 @@
 
 発表ではrunの`php-wasix` jobとartifact `v06-wp-hook-dispatch-44340406987-1`を開き、`latest.json`の`action-same-priority`を表示します。観測順は`all -> mutator -> peer -> tail`です。実行中の優先度5に追加したcallbackはcallback tableに残りますが、そのaction passでは呼び出されず、終了時のlive handlesは0になります。`action-removal`の実測は[run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645)と[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-removal-run-44334354645.json)、同優先度追加は[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-same-priority-run-44340406987.json)に記録しています。artifactは2026-12-02 16:08 UTCまで取得できます。
 
+現在、同一リクエストで2回 `do_action()` を実行する`action-deferred-add`シナリオを追加しています。期待値は1回目`all -> mutator -> peer -> tail`、2回目`all -> mutator -> peer -> added -> tail`で、native oracle・`did_action()`カウンター・request-close時のhandle解放を照合します。次回CIが成功するまでは、この挙動をデモ済みとして説明しません。
+
 このPoCはGitHub ActionsのUbuntu runner上で動作する検証デモです。WindowsやMac上で`check.py`を直接実行する手順ではありません。既存のMac Dockerデモは別のデモ経路です。
 
 ## デモ経路
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-Latest validated run: [44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987), source commit `42f85b7b77657a8e5f0d7fc4d513eab34d5e6d22`. The pinned PHP-WASIX 8.5.12 and WordPress 7.1.3 run passed all nine scenarios. Same-priority addition produced `all -> mutator -> peer -> tail`; the added priority-5 row remained registered but did not run in the current pass. The earlier [callback removal run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) also passed.
+Latest validated run remains [44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987), source commit `42f85b7b77657a8e5f0d7fc4d513eab34d5e6d22`. It passed all nine then-current scenarios and proves only the single-pass same-priority behavior. A new `action-deferred-add` two-pass scenario is under validation; do not use run 44340406987 as evidence for second-pass invocation. The earlier [callback removal run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) also passed.
 
 ## 成功runとartifactを開く
 
 1. Open the [successful run 44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987) and confirm the workflow and `php-wasix` job succeeded.
 2. Download [artifact 14444472666](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987/artifacts/14444472666), named `v06-wp-hook-dispatch-44340406987-1`.
-3. In `latest.json`, show the nine exit codes and observations, especially the native oracle match, registered row, reset hook state, and zero live handles in `action-same-priority`. The artifact ZIP SHA-256 is `be65eda36eda1b30d611c5166c730800f179eeeb91bea1a4040aa08c191fb88d`.
+3. In `latest.json`, show the nine exit codes and observations, especially the native oracle match, registered row, reset hook state, and zero live handles in the historical `action-same-priority`. The artifact ZIP SHA-256 is `be65eda36eda1b30d611c5166c730800f179eeeb91bea1a4040aa08c191fb88d`.
 
 このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。発表前に新しいrunが必要になった場合は、実際に検証対象となる変更をpushしてそのrunを使います。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
 

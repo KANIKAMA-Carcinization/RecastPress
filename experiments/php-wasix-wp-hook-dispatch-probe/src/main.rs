@@ -2844,12 +2844,15 @@ fn run_action_same_priority_dispatch(
     writer: &mut impl Write,
     total_in: &mut usize,
     total_out: &mut usize,
+    pass: u8,
+    start_in_seq: u64,
+    start_out_seq: u64,
 ) -> Result<Value> {
     let deadline = Instant::now() + TIMEOUT;
-    let start = read_frame(reader, deadline, total_in, 0)?;
+    let start = read_frame(reader, deadline, total_in, start_in_seq)?;
     expect_frame(
         &start,
-        0,
+        start_in_seq,
         "action_dispatch_start",
         &[
             "generation",
@@ -2874,7 +2877,10 @@ fn run_action_same_priority_dispatch(
         .as_array()
         .context("same_priority rows")?
         .clone();
-    ensure!(rows.len() == 3, "same_priority initial row count");
+    ensure!(
+        rows.len() == if pass == 1 { 3 } else { 4 },
+        "same_priority pass row count"
+    );
     let fingerprint_for = |rows: &[Value]| -> Result<String> {
         let projection: Vec<Value> = rows
             .iter()
@@ -2909,6 +2915,7 @@ fn run_action_same_priority_dispatch(
         let label = match function {
             "rp_action_same_priority_mutator" => "mutator",
             "rp_action_same_priority_peer" => "peer",
+            "rp_action_same_priority_added" => "added",
             "rp_action_same_priority_tail" => "tail",
             other => anyhow::bail!("unknown action same_priority callback: {other}"),
         };
@@ -2936,16 +2943,22 @@ fn run_action_same_priority_dispatch(
             && rows[0]["priority"] == 5
             && rows[1]["uid"] == "rp_action_same_priority_peer"
             && rows[1]["priority"] == 5
-            && rows[2]["uid"] == "rp_action_same_priority_tail"
-            && rows[2]["priority"] == 20,
+            && (pass == 1
+                && rows[2]["uid"] == "rp_action_same_priority_tail"
+                && rows[2]["priority"] == 20
+                || pass == 2
+                    && rows[2]["uid"] == "rp_action_same_priority_added"
+                    && rows[2]["priority"] == 5
+                    && rows[3]["uid"] == "rp_action_same_priority_tail"
+                    && rows[3]["priority"] == 20),
         "same_priority initial callback order"
     );
     let action_args = [PhpValue::Bytes(Vec::new())];
     let ticket = dispatcher
         .begin_action_after_counter_typed(&name, &action_args)
         .map_err(|error| anyhow::anyhow!("same_priority action start: {error:?}"))?;
-    let mut in_seq = 1;
-    let mut out_seq = 0;
+    let mut in_seq = start_in_seq + 1;
+    let mut out_seq = start_out_seq;
     let mut order = Vec::new();
     loop {
         match dispatcher
@@ -2978,7 +2991,7 @@ fn run_action_same_priority_dispatch(
                     &mut out_seq,
                 )?;
                 let reply = read_frame(reader, deadline, total_in, in_seq)?;
-                if uid == "rp_action_same_priority_mutator" {
+                if pass == 1 && uid == "rp_action_same_priority_mutator" {
                     expect_frame(
                         &reply,
                         in_seq,
@@ -3084,14 +3097,22 @@ fn run_action_same_priority_dispatch(
                     .map_err(|error| anyhow::anyhow!("same_priority release resume: {error:?}"))?;
             }
             DispatchStep::Complete(result) => {
+                let expected_order: &[&str] = if pass == 1 {
+                    &[
+                        "rp_action_same_priority_mutator",
+                        "rp_action_same_priority_peer",
+                        "rp_action_same_priority_tail",
+                    ]
+                } else {
+                    &[
+                        "rp_action_same_priority_mutator",
+                        "rp_action_same_priority_peer",
+                        "rp_action_same_priority_added",
+                        "rp_action_same_priority_tail",
+                    ]
+                };
                 ensure!(
-                    result == PhpValue::Null
-                        && order
-                            == [
-                                "rp_action_same_priority_mutator",
-                                "rp_action_same_priority_peer",
-                                "rp_action_same_priority_tail"
-                            ],
+                    result == PhpValue::Null && order == expected_order,
                     "same_priority callback order or result"
                 );
                 dispatcher.remove_all_typed(&name, None);
@@ -3122,6 +3143,11 @@ fn run_action_same_priority_dispatch(
                     total_out,
                     &mut out_seq,
                 )?;
+                if pass == 1 {
+                    return run_action_same_priority_dispatch(
+                        reader, writer, total_in, total_out, 2, in_seq, out_seq,
+                    );
+                }
                 let observed = read_frame(reader, deadline, total_in, in_seq)?;
                 expect_frame(
                     &observed,
@@ -3519,7 +3545,7 @@ fn main() -> Result<()> {
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
     let action_removal_mode = std::env::args().nth(1).as_deref() == Some("action-removal");
     let action_same_priority_mode =
-        std::env::args().nth(1).as_deref() == Some("action-same-priority");
+        std::env::args().nth(1).as_deref() == Some("action-deferred-add");
     ensure!(
         action_mode
             || ref_array_mode
@@ -3628,6 +3654,9 @@ fn main() -> Result<()> {
             },
             &mut total_in,
             &mut total_out,
+            1,
+            0,
+            0,
         )
     } else if action_removal_mode {
         run_action_removal_dispatch(
@@ -3756,7 +3785,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-same-priority"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -3787,7 +3816,7 @@ fn run_guest(
         vec![
             "-n".to_string(),
             driver.to_string(),
-            "action-same-priority".to_string(),
+            "action-deferred-add".to_string(),
         ]
     } else if driver == PHP_ACTION_REMOVAL_DRIVER {
         vec![

@@ -84,8 +84,8 @@ function recastpress_wp_dispatch_selected_action(
     $registry = $GLOBALS['rp_same_priority_registry'];
     $wire = $GLOBALS['rp_same_priority_wire'];
     $rows = rp_same_priority_table_snapshot($hook);
-    if (count($rows) !== 3) {
-        throw new RuntimeException('action_same_priority_initial_row_count');
+    if (!in_array(count($rows), [3, 4], true)) {
+        throw new RuntimeException('action_same_priority_pass_row_count');
     }
     $handles = [];
     $exported = [];
@@ -140,7 +140,9 @@ function recastpress_wp_dispatch_selected_action(
             $callback = $registry->resolve($invocation['handle'], 'callable');
             call_user_func_array($callback, $invocation['args']);
 
-            if ($invocation['uid'] === 'rp_action_same_priority_mutator') {
+            if ($invocation['uid'] === 'rp_action_same_priority_mutator'
+                && did_action(RP_SAME_PRIORITY_HOOK) === 1
+            ) {
                 $current = rp_same_priority_table_snapshot($hook);
                 $newRows = array_values(array_filter(
                     $current,
@@ -196,7 +198,7 @@ function recastpress_wp_dispatch_selected_action(
             expect_parent_effect($frame, null);
             expect_payload_keys($frame, ['target', 'invocations'], 'action_same_priority_complete');
             if ($frame['payload']['target'] !== RP_SAME_PRIORITY_TARGET
-                || $frame['payload']['invocations'] !== 3
+                || $frame['payload']['invocations'] !== ($GLOBALS['wp_actions'][RP_SAME_PRIORITY_HOOK] === 1 ? 3 : 4)
                 || rp_same_priority_table_snapshot($hook) !== [
                     ['priority' => 5, 'uid' => 'rp_action_same_priority_mutator', 'accepted_args' => 0, 'function' => 'rp_action_same_priority_mutator'],
                     ['priority' => 5, 'uid' => 'rp_action_same_priority_peer', 'accepted_args' => 0, 'function' => 'rp_action_same_priority_peer'],
@@ -264,7 +266,9 @@ function rp_action_same_priority_mutator(): void
         'current_priority' => $GLOBALS['rp_same_priority_hook']->current_priority(),
         'stack' => $GLOBALS['wp_current_filter'],
     ];
-    add_action(RP_SAME_PRIORITY_HOOK, 'rp_action_same_priority_added', 5, 0);
+    if (did_action(RP_SAME_PRIORITY_HOOK) === 1) {
+        add_action(RP_SAME_PRIORITY_HOOK, 'rp_action_same_priority_added', 5, 0);
+    }
 }
 
 function rp_action_same_priority_peer(): void
@@ -323,9 +327,14 @@ try {
     $GLOBALS['rp_same_priority_hook'] = $hook;
     $GLOBALS['rp_same_priority_target_hook'] = $hook;
 
-    $result = do_action(RP_SAME_PRIORITY_HOOK);
+    $firstResult = do_action(RP_SAME_PRIORITY_HOOK);
+    $secondResult = do_action(RP_SAME_PRIORITY_HOOK);
     $state = [
         'events' => $GLOBALS['rp_same_priority_events'],
+        'pass_orders' => [
+            array_column(array_slice($GLOBALS['rp_same_priority_events'], 0, 4), 'callback'),
+            array_column(array_slice($GLOBALS['rp_same_priority_events'], 4), 'callback'),
+        ],
         'action_count' => did_action(RP_SAME_PRIORITY_HOOK),
         'current_action' => current_action(),
         'current_filter' => current_filter(),
@@ -338,8 +347,8 @@ try {
             'function' => is_string($row['function']) ? $row['function'] : null,
         ], rp_same_priority_table_snapshot($hook)),
     ];
-    if ($result !== null
-        || $state['action_count'] !== 1
+    if ($firstResult !== null || $secondResult !== null
+        || $state['action_count'] !== 2
         || $state['current_action'] !== false
         || $state['current_filter'] !== false
         || $state['doing_action'] !== false
@@ -347,7 +356,10 @@ try {
         || $state['hook_state'] !== [
             'nesting_level' => 0, 'iterations' => [], 'current_priority' => [], 'doing_action' => false,
         ]
-        || array_column($state['events'], 'callback') !== ['all', 'mutator', 'peer', 'tail']
+        || $state['pass_orders'] !== [
+            ['all', 'mutator', 'peer', 'tail'],
+            ['all', 'mutator', 'peer', 'added', 'tail'],
+        ]
     ) {
         throw new RuntimeException('action_same_priority_final_state');
     }
