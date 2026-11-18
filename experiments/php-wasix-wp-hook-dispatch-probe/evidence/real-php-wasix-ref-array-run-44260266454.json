@@ -1,0 +1,71 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch.receipt.v2",
+  "status": "passed",
+  "workflow": {
+    "run_id": "44260266454",
+    "run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44260266454",
+    "source_commit": "f0aa60960c0b0acc712a3e90b604acfd9a1dbd1d",
+    "run_attempt": 1,
+    "started_at_utc": "2026-11-18T07:36:56Z",
+    "completed_at_utc": "2026-11-18T07:48:52Z",
+    "artifact_id": "14407629373",
+    "artifact_name": "v06-wp-hook-dispatch-44260266454-1",
+    "artifact_sha256": "f83434d83d319c66687d475fd13892377aa8b71fe871fbc987e94564d6227933",
+    "artifact_expires_at_utc": "2026-12-02T07:48:50Z"
+  },
+  "environment": {
+    "platform": "Ubuntu 24.04, x86_64",
+    "rustc": "1.94.0",
+    "wasmer": "7.2.0",
+    "wasmer_wasix": "0.702.0",
+    "compiler": "Cranelift no optimization",
+    "php": "8.5.12",
+    "php_artifact_id": "12371010145",
+    "php_artifact_sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "wordpress": "7.1.3",
+    "wordpress_archive_sha1": "491a78c7676b15dffcc69130c6054b8f49228a91"
+  },
+  "timing_ms": {
+    "build": 159017,
+    "all_scenarios": 524671,
+    "workflow_total_approx": 716000
+  },
+  "scenarios": {
+    "filter": {
+      "exit_code": 0,
+      "status": "passed",
+      "result": "B(Z|left|right)"
+    },
+    "ref-array": {
+      "exit_code": 0,
+      "status": "passed",
+      "native_oracle_contract_match": true,
+      "callbacks": [
+        "rp_ref_array_first",
+        "rp_ref_array_second"
+      ],
+      "result": "replacement-from-first|extra-mutated-by-second",
+      "caller_value": "replacement-from-first",
+      "caller_extra": "extra-mutated-by-second",
+      "current_filter_after_return": false,
+      "doing_filter_after_return": false,
+      "live_handles_after_release": 0,
+      "live_handles_before_registry_close": 0,
+      "argument_frame_released_before_registry_close": true
+    },
+    "action": {
+      "exit_code": 0,
+      "status": "passed",
+      "result": null
+    }
+  },
+  "provenance": {
+    "source_inputs_unchanged": true,
+    "php_wasm_bytes": 39727549,
+    "wordPress_source_file_count": 3782,
+    "fixture_scope_only": true,
+    "production_ready": false,
+    "source_inputs_sha256_for_runtime_readme": "00c989283817e5937dd5f857b6c54075ac346439ba9d45f20271c0f03e426daa"
+  },
+  "log_capture": "run-20261118T074849Z.log"
+}
