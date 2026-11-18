@@ -17,9 +17,13 @@ python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
 
 `check.py` is Linux-only and uses Rust 1.94.0, Wasmer 7.2.0 Cranelift, and Wasmer-WASIX 0.702.0. GitHub Actions runs on Ubuntu 24.04, verifies the fixed PHP artifact ZIP and extracted Wasm size/hash, and sends its token only to the pinned `api.github.com/repos/wasix-org/php/actions/artifacts/12371010145/zip` endpoint.
 
-Craneliftは既存の実PHP bridgeと同じく最適化なしで固定する。Rust hostはartifact読込、module compile、guest起動、最初のbridge frame待ちをstderrへ段階表示する。checkerは`filter`、`ref-array`、`action`、`action-ref-array`、`action-throwable`、`action-nested`の6シナリオを別々に実行し、各runnerの上限を300秒とする。タイムアウト時にstdout/stderrそれぞれの保存上限1 MiB内の末尾データについてbyte数とSHA-256を記録し、両方を合わせたcaptureのSHA-256も証跡へ残す。
+Craneliftは既存の実PHP bridgeと同じく最適化なしで固定する。Rust hostはartifact読込、module compile、guest起動、最初のbridge frame待ちをstderrへ段階表示する。checkerは`filter`、`ref-array`、`action`、`action-ref-array`、`action-throwable`、`action-nested`、`action-mutation`の7シナリオを別々に実行し、各runnerの上限を300秒とする。タイムアウト時にstdout/stderrそれぞれの保存上限1 MiB内の末尾データについてbyte数とSHA-256を記録し、両方を合わせたcaptureのSHA-256も証跡へ残す。
 
 Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起きるため、Windowsのcargo checkやPHP lintを実PHP-Wasm実行の証明とは扱わない。WSLはこのworkflowの実行環境ではない。
+
+## 実行中アクションへのcallback追加
+
+`action-mutation` は優先度5のcallback内で優先度15のcallbackを追加し、WordPress/PHP hook iterationとRust Dispatcherの両方が `mutator → added → tail` の順に進むかを検証する。追加rowのhandleをフレームで交換し、active iterationを並べ替え、完了後は3 callbackのleaseを解放する。CIは固定WordPress native oracleとゲストの全観測を比較する。このfixtureは現在のactionに対する将来優先度への追加のみを対象にし、削除、現在優先度への追加、再入actionは対象外。
 
 ## 参照配列FilterのWordPress oracle
 
@@ -34,7 +38,7 @@ The first Wasm run ([44255639047](https://github.com/KANIKAMA-Carcinization/Reca
 The fixture covers only the successful `apply_filters_ref_array()` path with two callbacks and a two-element list containing the filter value plus one by-reference extra. It does not cover accepted-argument truncation or zero-argument callbacks in this mode, throwable cleanup, arbitrary PHP argument graphs, or production adapter/bootstrap integration. The overlay remains fixture-only and is not product-ready.
 ## 範囲
 
-The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, bounded successful `apply_filters_ref_array()` and `do_action_ref_array()` fixtures, a terminal Throwable roundtrip, and one-level nested `do_action()` through the same Rust Dispatcher. Run 44313968335 compares the complete nested guest observation with a native WordPress oracle and confirms that the outer callback resumes after the inner action. Deeper nesting, callback-table mutation, CGI channel, production adoption, and general PHP compatibility remain unproven. Reference-array fixtures do not cover accepted-argument truncation or zero-argument callbacks. The Throwable case does not prove recovery or worker reuse.
+The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, bounded successful `apply_filters_ref_array()` and `do_action_ref_array()` fixtures, a terminal Throwable roundtrip, one-level nested `do_action()`, and adding a future-priority callback while an action is active. Callback removal, same-priority additions, deeper nesting, CGI channel, production adoption, and general PHP compatibility remain unproven. Reference-array fixtures do not cover accepted-argument truncation or zero-argument callbacks. The Throwable case does not prove recovery or worker reuse.
 
 ## 実行済み証跡
 
@@ -57,4 +61,4 @@ On [workflow run 44275172417](https://github.com/KANIKAMA-Carcinization/RecastPr
 
 On [workflow run 44313968335](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44313968335), all six real PHP-WASIX scenarios passed. In `action-nested`, the outer `do_action()` invokes a PHP callback that enters an inner `do_action()`. The same Rust Dispatcher completes the child ticket, returns to the waiting outer callback, and then invokes the outer tail callback. The complete guest observation matches the pinned WordPress 7.1.3 native oracle. Both action counters equal 1; the event order is `all`, `outer_parent_enter`, inner `all`, `inner_callback`, `outer_parent_after`, `outer_tail`; the inner hook is fully reset before the outer callback resumes; the final stack is empty; and the handle registry closes with zero live handles. The [source-bound receipt](evidence/real-php-wasix-action-nested-run-44313968335.json) records the CI evidence and the [artifact 14432982150](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44313968335/artifacts/14432982150), digest `sha256:292992f7f213133d649a70e9b183fc556157b934b8cc348afb6b6f1d01447bbe`. Build took 163,020 ms and all six scenario runners took 1,051,164 ms; all source inputs were unchanged.
 
-This proves only one nested action level with the fixed callbacks and arguments in this fixture. Deeper nesting, callback-table mutation, arbitrary PHP values, Throwable recovery, production adapter/bootstrap integration, and general PHP compatibility remain unproven. The overlay remains fixture-only and is not product-ready.
+This proves only one nested action level with the fixed callbacks and arguments in this fixture. The separate mutation scenario covers one future-priority addition only. Deeper nesting, callback removal, same-priority additions, arbitrary PHP values, Throwable recovery, production adapter/bootstrap integration, and general PHP compatibility remain unproven. The overlay remains fixture-only and is not product-ready.

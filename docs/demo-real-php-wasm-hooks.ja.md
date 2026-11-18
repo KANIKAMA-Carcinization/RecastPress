@@ -4,7 +4,7 @@
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-最新の成功[workflow run 44318637943](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44318637943)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、6シナリオすべてが通過しました。`action-nested`では親actionのcallbackから子`do_action()`を実行し、親callbackへ戻って後続callbackまで続くことをnative oracleと全観測値で照合しています。artifactは2026-12-02 14:08 UTCまで保存されます。発表ではこの成功runとartifactを使えます。
+最新の成功[workflow run 44318637943](https://github.com/KANIKAMA-Carcinization/ReCastPress/actions/runs/44318637943)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、6シナリオすべてが通過しました。`action-nested`では親actionのcallbackから子`do_action()`を実行し、親callbackへ戻って後続callbackまで続くことをnative oracleと全観測値で照合しています。次のデモ更新では、実行中のactionへ将来優先度callbackを追加するシナリオも含めます。現在のartifactは2026-12-02 14:08 UTCまで保存されます。
 
 ## 成功runとartifactを開く
 
@@ -37,4 +37,4 @@
 
 ## デモの範囲
 
-これは固定WordPress fixtureに対する境界付き実行証明です。`do_action_ref_array()`では2つのstring参照と2 callbacksを、`action-throwable`では1つの`RuntimeException`のidentity保持・再throw・request境界捕捉を、`action-nested`では1段のnested `do_action()`から親callbackへの復帰を検証します。任意のPHP値グラフ、accepted-argsの切り詰め、0引数callbackのref-array経路、2段以上の入れ子、throw後のWP state回復やworker再利用、本番bootstrapとの統合はこのデモの対象外です。RecastPress全体がWordPress互換になったことや、本番readyであることを示すものではありません。
+これは固定WordPress fixtureに対する境界付き実行証明です。`do_action_ref_array()`では2つのstring参照と2 callbacksを、`action-throwable`では1つの`RuntimeException`のidentity保持・再throw・request境界捕捉を、`action-nested`では1段のnested `do_action()`から親callbackへの復帰を検証します。開発中のaction mutation scenarioは優先度5のcallback内で優先度15のcallbackを追加し、実行順序を `mutator → added → tail` と照合します。任意のPHP値グラフ、accepted-argsの切り詰め、0引数callbackのref-array経路、callback削除、同一優先度への追加、2段以上の入れ子、throw後のWP state回復やworker再利用、本番bootstrapとの統合はこのデモの対象外です。RecastPress全体がWordPress互換になったことや、本番readyであることを示すものではありません。
