@@ -4,13 +4,13 @@
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-最新の成功[workflow run 44275172417](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44275172417)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、5シナリオすべてが通過しました。新しい`action-throwable`も、固定WordPress上のnative oracleとThrowable identityおよびdispatch中断後のstateが一致しています。artifactは2026-12-02まで保存されます。発表ではこの成功runとartifactを使えます。
+最新の成功[workflow run 44280999738](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44280999738)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、5シナリオすべてが通過しました。新しい`action-throwable`も、固定WordPress上のnative oracleとThrowable identityおよびdispatch中断後のstateが一致しています。artifactは2026-12-02 10:10 UTCまで保存されます。発表ではこの成功runとartifactを使えます。
 
 ## 成功runとartifactを開く
 
-1. [成功run 44275172417](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44275172417)を開きます。run全体と`php-wasix` jobが成功していることを確認します。
-2. [artifact 14414108780](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44275172417/artifacts/14414108780)をダウンロードします。artifact名は`v06-wp-hook-dispatch-44275172417-1`です。
-3. ZIP内の`latest.json`で5シナリオの終了コードと観測値を見せます。`run-*.log`には実行時のJSON出力が入っています。artifactのSHA-256は`959ea3f9b7e53d84c19f97549c4c2ba77c5a06224ac427268e7f7b33dc871707`です。
+1. [成功run 44280999738](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44280999738)を開きます。run全体と`php-wasix` jobが成功していることを確認します。
+2. [artifact 14418135967](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44280999738/artifacts/14418135967)をダウンロードします。artifact名は`v06-wp-hook-dispatch-44280999738-1`です。
+3. ZIP内の`latest.json`で5シナリオの終了コードと観測値を見せます。`run-*.log`には実行時のJSON出力が入っています。artifactのSHA-256は`468f0a789247082f8b029316c9a2d2f6ea2d4d532302bb997623e4b9cdd7ca70`です。
 
 このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。発表前に新しいrunが必要になった場合は、実際に検証対象となる変更をpushしてそのrunを使います。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
 
