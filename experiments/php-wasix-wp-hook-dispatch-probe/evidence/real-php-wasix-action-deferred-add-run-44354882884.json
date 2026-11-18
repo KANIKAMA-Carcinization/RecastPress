@@ -1,0 +1,71 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch.receipt.v2",
+  "status": "passed",
+  "workflow": {
+    "run_id": "44354882884",
+    "run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884",
+    "source_commit": "4fb5821c9dfaf35b7332ec8108d1b7a34ffa559f",
+    "run_attempt": 1,
+    "started_at_utc": "2026-11-18T17:06:26Z",
+    "completed_at_utc": "2026-11-18T17:24:32Z",
+    "artifact_id": "14452513411",
+    "artifact_name": "v06-wp-hook-dispatch-44354882884-1",
+    "artifact_sha256": "c9b2d1333e9ea462c8fb1f01c2ef89f410b2e42a84b3ee4695519076b7e75105",
+    "artifact_expires_at_utc": "2026-12-02T17:24:27Z"
+  },
+  "environment": {
+    "platform": "Ubuntu 24.04, x86_64",
+    "rustc": "1.94.0",
+    "wasmer": "7.2.0",
+    "wasmer_wasix": "0.702.0",
+    "compiler": "Cranelift no optimization",
+    "php": "8.5.12",
+    "php_artifact_id": "12371010145",
+    "php_artifact_sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "wordpress": "7.1.3",
+    "wordpress_archive_sha1": "491a78c7676b15dffcc69130c6054b8f49228a91"
+  },
+  "timing_ms": {
+    "build": 121488,
+    "all_scenarios": 865261,
+    "workflow_total_approx": 1086000
+  },
+  "scenarios": {
+    "filter": { "exit_code": 0, "status": "passed", "result": "B(Z|left|right)" },
+    "ref-array": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "live_handles_after_release": 0 },
+    "action": { "exit_code": 0, "status": "passed", "result": null },
+    "action-ref-array": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "live_handles_after_release": 0 },
+    "action-throwable": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "same_throwable": true, "live_handles_after_release": 0 },
+    "action-nested": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "nested_depth": 1, "outer_callback_resumed": true, "live_handles_after_release": 0 },
+    "action-mutation": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "event_order": ["all", "mutator", "added", "tail"], "live_handles_after_release": 0 },
+    "action-removal": { "exit_code": 0, "status": "passed", "native_oracle_contract_match": true, "event_order": ["all", "mutator", "tail"], "live_handles_after_release": 0 },
+    "action-deferred-add": {
+      "exit_code": 0,
+      "status": "passed",
+      "native_oracle_contract_match": true,
+      "pass_orders": [["all", "mutator", "peer", "tail"], ["all", "mutator", "peer", "added", "tail"]],
+      "did_action_per_pass": [1, 2],
+      "action_count": 2,
+      "registered_rows": [
+        [5, "rp_action_same_priority_mutator"],
+        [5, "rp_action_same_priority_peer"],
+        [5, "rp_action_same_priority_added"],
+        [20, "rp_action_same_priority_tail"]
+      ],
+      "hook_state_reset": true,
+      "live_handles_after_release": 0,
+      "registry_closed": true
+    }
+  },
+  "provenance": {
+    "source_inputs_unchanged": true,
+    "wordpress_plugin_source_sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "wordpress_hook_source_sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "deferred_add_scope": "priority-5 mutator adds one callback during the first action pass; it is skipped in that pass and invoked on the second do_action in the same PHP request",
+    "callback_mutation_in_active_pass_proven": true,
+    "deferred_callback_invocation_proven": true,
+    "production_ready": false
+  },
+  "evidence_artifact_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884/artifacts/14452513411",
+  "log_capture": "run-20261118T172426Z.log"
+}
