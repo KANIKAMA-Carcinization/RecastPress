@@ -25,6 +25,8 @@ Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起
 
 `action-mutation` は優先度5のcallback内で優先度15のcallbackを追加し、WordPress/PHP hook iterationとRust Dispatcherの両方が `mutator → added → tail` の順に進むかを検証する。追加rowのhandleをフレームで交換し、active iterationを並べ替え、完了後は3 callbackのleaseを解放する。CIは固定WordPress native oracleとゲストの全観測を比較する。このfixtureは現在のactionに対する将来優先度への追加のみを対象にし、削除、現在優先度への追加、再入actionは対象外。
 
+Run [44327578888](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44327578888) passed all seven real PHP-WASIX scenarios with unchanged source inputs. The mutation observation matches the pinned native WordPress oracle: `all → mutator → added → tail`, priorities `5 → 15 → 20`, reset hook state, and zero live handles. The [source-bound receipt](evidence/real-php-wasix-action-mutation-run-44327578888.json) records the result and artifact digest `sha256:4a00e8d9a8ac353f9e4912e8a443f014590db062ccf92c85dc8384115e11179e`; the artifact is available until 2026-12-02 15:08 UTC.
+
 ## 参照配列FilterのWordPress oracle
 
 `check.py` runs the native reference-array oracle before PHP-WASIX. That oracle validates WordPress reference behavior only; later, run 44257900392 verified the bounded successful reference-array path through Rust/PHP-Wasm (see implementation status below).
