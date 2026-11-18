@@ -1,0 +1,56 @@
+{
+  "schema": "recastpress.wp-ref-array-native-oracle.v1",
+  "recorded_at": "2026-11-18",
+  "workflow_run_id": 44250333958,
+  "workflow_run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44250333958",
+  "source_commit": "2c499f21d1d94709006a5eef86e3637a9642e876",
+  "status": "passed",
+  "runtime": {
+    "php_cli": "8.3.6",
+    "wordpress": "7.1.3"
+  },
+  "wordpress_source_sha256": {
+    "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+  },
+  "observation": {
+    "events": [
+      {
+        "callback": "all",
+        "hook": "rp-probe-ref-array",
+        "args": ["seed", "left"],
+        "current_filter": "rp-probe-ref-array",
+        "doing_filter": true,
+        "did_filter": 1
+      },
+      {
+        "callback": "first",
+        "args": ["seed", "left"],
+        "current_filter": "rp-probe-ref-array",
+        "doing_filter": true,
+        "did_filter": 1
+      },
+      {
+        "callback": "second",
+        "args": ["replacement-from-first", "extra-mutated-by-first"],
+        "current_filter": "rp-probe-ref-array",
+        "doing_filter": true,
+        "did_filter": 1
+      }
+    ],
+    "result": "replacement-from-first|extra-mutated-by-second",
+    "caller_value": "replacement-from-first",
+    "caller_extra": "extra-mutated-by-second",
+    "did_filter": 1,
+    "current_filter": false,
+    "doing_filter": false
+  },
+  "source_inputs_unchanged": true,
+  "github_artifact": {
+    "id": 14404192186,
+    "name": "v06-wp-hook-dispatch-44250333958-1",
+    "sha256": "66bc851db279c0f695f82eba251b1e61664ce618210e8418f77c6b2149d3ca80",
+    "expires_at": "2026-12-02T06:24:41Z"
+  },
+  "scope": "Native PHP 8.3.6 with fixed WordPress 7.1.3 plugin.php/WP_Hook only; does not prove the Rust/PHP-Wasm apply_filters_ref_array bridge."
+}

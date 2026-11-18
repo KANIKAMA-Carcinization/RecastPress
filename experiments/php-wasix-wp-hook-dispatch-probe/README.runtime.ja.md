@@ -32,3 +32,5 @@ PHP-WASIXからRustへ渡す対象は通常の `apply_filters()` と `do_action(
 ## 実行済み証跡
 
 2026-11-17の[実PHP-WASIX workflow run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44093716241)は両シナリオ成功。source-bound overlayとPHP lint、3,782個の未変更WordPress source file、filter結果、actionの`all`引数・callback順・終了時cleanupを検証した。固定結果と取得用artifactのID・digestは[証跡JSON](evidence/real-php-wasix-action-run-44093716241.json)に記録した。
+
+2026-11-18の[run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44250333958)は固定WordPress 7.1.3上のnative `apply_filters_ref_array()` oracleと、既存の実PHP-WASIX filter/action両シナリオに成功した。oracleでは参照された追加引数が2つのcallback間で更新され、filter値のcallback returnが次callbackへ渡り、最終値がcaller側に反映された。`all`の初期引数、`did_filter`、stack cleanupもfixture期待値と一致した。run全体のsource inputは不変。各観測・WordPress source hashとartifact digestは[oracle証跡](evidence/wp-ref-array-oracle-44250333958.json)に記録した。これはnative PHP oracleであり、ref-arrayをRust/PHP-Wasm bridgeへ通した証拠ではない。
