@@ -4,13 +4,13 @@
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-最新の成功[workflow run 44313968335](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44313968335)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、6シナリオすべてが通過しました。`action-nested`では親actionのcallbackから子`do_action()`を実行し、親callbackへ戻って後続callbackまで続くことをnative oracleと全観測値で照合しています。artifactは2026-12-02 13:48 UTCまで保存されます。発表ではこの成功runとartifactを使えます。
+最新の成功[workflow run 44318637943](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44318637943)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、6シナリオすべてが通過しました。`action-nested`では親actionのcallbackから子`do_action()`を実行し、親callbackへ戻って後続callbackまで続くことをnative oracleと全観測値で照合しています。artifactは2026-12-02 14:08 UTCまで保存されます。発表ではこの成功runとartifactを使えます。
 
 ## 成功runとartifactを開く
 
-1. [成功run 44313968335](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44313968335)を開きます。run全体と`php-wasix` jobが成功していることを確認します。
-2. [artifact 14432982150](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44313968335/artifacts/14432982150)をダウンロードします。artifact名は`v06-wp-hook-dispatch-44313968335-1`です。
-3. ZIP内の`latest.json`で6シナリオの終了コードと観測値を見せます。`run-*.log`には実行時のJSON出力が入っています。artifact ZIPのSHA-256は`292992f7f213133d649a70e9b183fc556157b934b8cc348afb6b6f1d01447bbe`です。
+1. [成功run 44318637943](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44318637943)を開きます。run全体と`php-wasix` jobが成功していることを確認します。
+2. [artifact 14435575180](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44318637943/artifacts/14435575180)をダウンロードします。artifact名は`v06-wp-hook-dispatch-44318637943-1`です。
+3. ZIP内の`latest.json`で6シナリオの終了コードと観測値を見せます。`run-*.log`には実行時のJSON出力が入っています。artifact ZIPのSHA-256は`6b5c5c440218752a8724871827e543f8d3d874f739c31effb2a8bec07608ddce`です。
 
 このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。発表前に新しいrunが必要になった場合は、実際に検証対象となる変更をpushしてそのrunを使います。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
 
