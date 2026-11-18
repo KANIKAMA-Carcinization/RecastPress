@@ -289,9 +289,13 @@ def main():
                     )
                     scenario_result["native_oracle_contract_match"] = contract_match
                 elif scenario == "action-nested":
+                    nested_guest_observation = (
+                        scenario_result.get("observation", {})
+                        .get("guest", {})
+                        .get("observation")
+                    )
                     contract_match = (
-                        scenario_result.get("observation")
-                        == action_nested_reference_oracle.get("observation")
+                        nested_guest_observation == action_nested_reference_oracle.get("observation")
                     )
                     scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
