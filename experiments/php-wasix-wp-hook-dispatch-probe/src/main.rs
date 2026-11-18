@@ -1317,12 +1317,14 @@ fn run_action_nested_dispatch(
         0,
         None,
     )?;
+    ensure!(outer.rows.len() == 2, "nested outer callback row count mismatch");
     ensure!(
-        outer.rows.len() == 2 && outer_start["payload"]["args"] == json!([]),
-        "nested outer action shape mismatch"
+        outer_start["payload"]["args"] == json!([""]),
+        "nested outer zero-argument action placeholder mismatch"
     );
+    let outer_args = [PhpValue::Bytes(Vec::new())];
     let outer_ticket = dispatcher
-        .begin_action_after_counter_typed(&outer.name, &[])
+        .begin_action_after_counter_typed(&outer.name, &outer_args)
         .map_err(|error| anyhow::anyhow!("nested outer action start: {error:?}"))?;
     let mut callback_order = Vec::new();
     loop {
