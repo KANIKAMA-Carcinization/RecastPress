@@ -1,0 +1,89 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch.receipt.v2",
+  "status": "passed",
+  "workflow": {
+    "run_id": "44266907529",
+    "run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44266907529",
+    "source_commit": "b24441180b8f922420bcf2b58ae3a8095b7706ec",
+    "run_attempt": 1,
+    "started_at_utc": "2026-11-18T08:25:56Z",
+    "completed_at_utc": "2026-11-18T08:40:32Z",
+    "artifact_id": "14411022906",
+    "artifact_name": "v06-wp-hook-dispatch-44266907529-1",
+    "artifact_sha256": "bb5ddb159e848ce1f4d1c1c1400414f181eec8fb3f4dc025828329e3e0ecdec6",
+    "artifact_expires_at_utc": "2026-12-02T08:40:28Z"
+  },
+  "environment": {
+    "platform": "Ubuntu 24.04, x86_64",
+    "rustc": "1.94.0",
+    "wasmer": "7.2.0",
+    "wasmer_wasix": "0.702.0",
+    "compiler": "Cranelift no optimization",
+    "php": "8.5.12",
+    "php_artifact_id": "12371010145",
+    "php_artifact_sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "wordpress": "7.1.3",
+    "wordpress_archive_sha1": "491a78c7676b15dffcc69130c6054b8f49228a91"
+  },
+  "timing_ms": {
+    "build": 154806,
+    "all_scenarios": 687275,
+    "workflow_total": 874000
+  },
+  "scenarios": {
+    "filter": {
+      "exit_code": 0,
+      "status": "passed",
+      "result": "B(Z|left|right)"
+    },
+    "ref-array": {
+      "exit_code": 0,
+      "status": "passed",
+      "native_oracle_contract_match": true,
+      "result": "replacement-from-first|extra-mutated-by-second",
+      "caller_value": "replacement-from-first",
+      "caller_extra": "extra-mutated-by-second",
+      "argument_frame_released_before_registry_close": true,
+      "live_handles_after_release": 0
+    },
+    "action": {
+      "exit_code": 0,
+      "status": "passed",
+      "result": null
+    },
+    "action-ref-array": {
+      "exit_code": 0,
+      "status": "passed",
+      "native_oracle_contract_match": true,
+      "callbacks": [
+        "rp_action_ref_array_first",
+        "rp_action_ref_array_second"
+      ],
+      "result": null,
+      "caller_value": "value-mutated-by-first",
+      "caller_extra": "extra-mutated-by-second",
+      "action_count": 1,
+      "current_action_after_return": false,
+      "doing_action_after_return": false,
+      "wp_hook_doing_action_after_return": false,
+      "current_priority_after_return": false,
+      "argument_frame_released_before_registry_close": true,
+      "live_handles_after_release": 0,
+      "live_handles_before_registry_close": 0
+    }
+  },
+  "provenance": {
+    "source_inputs_unchanged": true,
+    "runtime_readme_sha256": "00c989283817e5937dd5f857b6c54075ac346439ba9d45f20271c0f03e426daa",
+    "php_wasm_bytes": 39727549,
+    "wordpress_source_file_count": 3782,
+    "wordpress_plugin_source_sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "wordpress_hook_source_sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "wordpress_overlay_plugin_sha256": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+    "wordpress_overlay_hook_sha256": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4",
+    "do_action_ref_array_scope": "fixture-only: two string refs, two callbacks, successful completion path",
+    "production_ready": false
+  },
+  "evidence_artifact_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44266907529/artifacts/14411022906",
+  "log_capture": "run-20261118T084028Z.log"
+}
