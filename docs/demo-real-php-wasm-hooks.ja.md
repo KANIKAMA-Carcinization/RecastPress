@@ -1,16 +1,24 @@
 # RecastPress 実PHP-Wasm hook PoC デモ手順
 
+## 最新の実測デモ
+
+最新の成功runは[44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987)、対象commitは`42f85b7b77657a8e5f0d7fc4d513eab34d5e6d22`です。固定PHP-WASIX 8.5.12とWordPress 7.1.3を使い、9シナリオがすべて成功し、source inputs不変も確認しました。
+
+発表ではrunの`php-wasix` jobとartifact `v06-wp-hook-dispatch-44340406987-1`を開き、`latest.json`の`action-same-priority`を表示します。観測順は`all -> mutator -> peer -> tail`です。実行中の優先度5に追加したcallbackはcallback tableに残りますが、そのaction passでは呼び出されず、終了時のlive handlesは0になります。`action-removal`の実測は[run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645)と[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-removal-run-44334354645.json)、同優先度追加は[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-same-priority-run-44340406987.json)に記録しています。artifactは2026-12-02 16:08 UTCまで取得できます。
+
+このPoCはGitHub ActionsのUbuntu runner上で動作する検証デモです。WindowsやMac上で`check.py`を直接実行する手順ではありません。既存のMac Dockerデモは別のデモ経路です。
+
 ## デモ経路
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-最新の成功[workflow run 44327578888](https://github.com/KANIKAMA-Carcinization/ReCastPress/actions/runs/44327578888)は、PHP-WASIX 8.5.12とWordPress 7.1.3を使い、7シナリオすべてが通過しました。`action-mutation`では実行中actionへ優先度15のcallbackを追加し、`all → mutator → added → tail`と優先度`5 → 15 → 20`をnative oracleと全観測値で照合しています。現在のartifactは2026-12-02 15:08 UTCまで保存されます。
+Latest validated run: [44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987), source commit `42f85b7b77657a8e5f0d7fc4d513eab34d5e6d22`. The pinned PHP-WASIX 8.5.12 and WordPress 7.1.3 run passed all nine scenarios. Same-priority addition produced `all -> mutator -> peer -> tail`; the added priority-5 row remained registered but did not run in the current pass. The earlier [callback removal run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) also passed.
 
 ## 成功runとartifactを開く
 
-1. [成功run 44327578888](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44327578888)を開きます。run全体と`php-wasix` jobが成功していることを確認します。
-2. [artifact 14439966262](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44327578888/artifacts/14439966262)をダウンロードします。artifact名は`v06-wp-hook-dispatch-44327578888-1`です。
-3. ZIP内の`latest.json`で7シナリオの終了コードと観測値を見せます。`run-*.log`には実行時のJSON出力が入っています。artifact ZIPのSHA-256は`4a00e8d9a8ac353f9e4912e8a443f014590db062ccf92c85dc8384115e11179e`です。
+1. Open the [successful run 44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987) and confirm the workflow and `php-wasix` job succeeded.
+2. Download [artifact 14444472666](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987/artifacts/14444472666), named `v06-wp-hook-dispatch-44340406987-1`.
+3. In `latest.json`, show the nine exit codes and observations, especially the native oracle match, registered row, reset hook state, and zero live handles in `action-same-priority`. The artifact ZIP SHA-256 is `be65eda36eda1b30d611c5166c730800f179eeeb91bea1a4040aa08c191fb88d`.
 
 このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。発表前に新しいrunが必要になった場合は、実際に検証対象となる変更をpushしてそのrunを使います。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
 
@@ -23,9 +31,9 @@
 - callback `second`は`value-mutated-by-first`と`extra-mutated-by-first`を受け取り、2つ目をさらに書き換える
 - 呼び出し元の最終値は`value-mutated-by-first`と`extra-mutated-by-second`
 - actionの戻り値は`null`。終了後は`current_action`、`doing_action`、`wp_hook_doing_action`、`current_priority`がfalse、`action_count`は1、解放後のlive handle数は0
-- `run.exit_codes`の`filter`、`ref-array`、`action`、`action-ref-array`、`action-throwable`、`action-nested`、`action-mutation`はすべて0
+- All nine `run.exit_codes` entries (`filter`, `ref-array`, `action`, `action-ref-array`, `action-throwable`, `action-nested`, `action-mutation`, `action-removal`, `action-same-priority`) are 0.
 
-直近の成功結果では、`action-ref-array`にPHP↔Rust間8入力/7出力frame、`action-mutation`のmutator内の追加をRust Dispatcherへ反映し、`mutator → added → tail`で完了するbridge frameを記録しました。`run-*.log`にあるJSON全体を保存し、観測結果と実行commitを一緒に示せます。
+The latest successful run records the ref-array PHP/Rust frame exchange, future-priority addition, active callback removal, and same-priority addition. `run-*.log` contains the full JSON observations, bridge frames, and source commit.
 
 ## Throwableシナリオ
 
@@ -37,4 +45,4 @@
 
 ## デモの範囲
 
-これは固定WordPress fixtureに対する境界付き実行証明です。`do_action_ref_array()`では2つのstring参照と2 callbacksを、`action-throwable`では1つの`RuntimeException`のidentity保持・再throw・request境界捕捉を、`action-nested`では1段のnested `do_action()`から親callbackへの復帰を、`action-mutation`では優先度5のcallback内で優先度15のcallbackを追加し、実行順序を `mutator → added → tail` と照合します。任意のPHP値グラフ、accepted-argsの切り詰め、0引数callbackのref-array経路、callback削除、同一優先度への追加、2段以上の入れ子、throw後のWP state回復やworker再利用、本番bootstrapとの統合はこのデモの対象外です。RecastPress全体がWordPress互換になったことや、本番readyであることを示すものではありません。
+This is bounded execution evidence for fixed WordPress fixtures. It covers reference-array callbacks, a terminal Throwable, one nested action, future-priority addition, removal of a pending callback, and same-priority addition whose row remains registered but does not run during the active pass. Arbitrary PHP values, accepted-argument truncation, zero-argument ref-array callbacks, deeper nesting, Throwable recovery or worker reuse, and production bootstrap integration remain outside this demo. It does not establish full WordPress compatibility or production readiness.
