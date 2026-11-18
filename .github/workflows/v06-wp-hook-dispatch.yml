@@ -85,10 +85,12 @@ jobs:
           set -euo pipefail
           python3 experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php
-          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/plugin.php
-          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/class-wp-hook.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/plugin.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/class-wp-hook.php
           php -n -l .reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php
       - name: Fetch locked Rust dependencies
         run: cargo +1.94.0 fetch --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml
       - name: Execute the actual pinned PHP-WASIX dispatcher probe

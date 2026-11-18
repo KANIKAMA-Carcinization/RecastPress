@@ -1,0 +1,44 @@
+{
+  "schema": "recastpress.wp-hook-dispatch-overlay.v5",
+  "wordpress_version": "7.1.3",
+  "wordpress_archive_sha1": "491a78c7676b15dffcc69130c6054b8f49228a91",
+  "source_sha256": {
+    "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+  },
+  "overlay_sha256": {
+    "wp-includes/plugin.php": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+    "wp-includes/class-wp-hook.php": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+  },
+  "changed_files": [
+    "wp-includes/plugin.php",
+    "wp-includes/class-wp-hook.php"
+  ],
+  "preserved_plugin_php_scope": [
+    "wp_filters counter increment",
+    "wp_actions preincrement remains in plugin.php",
+    "all hook dispatch",
+    "wp_current_filter push remains; normal-return pop remains and Throwable leaves it stale",
+    "empty named hook return",
+    "do_action empty-argument placeholder remains in plugin.php"
+  ],
+  "wp_hook_method_has_sync_handoff": true,
+  "selected_object_predicate_guards_handoff": true,
+  "selected_action_object_predicate_guards_handoff": true,
+  "plugin_do_action_counter_all_and_stack_remain_wordpress_owned": true,
+  "wp_hook_sync_operations": [
+    "set_priority",
+    "finish"
+  ],
+  "callback_table_mutation_during_dispatch_supported": false,
+  "direct_method_call_with_third_argument_in_scope": false,
+  "apply_filters_ref_array_bridged": true,
+  "apply_filters_ref_array_bridge_scope": "fixture-only request-scoped PHP argument-frame handle; success path",
+  "do_action_ref_array_bridged": true,
+  "do_action_ref_array_bridge_scope": "fixture-only request-scoped PHP argument-frame handle; success path",
+  "action_callback_table_mutation_during_dispatch_supported": false,
+  "action_throwable_recovery_proven": false,
+  "action_all_hook_dispatched_by_rust": false,
+  "adapter_runtime_included": false,
+  "product_ready": false
+}

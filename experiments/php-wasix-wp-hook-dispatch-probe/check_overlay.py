@@ -7,7 +7,7 @@ import tempfile
 from prepare_overlay import PLUGIN, prepare
 
 ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE = Path(__file__).resolve().parent / "evidence" / "overlay-v4"
+EVIDENCE = Path(__file__).resolve().parent / "evidence" / "overlay-v5"
 
 
 def main():

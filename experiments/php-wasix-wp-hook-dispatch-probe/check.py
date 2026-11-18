@@ -20,6 +20,7 @@ ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4ed
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
+ACTION_REF_ARRAY_ORACLE = HERE / "fixtures/wp_action_ref_array_oracle.php"
 TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
@@ -34,15 +35,17 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_ref_array_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md",
     "scripts/wordpress_reference.py",
     "crates/recastpress-wp/Cargo.toml",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/overlay.json",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/plugin.php",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/class-wp-hook.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/overlay.json",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/plugin.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/class-wp-hook.php",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
     "experiments/php-runtime-candidate-probe/artifact.json",
     "crates/recastpress-wp/src/dispatcher.rs",
@@ -85,6 +88,33 @@ def ref_array_contract_matches(native_observation, wasm_observation):
     )
 
 
+def action_ref_array_contract_matches(native_observation, wasm_observation):
+    guest = wasm_observation.get("guest", {})
+    actual = {
+        "events": guest.get("events"),
+        "result": wasm_observation.get("result"),
+        "caller_value": guest.get("caller_value"),
+        "caller_extra": guest.get("caller_extra"),
+        "action_count": guest.get("action_count"),
+        "current_action": guest.get("current_action"),
+        "doing_action": guest.get("doing_action"),
+        "wp_hook_doing_action": guest.get("wp_hook_doing_action"),
+        "current_priority": guest.get("current_priority"),
+    }
+    expected = {
+        "events": native_observation.get("events"),
+        "result": native_observation.get("result"),
+        "caller_value": native_observation.get("caller_value"),
+        "caller_extra": native_observation.get("caller_extra"),
+        "action_count": native_observation.get("did_action"),
+        "current_action": native_observation.get("current_action"),
+        "doing_action": native_observation.get("doing_action"),
+        "wp_hook_doing_action": native_observation.get("wp_hook_doing_action"),
+        "current_priority": native_observation.get("current_priority"),
+    }
+    return actual == expected
+
+
 def main():
     global SOURCE_INPUTS_AT_START, COMPLETED_SCENARIOS
     if platform.system() != "Linux":
@@ -112,6 +142,23 @@ def main():
     reference_oracle = json.loads(oracle.stdout.decode("utf-8", "strict"))
     if reference_oracle.get("status") != "passed" or reference_oracle.get("scenario") != "wp_ref_array_native_oracle":
         raise SystemExit("pinned WordPress apply_filters_ref_array oracle reported an unexpected result")
+    action_oracle_run = subprocess.run(
+        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT,
+        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if action_oracle_run.returncode != 0 or action_oracle_run.stderr:
+        raise SystemExit(
+            "pinned WordPress do_action_ref_array oracle failed:\n"
+            + action_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
+        )
+    action_reference_oracle = json.loads(action_oracle_run.stdout.decode("utf-8", "strict"))
+    if action_reference_oracle.get("status") != "passed" or action_reference_oracle.get("scenario") != "wp_action_ref_array_native_oracle":
+        raise SystemExit("pinned WordPress do_action_ref_array oracle reported an unexpected result")
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -144,7 +191,12 @@ def main():
         run_ms = 0
         outputs = []
         run_codes = {}
-        scenarios = [("filter", []), ("ref-array", ["ref-array"]), ("action", ["action"])]
+        scenarios = [
+            ("filter", []),
+            ("ref-array", ["ref-array"]),
+            ("action", ["action"]),
+            ("action-ref-array", ["action-ref-array"]),
+        ]
         status = "passed"
         for scenario, args in scenarios:
             t0 = time.monotonic()
@@ -168,13 +220,18 @@ def main():
                         reference_oracle["observation"], scenario_result.get("observation", {})
                     )
                     scenario_result["native_oracle_contract_match"] = contract_match
+                elif scenario == "action-ref-array":
+                    contract_match = action_ref_array_contract_matches(
+                        action_reference_oracle["observation"], scenario_result.get("observation", {})
+                    )
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
-                if scenario == "ref-array" and not contract_match:
+                if scenario in ("ref-array", "action-ref-array") and not contract_match:
                     status = "oracle_mismatch"
-                    outputs.append("PHP-WASIX ref-array observation differs from the pinned native WordPress oracle.\n")
-                    print("PHP-WASIX ref-array observation differs from the pinned native WordPress oracle.", file=sys.stderr)
+                    outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
+                    print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
                     break
             else:
                 status = "runtime_failed"
@@ -209,6 +266,7 @@ def main():
         "run": {"exit_code": run_code, "exit_codes": run_codes if build.returncode == 0 else {},
                 "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
         "reference_oracle": reference_oracle,
+        "action_reference_oracle": action_reference_oracle,
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
