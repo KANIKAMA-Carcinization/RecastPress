@@ -51,8 +51,9 @@ const PHP_ACTION_THROWABLE_DRIVER: &str = "/fixture/wp_action_throwable_driver.p
 const PHP_ACTION_NESTED_DRIVER: &str = "/fixture/wp_action_nested_driver.php";
 const PHP_ACTION_MUTATION_DRIVER: &str = "/fixture/wp_action_mutation_driver.php";
 const PHP_ACTION_REMOVAL_DRIVER: &str = "/fixture/wp_action_removal_driver.php";
+const PHP_ACTION_SAME_PRIORITY_DRIVER: &str = "/fixture/wp_action_same_priority_driver.php";
 
-const FILES: [(&str, &[u8]); 13] = [
+const FILES: [(&str, &[u8]); 14] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -119,6 +120,12 @@ const FILES: [(&str, &[u8]); 13] = [
         "wp_action_removal_driver.php",
         include_bytes!(
             "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_driver.php"
+        ),
+    ),
+    (
+        "wp_action_same_priority_driver.php",
+        include_bytes!(
+            "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_driver.php"
         ),
     ),
 ];
@@ -2832,6 +2839,342 @@ fn run_action_mutation_dispatch(
     }
 }
 
+fn run_action_same_priority_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, 0)?;
+    expect_frame(
+        &start,
+        0,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    let target = "wp-action-same-priority-1";
+    let hook = "rp-probe-action-same-priority";
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == target
+            && start["payload"]["hook"] == hook
+            && start["payload"]["args"] == json!([""]),
+        "same_priority action start identity"
+    );
+    let name = HookArgument::bytes(hook);
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("same_priority rows")?
+        .clone();
+    ensure!(rows.len() == 3, "same_priority initial row count");
+    let fingerprint_for = |rows: &[Value]| -> Result<String> {
+        let projection: Vec<Value> = rows
+            .iter()
+            .map(|row| {
+                json!([
+                    row["priority"],
+                    row["uid"],
+                    row["accepted_args"],
+                    row["function"],
+                    row["handle"]["request"],
+                    row["handle"]["kind"],
+                    row["handle"]["slot"],
+                    row["handle"]["generation"],
+                    row["handle"]["token"]
+                ])
+            })
+            .collect();
+        Ok(sha256(&serde_json::to_vec(&projection)?))
+    };
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint_for(&rows)?,
+        "same_priority initial callback fingerprint"
+    );
+    let mut dispatcher = Dispatcher::new();
+    let mut handles = std::collections::HashMap::new();
+    for row in &rows {
+        let uid = row["uid"]
+            .as_str()
+            .context("same_priority uid")?
+            .to_string();
+        let function = row["function"].as_str().context("same_priority function")?;
+        let label = match function {
+            "rp_action_same_priority_mutator" => "mutator",
+            "rp_action_same_priority_peer" => "peer",
+            "rp_action_same_priority_tail" => "tail",
+            other => anyhow::bail!("unknown action same_priority callback: {other}"),
+        };
+        let priority = row["priority"].as_i64().context("same_priority priority")?;
+        ensure!(row["accepted_args"] == 0, "same_priority accepted_args");
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles.insert(uid.clone(), php_handle).is_none(),
+            "duplicate same_priority uid"
+        );
+        let callback = ContextCallback::php_callable(
+            CallbackId {
+                module: "wordpress".into(),
+                callback: uid,
+            },
+            0,
+            php_handle,
+        )
+        .map_err(|error| anyhow::anyhow!("same_priority callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+        let _ = label;
+    }
+    ensure!(
+        rows[0]["uid"] == "rp_action_same_priority_mutator"
+            && rows[0]["priority"] == 5
+            && rows[1]["uid"] == "rp_action_same_priority_peer"
+            && rows[1]["priority"] == 5
+            && rows[2]["uid"] == "rp_action_same_priority_tail"
+            && rows[2]["priority"] == 20,
+        "same_priority initial callback order"
+    );
+    let action_args = [PhpValue::Bytes(Vec::new())];
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &action_args)
+        .map_err(|error| anyhow::anyhow!("same_priority action start: {error:?}"))?;
+    let mut in_seq = 1;
+    let mut out_seq = 0;
+    let mut order = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("same_priority advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Zero && invocation.args.is_empty(),
+                    "same_priority callbacks must receive zero args"
+                );
+                let uid = invocation.callback.callback.as_str().to_string();
+                ensure!(
+                    handles.get(&uid) == Some(&invocation.handle),
+                    "same_priority invocation handle"
+                );
+                let priority = match invocation.priority {
+                    PhpKey::Integer(value) => value,
+                    _ => anyhow::bail!("same_priority priority type"),
+                };
+                let descriptor = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({"target":target,"uid":uid,"handle":descriptor,
+                    "priority":priority,"call_mode":"zero","args":[]}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                if uid == "rp_action_same_priority_mutator" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_callback_added",
+                        &["target", "parent_uid", "row", "table_fingerprint"],
+                    )?;
+                    let row = reply["payload"]["row"].clone();
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["parent_uid"] == uid
+                            && row["priority"] == 5
+                            && row["uid"] == "rp_action_same_priority_added"
+                            && row["accepted_args"] == 0
+                            && row["function"] == "rp_action_same_priority_added"
+                            && row["handle"]["request"] == HANDLE_REQUEST
+                            && row["handle"]["kind"] == "callable",
+                        "added same_priority callback identity"
+                    );
+                    let added_object = row.as_object().context("added same_priority row object")?;
+                    ensure!(
+                        added_object.len() == 5
+                            && ["priority", "uid", "accepted_args", "function", "handle"]
+                                .iter()
+                                .all(|key| added_object.contains_key(*key)),
+                        "added same_priority row schema"
+                    );
+                    let added_uid = row["uid"].as_str().unwrap().to_string();
+                    let added_handle = handle(&row["handle"])?;
+                    ensure!(
+                        handles.insert(added_uid.clone(), added_handle).is_none(),
+                        "duplicate added callback"
+                    );
+                    let callback = ContextCallback::php_callable(
+                        CallbackId {
+                            module: "wordpress".into(),
+                            callback: added_uid.clone(),
+                        },
+                        0,
+                        added_handle,
+                    )
+                    .map_err(|error| anyhow::anyhow!("added callback import: {error:?}"))?;
+                    dispatcher.add_typed(&name, HookPriority::integer(5), callback);
+                    let mut all_rows = rows.clone();
+                    all_rows.push(row);
+                    all_rows.sort_by_key(|row| row["priority"].as_i64().unwrap_or_default());
+                    ensure!(
+                        reply["payload"]["table_fingerprint"] == fingerprint_for(&all_rows)?,
+                        "updated callback fingerprint"
+                    );
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_same_priority_ack",
+                        json!({"target":target,"uid":added_uid,"priority":5}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let resume = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        resume["payload"]["target"] == target
+                            && resume["payload"]["uid"] == uid
+                            && resume["payload"]["value"].is_null(),
+                        "mutator resume"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "same_priority callback resume"
+                    );
+                    in_seq += 1;
+                }
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| anyhow::anyhow!("same_priority callback resume: {error:?}"))?;
+                order.push(uid);
+            }
+            DispatchStep::ReleasePhp(handle) => {
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),
+                    "generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":desc}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == desc,
+                    "same_priority release ack"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, handle)
+                    .map_err(|error| anyhow::anyhow!("same_priority release resume: {error:?}"))?;
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null
+                        && order
+                            == [
+                                "rp_action_same_priority_mutator",
+                                "rp_action_same_priority_peer",
+                                "rp_action_same_priority_tail"
+                            ],
+                    "same_priority callback order or result"
+                );
+                dispatcher.remove_all_typed(&name, None);
+                for handle in dispatcher.take_php_releases() {
+                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),
+                        "generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":desc}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == desc,
+                        "same_priority registration release"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":target,"invocations":3}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let observed = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &observed,
+                    in_seq,
+                    "action_same_priority_observed",
+                    &["target", "observation"],
+                )?;
+                ensure!(
+                    observed["payload"]["target"] == target,
+                    "same_priority observation target"
+                );
+                in_seq += 1;
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":target,"result":null}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "observation",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "registry_closed",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["observation"] == observed["payload"]["observation"]
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["registry_closed"] == true,
+                    "same_priority guest final state"
+                );
+                return Ok(
+                    json!({"status":"passed","result":null,"callbacks":order,"guest":done["payload"],
+                    "bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,
+                    "output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
+                );
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected same_priority dispatch effect")
+            }
+        }
+    }
+}
+
 fn run_action_removal_dispatch(
     reader: &mut BufReader<impl Read>,
     writer: &mut impl Write,
@@ -3175,6 +3518,8 @@ fn main() -> Result<()> {
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
     let action_removal_mode = std::env::args().nth(1).as_deref() == Some("action-removal");
+    let action_same_priority_mode =
+        std::env::args().nth(1).as_deref() == Some("action-same-priority");
     ensure!(
         action_mode
             || ref_array_mode
@@ -3183,10 +3528,13 @@ fn main() -> Result<()> {
             || action_nested_mode
             || action_mutation_mode
             || action_removal_mode
+            || action_same_priority_mode
             || std::env::args().nth(1).is_none(),
         "unknown hook-dispatch scenario"
     );
-    let php_driver = if action_removal_mode {
+    let php_driver = if action_same_priority_mode {
+        PHP_ACTION_SAME_PRIORITY_DRIVER
+    } else if action_removal_mode {
         PHP_ACTION_REMOVAL_DRIVER
     } else if action_mutation_mode {
         PHP_ACTION_MUTATION_DRIVER
@@ -3271,7 +3619,17 @@ fn main() -> Result<()> {
         deadline: Instant::now() + TIMEOUT,
     });
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_start");
-    let observed = if action_removal_mode {
+    let observed = if action_same_priority_mode {
+        run_action_same_priority_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
+        )
+    } else if action_removal_mode {
         run_action_removal_dispatch(
             &mut reader,
             &mut DeadlinePipeWriter {
@@ -3398,7 +3756,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-same-priority"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -3425,7 +3783,13 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let runner_args = if driver == PHP_ACTION_REMOVAL_DRIVER {
+    let runner_args = if driver == PHP_ACTION_SAME_PRIORITY_DRIVER {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "action-same-priority".to_string(),
+        ]
+    } else if driver == PHP_ACTION_REMOVAL_DRIVER {
         vec![
             "-n".to_string(),
             driver.to_string(),

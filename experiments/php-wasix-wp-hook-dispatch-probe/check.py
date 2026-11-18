@@ -25,6 +25,7 @@ ACTION_THROWABLE_ORACLE = HERE / "fixtures/wp_action_throwable_oracle.php"
 ACTION_NESTED_ORACLE = HERE / "fixtures/wp_action_nested_oracle.php"
 ACTION_MUTATION_ORACLE = HERE / "fixtures/wp_action_mutation_oracle.php"
 ACTION_REMOVAL_ORACLE = HERE / "fixtures/wp_action_removal_oracle.php"
+ACTION_SAME_PRIORITY_ORACLE = HERE / "fixtures/wp_action_same_priority_oracle.php"
 TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
@@ -49,6 +50,8 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_mutation_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_oracle.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_ref_array_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
@@ -243,6 +246,17 @@ def main():
     action_removal_reference_oracle = json.loads(action_removal_oracle_run.stdout.decode("utf-8", "strict"))
     if action_removal_reference_oracle.get("status") != "passed" or action_removal_reference_oracle.get("scenario") != "wp_action_removal_native_oracle":
         raise SystemExit("pinned WordPress action removal oracle reported an unexpected result")
+    action_same_priority_oracle_run = subprocess.run(
+        ["php", "-n", str(ACTION_SAME_PRIORITY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
+    )
+    if action_same_priority_oracle_run.returncode != 0 or action_same_priority_oracle_run.stderr:
+        raise SystemExit("pinned WordPress same-priority action oracle failed:\n" +
+            action_same_priority_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
+    action_same_priority_reference_oracle = json.loads(action_same_priority_oracle_run.stdout.decode("utf-8", "strict"))
+    if action_same_priority_reference_oracle.get("status") != "passed" or action_same_priority_reference_oracle.get("scenario") != "wp_action_same_priority_native_oracle":
+        raise SystemExit("pinned WordPress same-priority action oracle reported an unexpected result")
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -284,6 +298,7 @@ def main():
             ("action-nested", ["action-nested"]),
             ("action-mutation", ["action-mutation"]),
             ("action-removal", ["action-removal"]),
+            ("action-same-priority", ["action-same-priority"]),
         ]
         status = "passed"
         for scenario, args in scenarios:
@@ -340,10 +355,14 @@ def main():
                     )
                     contract_match = guest_observation == action_removal_reference_oracle.get("observation")
                     scenario_result["native_oracle_contract_match"] = contract_match
+                elif scenario == "action-same-priority":
+                    guest_observation = scenario_result.get("observation", {}).get("guest", {}).get("observation")
+                    contract_match = guest_observation == action_same_priority_reference_oracle.get("observation")
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
-                if scenario in ("ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal") and not contract_match:
+                if scenario in ("ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-same-priority") and not contract_match:
                     status = "oracle_mismatch"
                     outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
                     print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
@@ -386,6 +405,7 @@ def main():
         "action_nested_reference_oracle": action_nested_reference_oracle,
         "action_mutation_reference_oracle": action_mutation_reference_oracle,
         "action_removal_reference_oracle": action_removal_reference_oracle,
+        "action_same_priority_reference_oracle": action_same_priority_reference_oracle,
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
