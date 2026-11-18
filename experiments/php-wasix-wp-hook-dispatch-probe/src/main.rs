@@ -3139,7 +3139,7 @@ fn run_action_same_priority_dispatch(
                     writer,
                     out_seq,
                     "action_complete",
-                    json!({"target":target,"invocations":3}),
+                    json!({"target":target,"invocations":if pass == 1 { 3 } else { 4 }}),
                     total_out,
                     &mut out_seq,
                 )?;
