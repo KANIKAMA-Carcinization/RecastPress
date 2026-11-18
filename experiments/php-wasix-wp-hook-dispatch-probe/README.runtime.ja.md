@@ -15,7 +15,7 @@ python3 experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
 python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
 ```
 
-`check.py` はLinux専用で、Rust 1.94.0、Wasmer 7.2.0 Cranelift、Wasmer-WASIX 0.702.0を用いる。GitHub Actions workflowはUbuntu 24.04で固定PHP artifact ZIPと展開後Wasm双方のサイズ/hashを確認して実行する。tokenは固定された `api.github.com/repos/wasix-org/php/actions/artifacts/12371010145/zip` だけに送る。
+`check.py` is Linux-only and uses Rust 1.94.0, Wasmer 7.2.0 Cranelift, and Wasmer-WASIX 0.702.0. GitHub Actions runs on Ubuntu 24.04, verifies the fixed PHP artifact ZIP and extracted Wasm size/hash, and sends its token only to the pinned `api.github.com/repos/wasix-org/php/actions/artifacts/12371010145/zip` endpoint.
 
 Craneliftは既存の実PHP bridgeと同じく最適化なしで固定する。Rust hostはartifact読込、module compile、guest起動、最初のbridge frame待ちをstderrへ段階表示する。checkerはfilterとactionを別々に実行し、各runnerの上限を300秒とする。タイムアウト時にstdout/stderrそれぞれの保存上限1 MiB内の末尾データについてbyte数とSHA-256を記録し、両方を合わせたcaptureのSHA-256も証跡へ残す。
 
@@ -23,11 +23,18 @@ Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起
 
 ## 参照配列FilterのWordPress oracle
 
-`check.py` はPHP-WASIX runの前に、固定WordPress 7.1.3のnative `apply_filters_ref_array()` fixtureを実行し、参照されたfilter値と追加引数を二つのcallbackが順に変更する挙動、次callbackへの引継ぎ、呼出し元scalarへの反映、`all`の引数、filter stack cleanupをsource hash付きで証跡JSONへ記録する。このoracleはRust dispatcherを通らず、PHP-WASIXでの参照配列dispatchやproduction integrationの検証ではない。参照cellを保つWasm bridgeは別の未完了単位である。
+`check.py` runs the native reference-array oracle before PHP-WASIX. That oracle validates WordPress reference behavior only; later, run 44257900392 verified the bounded successful reference-array path through Rust/PHP-Wasm (see implementation status below).
 
+## 2026-11-18 implementation status: reference-array filter bridge
+
+The `ref-array` scenario now passes through the real PHP-WASIX driver and Rust dispatcher. Its bounded fixture keeps the PHP argument list in a request-scoped `Argument` handle, sends reference-slot descriptors for additional callback arguments, threads callback return values through the filter accumulator, and acknowledges frame release before registry close. The successful [workflow run 44257900392](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44257900392), commit `6a2d9b779a21de19c051520d97170a4cccd25b8e`, completed all `filter`, `ref-array`, and `action` scenarios with exit code 0. The ref-array result was `replacement-from-first|extra-mutated-by-second`; the caller observed `replacement-from-first` and `extra-mutated-by-second`; `native_oracle_contract_match` was true; both live-handle counts were zero and the argument frame was released before registry close. Build took 135,941 ms and the three scenario runners 376,371 ms. All source inputs were unchanged. The source-bound receipt is [`real-php-wasix-ref-array-run-44257900392.json`](evidence/real-php-wasix-ref-array-run-44257900392.json), from [artifact 14407446829](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44257900392/artifacts/14407446829).
+
+The first Wasm run ([44255639047](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44255639047)) failed before ref-array because the regular-filter argument serializer rejected later strings. Run [44256856248](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44256856248) then passed the existing filter scenario but failed ref-array because the guest invoke identity check required a null frame handle. Commit `6a2d9b7` fixed that identity check; run 44257900392 verifies the fix. These failed runs remain useful diagnostic history and are not success evidence.
+
+The fixture covers only the successful `apply_filters_ref_array()` path with two callbacks and a two-element list containing the filter value plus one by-reference extra. It does not cover accepted-argument truncation or zero-argument callbacks in this mode, throwable cleanup, arbitrary PHP argument graphs, or production adapter/bootstrap integration. The overlay remains fixture-only and is not product-ready.
 ## 範囲
 
-PHP-WASIXからRustへ渡す対象は通常の `apply_filters()` と `do_action()`、および静的callback tableに限定する。Actionの`all` hookはWordPress内で実行し、Rustへは渡さない。dispatch中の登録変更、nested action、`do_action_ref_array()`、`apply_filters_ref_array()` のWasm bridge、Throwable時の復旧、CGI channel、製品採用は証明しない。native `apply_filters_ref_array()` oracleの成功も、その固定fixtureのWordPress参照意味を記録するだけである。このprobeの成功は対象fixtureでの実行証拠であり、WordPress全体のPHP互換性や製品ランタイム完成を意味しない。
+The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, and the bounded successful `apply_filters_ref_array()` fixture documented above and evidenced by run 44257900392. The reference-array fixture does not cover accepted-argument truncation or zero-argument callbacks. Callback-table mutation, nested actions, `do_action_ref_array()`, Throwable recovery, CGI channel, production adoption, and general PHP compatibility remain unproven. The native oracle records WordPress reference semantics; the run separately verifies the bounded success path through Rust/PHP-Wasm.
 
 ## 実行済み証跡
 
