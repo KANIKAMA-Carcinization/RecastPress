@@ -13,7 +13,7 @@ use std::{
 
 use anyhow::{Context, Result, ensure};
 use recastpress_wp::{
-    continuation::{PhpHandle, PhpHandleKind, RequestGeneration},
+    continuation::{Completion, PhpHandle, PhpHandleKind, RequestGeneration},
     dispatcher::{DispatchStep, Dispatcher},
     hooks::{CallbackId, ContextCallback, HookArgument, HookPriority, PhpCallMode},
     value::{PhpKey, PhpValue},
@@ -47,8 +47,9 @@ const TIMEOUT: Duration = Duration::from_secs(120);
 const PHP_DRIVER: &str = "/fixture/wp_hook_driver.php";
 const PHP_ACTION_DRIVER: &str = "/fixture/wp_action_driver.php";
 const PHP_ACTION_REF_ARRAY_DRIVER: &str = "/fixture/wp_action_ref_array_driver.php";
+const PHP_ACTION_THROWABLE_DRIVER: &str = "/fixture/wp_action_throwable_driver.php";
 
-const FILES: [(&str, &[u8]); 9] = [
+const FILES: [(&str, &[u8]); 10] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -91,6 +92,12 @@ const FILES: [(&str, &[u8]); 9] = [
         "wp_action_ref_array_driver.php",
         include_bytes!(
             "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php"
+        ),
+    ),
+    (
+        "wp_action_throwable_driver.php",
+        include_bytes!(
+            "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_driver.php"
         ),
     ),
 ];
@@ -1098,6 +1105,417 @@ fn run_action_dispatch(
     }
 }
 
+fn run_action_throwable_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, 0)?;
+    expect_frame(
+        &start,
+        0,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == "wp-action-throwable-1"
+            && start["payload"]["hook"] == "rp-probe-action-throwable",
+        "selected action Throwable identity mismatch"
+    );
+    let name = HookArgument::bytes("rp-probe-action-throwable");
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("action Throwable rows must be array")?;
+    ensure!(rows.len() == 2, "action Throwable callback row count");
+    let fingerprint_rows: Vec<Value> = rows
+        .iter()
+        .map(|row| {
+            json!([
+                row["priority"],
+                row["uid"],
+                row["accepted_args"],
+                row["function"],
+                row["handle"]["request"],
+                row["handle"]["kind"],
+                row["handle"]["slot"],
+                row["handle"]["generation"],
+                row["handle"]["token"]
+            ])
+        })
+        .collect();
+    let fingerprint = sha256(&serde_json::to_vec(&fingerprint_rows)?);
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint,
+        "PHP action Throwable table fingerprint mismatch"
+    );
+
+    let mut dispatcher = Dispatcher::new();
+    let mut callback_order = Vec::new();
+    let mut handles_by_uid = std::collections::HashMap::new();
+    for row in rows {
+        let object = row
+            .as_object()
+            .context("action Throwable callback row must be object")?;
+        ensure!(
+            object.len() == 5
+                && ["priority", "uid", "accepted_args", "function", "handle"]
+                    .iter()
+                    .all(|key| object.contains_key(*key)),
+            "action Throwable callback row schema"
+        );
+        let priority = row["priority"]
+            .as_i64()
+            .context("action Throwable callback priority")?;
+        let uid = row["uid"]
+            .as_str()
+            .context("action Throwable callback uid")?;
+        let function = row["function"]
+            .as_str()
+            .context("action Throwable callback function")?;
+        let expected = match function {
+            "rp_action_throwing_callback" => (5, 2),
+            "rp_action_never_callback" => (10, 2),
+            other => anyhow::bail!("unexpected action Throwable fixture callback: {other}"),
+        };
+        ensure!(
+            row["accepted_args"].as_i64() == Some(expected.1) && priority == expected.0,
+            "action Throwable callback fixture contract mismatch"
+        );
+        callback_order.push((
+            priority,
+            rows.iter()
+                .position(|candidate| candidate["uid"] == uid)
+                .context("insertion order")?,
+            uid.to_string(),
+        ));
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles_by_uid.insert(uid.to_string(), php_handle).is_none(),
+            "duplicate action Throwable callback uid"
+        );
+        let id = CallbackId {
+            module: "wordpress".into(),
+            callback: uid.to_string(),
+        };
+        let callback = ContextCallback::php_callable(id, expected.1, php_handle)
+            .map_err(|error| anyhow::anyhow!("action Throwable callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+    }
+    let mut sorted = callback_order.clone();
+    sorted.sort_by_key(|(priority, order, _)| (*priority, *order));
+    ensure!(
+        callback_order == sorted,
+        "action Throwable callback order mismatch"
+    );
+
+    let args = start["payload"]["args"]
+        .as_array()
+        .context("action Throwable args must be array")?
+        .iter()
+        .map(|value| php_string(value).map(PhpValue::Bytes))
+        .collect::<Result<Vec<_>>>()?;
+    ensure!(
+        args == [
+            PhpValue::Bytes(b"seed".to_vec()),
+            PhpValue::Bytes(b"left".to_vec())
+        ],
+        "action Throwable fixture arguments mismatch"
+    );
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("action Throwable dispatcher start: {error:?}"))?;
+    let mut in_seq = 1;
+    let mut out_seq = 0;
+    let mut thrown: Option<PhpHandle> = None;
+
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("action Throwable dispatcher advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                let uid = invocation.callback.callback.as_str();
+                ensure!(
+                    uid == "rp_action_throwing_callback"
+                        && invocation.priority == PhpKey::Integer(5)
+                        && invocation.args.len() == 2
+                        && invocation.args[0] == PhpValue::Bytes(b"seed".to_vec())
+                        && invocation.args[1] == PhpValue::Bytes(b"left".to_vec())
+                        && handles_by_uid.get(uid) == Some(&invocation.handle),
+                    "unexpected action Throwable invocation"
+                );
+                let descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"callable",
+                    "slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),
+                    "token":format!("{:016x}", invocation.handle.token())
+                });
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({
+                        "target":"wp-action-throwable-1",
+                        "uid":uid,
+                        "handle":descriptor,
+                        "priority":5,
+                        "call_mode":"array",
+                        "args":["seed","left"]
+                    }),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &reply,
+                    in_seq,
+                    "resume_throwable",
+                    &["target", "uid", "throwable", "class", "message"],
+                )?;
+                ensure!(
+                    reply["payload"]["target"] == "wp-action-throwable-1"
+                        && reply["payload"]["uid"] == uid
+                        && reply["payload"]["class"] == "RuntimeException"
+                        && reply["payload"]["message"] == "action-throwable-fixture",
+                    "PHP action Throwable completion metadata mismatch"
+                );
+                let descriptor = reply["payload"]["throwable"].clone();
+                let throwable = handle_kind(&descriptor, "throwable", PhpHandleKind::Throwable)?;
+                ensure!(
+                    thrown.replace(throwable).is_none(),
+                    "duplicate PHP action Throwable completion"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_completion(ticket, Completion::PhpThrowable(throwable))
+                    .map_err(|error| {
+                        anyhow::anyhow!("action Throwable dispatcher resume: {error:?}")
+                    })?;
+            }
+            DispatchStep::ReleasePhp(php_handle) => {
+                ensure!(
+                    handles_by_uid.values().any(|handle| *handle == php_handle),
+                    "action Throwable dispatch released an unknown callback handle"
+                );
+                let descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"callable",
+                    "slot":php_handle.slot(),
+                    "generation":php_handle.generation(),
+                    "token":format!("{:016x}", php_handle.token())
+                });
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == descriptor,
+                    "action Throwable callback release ACK mismatch"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, php_handle)
+                    .map_err(|error| {
+                        anyhow::anyhow!("action Throwable release resume: {error:?}")
+                    })?;
+            }
+            DispatchStep::PhpThrowable(php_throwable) => {
+                ensure!(
+                    thrown == Some(php_throwable)
+                        && dispatcher.did_action_typed(&name) == 1
+                        && dispatcher.current_hook() == Some("rp-probe-action-throwable")
+                        && dispatcher.hook_stack_depth() == 1
+                        && dispatcher.doing_hook(Some("rp-probe-action-throwable"))
+                        && dispatcher.current_priority_typed(&name) == Some(PhpKey::Integer(5)),
+                    "Rust Dispatcher did not preserve the expected WordPress action-throw state"
+                );
+
+                // The request is terminal after this point. Remove the host callback
+                // registrations and ACK their PHP leases before rethrowing the same object.
+                dispatcher.remove_all_typed(&name, None);
+                let mut released_registrations = 0;
+                for callback_handle in dispatcher.take_php_releases() {
+                    ensure!(
+                        handles_by_uid
+                            .values()
+                            .any(|handle| *handle == callback_handle),
+                        "action Throwable registration release used an unknown handle"
+                    );
+                    let descriptor = json!({
+                        "request":HANDLE_REQUEST,
+                        "kind":"callable",
+                        "slot":callback_handle.slot(),
+                        "generation":callback_handle.generation(),
+                        "token":format!("{:016x}", callback_handle.token())
+                    });
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "action Throwable registration release ACK mismatch"
+                    );
+                    in_seq += 1;
+                    released_registrations += 1;
+                }
+                ensure!(
+                    released_registrations == 2,
+                    "action Throwable callback registrations were not fully released"
+                );
+
+                let throwable = thrown.context("action Throwable handle missing")?;
+                let throwable_descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"throwable",
+                    "slot":throwable.slot(),
+                    "generation":throwable.generation(),
+                    "token":format!("{:016x}", throwable.token())
+                });
+                send_frame(
+                    writer,
+                    out_seq,
+                    "throw_php",
+                    json!({"target":"wp-action-throwable-1","throwable":throwable_descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let caught = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &caught,
+                    in_seq,
+                    "action_throwable_caught",
+                    &["target", "observation", "throwable"],
+                )?;
+                ensure!(
+                    caught["payload"]["target"] == "wp-action-throwable-1"
+                        && caught["payload"]["throwable"] == throwable_descriptor,
+                    "re-thrown PHP Throwable identity descriptor mismatch"
+                );
+                let expected_observation = json!({
+                    "events":[
+                        {
+                            "callback":"all","hook":"rp-probe-action-throwable",
+                            "args":["rp-probe-action-throwable","seed","left"],
+                            "current_action":"rp-probe-action-throwable","doing_action":true,"did_action":1
+                        },
+                        {
+                            "callback":"throwing","args":["seed","left"],
+                            "current_action":"rp-probe-action-throwable","doing_action":true,"did_action":1,
+                            "current_priority":5,"wp_hook_doing_action":true
+                        }
+                    ],
+                    "same_throwable":true,
+                    "throwable_class":"RuntimeException",
+                    "throwable_message":"action-throwable-fixture",
+                    "action_count":1,
+                    "current_action":"rp-probe-action-throwable",
+                    "current_filter":"rp-probe-action-throwable",
+                    "doing_action":true,
+                    "wp_current_filter":["rp-probe-action-throwable"],
+                    "current_priority":5,
+                    "wp_hook_state":{
+                        "nesting_level":1,
+                        "iterations":[[5,10]],
+                        "current_priority":[5],
+                        "doing_action":true
+                    }
+                });
+                ensure!(
+                    caught["payload"]["observation"] == expected_observation,
+                    "PHP WordPress state after action Throwable differs"
+                );
+                in_seq += 1;
+
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":throwable_descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let throwable_ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&throwable_ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    throwable_ack["payload"]["handle"] == throwable_descriptor,
+                    "Throwable release ACK mismatch"
+                );
+                in_seq += 1;
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":"wp-action-throwable-1","outcome":"request_aborted_as_expected"}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "observation",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "registry_closed",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["observation"] == expected_observation
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["registry_closed"] == true,
+                    "PHP action Throwable request cleanup mismatch"
+                );
+                return Ok(json!({
+                    "status":"passed",
+                    "terminal":"php_throwable_rethrown_and_caught_at_request_boundary",
+                    "throwable":{"class":"RuntimeException","message":"action-throwable-fixture"},
+                    "callbacks_released":released_registrations,
+                    "guest":done["payload"],
+                    "bridge":{
+                        "input_frames":in_seq + 1,
+                        "output_frames":out_seq,
+                        "input_bytes":*total_in,
+                        "output_bytes":*total_out,
+                        "timeout_seconds":TIMEOUT.as_secs()
+                    }
+                }));
+            }
+            DispatchStep::Boundary(_) => {
+                anyhow::bail!("unexpected boundary in action Throwable fixture")
+            }
+            DispatchStep::Complete(_) => anyhow::bail!("action callback returned without throwing"),
+        }
+    }
+}
+
 fn run_action_ref_array_dispatch(
     reader: &mut BufReader<impl Read>,
     writer: &mut impl Write,
@@ -1515,11 +1933,18 @@ fn main() -> Result<()> {
     let action_mode = std::env::args().nth(1).as_deref() == Some("action");
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array");
+    let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
     ensure!(
-        action_mode || ref_array_mode || action_ref_array_mode || std::env::args().nth(1).is_none(),
+        action_mode
+            || ref_array_mode
+            || action_ref_array_mode
+            || action_throwable_mode
+            || std::env::args().nth(1).is_none(),
         "unknown hook-dispatch scenario"
     );
-    let php_driver = if action_ref_array_mode {
+    let php_driver = if action_throwable_mode {
+        PHP_ACTION_THROWABLE_DRIVER
+    } else if action_ref_array_mode {
         PHP_ACTION_REF_ARRAY_DRIVER
     } else if action_mode {
         PHP_ACTION_DRIVER
@@ -1596,7 +2021,17 @@ fn main() -> Result<()> {
         deadline: Instant::now() + TIMEOUT,
     });
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_start");
-    let observed = if action_mode {
+    let observed = if action_throwable_mode {
+        run_action_throwable_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
+        )
+    } else if action_mode {
         run_action_dispatch(
             &mut reader,
             &mut DeadlinePipeWriter {
@@ -1673,6 +2108,7 @@ fn main() -> Result<()> {
             !line.starts_with("RP_HOOK_PHASE=")
                 && !line.starts_with("RP_ACTION_PHASE=")
                 && !line.starts_with("RP_ACTION_REF_ARRAY_PHASE=")
+                && !line.starts_with("RP_ACTION_THROWABLE_PHASE=")
         })
         .collect::<Vec<_>>();
     ensure!(
@@ -1682,7 +2118,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -1709,7 +2145,13 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let runner_args = if driver == PHP_ACTION_REF_ARRAY_DRIVER {
+    let runner_args = if driver == PHP_ACTION_THROWABLE_DRIVER {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "action-throwable".to_string(),
+        ]
+    } else if driver == PHP_ACTION_REF_ARRAY_DRIVER {
         vec![
             "-n".to_string(),
             driver.to_string(),

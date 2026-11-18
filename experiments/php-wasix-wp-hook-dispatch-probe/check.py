@@ -21,6 +21,7 @@ ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
 ACTION_REF_ARRAY_ORACLE = HERE / "fixtures/wp_action_ref_array_oracle.php"
+ACTION_THROWABLE_ORACLE = HERE / "fixtures/wp_action_throwable_oracle.php"
 TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
@@ -37,6 +38,8 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_driver.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_ref_array_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
@@ -115,6 +118,22 @@ def action_ref_array_contract_matches(native_observation, wasm_observation):
     return actual == expected
 
 
+def action_throwable_contract_matches(native_observation, wasm_observation):
+    guest = wasm_observation.get("guest", {})
+    return (
+        guest.get("observation") == native_observation
+        and guest.get("live_handles") == 0
+        and guest.get("live_handles_before_close") == 0
+        and guest.get("registry_closed") is True
+        and wasm_observation.get("terminal") == "php_throwable_rethrown_and_caught_at_request_boundary"
+        and wasm_observation.get("throwable") == {
+            "class": "RuntimeException",
+            "message": "action-throwable-fixture",
+        }
+        and wasm_observation.get("callbacks_released") == 2
+    )
+
+
 def main():
     global SOURCE_INPUTS_AT_START, COMPLETED_SCENARIOS
     if platform.system() != "Linux":
@@ -159,6 +178,23 @@ def main():
     action_reference_oracle = json.loads(action_oracle_run.stdout.decode("utf-8", "strict"))
     if action_reference_oracle.get("status") != "passed" or action_reference_oracle.get("scenario") != "wp_action_ref_array_native_oracle":
         raise SystemExit("pinned WordPress do_action_ref_array oracle reported an unexpected result")
+    action_throwable_oracle_run = subprocess.run(
+        ["php", "-n", str(ACTION_THROWABLE_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT,
+        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if action_throwable_oracle_run.returncode != 0 or action_throwable_oracle_run.stderr:
+        raise SystemExit(
+            "pinned WordPress action Throwable oracle failed:\n"
+            + action_throwable_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
+        )
+    action_throwable_reference_oracle = json.loads(action_throwable_oracle_run.stdout.decode("utf-8", "strict"))
+    if action_throwable_reference_oracle.get("status") != "passed" or action_throwable_reference_oracle.get("scenario") != "wp_action_throwable_native_oracle":
+        raise SystemExit("pinned WordPress action Throwable oracle reported an unexpected result")
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -196,6 +232,7 @@ def main():
             ("ref-array", ["ref-array"]),
             ("action", ["action"]),
             ("action-ref-array", ["action-ref-array"]),
+            ("action-throwable", ["action-throwable"]),
         ]
         status = "passed"
         for scenario, args in scenarios:
@@ -225,10 +262,15 @@ def main():
                         action_reference_oracle["observation"], scenario_result.get("observation", {})
                     )
                     scenario_result["native_oracle_contract_match"] = contract_match
+                elif scenario == "action-throwable":
+                    contract_match = action_throwable_contract_matches(
+                        action_throwable_reference_oracle["observation"], scenario_result.get("observation", {})
+                    )
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
-                if scenario in ("ref-array", "action-ref-array") and not contract_match:
+                if scenario in ("ref-array", "action-ref-array", "action-throwable") and not contract_match:
                     status = "oracle_mismatch"
                     outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
                     print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
@@ -267,6 +309,7 @@ def main():
                 "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
         "reference_oracle": reference_oracle,
         "action_reference_oracle": action_reference_oracle,
+        "action_throwable_reference_oracle": action_throwable_reference_oracle,
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
