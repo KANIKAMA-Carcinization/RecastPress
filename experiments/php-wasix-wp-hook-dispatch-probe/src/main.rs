@@ -301,11 +301,12 @@ fn run_dispatch(
             .position(|candidate| candidate["uid"] == uid)
             .context("callback insertion order")? as u64;
         let callback = match row["function"].as_str() {
-            Some("rp_probe_callback_a") => "rp_probe_callback_a",
-            Some("rp_probe_callback_b") => "rp_probe_callback_b",
+            Some("rp_probe_callback_a") if !ref_array_mode => "rp_probe_callback_a",
+            Some("rp_probe_callback_b") if !ref_array_mode => "rp_probe_callback_b",
             Some("rp_ref_array_first") if ref_array_mode => "rp_ref_array_first",
             Some("rp_ref_array_second") if ref_array_mode => "rp_ref_array_second",
-            None => "{closure}",
+            None if !ref_array_mode => "{closure}",
+            None => anyhow::bail!("ref-array probe does not accept closure callbacks"),
             Some(other) => anyhow::bail!("unrecognized PHP callback descriptor: {other}"),
         };
         let accepted_args = row["accepted_args"].as_i64().context("accepted_args")?;
@@ -390,10 +391,14 @@ fn run_dispatch(
                     .enumerate()
                     .map(|(index, value)| match value {
                         PhpValue::Bytes(bytes) => {
-                            ensure!(index == 0, "only the filter accumulator is a direct ref-array value");
+                            if ref_array_mode {
+                                ensure!(index == 0, "only the filter accumulator is a direct ref-array value");
+                            }
                             let value = String::from_utf8(bytes.clone())
                                 .context("callback argument is not UTF-8")?;
-                            ensure!(value.as_bytes() == current_value, "Dispatcher filter accumulator drift");
+                            if index == 0 {
+                                ensure!(value.as_bytes() == current_value, "Dispatcher filter accumulator drift");
+                            }
                             Ok(json!(value))
                         }
                         PhpValue::ArgumentHandle(handle) if ref_array_mode => {
