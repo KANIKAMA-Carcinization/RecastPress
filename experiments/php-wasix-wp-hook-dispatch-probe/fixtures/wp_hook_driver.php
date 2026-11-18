@@ -119,7 +119,13 @@ function recastpress_wp_dispatch_selected_hook(
                 || !is_int($payload['priority'])
                 || !in_array($payload['call_mode'], ['zero', 'array'], true)
                 || !is_array($payload['args'])
-                || $payload['argument_frame'] !== $GLOBALS['rp_hook_argument_frame_handle']
+                || ($GLOBALS['rp_hook_ref_array_mode']
+                    ? (!is_array($payload['argument_frame'])
+                        || !rp_hook_handles_equal(
+                            $payload['argument_frame'],
+                            $GLOBALS['rp_hook_argument_frame_handle'],
+                        ))
+                    : $payload['argument_frame'] !== null)
                 || ($payload['call_mode'] === 'zero' && $payload['args'] !== [])
                 || ($payload['call_mode'] === 'array' && $payload['args'] === [])
             ) {
