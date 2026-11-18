@@ -24,6 +24,8 @@ PINNED_FILES = {
 }
 PLUGIN_FILTER_OLD = b"$filtered = $wp_filter[ $hook_name ]->apply_filters( $value, $args );"
 PLUGIN_FILTER_NEW = b"$filtered = $wp_filter[ $hook_name ]->apply_filters( $value, $args, $hook_name );"
+PLUGIN_REF_FILTER_OLD = b"$filtered = $wp_filter[ $hook_name ]->apply_filters( $args[0], $args );"
+PLUGIN_REF_FILTER_NEW = b"$filtered = $wp_filter[ $hook_name ]->apply_filters( $args[0], $args, $hook_name );"
 PLUGIN_ACTION_OLD = b"$wp_filter[ $hook_name ]->do_action( $arg );"
 PLUGIN_ACTION_NEW = b"$wp_filter[ $hook_name ]->do_action( $arg, $hook_name );"
 HOOK_DO_ACTION_SIGNATURE_OLD = b"public function do_action( $args ) {"
@@ -144,7 +146,11 @@ def prepare(source_root, output_root, allow_temporary=False):
         if sha256(original) != PINNED_FILES[path]:
             raise ValueError(f"pinned WordPress source file hash differs: {path.as_posix()}")
     replacements = {
-        PLUGIN: [(PLUGIN_FILTER_OLD, PLUGIN_FILTER_NEW), (PLUGIN_ACTION_OLD, PLUGIN_ACTION_NEW)],
+        PLUGIN: [
+            (PLUGIN_FILTER_OLD, PLUGIN_FILTER_NEW),
+            (PLUGIN_REF_FILTER_OLD, PLUGIN_REF_FILTER_NEW),
+            (PLUGIN_ACTION_OLD, PLUGIN_ACTION_NEW),
+        ],
         HOOK: [
             (HOOK_DO_ACTION_SIGNATURE_OLD, HOOK_DO_ACTION_SIGNATURE_NEW),
             (HOOK_DO_ACTION_CALL_OLD, HOOK_DO_ACTION_CALL_NEW),
@@ -168,7 +174,7 @@ def prepare(source_root, output_root, allow_temporary=False):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(patched)
     receipt = {
-        "schema": "recastpress.wp-hook-dispatch-overlay.v3",
+        "schema": "recastpress.wp-hook-dispatch-overlay.v4",
         "wordpress_version": "7.1.3",
         "wordpress_archive_sha1": PINNED_ARCHIVE_SHA1,
         "source_sha256": {path.as_posix(): sha256(originals[path]) for path in PINNED_FILES},
@@ -189,7 +195,8 @@ def prepare(source_root, output_root, allow_temporary=False):
         "wp_hook_sync_operations": ["set_priority", "finish"],
         "callback_table_mutation_during_dispatch_supported": False,
         "direct_method_call_with_third_argument_in_scope": False,
-        "apply_filters_ref_array_bridged": False,
+        "apply_filters_ref_array_bridged": True,
+        "apply_filters_ref_array_bridge_scope": "fixture-only request-scoped PHP argument-frame handle; success path",
         "action_callback_table_mutation_during_dispatch_supported": False,
         "action_throwable_recovery_proven": False,
         "action_all_hook_dispatched_by_rust": False,

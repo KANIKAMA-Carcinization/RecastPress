@@ -40,9 +40,9 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md",
     "scripts/wordpress_reference.py",
     "crates/recastpress-wp/Cargo.toml",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/overlay.json",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/plugin.php",
-    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/class-wp-hook.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/overlay.json",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/plugin.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/class-wp-hook.php",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-filter-sentinel.php",
     "experiments/php-runtime-candidate-probe/artifact.json",
     "crates/recastpress-wp/src/dispatcher.rs",
@@ -62,6 +62,27 @@ INPUTS.extend(
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ref_array_contract_matches(native_observation, wasm_observation):
+    guest = wasm_observation.get("guest", {})
+    actual_events = []
+    for event in guest.get("events", []):
+        keys = (
+            ("callback", "hook", "args", "current_filter", "doing_filter", "did_filter")
+            if event.get("callback") == "all"
+            else ("callback", "args", "current_filter", "doing_filter", "did_filter")
+        )
+        actual_events.append({key: event.get(key) for key in keys})
+    return (
+        actual_events == native_observation.get("events")
+        and wasm_observation.get("result") == native_observation.get("result")
+        and guest.get("caller_value") == native_observation.get("caller_value")
+        and guest.get("caller_extra") == native_observation.get("caller_extra")
+        and guest.get("filter_count") == native_observation.get("did_filter")
+        and guest.get("current_filter") == native_observation.get("current_filter")
+        and guest.get("doing_filter") == native_observation.get("doing_filter")
+    )
 
 
 def main():
@@ -123,7 +144,7 @@ def main():
         run_ms = 0
         outputs = []
         run_codes = {}
-        scenarios = [("filter", []), ("action", ["action"])]
+        scenarios = [("filter", []), ("ref-array", ["ref-array"]), ("action", ["action"])]
         status = "passed"
         for scenario, args in scenarios:
             t0 = time.monotonic()
@@ -142,9 +163,19 @@ def main():
                 scenario_result = json.loads(stdout)
                 if scenario_result.get("status") != "passed" or scenario_result.get("scenario") != scenario:
                     raise SystemExit(f"{scenario} runner reported a non-passing or mismatched result")
+                if scenario == "ref-array":
+                    contract_match = ref_array_contract_matches(
+                        reference_oracle["observation"], scenario_result.get("observation", {})
+                    )
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
+                if scenario == "ref-array" and not contract_match:
+                    status = "oracle_mismatch"
+                    outputs.append("PHP-WASIX ref-array observation differs from the pinned native WordPress oracle.\n")
+                    print("PHP-WASIX ref-array observation differs from the pinned native WordPress oracle.", file=sys.stderr)
+                    break
             else:
                 status = "runtime_failed"
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}\n--- {scenario} stderr ---\n{stderr}")

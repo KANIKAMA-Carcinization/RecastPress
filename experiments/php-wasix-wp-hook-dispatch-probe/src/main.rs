@@ -63,7 +63,7 @@ const FILES: [(&str, &[u8]); 8] = [
     (
         "class-wp-hook.php",
         include_bytes!(
-            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/class-wp-hook.php"
+            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/class-wp-hook.php"
         ),
     ),
     (
@@ -75,7 +75,7 @@ const FILES: [(&str, &[u8]); 8] = [
     (
         "plugin.php",
         include_bytes!(
-            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v3/wp-includes/plugin.php"
+            "../../php-wasix-wp-hook-dispatch-probe/evidence/overlay-v4/wp-includes/plugin.php"
         ),
     ),
     (
@@ -174,11 +174,19 @@ fn php_string(value: &Value) -> Result<Vec<u8>> {
 }
 
 fn handle(desc: &Value) -> Result<PhpHandle> {
+    handle_kind(desc, "callable", PhpHandleKind::Callable)
+}
+
+fn argument_handle(desc: &Value) -> Result<PhpHandle> {
+    handle_kind(desc, "argument", PhpHandleKind::Argument)
+}
+
+fn handle_kind(desc: &Value, expected_kind: &str, kind: PhpHandleKind) -> Result<PhpHandle> {
     let fields = desc
         .as_object()
         .context("handle descriptor must be object")?;
     ensure!(
-        fields.len() == 5 && fields["kind"] == "callable" && fields["request"] == "81",
+        fields.len() == 5 && fields["kind"] == expected_kind && fields["request"] == "81",
         "handle descriptor schema"
     );
     let slot = u32::try_from(fields["slot"].as_u64().context("handle slot")?)?;
@@ -191,7 +199,7 @@ fn handle(desc: &Value) -> Result<PhpHandle> {
     let token = u64::from_str_radix(token_text, 16)?;
     Ok(PhpHandle::new(
         RequestGeneration::new(GENERATION),
-        PhpHandleKind::Callable,
+        kind,
         slot,
         generation,
         token,
@@ -203,6 +211,7 @@ fn run_dispatch(
     writer: &mut impl Write,
     total_in: &mut usize,
     total_out: &mut usize,
+    ref_array_mode: bool,
 ) -> Result<Value> {
     let deadline = Instant::now() + TIMEOUT;
     let start = read_frame(reader, deadline, total_in, 0)?;
@@ -216,6 +225,7 @@ fn run_dispatch(
             "hook",
             "value",
             "extra",
+            "argument_frame",
             "rows",
             "table_fingerprint",
         ],
@@ -224,15 +234,32 @@ fn run_dispatch(
         start["payload"]["generation"] == HANDLE_REQUEST,
         "request generation mismatch"
     );
+    let argument_frame = if ref_array_mode {
+        Some(argument_handle(&start["payload"]["argument_frame"])?)
+    } else {
+        ensure!(
+            start["payload"]["argument_frame"].is_null(),
+            "unexpected PHP argument frame"
+        );
+        None
+    };
+    let expected_hook = if ref_array_mode {
+        "rp-probe-ref-array"
+    } else {
+        "rp-probe-filter"
+    };
     ensure!(
-        start["payload"]["hook"] == "rp-probe-filter" && start["payload"]["target"] == TARGET_TOKEN,
+        start["payload"]["hook"] == expected_hook && start["payload"]["target"] == TARGET_TOKEN,
         "selected hook token mismatch"
     );
-    let name = HookArgument::bytes("rp-probe-filter");
+    let name = HookArgument::bytes(expected_hook);
     let rows = start["payload"]["rows"]
         .as_array()
         .context("rows must be array")?;
-    ensure!(rows.len() == 3, "imported callback row count");
+    ensure!(
+        rows.len() == if ref_array_mode { 2 } else { 3 },
+        "imported callback row count"
+    );
     let fingerprint_rows: Vec<Value> = rows
         .iter()
         .map(|row| {
@@ -276,6 +303,8 @@ fn run_dispatch(
         let callback = match row["function"].as_str() {
             Some("rp_probe_callback_a") => "rp_probe_callback_a",
             Some("rp_probe_callback_b") => "rp_probe_callback_b",
+            Some("rp_ref_array_first") if ref_array_mode => "rp_ref_array_first",
+            Some("rp_ref_array_second") if ref_array_mode => "rp_ref_array_second",
             None => "{closure}",
             Some(other) => anyhow::bail!("unrecognized PHP callback descriptor: {other}"),
         };
@@ -309,13 +338,23 @@ fn run_dispatch(
         .capture_target(&name, false)
         .map_err(|e| anyhow::anyhow!("WP dispatcher target import: {e:?}"))?
         .context("selected hook target absent")?;
-    let value = PhpValue::Bytes(php_string(&start["payload"]["value"])?);
-    let extras = start["payload"]["extra"]
+    let initial_value = php_string(&start["payload"]["value"])?;
+    let mut current_value = initial_value.clone();
+    let value = PhpValue::Bytes(initial_value);
+    let extra_values = start["payload"]["extra"]
         .as_array()
-        .context("extra args must be array")?
-        .iter()
-        .map(|v| php_string(v).map(PhpValue::Bytes))
-        .collect::<Result<Vec<_>>>()?;
+        .context("extra args must be array")?;
+    let extras = if let Some(frame_handle) = argument_frame {
+        extra_values
+            .iter()
+            .map(|_| PhpValue::ArgumentHandle(frame_handle))
+            .collect()
+    } else {
+        extra_values
+            .iter()
+            .map(|v| php_string(v).map(PhpValue::Bytes))
+            .collect::<Result<Vec<_>>>()?
+    };
     let ticket = dispatcher
         .begin_filter_on_target_typed(&name, target, value, &extras)
         .map_err(|e| anyhow::anyhow!("WP dispatcher filter start: {e:?}"))?;
@@ -348,13 +387,23 @@ fn run_dispatch(
                 let php_args = invocation
                     .args
                     .iter()
-                    .map(|value| match value {
-                        PhpValue::Bytes(bytes) => Ok(String::from_utf8(bytes.clone())
-                            .context("callback argument is not UTF-8")?),
-                        _ => anyhow::bail!("fixture only transports string callback arguments"),
+                    .enumerate()
+                    .map(|(index, value)| match value {
+                        PhpValue::Bytes(bytes) => {
+                            ensure!(index == 0, "only the filter accumulator is a direct ref-array value");
+                            let value = String::from_utf8(bytes.clone())
+                                .context("callback argument is not UTF-8")?;
+                            ensure!(value.as_bytes() == current_value, "Dispatcher filter accumulator drift");
+                            Ok(json!(value))
+                        }
+                        PhpValue::ArgumentHandle(handle) if ref_array_mode => {
+                            ensure!(Some(*handle) == argument_frame, "ref-array slot handle mismatch");
+                            Ok(json!({"type":"argument_frame_slot","handle":{"request":HANDLE_REQUEST,"kind":"argument","slot":handle.slot(),"generation":handle.generation(),"token":format!("{:016x}",handle.token())},"index":index}))
+                        }
+                        _ => anyhow::bail!("unexpected callback argument type for hook fixture"),
                     })
                     .collect::<Result<Vec<_>>>()?;
-                let payload = json!({"target":TARGET_TOKEN,"uid":uid,"handle":{"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),"generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())},"priority":priority,"call_mode":if matches!(invocation.call_mode,PhpCallMode::Zero){"zero"}else{"array"},"args":php_args});
+                let payload = json!({"target":TARGET_TOKEN,"uid":uid,"handle":{"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),"generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())},"priority":priority,"call_mode":if matches!(invocation.call_mode,PhpCallMode::Zero){"zero"}else{"array"},"args":php_args,"value":String::from_utf8(current_value.clone()).context("filter accumulator is not UTF-8")?,"argument_frame":if ref_array_mode {start["payload"]["argument_frame"].clone()} else {Value::Null}});
                 ensure!(
                     payload["call_mode"] == "zero" && invocation.args.is_empty()
                         || payload["call_mode"] == "array" && !invocation.args.is_empty(),
@@ -375,11 +424,10 @@ fn run_dispatch(
                     "callback correlation mismatch"
                 );
                 in_seq += 1;
+                let returned = php_string(&reply["payload"]["value"])?;
+                current_value = returned.clone();
                 dispatcher
-                    .resume_php(
-                        ticket,
-                        PhpValue::Bytes(php_string(&reply["payload"]["value"])?),
-                    )
+                    .resume_php(ticket, PhpValue::Bytes(returned))
                     .map_err(|e| anyhow::anyhow!("WP dispatcher resume: {e:?}"))?;
                 imported.push(callback_labels[uid].clone());
             }
@@ -447,6 +495,24 @@ fn run_dispatch(
                     );
                     in_seq += 1;
                 }
+                if let Some(frame_handle) = argument_frame {
+                    let descriptor = json!({"request":HANDLE_REQUEST,"kind":"argument","slot":frame_handle.slot(),"generation":frame_handle.generation(),"token":format!("{:016x}",frame_handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "argument-frame release ACK identity mismatch"
+                    );
+                    in_seq += 1;
+                }
                 dispatcher
                     .release_target(target)
                     .map_err(|e| anyhow::anyhow!("WP dispatcher target release: {e:?}"))?;
@@ -471,8 +537,11 @@ fn run_dispatch(
                         "doing_filter",
                         "current_priority",
                         "table_fingerprint",
+                        "caller_value",
+                        "caller_extra",
                         "live_handles",
                         "live_handles_before_close",
+                        "argument_frame_released_before_close",
                         "frames",
                         "invocations",
                     ],
@@ -483,60 +552,115 @@ fn run_dispatch(
                         && done["payload"]["current_filter"] == false
                         && done["payload"]["doing_filter"] == false
                         && done["payload"]["current_priority"] == false
+                        && done["payload"]["caller_value"]
+                            == if ref_array_mode {
+                                json!("replacement-from-first")
+                            } else {
+                                Value::Null
+                            }
+                        && done["payload"]["caller_extra"]
+                            == if ref_array_mode {
+                                json!("extra-mutated-by-second")
+                            } else {
+                                Value::Null
+                            }
                         && done["payload"]["live_handles"] == 0
                         && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["table_fingerprint"] == fingerprint
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
+                            == if ref_array_mode {
+                                json!([rows[0]["uid"], rows[1]["uid"]])
+                            } else {
+                                json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]])
+                            },
                     "guest final observation mismatch"
                 );
                 ensure!(
-                    imported == ["rp_probe_callback_a", "{closure}", "rp_probe_callback_b"],
+                    imported
+                        == if ref_array_mode {
+                            vec![
+                                "rp_ref_array_first".to_string(),
+                                "rp_ref_array_second".to_string(),
+                            ]
+                        } else {
+                            vec![
+                                "rp_probe_callback_a".to_string(),
+                                "{closure}".to_string(),
+                                "rp_probe_callback_b".to_string(),
+                            ]
+                        },
                     "callback invocation order mismatch"
                 );
                 let events = done["payload"]["events"]
                     .as_array()
                     .context("guest events missing")?;
                 ensure!(
-                    events.len() == 4,
+                    events.len() == if ref_array_mode { 3 } else { 4 },
                     "native all plus selected callback event count mismatch"
                 );
                 ensure!(
                     events[0]["callback"] == "all"
-                        && events[0]["hook"] == "rp-probe-filter"
-                        && events[0]["args"] == json!(["seed", "left", "right"])
-                        && events[0]["current_filter"] == "rp-probe-filter"
+                        && events[0]["hook"] == expected_hook
+                        && events[0]["args"]
+                            == if ref_array_mode {
+                                json!(["seed", "left"])
+                            } else {
+                                json!(["seed", "left", "right"])
+                            }
+                        && events[0]["current_filter"] == expected_hook
                         && events[0]["doing_filter"] == true
                         && events[0]["did_filter"] == 1,
                     "WordPress all callback observation mismatch"
                 );
-                ensure!(
-                    events[1]["callback"] == "a"
-                        && events[1]["args"] == json!(["seed", "left", "right"])
-                        && events[1]["current_filter"] == "rp-probe-filter"
-                        && events[1]["doing_filter"] == true
-                        && events[1]["did_filter"] == 1
-                        && events[1]["current_priority"] == 5,
-                    "first selected callback observation mismatch"
-                );
-                ensure!(
-                    events[2]["callback"] == "zero"
-                        && events[2]["args"] == json!([])
-                        && events[2]["current_filter"] == "rp-probe-filter"
-                        && events[2]["doing_filter"] == true
-                        && events[2]["did_filter"] == 1
-                        && events[2]["current_priority"] == 5,
-                    "zero-argument callback observation mismatch"
-                );
-                ensure!(
-                    events[3]["callback"] == "b"
-                        && events[3]["args"] == json!(["Z", "left", "right"])
-                        && events[3]["current_filter"] == "rp-probe-filter"
-                        && events[3]["doing_filter"] == true
-                        && events[3]["did_filter"] == 1
-                        && events[3]["current_priority"] == 10,
-                    "last selected callback observation mismatch"
-                );
+                if ref_array_mode {
+                    ensure!(
+                        events[1]["callback"] == "first"
+                            && events[1]["args"] == json!(["seed", "left"])
+                            && events[1]["current_filter"] == expected_hook
+                            && events[1]["doing_filter"] == true
+                            && events[1]["did_filter"] == 1
+                            && events[1]["current_priority"] == 5
+                            && events[2]["callback"] == "second"
+                            && events[2]["args"]
+                                == json!(["replacement-from-first", "extra-mutated-by-first"])
+                            && events[2]["current_filter"] == expected_hook
+                            && events[2]["doing_filter"] == true
+                            && events[2]["did_filter"] == 1
+                            && events[2]["current_priority"] == 10,
+                        "WordPress ref-array callback observations mismatch"
+                    );
+                } else {
+                    ensure!(
+                        events[1]["callback"] == "a"
+                            && events[1]["args"] == json!(["seed", "left", "right"])
+                            && events[1]["current_filter"] == "rp-probe-filter"
+                            && events[1]["doing_filter"] == true
+                            && events[1]["did_filter"] == 1
+                            && events[1]["current_priority"] == 5,
+                        "first selected callback observation mismatch"
+                    );
+                }
+                if !ref_array_mode {
+                    ensure!(
+                        events[2]["callback"] == "zero"
+                            && events[2]["args"] == json!([])
+                            && events[2]["current_filter"] == "rp-probe-filter"
+                            && events[2]["doing_filter"] == true
+                            && events[2]["did_filter"] == 1
+                            && events[2]["current_priority"] == 5,
+                        "zero-argument callback observation mismatch"
+                    );
+                    ensure!(
+                        events[3]["callback"] == "b"
+                            && events[3]["args"] == json!(["Z", "left", "right"])
+                            && events[3]["current_filter"] == "rp-probe-filter"
+                            && events[3]["doing_filter"] == true
+                            && events[3]["did_filter"] == 1
+                            && events[3]["current_priority"] == 10,
+                        "last selected callback observation mismatch"
+                    );
+                }
                 return Ok(
                     json!({"status":"passed","result":value,"callbacks":imported,"guest":done["payload"],"bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,"output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
                 );
@@ -964,6 +1088,11 @@ fn run_action_dispatch(
 
 fn main() -> Result<()> {
     let action_mode = std::env::args().nth(1).as_deref() == Some("action");
+    let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
+    ensure!(
+        action_mode || ref_array_mode || std::env::args().nth(1).is_none(),
+        "unknown hook-dispatch scenario"
+    );
     let php_driver = if action_mode {
         PHP_ACTION_DRIVER
     } else {
@@ -1058,6 +1187,7 @@ fn main() -> Result<()> {
             },
             &mut total_in,
             &mut total_out,
+            ref_array_mode,
         )
     };
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_done");
@@ -1110,7 +1240,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_mode {"action"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -1137,6 +1267,17 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
+    let runner_args = if driver == PHP_ACTION_DRIVER {
+        vec!["-n".to_string(), driver.to_string(), "action".to_string()]
+    } else if driver == PHP_DRIVER && std::env::args().nth(1).as_deref() == Some("ref-array") {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "ref-array".to_string(),
+        ]
+    } else {
+        vec!["-n".to_string(), driver.to_string()]
+    };
     runner
         .with_forward_host_env(false)
         .with_home_mapped(false)
@@ -1144,7 +1285,7 @@ fn run_guest(
         .with_stdin(Box::new(stdin))
         .with_stdout(Box::new(stdout))
         .with_stderr(Box::new(stderr))
-        .with_args(["-n", driver])
+        .with_args(runner_args)
         .with_current_dir("/fixture")
         .with_mount("/fixture".to_string(), fs_map)
         .capabilities_mut()
