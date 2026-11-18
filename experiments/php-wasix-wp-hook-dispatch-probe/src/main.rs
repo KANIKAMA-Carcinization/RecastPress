@@ -15,7 +15,7 @@ use anyhow::{Context, Result, ensure};
 use recastpress_wp::{
     continuation::{Completion, PhpHandle, PhpHandleKind, RequestGeneration},
     dispatcher::{DispatchStep, Dispatcher},
-    hooks::{CallbackId, ContextCallback, HookArgument, HookPriority, PhpCallMode},
+    hooks::{CallbackId, ContextCallback, HookArgument, HookPriority, PhpCallMode, PhpInvocation},
     value::{PhpKey, PhpValue},
 };
 use serde_json::{Value, json};
@@ -48,8 +48,9 @@ const PHP_DRIVER: &str = "/fixture/wp_hook_driver.php";
 const PHP_ACTION_DRIVER: &str = "/fixture/wp_action_driver.php";
 const PHP_ACTION_REF_ARRAY_DRIVER: &str = "/fixture/wp_action_ref_array_driver.php";
 const PHP_ACTION_THROWABLE_DRIVER: &str = "/fixture/wp_action_throwable_driver.php";
+const PHP_ACTION_NESTED_DRIVER: &str = "/fixture/wp_action_nested_driver.php";
 
-const FILES: [(&str, &[u8]); 10] = [
+const FILES: [(&str, &[u8]); 11] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -98,6 +99,12 @@ const FILES: [(&str, &[u8]); 10] = [
         "wp_action_throwable_driver.php",
         include_bytes!(
             "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_driver.php"
+        ),
+    ),
+    (
+        "wp_action_nested_driver.php",
+        include_bytes!(
+            "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_nested_driver.php"
         ),
     ),
 ];
@@ -1105,6 +1112,556 @@ fn run_action_dispatch(
     }
 }
 
+struct NestedActionTable {
+    target: String,
+    name: HookArgument,
+    rows: Vec<Value>,
+    handles_by_uid: std::collections::HashMap<String, PhpHandle>,
+    labels: std::collections::HashMap<String, String>,
+}
+
+fn import_nested_action(
+    dispatcher: &mut Dispatcher,
+    start: &Value,
+    expected_target: &str,
+    expected_hook: &str,
+    expected_seq: u64,
+    expected_parent: Option<(&str, &str)>,
+) -> Result<NestedActionTable> {
+    let mut keys = vec![
+        "generation",
+        "target",
+        "hook",
+        "args",
+        "rows",
+        "table_fingerprint",
+    ];
+    if expected_parent.is_some() {
+        keys.extend(["parent_target", "parent_uid"]);
+    }
+    expect_frame(start, expected_seq, "action_dispatch_start", &keys)?;
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == expected_target
+            && start["payload"]["hook"] == expected_hook,
+        "nested action identity mismatch"
+    );
+    if let Some((parent_target, parent_uid)) = expected_parent {
+        ensure!(
+            start["payload"]["parent_target"] == parent_target
+                && start["payload"]["parent_uid"] == parent_uid,
+            "nested action parent correlation mismatch"
+        );
+    }
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("nested action rows must be array")?
+        .clone();
+    ensure!(
+        !rows.is_empty() && rows.len() <= 4,
+        "nested action row count outside probe bounds"
+    );
+    let fingerprint_rows: Vec<Value> = rows
+        .iter()
+        .map(|row| {
+            json!([
+                row["priority"],
+                row["uid"],
+                row["accepted_args"],
+                row["function"],
+                row["handle"]["request"],
+                row["handle"]["kind"],
+                row["handle"]["slot"],
+                row["handle"]["generation"],
+                row["handle"]["token"]
+            ])
+        })
+        .collect();
+    let fingerprint = sha256(&serde_json::to_vec(&fingerprint_rows)?);
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint,
+        "nested action table fingerprint mismatch"
+    );
+    let mut handles_by_uid = std::collections::HashMap::new();
+    let mut labels = std::collections::HashMap::new();
+    let mut order = Vec::new();
+    let name = HookArgument::bytes(expected_hook);
+    for row in &rows {
+        let object = row
+            .as_object()
+            .context("nested action row must be object")?;
+        ensure!(
+            object.len() == 5
+                && ["priority", "uid", "accepted_args", "function", "handle"]
+                    .iter()
+                    .all(|key| object.contains_key(*key)),
+            "nested action row schema"
+        );
+        let uid = row["uid"]
+            .as_str()
+            .context("nested action uid")?
+            .to_string();
+        let priority = row["priority"].as_i64().context("nested action priority")?;
+        let accepted_args = row["accepted_args"]
+            .as_i64()
+            .context("nested action accepted args")?;
+        ensure!(
+            (0..=8).contains(&accepted_args),
+            "nested action accepted args outside probe bounds"
+        );
+        let label = match row["function"].as_str() {
+            Some("rp_nested_outer_parent") => "outer_parent_enter",
+            Some("rp_nested_outer_tail") => "outer_tail",
+            Some("rp_nested_inner_callback") => "inner_callback",
+            other => anyhow::bail!("unrecognized nested PHP callback: {other:?}"),
+        }
+        .to_string();
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles_by_uid.insert(uid.clone(), php_handle).is_none(),
+            "duplicate nested callback uid"
+        );
+        labels.insert(uid.clone(), label);
+        order.push((priority, uid.clone()));
+        let callback = ContextCallback::php_callable(
+            CallbackId {
+                module: "wordpress".into(),
+                callback: uid,
+            },
+            accepted_args,
+            php_handle,
+        )
+        .map_err(|error| anyhow::anyhow!("nested action callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+    }
+    let mut sorted = order.clone();
+    sorted.sort_by_key(|(priority, _)| *priority);
+    ensure!(
+        order == sorted,
+        "nested action callback table order mismatch"
+    );
+    let args = start["payload"]["args"]
+        .as_array()
+        .context("nested action args must be array")?
+        .iter()
+        .map(|value| php_string(value).map(PhpValue::Bytes))
+        .collect::<Result<Vec<_>>>()?;
+    ensure!(
+        args.len() <= 8,
+        "nested action argument count outside probe bounds"
+    );
+    Ok(NestedActionTable {
+        target: expected_target.to_string(),
+        name,
+        rows,
+        handles_by_uid,
+        labels,
+    })
+}
+
+fn nested_invoke_payload(table: &NestedActionTable, invocation: &PhpInvocation) -> Result<Value> {
+    let uid = invocation.callback.callback.as_str();
+    ensure!(
+        table.labels.contains_key(uid),
+        "nested invocation uid missing from callback table"
+    );
+    ensure!(
+        table.handles_by_uid.get(uid) == Some(&invocation.handle),
+        "nested invocation handle mismatch"
+    );
+    let priority = match invocation.priority {
+        PhpKey::Integer(value) => value,
+        _ => anyhow::bail!("nested action priority must be integer"),
+    };
+    let args =
+        invocation
+            .args
+            .iter()
+            .map(|value| match value {
+                PhpValue::Bytes(bytes) => Ok(String::from_utf8(bytes.clone())
+                    .context("nested action argument is not UTF-8")?),
+                _ => anyhow::bail!("nested action only transports UTF-8 strings"),
+            })
+            .collect::<Result<Vec<_>>>()?;
+    let mode = if matches!(invocation.call_mode, PhpCallMode::Zero) {
+        "zero"
+    } else {
+        "array"
+    };
+    ensure!(
+        (mode == "zero" && args.is_empty()) || (mode == "array" && !args.is_empty()),
+        "nested invocation call mode mismatch"
+    );
+    Ok(
+        json!({"target":table.target,"uid":uid,"handle":{"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),"generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())},"priority":priority,"call_mode":mode,"args":args}),
+    )
+}
+
+fn run_action_nested_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let mut in_seq = 0;
+    let mut out_seq = 0;
+    let outer_start = read_frame(reader, deadline, total_in, in_seq)?;
+    in_seq += 1;
+    let mut dispatcher = Dispatcher::new();
+    let outer = import_nested_action(
+        &mut dispatcher,
+        &outer_start,
+        "wp-action-nested-outer-1",
+        "rp-probe-action-nested-outer",
+        0,
+        None,
+    )?;
+    ensure!(
+        outer.rows.len() == 2 && outer_start["payload"]["args"] == json!([]),
+        "nested outer action shape mismatch"
+    );
+    let outer_ticket = dispatcher
+        .begin_action_after_counter_typed(&outer.name, &[])
+        .map_err(|error| anyhow::anyhow!("nested outer action start: {error:?}"))?;
+    let mut callback_order = Vec::new();
+    loop {
+        match dispatcher
+            .advance(outer_ticket)
+            .map_err(|error| anyhow::anyhow!("nested outer advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Zero && invocation.args.is_empty(),
+                    "nested outer callback must have zero args"
+                );
+                let payload = nested_invoke_payload(&outer, &invocation)?;
+                let uid = payload["uid"]
+                    .as_str()
+                    .context("nested outer uid")?
+                    .to_string();
+                ensure!(
+                    matches!(invocation.call_mode, PhpCallMode::Zero),
+                    "nested outer call mode must be zero"
+                );
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    payload,
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                if uid == "rp_nested_outer_parent" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_dispatch_start",
+                        &[
+                            "generation",
+                            "target",
+                            "hook",
+                            "args",
+                            "rows",
+                            "table_fingerprint",
+                            "parent_target",
+                            "parent_uid",
+                        ],
+                    )?;
+                    let inner = import_nested_action(
+                        &mut dispatcher,
+                        &reply,
+                        "wp-action-nested-inner-1",
+                        "rp-probe-action-nested-inner",
+                        in_seq,
+                        Some((&outer.target, &uid)),
+                    )?;
+                    ensure!(
+                        inner.rows.len() == 1 && reply["payload"]["args"] == json!(["inner-value"]),
+                        "nested inner action shape mismatch"
+                    );
+                    in_seq += 1;
+                    let inner_args = vec![PhpValue::Bytes(b"inner-value".to_vec())];
+                    let inner_ticket = dispatcher
+                        .begin_action_after_counter_typed(&inner.name, &inner_args)
+                        .map_err(|error| anyhow::anyhow!("nested inner action start: {error:?}"))?;
+                    let mut inner_invocations = Vec::new();
+                    loop {
+                        match dispatcher
+                            .advance(inner_ticket)
+                            .map_err(|error| anyhow::anyhow!("nested inner advance: {error:?}"))?
+                        {
+                            DispatchStep::InvokePhp(invocation) => {
+                                let payload = nested_invoke_payload(&inner, &invocation)?;
+                                let uid = payload["uid"]
+                                    .as_str()
+                                    .context("nested inner uid")?
+                                    .to_string();
+                                send_frame(
+                                    writer,
+                                    out_seq,
+                                    "invoke_php",
+                                    payload,
+                                    total_out,
+                                    &mut out_seq,
+                                )?;
+                                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                                expect_frame(
+                                    &reply,
+                                    in_seq,
+                                    "resume_value",
+                                    &["target", "uid", "value"],
+                                )?;
+                                ensure!(
+                                    reply["payload"]["target"] == inner.target
+                                        && reply["payload"]["uid"] == uid
+                                        && reply["payload"]["value"].is_null(),
+                                    "nested inner resume mismatch"
+                                );
+                                in_seq += 1;
+                                dispatcher
+                                    .resume_php(inner_ticket, PhpValue::Null)
+                                    .map_err(|error| {
+                                        anyhow::anyhow!("nested inner resume: {error:?}")
+                                    })?;
+                                inner_invocations.push(uid);
+                            }
+                            DispatchStep::ReleasePhp(php_handle) => {
+                                let descriptor = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":php_handle.slot(),"generation":php_handle.generation(),"token":format!("{:016x}",php_handle.token())});
+                                send_frame(
+                                    writer,
+                                    out_seq,
+                                    "release_php",
+                                    json!({"handle":descriptor}),
+                                    total_out,
+                                    &mut out_seq,
+                                )?;
+                                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                                ensure!(
+                                    ack["payload"]["handle"] == descriptor,
+                                    "nested inner callback release mismatch"
+                                );
+                                in_seq += 1;
+                                dispatcher
+                                    .resume_php_release(inner_ticket, php_handle)
+                                    .map_err(|error| {
+                                        anyhow::anyhow!("nested inner release resume: {error:?}")
+                                    })?;
+                            }
+                            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                                anyhow::bail!("unexpected nested action effect")
+                            }
+                            DispatchStep::Complete(result) => {
+                                ensure!(
+                                    result == PhpValue::Null && inner_invocations.len() == 1,
+                                    "nested inner dispatch completion mismatch"
+                                );
+                                dispatcher.remove_all_typed(&inner.name, None);
+                                for handle in dispatcher.take_php_releases() {
+                                    let descriptor = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),"generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                                    send_frame(
+                                        writer,
+                                        out_seq,
+                                        "release_php",
+                                        json!({"handle":descriptor}),
+                                        total_out,
+                                        &mut out_seq,
+                                    )?;
+                                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                                    ensure!(
+                                        ack["payload"]["handle"] == descriptor,
+                                        "nested inner registration release mismatch"
+                                    );
+                                    in_seq += 1;
+                                }
+                                send_frame(
+                                    writer,
+                                    out_seq,
+                                    "action_complete",
+                                    json!({"target":inner.target,"invocations":inner_invocations.len()}),
+                                    total_out,
+                                    &mut out_seq,
+                                )?;
+                                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                                expect_frame(
+                                    &ack,
+                                    in_seq,
+                                    "nested_action_return_ack",
+                                    &["target", "parent_target", "parent_uid"],
+                                )?;
+                                ensure!(
+                                    ack["payload"]["target"] == inner.target
+                                        && ack["payload"]["parent_target"] == outer.target
+                                        && ack["payload"]["parent_uid"] == uid,
+                                    "nested action return correlation mismatch"
+                                );
+                                in_seq += 1;
+                                break;
+                            }
+                        }
+                    }
+                    let resumed = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(
+                        &resumed,
+                        in_seq,
+                        "resume_value",
+                        &["target", "uid", "value"],
+                    )?;
+                    ensure!(
+                        resumed["payload"]["target"] == outer.target
+                            && resumed["payload"]["uid"] == uid
+                            && resumed["payload"]["value"].is_null(),
+                        "outer callback resume mismatch after nested dispatch"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == outer.target
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "outer callback resume mismatch"
+                    );
+                    in_seq += 1;
+                }
+                dispatcher
+                    .resume_php(outer_ticket, PhpValue::Null)
+                    .map_err(|error| anyhow::anyhow!("nested outer resume: {error:?}"))?;
+                callback_order.push(outer.labels[&uid].clone());
+            }
+            DispatchStep::ReleasePhp(handle) => {
+                let descriptor = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),"generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == descriptor,
+                    "outer callback release mismatch"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(outer_ticket, handle)
+                    .map_err(|error| anyhow::anyhow!("nested outer release resume: {error:?}"))?;
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected nested outer effect")
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null
+                        && callback_order == ["outer_parent_enter", "outer_tail"],
+                    "nested outer dispatch completion mismatch"
+                );
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":outer.target,"invocations":callback_order.len()}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let observed = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &observed,
+                    in_seq,
+                    "nested_action_observed",
+                    &["target", "observation"],
+                )?;
+                ensure!(
+                    observed["payload"]["target"] == outer.target,
+                    "nested observation target mismatch"
+                );
+                in_seq += 1;
+                dispatcher.remove_all_typed(&outer.name, None);
+                for handle in dispatcher.take_php_releases() {
+                    let descriptor = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),"generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "outer registration release mismatch"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":outer.target,"outcome":"normal_nested_dispatch"}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "observation",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "registry_closed",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["registry_closed"] == true
+                        && done["payload"]["observation"] == observed["payload"]["observation"],
+                    "nested guest final state mismatch"
+                );
+                let observation = &done["payload"]["observation"];
+                ensure!(
+                    observation["outer_count"] == 1
+                        && observation["inner_count"] == 1
+                        && observation["current_action"] == false
+                        && observation["current_filter"] == false
+                        && observation["doing_action"] == false
+                        && observation["stack"] == json!([]),
+                    "nested action stack/counter observation mismatch"
+                );
+                ensure!(
+                    observation["events"].as_array().is_some_and(|events| events
+                        .iter()
+                        .map(|e| e["callback"].as_str().unwrap_or(""))
+                        .collect::<Vec<_>>()
+                        == [
+                            "all",
+                            "outer_parent_enter",
+                            "all",
+                            "inner_callback",
+                            "outer_parent_after",
+                            "outer_tail"
+                        ]),
+                    "nested action callback order mismatch"
+                );
+                return Ok(
+                    json!({"status":"passed","scenario":"action-nested","callbacks":callback_order,"guest":done["payload"],"bridge":{"input_frames":in_seq + 1,"output_frames":out_seq,"input_bytes":*total_in,"output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
+                );
+            }
+        }
+    }
+}
+
 fn run_action_throwable_dispatch(
     reader: &mut BufReader<impl Read>,
     writer: &mut impl Write,
@@ -1934,15 +2491,19 @@ fn main() -> Result<()> {
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array");
     let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
+    let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     ensure!(
         action_mode
             || ref_array_mode
             || action_ref_array_mode
             || action_throwable_mode
+            || action_nested_mode
             || std::env::args().nth(1).is_none(),
         "unknown hook-dispatch scenario"
     );
-    let php_driver = if action_throwable_mode {
+    let php_driver = if action_nested_mode {
+        PHP_ACTION_NESTED_DRIVER
+    } else if action_throwable_mode {
         PHP_ACTION_THROWABLE_DRIVER
     } else if action_ref_array_mode {
         PHP_ACTION_REF_ARRAY_DRIVER
@@ -2021,7 +2582,17 @@ fn main() -> Result<()> {
         deadline: Instant::now() + TIMEOUT,
     });
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_start");
-    let observed = if action_throwable_mode {
+    let observed = if action_nested_mode {
+        run_action_nested_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
+        )
+    } else if action_throwable_mode {
         run_action_throwable_dispatch(
             &mut reader,
             &mut DeadlinePipeWriter {
@@ -2118,7 +2689,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -2145,7 +2716,13 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let runner_args = if driver == PHP_ACTION_THROWABLE_DRIVER {
+    let runner_args = if driver == PHP_ACTION_NESTED_DRIVER {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "action-nested".to_string(),
+        ]
+    } else if driver == PHP_ACTION_THROWABLE_DRIVER {
         vec![
             "-n".to_string(),
             driver.to_string(),
