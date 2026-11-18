@@ -184,7 +184,7 @@ function rp_action_ref_array_all(string $hookName, array $args): void
     $GLOBALS['rp_action_ref_array_events'][] = [
         'callback' => 'all',
         'hook' => $hookName,
-        'args' => [$hookName, array_values($args)],
+        'args' => [$hookName, array_map(static fn ($argument) => $argument, $args)],
         'current_action' => current_action(),
         'doing_action' => doing_action($hookName),
         'did_action' => did_action($hookName),
