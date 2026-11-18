@@ -202,9 +202,11 @@ function recastpress_wp_dispatch_selected_action(
                     ['priority' => 15, 'uid' => 'rp_action_mutation_added', 'accepted_args' => 0, 'function' => 'rp_action_mutation_added'],
                     ['priority' => 20, 'uid' => 'rp_action_mutation_tail', 'accepted_args' => 0, 'function' => 'rp_action_mutation_tail'],
                 ]
-                || !$sync('finish')
             ) {
                 throw new RuntimeException('action_mutation_completion_state');
+            }
+            if (!$sync('finish')) {
+                throw new RuntimeException('action_mutation_finish_sync');
             }
             $GLOBALS['rp_mutation_initial_rows'] = $initial;
             return null;

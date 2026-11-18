@@ -2744,6 +2744,26 @@ fn run_action_mutation_dispatch(
                             ],
                     "mutation callback order or result"
                 );
+                dispatcher.remove_all_typed(&name, None);
+                for handle in dispatcher.take_php_releases() {
+                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),
+                        "generation":handle.generation(),"token":format!("{:016x}",handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":desc}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == desc,
+                        "mutation registration release"
+                    );
+                    in_seq += 1;
+                }
                 send_frame(
                     writer,
                     out_seq,
@@ -2764,31 +2784,6 @@ fn run_action_mutation_dispatch(
                     "mutation observation target"
                 );
                 in_seq += 1;
-                dispatcher.remove_all_typed(&name, None);
-                for handle in dispatcher.take_php_releases() {
-                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":handle.slot(),
-                        "generation":handle.generation(),"token":format!("{:016x}",handle.token())});
-                    send_frame(
-                        writer,
-                        out_seq,
-                        "release_php",
-                        json!({"handle":desc}),
-                        total_out,
-                        &mut out_seq,
-                    )?;
-                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
-                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
-                    ensure!(
-                        ack["payload"]["handle"] == desc,
-                        "mutation registration release"
-                    );
-                    in_seq += 1;
-                    dispatcher
-                        .resume_php_release(ticket, handle)
-                        .map_err(|error| {
-                            anyhow::anyhow!("mutation registration release: {error:?}")
-                        })?;
-                }
                 send_frame(
                     writer,
                     out_seq,
