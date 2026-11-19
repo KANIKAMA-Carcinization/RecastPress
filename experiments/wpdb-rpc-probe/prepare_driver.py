@@ -73,7 +73,43 @@ def load_plan():
     require([r['path'] for r in plan['patch']['files']] == ['src/conn/mod.rs', 'src/opts/mod.rs'], 'exact patched source set')
     for key in ['cargo_manifest', 'cargo_lock']:
         path = ROOT.joinpath(*relative(plan['existing_reference'][key]))
-        require(sha(read_fixed(path, 1024 * 1024)) == plan['existing_reference'][key + '_sha256'], 'existing reference changed')
+        wire = read_fixed(path, 1024 * 1024)
+        expected = plan['existing_reference'][key + '_sha256']
+        if key == 'cargo_lock' and plan['schema'] == 'recastpress.wpdb-rpc-driver-plan.v0.5':
+            # v0.6 changes only RecastPress's own package versions in the
+            # existing binlog lock. Keep the v0.5 plan pinned while allowing
+            # this exact, reviewable version-only delta in the v0.6 checkout.
+            old = read_fixed(ROOT / 'experiments/wpdb-rpc-probe/fixtures/binlog-Cargo.lock.v0.5', 1024 * 1024)
+            old_doc = tomllib.loads(old.decode())
+            current_doc = tomllib.loads(wire.decode())
+            old_rows = [row for row in old_doc['package'] if row['name'] in ('recastpress-core', 'recastpress-db')]
+            current_rows = [row for row in current_doc['package'] if row['name'] in ('recastpress-core', 'recastpress-db')]
+            require(len(old_rows) == len(current_rows) == 2
+                and {(row['name'], row['version']) for row in old_rows} == {('recastpress-core', '0.5.0'), ('recastpress-db', '0.5.0')}
+                and {(row['name'], row['version']) for row in current_rows} == {('recastpress-core', '0.6.0'), ('recastpress-db', '0.6.0')},
+                'unexpected internal lock package rows')
+            # Change only the version field inside each internal package block,
+            # then require byte-for-byte equality with the current lock.
+            marker = b'[[package]]\nname = "'
+            boundaries = []
+            start = 0
+            while True:
+                index = old.find(marker, start)
+                if index < 0: break
+                boundaries.append(index); start = index + 1
+            blocks = []
+            for index, block_start in enumerate(boundaries):
+                block_end = boundaries[index + 1] if index + 1 < len(boundaries) else len(old)
+                block = old[block_start:block_end]
+                if b'name = "recastpress-core"\n' in block or b'name = "recastpress-db"\n' in block:
+                    require(block.count(b'version = "0.5.0"\n') == 1, 'fixed internal lock version field')
+                    block = block.replace(b'version = "0.5.0"\n', b'version = "0.6.0"\n', 1)
+                blocks.append(block)
+            expected_v06 = old[:boundaries[0]] + b''.join(blocks)
+            require(sha(old) == expected and wire == expected_v06,
+                'existing reference changed beyond v0.6 internal package version delta')
+        else:
+            require(sha(wire) == expected, 'existing reference changed')
     return plan
 
 
@@ -198,3 +234,4 @@ def prepare():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__); parser.parse_args()
     result = prepare(); print(result['outcome'] + '; source staging only, no Cargo or DB execution')
+
