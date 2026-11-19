@@ -88,8 +88,8 @@ ob_start();
 
 try {
     $repo_root = dirname(__DIR__, 3);
-    $wordpress_root = $repo_root . DIRECTORY_SEPARATOR . '.reference'
-        . DIRECTORY_SEPARATOR . 'wordpress-7.1.3';
+    $wordpress_root = $repo_root . DIRECTORY_SEPARATOR . 'target'
+        . DIRECTORY_SEPARATOR . 'wp-bootstrap-probe' . DIRECTORY_SEPARATOR . 'site';
     if (realpath($repo_root) !== $repo_root || realpath($wordpress_root) !== $wordpress_root) {
         throw new RuntimeException('fixed_wordpress_tree_missing');
     }
@@ -221,3 +221,4 @@ try {
         },
     ]);
 }
+
