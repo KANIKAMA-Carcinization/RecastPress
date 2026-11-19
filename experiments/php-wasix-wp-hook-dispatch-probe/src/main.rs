@@ -2236,6 +2236,8 @@ fn run_action_ref_array_dispatch(
     let mut handles_by_uid = std::collections::HashMap::new();
     let mut callback_labels = std::collections::HashMap::new();
     let mut accepted_args_by_uid = std::collections::HashMap::new();
+    let mut priorities_by_uid = std::collections::HashMap::new();
+    let mut imported_rows = rows.clone();
     for row in rows {
         let object = row
             .as_object()
@@ -2285,6 +2287,7 @@ fn run_action_ref_array_dispatch(
         );
         callback_labels.insert(uid.to_string(), label.to_string());
         accepted_args_by_uid.insert(uid.to_string(), accepted_args as usize);
+        priorities_by_uid.insert(uid.to_string(), priority);
         let id = CallbackId {
             module: "wordpress".into(),
             callback: uid.to_string(),
@@ -2324,8 +2327,7 @@ fn run_action_ref_array_dispatch(
                         invocation.call_mode == PhpCallMode::Zero
                     } else {
                         invocation.call_mode == PhpCallMode::Array
-                    })
-                        && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
+                    }) && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
                     "reference-array action invocation argument count mismatch"
                 );
                 ensure!(
@@ -2340,6 +2342,10 @@ fn run_action_ref_array_dispatch(
                     PhpKey::Integer(value) => value,
                     _ => anyhow::bail!("reference-array action priority must be integer"),
                 };
+                ensure!(
+                    priorities_by_uid.get(uid).copied() == Some(priority),
+                    "reference-array action invocation priority mismatch"
+                );
                 let frame_descriptor = json!({
                     "request":HANDLE_REQUEST,
                     "kind":"argument",
@@ -2387,14 +2393,116 @@ fn run_action_ref_array_dispatch(
                     &mut out_seq,
                 )?;
                 let reply = read_frame(reader, deadline, total_in, in_seq)?;
-                expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
-                ensure!(
-                    reply["payload"]["target"] == "wp-action-ref-array-1"
-                        && reply["payload"]["uid"] == uid
-                        && reply["payload"]["value"].is_null(),
-                    "reference-array action callback must resume with ignored null result"
-                );
-                in_seq += 1;
+                if uid == "rp_action_ref_array_first" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_callback_added",
+                        &["target", "parent_uid", "row", "table_fingerprint"],
+                    )?;
+                    let row = reply["payload"]["row"].clone();
+                    let added_object = row
+                        .as_object()
+                        .context("added reference-array row object")?;
+                    ensure!(
+                        reply["payload"]["target"] == "wp-action-ref-array-1"
+                            && reply["payload"]["parent_uid"] == uid
+                            && row["priority"] == 7
+                            && row["uid"] == "rp_action_ref_array_added"
+                            && row["accepted_args"] == 2
+                            && row["function"] == "rp_action_ref_array_added"
+                            && row["handle"]["request"] == HANDLE_REQUEST
+                            && row["handle"]["kind"] == "callable"
+                            && added_object.len() == 5
+                            && ["priority", "uid", "accepted_args", "function", "handle"]
+                                .iter()
+                                .all(|key| added_object.contains_key(*key)),
+                        "added reference-array callback identity/schema"
+                    );
+                    let added_uid = row["uid"]
+                        .as_str()
+                        .context("added reference-array uid")?
+                        .to_string();
+                    let added_handle = handle(&row["handle"])?;
+                    ensure!(
+                        row["handle"]["slot"].as_u64().is_some()
+                            && row["handle"]["generation"].as_u64().is_some()
+                            && row["handle"]["token"].as_str().is_some(),
+                        "added reference-array callback handle schema"
+                    );
+                    ensure!(
+                        handles_by_uid
+                            .insert(added_uid.clone(), added_handle)
+                            .is_none(),
+                        "duplicate added reference-array callback"
+                    );
+                    callback_labels
+                        .insert(added_uid.clone(), "rp_action_ref_array_added".to_string());
+                    accepted_args_by_uid.insert(added_uid.clone(), 2);
+                    priorities_by_uid.insert(added_uid.clone(), 7);
+                    let callback = ContextCallback::php_callable(
+                        CallbackId {
+                            module: "wordpress".into(),
+                            callback: added_uid.clone(),
+                        },
+                        2,
+                        added_handle,
+                    )
+                    .map_err(|error| {
+                        anyhow::anyhow!("added reference-array callback import: {error:?}")
+                    })?;
+                    dispatcher.add_typed(&name, HookPriority::integer(7), callback);
+                    imported_rows.push(row);
+                    imported_rows.sort_by_key(|row| row["priority"].as_i64().unwrap_or_default());
+                    let updated_projection: Vec<Value> = imported_rows
+                        .iter()
+                        .map(|row| {
+                            json!([
+                                row["priority"],
+                                row["uid"],
+                                row["accepted_args"],
+                                row["function"],
+                                row["handle"]["request"],
+                                row["handle"]["kind"],
+                                row["handle"]["slot"],
+                                row["handle"]["generation"],
+                                row["handle"]["token"]
+                            ])
+                        })
+                        .collect();
+                    let updated_fingerprint = sha256(&serde_json::to_vec(&updated_projection)?);
+                    ensure!(
+                        reply["payload"]["table_fingerprint"] == updated_fingerprint,
+                        "updated reference-array callback fingerprint"
+                    );
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_mutation_ack",
+                        json!({"target":"wp-action-ref-array-1","uid":added_uid,"priority":7}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let resume = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        resume["payload"]["target"] == "wp-action-ref-array-1"
+                            && resume["payload"]["uid"] == uid
+                            && resume["payload"]["value"].is_null(),
+                        "reference-array mutator resume"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == "wp-action-ref-array-1"
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "reference-array action callback must resume with ignored null result"
+                    );
+                    in_seq += 1;
+                }
                 dispatcher
                     .resume_php(ticket, PhpValue::Null)
                     .map_err(|error| {
@@ -2443,12 +2551,14 @@ fn run_action_ref_array_dispatch(
                     "reference-array action returned non-null value"
                 );
                 ensure!(
-                    imported == [
-                        "rp_action_ref_array_truncated",
-                        "rp_action_ref_array_zero",
-                        "rp_action_ref_array_first",
-                        "rp_action_ref_array_second"
-                    ],
+                    imported
+                        == [
+                            "rp_action_ref_array_truncated",
+                            "rp_action_ref_array_zero",
+                            "rp_action_ref_array_first",
+                            "rp_action_ref_array_added",
+                            "rp_action_ref_array_second"
+                        ],
                     "reference-array action callback order mismatch"
                 );
                 send_frame(
@@ -2574,15 +2684,37 @@ fn run_action_ref_array_dispatch(
                         "current_priority":5, "wp_hook_doing_action":true
                     },
                     {
-                        "callback":"second", "args":["value-mutated-by-first", "extra-mutated-by-first"],
+                        "callback":"added", "args":["value-mutated-by-first", "extra-mutated-by-first"],
+                        "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
+                        "current_priority":7, "wp_hook_doing_action":true
+                    },
+                    {
+                        "callback":"second", "args":["value-mutated-by-added", "extra-mutated-by-added"],
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
                         "current_priority":10, "wp_hook_doing_action":true
                     }
                 ]);
+                let final_projection: Vec<Value> = imported_rows
+                    .iter()
+                    .map(|row| {
+                        json!([
+                            row["priority"],
+                            row["uid"],
+                            row["accepted_args"],
+                            row["function"],
+                            row["handle"]["request"],
+                            row["handle"]["kind"],
+                            row["handle"]["slot"],
+                            row["handle"]["generation"],
+                            row["handle"]["token"]
+                        ])
+                    })
+                    .collect();
+                let final_fingerprint = sha256(&serde_json::to_vec(&final_projection)?);
                 ensure!(
                     done["payload"]["result"].is_null()
                         && done["payload"]["events"] == expected_events
-                        && done["payload"]["caller_value"] == "value-mutated-by-first"
+                        && done["payload"]["caller_value"] == "value-mutated-by-added"
                         && done["payload"]["caller_extra"] == "extra-mutated-by-second"
                         && done["payload"]["action_count"] == 1
                         && done["payload"]["current_action"] == false
@@ -2590,12 +2722,17 @@ fn run_action_ref_array_dispatch(
                         && done["payload"]["doing_action"] == false
                         && done["payload"]["wp_hook_doing_action"] == false
                         && done["payload"]["current_priority"] == false
-                        && done["payload"]["table_fingerprint"] == fingerprint
+                        && done["payload"]["table_fingerprint"] == final_fingerprint
                         && done["payload"]["live_handles"] == 0
                         && done["payload"]["live_handles_before_close"] == 0
                         && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]]),
+                            == json!(
+                                imported_rows
+                                    .iter()
+                                    .map(|row| row["uid"].clone())
+                                    .collect::<Vec<_>>()
+                            ),
                     "WordPress reference-array action final observation mismatch"
                 );
                 return Ok(json!({
