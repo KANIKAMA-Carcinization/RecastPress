@@ -31,6 +31,21 @@ function rp_action_ref_array_all(string $hookName, array $args): void
     ];
 }
 
+function rp_action_ref_array_truncated(string $value, mixed ...$extra): void
+{
+    $args = func_get_args();
+    $hook = $GLOBALS['rp_action_ref_array_selected'];
+    $GLOBALS['rp_action_ref_array_events'][] = [
+        'callback' => 'truncated', 'args' => $args, 'received_arg_count' => count($args),
+        'current_action' => current_action(), 'doing_action' => doing_action('rp-probe-action-ref-array'),
+        'did_action' => did_action('rp-probe-action-ref-array'), 'current_priority' => $hook->current_priority(),
+        'wp_hook_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook),
+    ];
+    if ($extra !== []) {
+        throw new RuntimeException('wp_action_ref_array_truncated_received_extra');
+    }
+}
+
 function rp_action_ref_array_first(string &$value, string &$extra): string
 {
     $GLOBALS['rp_action_ref_array_events'][] = [
@@ -64,6 +79,7 @@ function rp_action_ref_array_second(string &$value, string &$extra): string
 
 $hookName = 'rp-probe-action-ref-array';
 add_action('all', 'rp_action_ref_array_all', 10, 2);
+add_action($hookName, 'rp_action_ref_array_truncated', 1, 1);
 add_action($hookName, 'rp_action_ref_array_first', 5, 2);
 add_action($hookName, 'rp_action_ref_array_second', 10, 2);
 $selected = $GLOBALS['wp_filter'][$hookName];
@@ -89,6 +105,11 @@ $expected = [
             'callback' => 'all', 'hook' => $hookName,
             'args' => [$hookName, ['seed', 'left']],
             'current_action' => $hookName, 'doing_action' => true, 'did_action' => 1,
+        ],
+        [
+            'callback' => 'truncated', 'args' => ['seed'], 'received_arg_count' => 1,
+            'current_action' => $hookName, 'doing_action' => true, 'did_action' => 1,
+            'current_priority' => 1, 'wp_hook_doing_action' => true,
         ],
         [
             'callback' => 'first', 'args' => ['seed', 'left'],

@@ -2193,7 +2193,7 @@ fn run_action_ref_array_dispatch(
         .as_array()
         .context("reference-array action rows must be array")?;
     ensure!(
-        rows.len() == 2,
+        rows.len() == 3,
         "imported reference-array action callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -2221,6 +2221,7 @@ fn run_action_ref_array_dispatch(
     let mut callback_order = Vec::new();
     let mut handles_by_uid = std::collections::HashMap::new();
     let mut callback_labels = std::collections::HashMap::new();
+    let mut accepted_args_by_uid = std::collections::HashMap::new();
     for row in rows {
         let object = row
             .as_object()
@@ -2241,6 +2242,7 @@ fn run_action_ref_array_dispatch(
                 .position(|candidate| candidate["uid"] == uid)
                 .context("reference-array action insertion order")? as u64;
         let label = match row["function"].as_str() {
+            Some("rp_action_ref_array_truncated") => "rp_action_ref_array_truncated",
             Some("rp_action_ref_array_first") => "rp_action_ref_array_first",
             Some("rp_action_ref_array_second") => "rp_action_ref_array_second",
             Some(other) => anyhow::bail!("unrecognized reference-array action callback: {other}"),
@@ -2249,9 +2251,15 @@ fn run_action_ref_array_dispatch(
         let accepted_args = row["accepted_args"]
             .as_i64()
             .context("reference-array action accepted_args")?;
+        let expected = match uid {
+            "rp_action_ref_array_truncated" => (1, 1),
+            "rp_action_ref_array_first" => (5, 2),
+            "rp_action_ref_array_second" => (10, 2),
+            _ => anyhow::bail!("unexpected reference-array action callback uid: {uid}"),
+        };
         ensure!(
-            accepted_args == 2,
-            "reference-array action fixture requires exactly two accepted args"
+            (priority, accepted_args) == expected,
+            "reference-array action priority/accepted_args mismatch for {uid}"
         );
         callback_order.push((priority, insertion_order, uid.to_string()));
         let php_handle = handle(&row["handle"])?;
@@ -2260,6 +2268,7 @@ fn run_action_ref_array_dispatch(
             "duplicate reference-array action callback uid"
         );
         callback_labels.insert(uid.to_string(), label.to_string());
+        accepted_args_by_uid.insert(uid.to_string(), accepted_args as usize);
         let id = CallbackId {
             module: "wordpress".into(),
             callback: uid.to_string(),
@@ -2293,11 +2302,12 @@ fn run_action_ref_array_dispatch(
             anyhow::anyhow!("WP reference-array action dispatcher advance: {error:?}")
         })? {
             DispatchStep::InvokePhp(invocation) => {
-                ensure!(
-                    invocation.call_mode == PhpCallMode::Array && invocation.args.len() == 2,
-                    "reference-array action fixture requires two callback arguments"
-                );
                 let uid = invocation.callback.callback.as_str();
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Array
+                        && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
+                    "reference-array action invocation argument count mismatch"
+                );
                 ensure!(
                     callback_labels.contains_key(uid),
                     "reference-array action invocation callback uid missing"
@@ -2413,7 +2423,11 @@ fn run_action_ref_array_dispatch(
                     "reference-array action returned non-null value"
                 );
                 ensure!(
-                    imported == ["rp_action_ref_array_first", "rp_action_ref_array_second"],
+                    imported == [
+                        "rp_action_ref_array_truncated",
+                        "rp_action_ref_array_first",
+                        "rp_action_ref_array_second"
+                    ],
                     "reference-array action callback order mismatch"
                 );
                 send_frame(
@@ -2524,6 +2538,11 @@ fn run_action_ref_array_dispatch(
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1
                     },
                     {
+                        "callback":"truncated", "args":["seed"], "received_arg_count":1,
+                        "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
+                        "current_priority":1, "wp_hook_doing_action":true
+                    },
+                    {
                         "callback":"first", "args":["seed", "left"],
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
                         "current_priority":5, "wp_hook_doing_action":true
@@ -2550,7 +2569,7 @@ fn run_action_ref_array_dispatch(
                         && done["payload"]["live_handles_before_close"] == 0
                         && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"]]),
+                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
                     "WordPress reference-array action final observation mismatch"
                 );
                 return Ok(json!({
