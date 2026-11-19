@@ -334,7 +334,7 @@ def main():
                     raise SystemExit(f"{scenario} runner reported a non-passing or mismatched result")
                 if scenario == "action":
                     contract_match = (
-                        scenario_result.get("accepted_args_overlarge")
+                        scenario_result.get("observation", {}).get("accepted_args_overlarge")
                         == action_overlarge_reference_oracle.get("observation", {}).get("received_args")
                     )
                     scenario_result["native_oracle_accepted_args_match"] = contract_match

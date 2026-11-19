@@ -26,7 +26,7 @@ Latest validated run: [44354882884](https://github.com/KANIKAMA-Carcinization/Re
 
 ## 最新実行の扱い
 
-run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44425880569)はcommit `42d6b008353c90a9865524fd64d6b745d6304838`を対象に、新しいordinary action accepted-args fixtureを含む10シナリオを実行中です。完了して成功するまでは、デモ証跡として扱いません。所要は過去のrunで約18分でした。二日前の発表では、上記の固定成功run `44354882884`とその取得済みartifactを使い、新runはActions画面で結果だけ確認します。
+run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44425880569)はcommit `42d6b008353c90a9865524fd64d6b745d6304838`で終了し、checkerのJSON参照階層誤りにより失敗しました。実PHP-WASM runnerは9シナリオすべてexit 0で、`accepted_args=5`のcallbackも`["left", "right"]`を受け取っていますが、checkerがその値を一階層上から取得したためnative oracle比較がfalseになりました。修正後の成功runが出るまでは、新しいaccepted-args parity証跡とは扱いません。原因とartifact digestは[診断receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44425880569.json)に記録しています。二日前の発表では引き続き、上記の固定成功run `44354882884`とその取得済みartifactを使います。
 
 ## 発表時に見せる観測
 
