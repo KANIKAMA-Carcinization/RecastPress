@@ -2207,7 +2207,7 @@ fn run_action_ref_array_dispatch(
         .as_array()
         .context("reference-array action rows must be array")?;
     ensure!(
-        rows.len() == 3,
+        rows.len() == 4,
         "imported reference-array action callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -2257,6 +2257,7 @@ fn run_action_ref_array_dispatch(
                 .context("reference-array action insertion order")? as u64;
         let label = match row["function"].as_str() {
             Some("rp_action_ref_array_truncated") => "rp_action_ref_array_truncated",
+            Some("rp_action_ref_array_zero") => "rp_action_ref_array_zero",
             Some("rp_action_ref_array_first") => "rp_action_ref_array_first",
             Some("rp_action_ref_array_second") => "rp_action_ref_array_second",
             Some(other) => anyhow::bail!("unrecognized reference-array action callback: {other}"),
@@ -2267,6 +2268,7 @@ fn run_action_ref_array_dispatch(
             .context("reference-array action accepted_args")?;
         let expected = match uid {
             "rp_action_ref_array_truncated" => (1, 1),
+            "rp_action_ref_array_zero" => (2, 0),
             "rp_action_ref_array_first" => (5, 2),
             "rp_action_ref_array_second" => (10, 2),
             _ => anyhow::bail!("unexpected reference-array action callback uid: {uid}"),
@@ -2318,7 +2320,11 @@ fn run_action_ref_array_dispatch(
             DispatchStep::InvokePhp(invocation) => {
                 let uid = invocation.callback.callback.as_str();
                 ensure!(
-                    invocation.call_mode == PhpCallMode::Array
+                    (if invocation.args.is_empty() {
+                        invocation.call_mode == PhpCallMode::Zero
+                    } else {
+                        invocation.call_mode == PhpCallMode::Array
+                    })
                         && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
                     "reference-array action invocation argument count mismatch"
                 );
@@ -2368,7 +2374,7 @@ fn run_action_ref_array_dispatch(
                         "token":format!("{:016x}", invocation.handle.token())
                     },
                     "priority":priority,
-                    "call_mode":"array",
+                    "call_mode":if invocation.call_mode == PhpCallMode::Zero { "zero" } else { "array" },
                     "args":php_args,
                     "argument_frame":frame_descriptor
                 });
@@ -2439,6 +2445,7 @@ fn run_action_ref_array_dispatch(
                 ensure!(
                     imported == [
                         "rp_action_ref_array_truncated",
+                        "rp_action_ref_array_zero",
                         "rp_action_ref_array_first",
                         "rp_action_ref_array_second"
                     ],
@@ -2557,6 +2564,11 @@ fn run_action_ref_array_dispatch(
                         "current_priority":1, "wp_hook_doing_action":true
                     },
                     {
+                        "callback":"zero", "args":[], "received_arg_count":0,
+                        "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
+                        "current_priority":2, "wp_hook_doing_action":true
+                    },
+                    {
                         "callback":"first", "args":["seed", "left"],
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
                         "current_priority":5, "wp_hook_doing_action":true
@@ -2583,7 +2595,7 @@ fn run_action_ref_array_dispatch(
                         && done["payload"]["live_handles_before_close"] == 0
                         && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
+                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]]),
                     "WordPress reference-array action final observation mismatch"
                 );
                 return Ok(json!({
