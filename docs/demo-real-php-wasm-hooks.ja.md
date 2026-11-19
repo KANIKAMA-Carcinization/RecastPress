@@ -1,6 +1,6 @@
 # RecastPress 実PHP-Wasm hook PoC デモ手順
 
-## 最新の実測デモ
+## デモ本番用の固定成功run
 
 最新の成功runは[44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884)、対象commitは`4fb5821c9dfaf35b7332ec8108d1b7a34ffa559f`です。固定PHP-WASIX 8.5.12とWordPress 7.1.3を使い、9シナリオがすべて成功し、source inputs不変も確認しました。
 
@@ -22,11 +22,24 @@ Latest validated run: [44354882884](https://github.com/KANIKAMA-Carcinization/Re
 2. Download [artifact 14452513411](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884/artifacts/14452513411), named `v06-wp-hook-dispatch-44354882884-1`.
 3. In `latest.json`, show all nine exit codes and the `action-deferred-add` observation. Highlight both pass orders, `action_count: 2`, native oracle match, reset hook state, and zero live handles. The artifact ZIP SHA-256 is `c9b2d1333e9ea462c8fb1f01c2ef89f410b2e42a84b3ee4695519076b7e75105`.
 
-このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。発表前に新しいrunが必要になった場合は、実際に検証対象となる変更をpushしてそのrunを使います。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
+このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
+
+## 最新実行の扱い
+
+run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44425880569)はcommit `42d6b008353c90a9865524fd64d6b745d6304838`を対象に、新しいordinary action accepted-args fixtureを含む10シナリオを実行中です。完了して成功するまでは、デモ証跡として扱いません。所要は過去のrunで約18分でした。二日前の発表では、上記の固定成功run `44354882884`とその取得済みartifactを使い、新runはActions画面で結果だけ確認します。
 
 ## 発表時に見せる観測
 
-`latest.json`の`run.result.action-ref-array`を開き、次を示します。
+二日後のデモは、`latest.json`の`run.result.action-deferred-add`を開き、次を示します。
+
+- 1回目のcallback順は`all -> mutator -> peer -> tail`で、優先度5で追加したcallbackはまだ実行されない
+- 2回目は`all -> mutator -> peer -> added -> tail`。同一PHP request中に遅延callbackが実行される
+- `did_action()`が1から2へ進み、native WordPress oracleが一致し、callback tableが4行、hook state reset、解放後live handle数が0
+- `run.exit_codes`の9シナリオがすべて0
+
+予備として同じartifactの`run.result.action`を表示し、WordPressの`all` callback、通常callback順、accepted args、action counterとcleanupを説明できます。新runが成功してreceipt/artifactを確認できたら、この資料と発表用runを更新します。
+
+追加の技術説明が必要な場合だけ、`latest.json`の`run.result.action-ref-array`を開き、次を示します。
 
 - `status`: `passed`、`native_oracle_contract_match`: `true`
 - callback `first`は`seed`と`left`を受け取り、参照値を書き換える
