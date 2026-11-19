@@ -2,11 +2,11 @@
 
 ## デモ本番用の固定成功run
 
-最新の成功runは[44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884)、対象commitは`4fb5821c9dfaf35b7332ec8108d1b7a34ffa559f`です。固定PHP-WASIX 8.5.12とWordPress 7.1.3を使い、9シナリオがすべて成功し、source inputs不変も確認しました。
+最新の成功runは[44429302930](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44429302930)、対象commitは`ffdc2b72051c933fede6b8ba3ffb23a48e9bcb42`です。固定PHP-WASIX 8.5.12とWordPress 7.1.3を使い、9シナリオがすべて成功し、source inputs不変も確認しました。accepted_args=5で2引数を渡した通常action callbackも、`["left", "right"]`だけを受け取り、固定native oracleと一致しました。
 
-発表ではrunの`php-wasix` jobとartifact `v06-wp-hook-dispatch-44354882884-1`を開き、`latest.json`の`action-deferred-add`を表示します。1回目の観測順は`all -> mutator -> peer -> tail`、2回目は`all -> mutator -> peer -> added -> tail`です。native oracle一致、`did_action()`の1から2への増加、最終callback table、hook state reset、live handles 0を確認できます。証跡は[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-deferred-add-run-44354882884.json)に記録しています。artifactのSHA-256は`c9b2d1333e9ea462c8fb1f01c2ef89f410b2e42a84b3ee4695519076b7e75105`で、2026-12-02 17:24 UTCまで取得できます。
+発表ではrunの`php-wasix` jobとartifact `v06-wp-hook-dispatch-44429302930-1`を開き、`latest.json`の`action-deferred-add`を表示します。1回目の観測順は`all -> mutator -> peer -> tail`、2回目は`all -> mutator -> peer -> added -> tail`です。native oracle一致、`did_action()`の1から2への増加、最終callback table、hook state reset、live handles 0を確認できます。証跡は[成功receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44429302930.json)に記録しています。artifactのSHA-256は`53214c508659f583276ee4a68f91fdacf11e50bec08cd9b3af2d8ef8ead4d55f`で、2026-12-03 00:43 UTCまで取得できます。
 
-同一PHPリクエスト中の2回`do_action()`と、優先度5で追加したcallbackが2回目に実行される挙動はrun 44354882884で検証済みです。歴史的な単発証跡は[run 44340406987](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44340406987)と[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-same-priority-run-44340406987.json)に残しています。
+同一PHPリクエスト中の2回`do_action()`と、優先度5で追加したcallbackが2回目に実行される挙動はrun 44429302930で検証済みです。過去の固定成功runは[44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884)と[source-bound receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-action-deferred-add-run-44354882884.json)に残しています。
 
 このPoCはGitHub ActionsのUbuntu runner上で動作する検証デモです。WindowsやMac上で`check.py`を直接実行する手順ではありません。既存のMac Dockerデモは別のデモ経路です。
 
@@ -14,19 +14,19 @@
 
 このPoCの実行環境はUbuntu 24.04のGitHub Actionsです。Windowsの開発環境では`check.py`は実行できません。既存の[Mac Dockerデモ手順](local-demo-macos.ja.md)は静的ページ表示用で、このPHP-Wasm hook PoCとは別のデモです。
 
-Latest validated run: [44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884), source commit `4fb5821c9dfaf35b7332ec8108d1b7a34ffa559f`. The pinned PHP-WASIX 8.5.12 and WordPress 7.1.3 workflow passed all nine scenarios. `action-deferred-add` proved that a priority-5 callback added during pass one is skipped there and invoked on the second `do_action()` in the same PHP request. The full observation matched the native oracle, including `did_action()` values 1 and 2. The earlier [callback removal run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) also passed.
+Latest validated run: [44429302930](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44429302930), source commit `ffdc2b72051c933fede6b8ba3ffb23a48e9bcb42`. The pinned PHP-WASIX 8.5.12 and WordPress 7.1.3 workflow passed all nine scenarios with unchanged source inputs. `action-deferred-add` proved that a priority-5 callback added during pass one is skipped there and invoked on the second `do_action()` in the same PHP request. The full observation matched the native oracle, including `did_action()` values 1 and 2. The ordinary `action` case also confirmed that a callback registered with `accepted_args=5` receives the two supplied values, matching the pinned WordPress oracle. Receipt: [real-php-wasix-overlarge-accepted-args-run-44429302930.json](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44429302930.json). The earlier [callback removal run 44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) also passed.
 
 ## 成功runとartifactを開く
 
-1. Open [successful run 44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884) and confirm the workflow and `php-wasix` job succeeded.
-2. Download [artifact 14452513411](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884/artifacts/14452513411), named `v06-wp-hook-dispatch-44354882884-1`.
-3. In `latest.json`, show all nine exit codes and the `action-deferred-add` observation. Highlight both pass orders, `action_count: 2`, native oracle match, reset hook state, and zero live handles. The artifact ZIP SHA-256 is `c9b2d1333e9ea462c8fb1f01c2ef89f410b2e42a84b3ee4695519076b7e75105`.
+1. Open [successful run 44429302930](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44429302930) and confirm the workflow and `php-wasix` job succeeded.
+2. Download [artifact 14486072410](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44429302930/artifacts/14486072410), named `v06-wp-hook-dispatch-44429302930-1`.
+3. In `latest.json`, show all nine exit codes and the `action-deferred-add` observation. Highlight both pass orders, `action_count: 2`, native oracle match, reset hook state, and zero live handles. The artifact ZIP SHA-256 is `53214c508659f583276ee4a68f91fdacf11e50bec08cd9b3af2d8ef8ead4d55f`.
 
 このworkflowは現在default branchの`main`にはなく、`workflow_dispatch`によるActions画面からの手動起動はできません。`dev/v0.6`上の対象ファイル変更を含むpushで自動実行されます。runのartifact名は`v06-wp-hook-dispatch-<run-id>-<run-attempt>`です。
 
 ## 最新実行の扱い
 
-run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44425880569)はcommit `42d6b008353c90a9865524fd64d6b745d6304838`で終了し、checkerのJSON参照階層誤りにより失敗しました。実PHP-WASM runnerは9シナリオすべてexit 0で、`accepted_args=5`のcallbackも`["left", "right"]`を受け取っていますが、checkerがその値を一階層上から取得したためnative oracle比較がfalseになりました。修正後の成功runが出るまでは、新しいaccepted-args parity証跡とは扱いません。原因とartifact digestは[診断receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44425880569.json)に記録しています。二日前の発表では引き続き、上記の固定成功run `44354882884`とその取得済みartifactを使います。
+run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44425880569)はcheckerのJSON参照階層誤りで失敗しました。実PHP-WASM runner自体は9シナリオすべてexit 0で、`accepted_args=5`のcallbackは`["left", "right"]`を受け取っていました。比較箇所を直した[run 44429302930](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44429302930)は全シナリオ成功し、native oracle一致とsource inputs不変を確認しました。原因と最初のartifact digestは[診断receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44425880569.json)、修正版の証跡は[成功receipt](../experiments/php-wasix-wp-hook-dispatch-probe/evidence/real-php-wasix-overlarge-accepted-args-run-44429302930.json)に記録しています。二日後の発表ではrun `44429302930`の成功artifactを使います。
 
 ## 発表時に見せる観測
 
@@ -37,7 +37,7 @@ run [44425880569](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/
 - `did_action()`が1から2へ進み、native WordPress oracleが一致し、callback tableが4行、hook state reset、解放後live handle数が0
 - `run.exit_codes`の9シナリオがすべて0
 
-予備として同じartifactの`run.result.action`を表示し、WordPressの`all` callback、通常callback順、accepted args、action counterとcleanupを説明できます。新runが成功してreceipt/artifactを確認できたら、この資料と発表用runを更新します。
+予備として同じartifactの`run.result.action`を表示し、WordPressの`all` callback、通常callback順、accepted args、action counterとcleanupを説明できます。`native_oracle_accepted_args_match: true`と`accepted_args_overlarge: ["left", "right"]`がnative parityの確認箇所です。
 
 追加の技術説明が必要な場合だけ、`latest.json`の`run.result.action-ref-array`を開き、次を示します。
 
