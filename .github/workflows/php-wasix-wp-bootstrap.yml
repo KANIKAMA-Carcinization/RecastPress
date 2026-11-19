@@ -11,6 +11,9 @@ name: PHP WASIX full WordPress bootstrap
       - ".github/workflows/php-wasix-wp-bootstrap.yml"
       - "experiments/wp-source-fs-probe/src/**"
       - "experiments/wp-bootstrap-probe/fixtures/**"
+      - "experiments/wpdb-rpc-probe/prepare_driver.py"
+      - "experiments/wpdb-rpc-probe/driver-plan.json"
+      - "experiments/wpdb-rpc-probe/fixtures/binlog-Cargo.lock.v0.5"
   workflow_dispatch: {}
 
 permissions:
