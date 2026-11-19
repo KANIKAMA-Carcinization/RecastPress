@@ -203,6 +203,42 @@ function recastpress_wp_dispatch_selected_action(
                 ) {
                     throw new RuntimeException('wp_action_ref_array_mutation_ack_identity');
                 }
+                $removedRow = null;
+                foreach ($exported as $candidate) {
+                    if ($candidate['uid'] === 'rp_action_ref_array_pending') {
+                        $removedRow = $candidate;
+                        break;
+                    }
+                }
+                $pendingStillRegistered = array_filter(
+                    rp_action_ref_array_table_snapshot($hook),
+                    static fn (array $candidate): bool => $candidate['uid'] === 'rp_action_ref_array_pending',
+                );
+                if (!is_array($removedRow) || $pendingStillRegistered !== []) {
+                    throw new RuntimeException('wp_action_ref_array_remove_pending');
+                }
+                $exported = array_values(array_filter(
+                    $exported,
+                    static fn (array $candidate): bool => $candidate['uid'] !== 'rp_action_ref_array_pending',
+                ));
+                $wire->send('action_callback_removed', [
+                    'target' => RP_ACTION_REF_ARRAY_TARGET,
+                    'parent_uid' => $payload['uid'],
+                    'row' => $removedRow,
+                    'removed_handle' => $removedRow['handle'],
+                    'table_fingerprint' => rp_action_ref_array_fingerprint($exported),
+                ]);
+                $removeAck = $wire->receive();
+                expect_parent_effect($removeAck, null);
+                expect_payload_keys($removeAck, ['target', 'uid', 'priority'], 'wp_action_ref_array_remove_ack');
+                if ($removeAck['kind'] !== 'action_removal_ack'
+                    || $removeAck['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
+                    || $removeAck['payload']['uid'] !== 'rp_action_ref_array_pending'
+                    || $removeAck['payload']['priority'] !== 8
+                ) {
+                    throw new RuntimeException('wp_action_ref_array_remove_ack_identity');
+                }
+                $expectedRows = rp_action_ref_array_table_snapshot($hook);
             }
             $GLOBALS['rp_action_ref_array_invocations'][] = $payload['uid'];
             $wire->send('resume_value', [
@@ -288,7 +324,15 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     $value = 'value-mutated-by-first';
     $extra = 'extra-mutated-by-first';
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_added', 7, 2);
+    if (!remove_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_pending', 8)) {
+        throw new RuntimeException('wp_action_ref_array_remove_return');
+    }
     return 'ignored-first-action-result';
+}
+
+function rp_action_ref_array_pending(string &$value, string &$extra): void
+{
+    throw new RuntimeException('wp_action_ref_array_removed_callback_invoked');
 }
 
 function rp_action_ref_array_added(string &$value, string &$extra): void
@@ -335,6 +379,7 @@ try {
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_truncated', 1, 1);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_zero', 2, 0);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_first', 5, 2);
+    add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_pending', 8, 2);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_second', 10, 2);
     $selected = $GLOBALS['wp_filter'][RP_ACTION_REF_ARRAY_NAME];
     $tokens = new WeakMap();

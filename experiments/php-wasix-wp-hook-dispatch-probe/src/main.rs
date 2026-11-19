@@ -2207,7 +2207,7 @@ fn run_action_ref_array_dispatch(
         .as_array()
         .context("reference-array action rows must be array")?;
     ensure!(
-        rows.len() == 4,
+        rows.len() == 5,
         "imported reference-array action callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -2261,6 +2261,7 @@ fn run_action_ref_array_dispatch(
             Some("rp_action_ref_array_truncated") => "rp_action_ref_array_truncated",
             Some("rp_action_ref_array_zero") => "rp_action_ref_array_zero",
             Some("rp_action_ref_array_first") => "rp_action_ref_array_first",
+            Some("rp_action_ref_array_pending") => "rp_action_ref_array_pending",
             Some("rp_action_ref_array_second") => "rp_action_ref_array_second",
             Some(other) => anyhow::bail!("unrecognized reference-array action callback: {other}"),
             None => anyhow::bail!("reference-array action fixture does not accept closures"),
@@ -2272,6 +2273,7 @@ fn run_action_ref_array_dispatch(
             "rp_action_ref_array_truncated" => (1, 1),
             "rp_action_ref_array_zero" => (2, 0),
             "rp_action_ref_array_first" => (5, 2),
+            "rp_action_ref_array_pending" => (8, 2),
             "rp_action_ref_array_second" => (10, 2),
             _ => anyhow::bail!("unexpected reference-array action callback uid: {uid}"),
         };
@@ -2484,13 +2486,81 @@ fn run_action_ref_array_dispatch(
                         &mut out_seq,
                     )?;
                     in_seq += 1;
+                    let removal = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(
+                        &removal,
+                        in_seq,
+                        "action_callback_removed",
+                        &["target", "parent_uid", "row", "removed_handle", "table_fingerprint"],
+                    )?;
+                    let removed_row = removal["payload"]["row"].clone();
+                    let removed_object = removed_row
+                        .as_object()
+                        .context("removed reference-array row object")?;
+                    ensure!(
+                        removal["payload"]["target"] == "wp-action-ref-array-1"
+                            && removal["payload"]["parent_uid"] == uid
+                            && removed_row["priority"] == 8
+                            && removed_row["uid"] == "rp_action_ref_array_pending"
+                            && removed_row["accepted_args"] == 2
+                            && removed_row["function"] == "rp_action_ref_array_pending"
+                            && removed_row["handle"]["request"] == HANDLE_REQUEST
+                            && removed_row["handle"]["kind"] == "callable"
+                            && removal["payload"]["removed_handle"] == removed_row["handle"]
+                            && removed_object.len() == 5
+                            && ["priority", "uid", "accepted_args", "function", "handle"]
+                                .iter()
+                                .all(|key| removed_object.contains_key(*key)),
+                        "removed reference-array callback identity"
+                    );
+                    let removed_handle = handle(&removed_row["handle"])?;
+                    ensure!(
+                        handles_by_uid.get("rp_action_ref_array_pending") == Some(&removed_handle),
+                        "removed reference-array callback handle mismatch"
+                    );
+                    let mut remaining_rows = imported_rows.clone();
+                    remaining_rows.retain(|candidate| candidate["uid"] != "rp_action_ref_array_pending");
+                    let remaining_projection: Vec<Value> = remaining_rows
+                        .iter()
+                        .map(|row| {
+                            json!([
+                                row["priority"], row["uid"], row["accepted_args"], row["function"],
+                                row["handle"]["request"], row["handle"]["kind"], row["handle"]["slot"],
+                                row["handle"]["generation"], row["handle"]["token"]
+                            ])
+                        })
+                        .collect();
+                    ensure!(
+                        removal["payload"]["table_fingerprint"]
+                            == sha256(&serde_json::to_vec(&remaining_projection)?),
+                        "removed reference-array callback table fingerprint"
+                    );
+                    let removed = dispatcher.remove_typed(
+                        &name,
+                        &HookPriority::integer(8),
+                        &CallbackId {
+                            module: "wordpress".into(),
+                            callback: "rp_action_ref_array_pending".into(),
+                        },
+                    );
+                    ensure!(removed, "reference-array dispatcher removal missed pending callback");
+                    imported_rows = remaining_rows;
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_removal_ack",
+                        json!({"target":"wp-action-ref-array-1","uid":"rp_action_ref_array_pending","priority":8}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
                     let resume = read_frame(reader, deadline, total_in, in_seq)?;
                     expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
                     ensure!(
                         resume["payload"]["target"] == "wp-action-ref-array-1"
                             && resume["payload"]["uid"] == uid
                             && resume["payload"]["value"].is_null(),
-                        "reference-array mutator resume"
+                        "reference-array add/remove mutator resume"
                     );
                     in_seq += 1;
                 } else {

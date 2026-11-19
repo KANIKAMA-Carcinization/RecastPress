@@ -76,7 +76,15 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     $value = 'value-mutated-by-first';
     $extra = 'extra-mutated-by-first';
     add_action('rp-probe-action-ref-array', 'rp_action_ref_array_added', 7, 2);
+    if (!remove_action('rp-probe-action-ref-array', 'rp_action_ref_array_pending', 8)) {
+        throw new RuntimeException('wp_action_ref_array_oracle_remove_return');
+    }
     return 'ignored-first-action-result';
+}
+
+function rp_action_ref_array_pending(string &$value, string &$extra): void
+{
+    throw new RuntimeException('wp_action_ref_array_oracle_removed_callback_invoked');
 }
 
 function rp_action_ref_array_added(string &$value, string &$extra): void
@@ -112,6 +120,7 @@ add_action('all', 'rp_action_ref_array_all', 10, 2);
 add_action($hookName, 'rp_action_ref_array_truncated', 1, 1);
 add_action($hookName, 'rp_action_ref_array_zero', 2, 0);
 add_action($hookName, 'rp_action_ref_array_first', 5, 2);
+add_action($hookName, 'rp_action_ref_array_pending', 8, 2);
 add_action($hookName, 'rp_action_ref_array_second', 10, 2);
 $selected = $GLOBALS['wp_filter'][$hookName];
 $GLOBALS['rp_action_ref_array_selected'] = $selected;
