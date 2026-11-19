@@ -1,16 +1,16 @@
-# 実PHP-WASIX hook dispatch PoC
+# ��PHP-WASIX hook dispatch PoC
 
-この専用workspaceは、固定PHP-WASIX 8.5.12とWordPress 7.1.3のsource-bound overlayを使い、実際の `apply_filters()` と `do_action()` から選択された `WP_Hook` callback tableをRust `Dispatcher` にimportして実行する。既存の7 profile PHP compatibility bridgeやそのreceiptは変更しない。
+���̐�pworkspace�́A�Œ�PHP-WASIX 8.5.12��WordPress 7.1.3��source-bound overlay���g���A���ۂ� `apply_filters()` �� `do_action()` ����I�����ꂽ `WP_Hook` callback table��Rust `Dispatcher` ��import���Ď��s����B������7 profile PHP compatibility bridge�₻��receipt�͕ύX���Ȃ��B
 
-PHPはcallable自体をtransportへ出さず、request-scoped `HandleRegistry` のdescriptorだけを渡す。Rust側は元のcallback UID、priority、insertion order、accepted args、handle identityを検証する。各PHP callback直前にWP_Hookのprivate current priorityをmethod内closureから同期する。filterの戻り値はchainへ戻し、action callbackの戻り値は捨てる。`all` callback、`$wp_actions` counter、`$wp_current_filter` stackはWordPressの元 `plugin.php` が先に処理し、Rustには選択された名前付きhookだけを渡す。
+PHP��callable���̂�transport�֏o�����Arequest-scoped `HandleRegistry` ��descriptor������n���BRust���͌���callback UID�Apriority�Ainsertion order�Aaccepted args�Ahandle identity�����؂���B�ePHP callback���O��WP_Hook��private current priority��method��closure���瓯������Bfilter�̖߂�l��chain�֖߂��Aaction callback�̖߂�l�͎̂Ă�B`all` callback�A`$wp_actions` counter�A`$wp_current_filter` stack��WordPress�̌� `plugin.php` ����ɏ������ARust�ɂ͑I�����ꂽ���O�t��hook������n���B
 
-完了時はWP_Hook iterationを正常終了させ、callback tableを前後比較する。Rust dispatcherからregistration leaseを解放し、PHP registryのhandle release ACKを受け取ってからrequest registryをcloseする。filter fixtureはcallback順、引数、priority、`current_filter()`、`doing_filter()`、`did_filter()`、filter結果を検証する。action fixtureは`all`の実行順、accepted args、`current_action()`、`doing_action()`、`did_action()`、WP_Hookのaction state、無視される戻り値と最終cleanupを検証する。引数なしactionではWordPress標準loopの空文字placeholderと`all`側の引数形も確認する。通常actionでは、2引数を渡して`accepted_args=5`で登録したcallbackにも、実際に渡された2引数だけが届くことを固定WordPress native oracleと照合する。
+��������WP_Hook iteration�𐳏�I�������Acallback table��O���r����BRust dispatcher����registration lease��������APHP registry��handle release ACK���󂯎���Ă���request registry��close����Bfilter fixture��callback���A�����Apriority�A`current_filter()`�A`doing_filter()`�A`did_filter()`�Afilter���ʂ����؂���Baction fixture��`all`�̎��s���Aaccepted args�A`current_action()`�A`doing_action()`�A`did_action()`�AWP_Hook��action state�A���������߂�l�ƍŏIcleanup�����؂���B�����Ȃ�action�ł�WordPress�W��loop�̋󕶎�placeholder��`all`���̈����`���m�F����B�ʏ�action�ł́A2������n����`accepted_args=5`�œo�^����callback�ɂ��A���ۂɓn���ꂽ2�����������͂����Ƃ��Œ�WordPress native oracle�Əƍ�����B
 
-## 実行
+## ���s
 
 ```sh
 python3 scripts/wordpress_reference.py fetch
-# 固定Upstream Actions artifactをworkflow内で取得・照合する。
+# �Œ�Upstream Actions artifact��workflow���Ŏ擾�E�ƍ�����B
 python3 experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py
 python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
 ```
@@ -19,16 +19,16 @@ python3 experiments/php-wasix-wp-hook-dispatch-probe/check.py
 
 Cranelift stays at no optimization to match the existing real PHP bridge. The Rust host reports artifact read, module compile, guest start, and first bridge-frame wait to stderr. The checker runs nine scenarios separately (filter, ref-array, action, action-ref-array, action-throwable, action-nested, action-mutation, action-removal, action-deferred-add), with a 300-second limit per runner. On timeout it records bounded stdout/stderr tails and their byte counts and SHA-256 digests.
 
-Windows上で同じrunnerを動かすとCranelift 0.133.0のlowering panicが起きるため、Windowsのcargo checkやPHP lintを実PHP-Wasm実行の証明とは扱わない。WSLはこのworkflowの実行環境ではない。
+Windows��œ���runner�𓮂�����Cranelift 0.133.0��lowering panic���N���邽�߁AWindows��cargo check��PHP lint����PHP-Wasm���s�̏ؖ��Ƃ͈���Ȃ��BWSL�͂���workflow�̎��s���ł͂Ȃ��B
 
-## 実行中アクションへのcallback追加
+## ���s���A�N�V�����ւ�callback�ǉ�
 
 `action-mutation` adds a priority-15 callback from a priority-5 callback and checks `mutator -> added -> tail`. `action-removal` removes the sole pending priority-15 callback during dispatch and checks `mutator -> tail`. `action-deferred-add` adds a callback at the active priority 5. The callback is absent from the first pass (`all -> mutator -> peer -> tail`) and runs during the second `do_action()` in the same PHP request (`all -> mutator -> peer -> added -> tail`). The fixture checks `did_action()` values 1 and 2, reset hook state after the request, the final four-row callback table, native WordPress oracle equality, release acknowledgements, and zero live handles at request close.
 
 Run [44327578888](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44327578888) passed seven real PHP-WASIX scenarios. Run [44334354645](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44334354645) passed eight, including action removal. All source inputs were unchanged. The removal observation matched the WordPress 7.1.3 native oracle: `all -> mutator -> tail`, reset hook state, and zero live handles. See the [source-bound receipt](evidence/real-php-wasix-action-removal-run-44334354645.json).
 The two-pass `action-deferred-add` proof passed in [run 44354882884](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44354882884), with all nine real PHP-WASIX scenarios and unchanged source inputs. The pinned native oracle matched both passes: `all -> mutator -> peer -> tail`, then `all -> mutator -> peer -> added -> tail`; `did_action()` advanced from 1 to 2, the final callback table retained four rows, hook state reset, and live handles reached zero. The [source-bound receipt](evidence/real-php-wasix-action-deferred-add-run-44354882884.json) records artifact digest `sha256:c9b2d1333e9ea462c8fb1f01c2ef89f410b2e42a84b3ee4695519076b7e75105`; the artifact expires 2026-12-02 17:24 UTC. The earlier [single-pass receipt](evidence/real-php-wasix-action-same-priority-run-44340406987.json) is retained as historical evidence.
 
-## 参照配列FilterのWordPress oracle
+## �Q�Ɣz��Filter��WordPress oracle
 
 `check.py` runs the native reference-array oracle before PHP-WASIX. That oracle validates WordPress reference behavior only; later, run 44257900392 verified the bounded successful reference-array path through Rust/PHP-Wasm (see implementation status below).
 
@@ -39,7 +39,7 @@ The `ref-array` scenario now passes through the real PHP-WASIX driver and Rust d
 The first Wasm run ([44255639047](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44255639047)) failed before ref-array because the regular-filter argument serializer rejected later strings. Run [44256856248](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44256856248) then passed the existing filter scenario but failed ref-array because the guest invoke identity check required a null frame handle. Commit `6a2d9b7` fixed that identity check; run 44257900392 verifies the fix. These failed runs remain useful diagnostic history and are not success evidence.
 
 The fixture covers the successful `apply_filters_ref_array()` path with four named filter callbacks plus the `all` observer and a two-element list containing the filter value plus one by-reference extra. A priority-1 callback registered with `accepted_args=1` receives only `seed`; a priority-2 `accepted_args=0` callback is invoked without arguments and returns `zero-result`, which becomes the next callback's filter accumulator; the priority-5 and priority-10 callbacks still share and mutate both reference cells. A separate bounded `do_action_ref_array()` fixture now proves one priority-2 `accepted_args=0` callback receives no arguments, its declared return does not replace the observed null action result, and the later priority-5 and priority-10 callbacks retain both reference cells. Arbitrary PHP argument graphs, Throwable recovery, and production adapter/bootstrap integration remain unproven. The overlay remains fixture-only and is not product-ready.
-## 範囲
+## �͈�
 
 The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, bounded successful `apply_filters_ref_array()` and `do_action_ref_array()` fixtures, a terminal Throwable roundtrip, one-level nested `do_action()`, future-priority addition, active callback removal, and a same-priority callback added in one pass and invoked in the next pass of the same request. The two-pass order and `did_action()` transitions match the pinned native oracle. Deeper nesting, CGI channel, production adoption, and general PHP compatibility remain unproven. The ordinary `action` fixture covers a callback registered with `accepted_args=5` when only two values are supplied; the callback receives those two values, matching the pinned native oracle. Both reference-array filter and action fixtures cover an `accepted_args=1` case. The reference-array filter additionally covers one accepted_args=0 callback and its returned accumulator reaching the next callback; the reference-array action also covers an accepted_args=0 callback receiving no arguments, with the fixture-declared callback return leaving the observed action result null. The Throwable case does not prove recovery or worker reuse.
 
@@ -51,11 +51,11 @@ Run [44459199659](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/
 
 Run [44473413660](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44473413660) verifies the `apply_filters_ref_array()` accepted_args=0 path against the native WordPress oracle and real PHP-WASIX dispatcher. Its priority-2 callback received no arguments and returned `zero-result`; the priority-5 callback received `zero-result` plus the unchanged extra reference, then the existing two-callback mutation chain completed. The full result/caller observation matched the oracle, with the argument frame released and zero live handles. See the [source-bound receipt](evidence/real-php-wasix-ref-array-zero-accepted-args-run-44473413660.json) and [artifact 14506291461](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44473413660/artifacts/14506291461), digest `sha256:e759ea2e9991c15398c15f7cc9864effb94fb5665ebcdfa5184af3f84a61ff2a`, which expires 2026-12-03 06:53 UTC.
 
-## 実行済み証跡
+## ���s�ςݏؐ�
 
-2026-11-17の[実PHP-WASIX workflow run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44093716241)は両シナリオ成功。source-bound overlayとPHP lint、3,782個の未変更WordPress source file、filter結果、actionの`all`引数・callback順・終了時cleanupを検証した。固定結果と取得用artifactのID・digestは[証跡JSON](evidence/real-php-wasix-action-run-44093716241.json)に記録した。
+2026-11-17��[��PHP-WASIX workflow run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44093716241)�͗��V�i���I�����Bsource-bound overlay��PHP lint�A3,782�̖��ύXWordPress source file�Afilter���ʁAaction��`all`�����Ecallback���E�I����cleanup�����؂����B�Œ茋�ʂƎ擾�partifact��ID�Edigest��[�ؐ�JSON](evidence/real-php-wasix-action-run-44093716241.json)�ɋL�^�����B
 
-2026-11-18の[run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44250333958)は固定WordPress 7.1.3上のnative `apply_filters_ref_array()` oracleと、既存の実PHP-WASIX filter/action両シナリオに成功した。oracleでは参照された追加引数が2つのcallback間で更新され、filter値のcallback returnが次callbackへ渡り、最終値がcaller側に反映された。`all`の初期引数、`did_filter`、stack cleanupもfixture期待値と一致した。run全体のsource inputは不変。各観測・WordPress source hashとartifact digestは[oracle証跡](evidence/wp-ref-array-oracle-44250333958.json)に記録した。これはnative PHP oracleであり、ref-arrayをRust/PHP-Wasm bridgeへ通した証拠ではない。
+2026-11-18��[run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44250333958)�͌Œ�WordPress 7.1.3���native `apply_filters_ref_array()` oracle�ƁA�����̎�PHP-WASIX filter/action���V�i���I�ɐ��������Boracle�ł͎Q�Ƃ��ꂽ�ǉ�������2��callback�ԂōX�V����Afilter�l��callback return����callback�֓n��A�ŏI�l��caller���ɔ��f���ꂽ�B`all`�̏��������A`did_filter`�Astack cleanup��fixture���Ғl�ƈ�v�����Brun�S�̂�source input�͕s�ρB�e�ϑ��EWordPress source hash��artifact digest��[oracle�ؐ�](evidence/wp-ref-array-oracle-44250333958.json)�ɋL�^�����B�����native PHP oracle�ł���Aref-array��Rust/PHP-Wasm bridge�֒ʂ����؋��ł͂Ȃ��B
 
 
 ## Bounded `do_action_ref_array()` PHP-WASIX proof
@@ -67,6 +67,10 @@ This ref-array action fixture covers a two-string-reference list, a priority-1 c
 Run [44466526546](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44466526546) verifies this action reference-array truncation path through real PHP-WASIX and the Rust dispatcher. All nine scenarios passed with unchanged source inputs; the full action observation matched the pinned native oracle, including the one-argument priority-1 callback, the following two-reference mutation chain, ignored action returns, zero live handles, and released argument frame. See the [source-bound receipt](evidence/real-php-wasix-action-ref-array-accepted-args-run-44466526546.json) and [artifact 14503086916](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44466526546/artifacts/14503086916), digest `sha256:13ff145391632060c8cf417389095f0fc76412dc1f1a89db06d4a1dda77dcd50`, which expires 2026-12-03 05:55 UTC.
 
 Run [44476556483](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44476556483) verifies the `accepted_args=0` reference-array action callback through real PHP-WASIX and the Rust dispatcher. All nine scenarios passed with unchanged source inputs and the action observation matched the pinned native oracle: the priority-2 callback received `[]`; the fixture declares a callback return value while the observed action result remains `null`; and the later priority-5/10 callbacks still observed and mutated both reference cells. The dispatcher released the argument frame and closed with zero live handles. See the [source-bound receipt](evidence/real-php-wasix-action-ref-array-zero-accepted-args-run-44476556483.json) and [artifact 14508021951](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44476556483/artifacts/14508021951), digest `sha256:1cfc956abc136518c8af22555b6f4ea0b0dcd7753bac2a5d677ee57a5e4b2689`, which expires 2026-12-03 07:33 UTC.
+
+## Bounded future-priority addition during `do_action_ref_array()`
+
+Run [44488505287](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44488505287) verifies a callback added while the reference-array action is already dispatching. The priority-5 callback adds a named priority-7 callback with `accepted_args=2`; WordPress visits it before priority 10. It receives the same reference cells after priority 5 changed them, mutates both, and priority 10 observes those new values and changes the extra cell. The native oracle matched, all nine PHP-WASIX scenarios passed, the action result remained `null`, source inputs were unchanged, the argument frame was released, and live handles ended at zero. See the [source-bound receipt](evidence/real-php-wasix-action-ref-array-runtime-add-run-44488505287.json) and [artifact 14512694283](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44488505287/artifacts/14512694283), digest `sha256:d972b64004e34df9395285570030214b9c3c2240f995f11d559ff6cfa1c9fd0b`, which expires 2026-12-03 09:05 UTC.
 
 ## Bounded action Throwable roundtrip
 
