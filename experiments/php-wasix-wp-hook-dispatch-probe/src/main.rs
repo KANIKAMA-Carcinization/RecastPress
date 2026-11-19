@@ -747,7 +747,7 @@ fn run_action_dispatch(
     let rows = start["payload"]["rows"]
         .as_array()
         .context("action rows must be array")?;
-    ensure!(rows.len() == 3, "imported action callback row count");
+    ensure!(rows.len() == 4, "imported action callback row count");
     let fingerprint_rows: Vec<Value> = rows
         .iter()
         .map(|row| {
@@ -795,6 +795,7 @@ fn run_action_dispatch(
         let label = match row["function"].as_str() {
             Some("rp_action_callback_a") => "rp_action_callback_a",
             Some("rp_action_callback_b") => "rp_action_callback_b",
+            Some("rp_action_callback_overlarge") => "rp_action_callback_overlarge",
             None => "{closure}",
             Some(other) => anyhow::bail!("unrecognized PHP action callback: {other}"),
         };
@@ -889,6 +890,14 @@ fn run_action_dispatch(
                         || payload["call_mode"] == "array" && !invocation.args.is_empty(),
                     "action invocation call mode/args mismatch"
                 );
+                if uid == "rp_action_callback_overlarge" {
+                    ensure!(
+                        rows.iter()
+                            .any(|row| { row["uid"] == uid && row["accepted_args"] == 5 })
+                            && payload["args"] == json!(["left", "right"]),
+                        "overlarge accepted_args callback must receive only the supplied arguments"
+                    );
+                }
                 send_frame(
                     writer,
                     out_seq,
@@ -952,7 +961,13 @@ fn run_action_dispatch(
                     "WordPress action dispatcher returned non-null value"
                 );
                 ensure!(
-                    imported == ["rp_action_callback_a", "{closure}", "rp_action_callback_b"],
+                    imported
+                        == [
+                            "rp_action_callback_a",
+                            "{closure}",
+                            "rp_action_callback_b",
+                            "rp_action_callback_overlarge"
+                        ],
                     "action callback invocation order mismatch"
                 );
                 send_frame(
@@ -968,12 +983,14 @@ fn run_action_dispatch(
                     &php_done,
                     in_seq,
                     "request_complete",
-                    &["target", "result", "did_action"],
+                    &["target", "result", "did_action", "accepted_args_overlarge"],
                 )?;
                 ensure!(
                     php_done["payload"]["target"] == "wp-action-1"
                         && php_done["payload"]["result"].is_null()
-                        && php_done["payload"]["did_action"] == 1,
+                        && php_done["payload"]["did_action"] == 1
+                        && php_done["payload"]["accepted_args_overlarge"]
+                            == json!(["left", "right"]),
                     "WordPress action entrypoint completion differs"
                 );
                 in_seq += 1;
@@ -1047,14 +1064,19 @@ fn run_action_dispatch(
                         && done["payload"]["empty_action_current_priority"] == false
                         && done["payload"]["empty_action_wp_hook_doing_action"] == false
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
+                            == json!([
+                                rows[0]["uid"],
+                                rows[1]["uid"],
+                                rows[2]["uid"],
+                                rows[3]["uid"]
+                            ]),
                     "WordPress action final observation mismatch"
                 );
                 let events = done["payload"]["events"]
                     .as_array()
                     .context("action events missing")?;
                 ensure!(
-                    events.len() == 6,
+                    events.len() == 7,
                     "all plus named action event count mismatch"
                 );
                 ensure!(
@@ -1097,28 +1119,39 @@ fn run_action_dispatch(
                     "last named action observation mismatch"
                 );
                 ensure!(
-                    events[4]["callback"] == "all"
-                        && events[4]["hook"] == "rp-probe-empty-action"
-                        && events[4]["args"] == json!(["rp-probe-empty-action"])
-                        && events[4]["current_action"] == "rp-probe-empty-action"
+                    events[4]["callback"] == "overlarge"
+                        && events[4]["args"] == json!(["left", "right"])
+                        && events[4]["current_action"] == "rp-probe-action"
                         && events[4]["doing_action"] == true
-                        && events[4]["did_action"] == 1,
+                        && events[4]["did_action"] == 1
+                        && events[4]["current_priority"] == 15
+                        && events[4]["wp_hook_doing_action"] == true,
+                    "overlarge accepted_args action observation mismatch"
+                );
+                ensure!(
+                    events[5]["callback"] == "all"
+                        && events[5]["hook"] == "rp-probe-empty-action"
+                        && events[5]["args"] == json!(["rp-probe-empty-action"])
+                        && events[5]["current_action"] == "rp-probe-empty-action"
+                        && events[5]["doing_action"] == true
+                        && events[5]["did_action"] == 1,
                     "empty action all-hook observation mismatch"
                 );
                 ensure!(
-                    events[5]["callback"] == "empty"
-                        && events[5]["args"] == json!([""])
-                        && events[5]["current_action"] == "rp-probe-empty-action"
-                        && events[5]["doing_action"] == true
-                        && events[5]["did_action"] == 1
-                        && events[5]["current_priority"] == 10
-                        && events[5]["wp_hook_doing_action"] == true,
+                    events[6]["callback"] == "empty"
+                        && events[6]["args"] == json!([""])
+                        && events[6]["current_action"] == "rp-probe-empty-action"
+                        && events[6]["doing_action"] == true
+                        && events[6]["did_action"] == 1
+                        && events[6]["current_priority"] == 10
+                        && events[6]["wp_hook_doing_action"] == true,
                     "empty action placeholder observation mismatch"
                 );
                 return Ok(json!({
                     "status":"passed",
                     "result":null,
                     "callbacks":imported,
+                    "accepted_args_overlarge":php_done["payload"]["accepted_args_overlarge"],
                     "guest":done["payload"],
                     "bridge":{
                         "input_frames":in_seq + 1,

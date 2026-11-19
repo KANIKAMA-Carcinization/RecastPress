@@ -4,7 +4,7 @@
 
 PHPはcallable自体をtransportへ出さず、request-scoped `HandleRegistry` のdescriptorだけを渡す。Rust側は元のcallback UID、priority、insertion order、accepted args、handle identityを検証する。各PHP callback直前にWP_Hookのprivate current priorityをmethod内closureから同期する。filterの戻り値はchainへ戻し、action callbackの戻り値は捨てる。`all` callback、`$wp_actions` counter、`$wp_current_filter` stackはWordPressの元 `plugin.php` が先に処理し、Rustには選択された名前付きhookだけを渡す。
 
-完了時はWP_Hook iterationを正常終了させ、callback tableを前後比較する。Rust dispatcherからregistration leaseを解放し、PHP registryのhandle release ACKを受け取ってからrequest registryをcloseする。filter fixtureはcallback順、引数、priority、`current_filter()`、`doing_filter()`、`did_filter()`、filter結果を検証する。action fixtureは`all`の実行順、accepted args、`current_action()`、`doing_action()`、`did_action()`、WP_Hookのaction state、無視される戻り値と最終cleanupを検証する。引数なしactionではWordPress標準loopの空文字placeholderと`all`側の引数形も確認する。
+完了時はWP_Hook iterationを正常終了させ、callback tableを前後比較する。Rust dispatcherからregistration leaseを解放し、PHP registryのhandle release ACKを受け取ってからrequest registryをcloseする。filter fixtureはcallback順、引数、priority、`current_filter()`、`doing_filter()`、`did_filter()`、filter結果を検証する。action fixtureは`all`の実行順、accepted args、`current_action()`、`doing_action()`、`did_action()`、WP_Hookのaction state、無視される戻り値と最終cleanupを検証する。引数なしactionではWordPress標準loopの空文字placeholderと`all`側の引数形も確認する。通常actionでは、2引数を渡して`accepted_args=5`で登録したcallbackにも、実際に渡された2引数だけが届くことを固定WordPress native oracleと照合する。
 
 ## 実行
 
@@ -41,7 +41,7 @@ The first Wasm run ([44255639047](https://github.com/KANIKAMA-Carcinization/Reca
 The fixture covers only the successful `apply_filters_ref_array()` path with two callbacks and a two-element list containing the filter value plus one by-reference extra. It does not cover accepted-argument truncation or zero-argument callbacks in this mode, throwable cleanup, arbitrary PHP argument graphs, or production adapter/bootstrap integration. The overlay remains fixture-only and is not product-ready.
 ## 範囲
 
-The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, bounded successful `apply_filters_ref_array()` and `do_action_ref_array()` fixtures, a terminal Throwable roundtrip, one-level nested `do_action()`, future-priority addition, active callback removal, and a same-priority callback added in one pass and invoked in the next pass of the same request. The two-pass order and `did_action()` transitions match the pinned native oracle. Deeper nesting, CGI channel, production adoption, and general PHP compatibility remain unproven. Reference-array fixtures do not cover accepted-argument truncation. The Throwable case does not prove recovery or worker reuse.
+The demonstrated PHP-WASIX-to-Rust paths include `apply_filters()`, `do_action()`, bounded successful `apply_filters_ref_array()` and `do_action_ref_array()` fixtures, a terminal Throwable roundtrip, one-level nested `do_action()`, future-priority addition, active callback removal, and a same-priority callback added in one pass and invoked in the next pass of the same request. The two-pass order and `did_action()` transitions match the pinned native oracle. Deeper nesting, CGI channel, production adoption, and general PHP compatibility remain unproven. The ordinary `action` fixture covers a callback registered with `accepted_args=5` when only two values are supplied; the callback receives those two values, matching the pinned native oracle. Reference-array fixtures do not cover accepted-argument truncation. The Throwable case does not prove recovery or worker reuse.
 
 ## 実行済み証跡
 

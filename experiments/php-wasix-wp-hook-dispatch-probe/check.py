@@ -21,6 +21,7 @@ ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
 ACTION_REF_ARRAY_ORACLE = HERE / "fixtures/wp_action_ref_array_oracle.php"
+ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE = HERE / "fixtures/wp_action_overlarge_accepted_args_oracle.php"
 ACTION_THROWABLE_ORACLE = HERE / "fixtures/wp_action_throwable_oracle.php"
 ACTION_NESTED_ORACLE = HERE / "fixtures/wp_action_nested_oracle.php"
 ACTION_MUTATION_ORACLE = HERE / "fixtures/wp_action_mutation_oracle.php"
@@ -42,6 +43,7 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_overlarge_accepted_args_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_throwable_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_nested_driver.php",
@@ -191,6 +193,17 @@ def main():
     action_reference_oracle = json.loads(action_oracle_run.stdout.decode("utf-8", "strict"))
     if action_reference_oracle.get("status") != "passed" or action_reference_oracle.get("scenario") != "wp_action_ref_array_native_oracle":
         raise SystemExit("pinned WordPress do_action_ref_array oracle reported an unexpected result")
+    action_overlarge_oracle_run = subprocess.run(
+        ["php", "-n", str(ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
+    )
+    if action_overlarge_oracle_run.returncode != 0 or action_overlarge_oracle_run.stderr:
+        raise SystemExit("pinned WordPress overlarge accepted_args oracle failed:\n" +
+            action_overlarge_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
+    action_overlarge_reference_oracle = json.loads(action_overlarge_oracle_run.stdout.decode("utf-8", "strict"))
+    if action_overlarge_reference_oracle.get("status") != "passed" or action_overlarge_reference_oracle.get("scenario") != "wp_action_overlarge_accepted_args_native_oracle":
+        raise SystemExit("pinned WordPress overlarge accepted_args oracle reported an unexpected result")
     action_throwable_oracle_run = subprocess.run(
         ["php", "-n", str(ACTION_THROWABLE_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
         cwd=ROOT,
@@ -319,7 +332,13 @@ def main():
                 scenario_result = json.loads(stdout)
                 if scenario_result.get("status") != "passed" or scenario_result.get("scenario") != scenario:
                     raise SystemExit(f"{scenario} runner reported a non-passing or mismatched result")
-                if scenario == "ref-array":
+                if scenario == "action":
+                    contract_match = (
+                        scenario_result.get("accepted_args_overlarge")
+                        == action_overlarge_reference_oracle.get("observation", {}).get("received_args")
+                    )
+                    scenario_result["native_oracle_accepted_args_match"] = contract_match
+                elif scenario == "ref-array":
                     contract_match = ref_array_contract_matches(
                         reference_oracle["observation"], scenario_result.get("observation", {})
                     )
@@ -363,7 +382,11 @@ def main():
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
-                if scenario in ("ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-deferred-add") and not contract_match:
+                if scenario == "action" and not contract_match:
+                    status = "oracle_mismatch"
+                    outputs.append("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.\n")
+                    print("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.", file=sys.stderr)
+                elif scenario in ("ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-deferred-add") and not contract_match:
                     status = "oracle_mismatch"
                     outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
                     print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
@@ -402,6 +425,7 @@ def main():
                 "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
         "reference_oracle": reference_oracle,
         "action_reference_oracle": action_reference_oracle,
+        "action_overlarge_accepted_args_reference_oracle": action_overlarge_reference_oracle,
         "action_throwable_reference_oracle": action_throwable_reference_oracle,
         "action_nested_reference_oracle": action_nested_reference_oracle,
         "action_mutation_reference_oracle": action_mutation_reference_oracle,

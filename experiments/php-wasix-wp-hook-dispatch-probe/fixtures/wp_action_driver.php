@@ -201,6 +201,18 @@ function rp_action_callback_b(string $left): string
     return 'ignored-b';
 }
 
+function rp_action_callback_overlarge(mixed ...$args): void
+{
+    $GLOBALS['rp_action_overlarge_args'] = $args;
+    $GLOBALS['rp_action_events'][] = [
+        'callback' => 'overlarge', 'args' => $args,
+        'current_action' => current_action(), 'doing_action' => doing_action(RP_ACTION_NAME),
+        'did_action' => did_action(RP_ACTION_NAME),
+        'current_priority' => $GLOBALS['rp_action_selected_object']->current_priority(),
+        'wp_hook_doing_action' => rp_action_wp_hook_is_doing_action($GLOBALS['rp_action_selected_object']),
+    ];
+}
+
 function rp_action_empty_callback(string $placeholder): void
 {
     $hook = $GLOBALS['wp_filter'][RP_EMPTY_ACTION_NAME];
@@ -221,6 +233,7 @@ try {
     $GLOBALS['rp_action_registry'] = $registry;
     $GLOBALS['rp_action_events'] = [];
     $GLOBALS['rp_action_invocations'] = [];
+    $GLOBALS['rp_action_overlarge_args'] = null;
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];
@@ -240,6 +253,7 @@ try {
     };
     add_action(RP_ACTION_NAME, $zero, 5, 0);
     add_action(RP_ACTION_NAME, 'rp_action_callback_b', 10, 1);
+    add_action(RP_ACTION_NAME, 'rp_action_callback_overlarge', 15, 5);
     add_action(RP_EMPTY_ACTION_NAME, 'rp_action_empty_callback', 10, 1);
     fwrite(STDERR, "RP_ACTION_PHASE=callbacks_registered\n");
 
@@ -279,7 +293,7 @@ try {
     }
 
     $events = $GLOBALS['rp_action_events'];
-    if (array_column($events, 'callback') !== ['all', 'a', 'zero', 'b', 'all', 'empty']
+    if (array_column($events, 'callback') !== ['all', 'a', 'zero', 'b', 'overlarge', 'all', 'empty']
         || $events[0] !== [
             'callback' => 'all', 'hook' => RP_ACTION_NAME, 'args' => [RP_ACTION_NAME, 'left', 'right'],
             'current_action' => RP_ACTION_NAME, 'doing_action' => true, 'did_action' => 1,
@@ -302,17 +316,23 @@ try {
         || $events[3]['did_action'] !== 1
         || $events[3]['current_priority'] !== 10
         || $events[3]['wp_hook_doing_action'] !== true
-        || $events[4] !== [
+        || $events[4]['args'] !== ['left', 'right']
+        || $events[4]['current_action'] !== RP_ACTION_NAME
+        || $events[4]['doing_action'] !== true
+        || $events[4]['did_action'] !== 1
+        || $events[4]['current_priority'] !== 15
+        || $events[4]['wp_hook_doing_action'] !== true
+        || $events[5] !== [
             'callback' => 'all', 'hook' => RP_EMPTY_ACTION_NAME,
             'args' => [RP_EMPTY_ACTION_NAME],
             'current_action' => RP_EMPTY_ACTION_NAME, 'doing_action' => true, 'did_action' => 1,
         ]
-        || $events[5]['args'] !== ['']
-        || $events[5]['current_action'] !== RP_EMPTY_ACTION_NAME
-        || $events[5]['doing_action'] !== true
-        || $events[5]['did_action'] !== 1
-        || $events[5]['current_priority'] !== 10
-        || $events[5]['wp_hook_doing_action'] !== true
+        || $events[6]['args'] !== ['']
+        || $events[6]['current_action'] !== RP_EMPTY_ACTION_NAME
+        || $events[6]['doing_action'] !== true
+        || $events[6]['did_action'] !== 1
+        || $events[6]['current_priority'] !== 10
+        || $events[6]['wp_hook_doing_action'] !== true
     ) {
         throw new RuntimeException(
             'wp_action_callback_observation:'
@@ -324,6 +344,7 @@ try {
         'target' => RP_ACTION_TARGET,
         'result' => null,
         'did_action' => did_action(RP_ACTION_NAME),
+        'accepted_args_overlarge' => $GLOBALS['rp_action_overlarge_args'],
     ]);
 
     while (true) {
