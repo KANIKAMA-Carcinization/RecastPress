@@ -1,0 +1,365 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch.receipt.v2",
+  "status": "passed",
+  "workflow": {
+    "run_id": "44575777443",
+    "run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44575777443",
+    "source_commit": "9c31144b183d70552fc9759348ddfe423b94a2f1",
+    "run_attempt": 1,
+    "started_at_utc": "2026-11-19T17:18:39Z",
+    "artifact_id": "14558496484",
+    "artifact_name": "v06-wp-hook-dispatch-44575777443-1",
+    "artifact_sha256": "e5715c085065e9397c9c61ace4e7f227f64f4bb2d6a905cf374f447a377668aa",
+    "artifact_expires_at_utc": "2026-12-03T17:36:05Z",
+    "observed_at_utc": "2026-11-19T17:36:05Z"
+  },
+  "environment": {
+    "platform": "Ubuntu 24.04, x86_64",
+    "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+    "wasmer": "7.2.0",
+    "wasmer_wasix": "0.702.0",
+    "compiler": "Cranelift no optimization",
+    "php": "8.5.12",
+    "php_artifact_id": 12371010145,
+    "php_artifact_sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "wordpress": "7.1.3",
+    "wordpress_archive_sha1": "491a78c7676b15dffcc69130c6054b8f49228a91"
+  },
+  "timing_ms": {
+    "build": 114151,
+    "all_scenarios": 899322
+  },
+  "scenarios": {
+    "filter": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "ref-array": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-ref-array": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-throwable": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-nested": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-mutation": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-removal": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-remove-all": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-deferred-add": {
+      "exit_code": 0,
+      "status": "passed"
+    }
+  },
+  "action_remove_all": {
+    "exit_code": 0,
+    "status": "passed",
+    "native_oracle_contract_match": true,
+    "event_order": [
+      "all",
+      "observer",
+      "mutator",
+      "cleared",
+      "reregistered",
+      "peer",
+      "all",
+      "readded"
+    ],
+    "observation": {
+      "action_count": 2,
+      "current_action": false,
+      "current_filter": false,
+      "doing_action": false,
+      "events": [
+        {
+          "args": [
+            "rp-probe-action-remove-all"
+          ],
+          "callback": "all",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "did_action": 1,
+          "doing_action": true,
+          "hook": "rp-probe-action-remove-all",
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": false
+        },
+        {
+          "callback": "observer",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "current_priority": 1,
+          "did_action": 1,
+          "doing_action": true,
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "mutator",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "current_priority": 5,
+          "did_action": 1,
+          "doing_action": true,
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "cleared",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "current_priority": false,
+          "did_action": 1,
+          "doing_action": true,
+          "global_hook_present": false,
+          "rows": [],
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "reregistered",
+          "did_action": 1,
+          "new_hook_is_distinct": true,
+          "new_hook_present": true,
+          "new_hook_state": {
+            "current_priority": [],
+            "doing_action": false,
+            "iterations": [],
+            "nesting_level": 0
+          },
+          "new_rows": [
+            {
+              "accepted_args": 0,
+              "function": "rp_action_remove_all_readded",
+              "priority": 7,
+              "uid": "rp_action_remove_all_readded"
+            }
+          ],
+          "old_hook_empty": true,
+          "stack": [
+            "rp-probe-action-remove-all"
+          ]
+        },
+        {
+          "callback": "peer",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "current_priority": false,
+          "did_action": 1,
+          "doing_action": true,
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": true
+        },
+        {
+          "args": [
+            "rp-probe-action-remove-all"
+          ],
+          "callback": "all",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "did_action": 2,
+          "doing_action": true,
+          "hook": "rp-probe-action-remove-all",
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": false
+        },
+        {
+          "callback": "readded",
+          "current_action": "rp-probe-action-remove-all",
+          "current_filter": "rp-probe-action-remove-all",
+          "current_priority": 7,
+          "did_action": 2,
+          "doing_action": true,
+          "stack": [
+            "rp-probe-action-remove-all"
+          ],
+          "wp_hook_doing_action": true
+        }
+      ],
+      "first_dispatch": {
+        "action_count": 1,
+        "old_hook_state": {
+          "current_priority": [],
+          "doing_action": false,
+          "iterations": [],
+          "nesting_level": 0
+        },
+        "old_rows": [],
+        "replacement_rows": [
+          {
+            "accepted_args": 0,
+            "function": "rp_action_remove_all_readded",
+            "priority": 7,
+            "uid": "rp_action_remove_all_readded"
+          }
+        ],
+        "result": null
+      },
+      "new_hook_state": {
+        "current_priority": [],
+        "doing_action": false,
+        "iterations": [],
+        "nesting_level": 0
+      },
+      "old_hook_state": {
+        "current_priority": [],
+        "doing_action": false,
+        "iterations": [],
+        "nesting_level": 0
+      },
+      "registered_rows": [
+        {
+          "accepted_args": 0,
+          "function": "rp_action_remove_all_readded",
+          "priority": 7,
+          "uid": "rp_action_remove_all_readded"
+        }
+      ],
+      "second_result": null,
+      "stack": []
+    },
+    "first_dispatch": {
+      "action_count": 1,
+      "old_hook_rows": [],
+      "replacement_hook_rows": [
+        {
+          "priority": 7,
+          "uid": "rp_action_remove_all_readded",
+          "accepted_args": 0,
+          "function": "rp_action_remove_all_readded"
+        }
+      ],
+      "old_hook_reset": true,
+      "replacement_hook_initial_state": {
+        "current_priority": [],
+        "doing_action": false,
+        "iterations": [],
+        "nesting_level": 0
+      }
+    },
+    "second_dispatch": {
+      "action_count": 2,
+      "callbacks": [
+        "all",
+        "readded"
+      ],
+      "readded_priority": 7
+    },
+    "live_handles_before_close": 0,
+    "live_handles_after_release": 0,
+    "registry_closed": true
+  },
+  "provenance": {
+    "source_inputs_unchanged": true,
+    "source_sha256": {
+      "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs": "164830de0c4d708df22fb3074a3d67b92bde06aacdc58b012601f04265eb7cee",
+      "experiments/php-wasix-wp-hook-dispatch-probe/check.py": "88787af2ede44d1e0d83dd54b7b0af59a94a34bca3ea916380aaafb14f7f76a7",
+      "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php": "a5d93c02d367dcc34ad8faaad842f8b9e961966438b7ba9a8504d2e3d3f5a1e6",
+      "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_oracle.php": "508e1b3817f80f3e22b69ef22e2fcd2d3462ca436f8b83f528b1fc64275cc72e",
+      "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md": "605ccd6022c680ddf7a3a38be82064371aec431c336f2acaf9d6735a8ea0b920"
+    },
+    "wordpress_source_sha256": {
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "php_wasm_bytes": 39727549,
+    "php_wasm_sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+    "overlay_files": [
+      {
+        "path": "bridge_driver.php",
+        "sha256": "5e8b65a9a356c0edb4475ddca15bcf5eb639a8c8d3b668a925fc8e034ed2d45c"
+      },
+      {
+        "path": "strict_json.php",
+        "sha256": "d93100db6809c2310322f1a0ea6de25be3175e7a2de47b210389495bda17a565"
+      },
+      {
+        "path": "handle_registry.php",
+        "sha256": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8"
+      },
+      {
+        "path": "class-wp-hook.php",
+        "sha256": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+      },
+      {
+        "path": "class-wp-filter-sentinel.php",
+        "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+      },
+      {
+        "path": "plugin.php",
+        "sha256": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c"
+      },
+      {
+        "path": "wp_hook_driver.php",
+        "sha256": "29e0b24c8ba96ab5185e4a5ded05873dffd547eb8c51bfc36673293c0a55f216"
+      },
+      {
+        "path": "wp_action_driver.php",
+        "sha256": "73589d815956e812db294079e50c7cb5c09492aae99420ea440e3d3b11dd3be0"
+      },
+      {
+        "path": "wp_action_ref_array_driver.php",
+        "sha256": "acecb92d8f831a9a53bf71af7d9375ce5cb9e99425c388ad3e091e897b360276"
+      },
+      {
+        "path": "wp_action_throwable_driver.php",
+        "sha256": "70fed85c12e09da3561370e9e39f81cf32dfe5384d236674e5ea2cbc62814eb4"
+      },
+      {
+        "path": "wp_action_nested_driver.php",
+        "sha256": "6f739fe6e4c92820d4c22f3c12a251ebf8a5912af9b72937168a2fd1454bcaa0"
+      },
+      {
+        "path": "wp_action_mutation_driver.php",
+        "sha256": "57afaf571f18a49a98decb1bf1f7247da32218325bb16e39ec8f36b07b68503d"
+      },
+      {
+        "path": "wp_action_removal_driver.php",
+        "sha256": "5c586346e76d5c25a015ff6d7dbf8989a05627680f8f3553a2f4e4148a27304a"
+      },
+      {
+        "path": "wp_action_remove_all_driver.php",
+        "sha256": "a5d93c02d367dcc34ad8faaad842f8b9e961966438b7ba9a8504d2e3d3f5a1e6"
+      },
+      {
+        "path": "wp_action_same_priority_driver.php",
+        "sha256": "0989484e894be5acf66373755921f48aabe496455d75aecc1ba4d7c8eacd5403"
+      }
+    ],
+    "scope": "One request with two do_action dispatches: remove_all_filters clears the original hook during its active priority-5 callback; the active peer finishes; a new priority-7 callback is registered on a distinct WP_Hook and is invoked only by the second do_action. This does not establish general re-registration or production integration behavior."
+  },
+  "evidence_artifact_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44575777443/artifacts/14558496484",
+  "log_capture": "run-20261119T173605Z.log"
+}
