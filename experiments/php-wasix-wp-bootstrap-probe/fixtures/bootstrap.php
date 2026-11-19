@@ -268,4 +268,3 @@ try {
     restore_error_handler(); rp_boot_emit();
 }
 exit($rp_report['passed'] ? 0 : 1);
-
