@@ -103,6 +103,28 @@ function recastpress_wp_dispatch_selected_action(
 
     while (true) {
         $frame = $wire->receive();
+        if ($frame['kind'] === 'release_php') {
+            expect_parent_effect($frame, null);
+            expect_payload_keys($frame, ['handle'], 'wp_action_ref_array_dispatch_release');
+            $releasedHandle = $frame['payload']['handle'];
+            if (($releasedHandle['kind'] ?? null) !== 'callable') {
+                throw new RuntimeException('wp_action_ref_array_dispatch_release_kind');
+            }
+            $releasedUid = null;
+            foreach ($handles as $uid => $knownHandle) {
+                if (rp_action_ref_array_handles_equal($knownHandle, $releasedHandle)) {
+                    $releasedUid = $uid;
+                    break;
+                }
+            }
+            if ($releasedUid === null || isset($GLOBALS['rp_action_ref_array_released'][$releasedUid])) {
+                throw new RuntimeException('wp_action_ref_array_dispatch_release_identity');
+            }
+            $registry->release($releasedHandle);
+            $GLOBALS['rp_action_ref_array_released'][$releasedUid] = true;
+            $wire->send('release_ack', ['handle' => $releasedHandle]);
+            continue;
+        }
         if ($frame['kind'] === 'invoke_php') {
             expect_parent_effect($frame, null);
             expect_payload_keys($frame, [
@@ -370,6 +392,7 @@ try {
     $GLOBALS['rp_action_ref_array_events'] = [];
     $GLOBALS['rp_action_ref_array_invocations'] = [];
     $GLOBALS['rp_action_ref_array_argument_frame_released'] = false;
+    $GLOBALS['rp_action_ref_array_released'] = [];
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];
@@ -461,9 +484,13 @@ try {
                 $GLOBALS['rp_action_ref_array_argument_frame_released'] = true;
             } elseif (($handle['kind'] ?? null) === 'callable') {
                 $found = false;
-                foreach ($GLOBALS['rp_action_ref_array_handles'] as $candidate) {
+                foreach ($GLOBALS['rp_action_ref_array_handles'] as $uid => $candidate) {
                     if (rp_action_ref_array_handles_equal($candidate, $handle)) {
+                        if (isset($GLOBALS['rp_action_ref_array_released'][$uid])) {
+                            throw new RuntimeException('wp_action_ref_array_release_duplicate');
+                        }
                         $found = true;
+                        $GLOBALS['rp_action_ref_array_released'][$uid] = true;
                         break;
                     }
                 }
