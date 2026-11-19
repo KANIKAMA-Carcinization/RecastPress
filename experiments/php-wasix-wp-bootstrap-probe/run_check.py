@@ -116,7 +116,10 @@ def compare_hook_oracle(php,native_hook):
     require(isinstance(baseline,int) and not isinstance(baseline,bool) and 0<=baseline<=4096,
         'wasm_hook_did_filter_baseline')
     expected_trace=normalize_hook_trace(native_hook['events'],0)
-    # public_hook_dispatch has already validated raw baseline+1 counts and\n    # normalized the public trace to one. Do not subtract the retained baseline\n    # a second time here.\n    actual_trace=normalize_hook_trace(hook.get('events'),0)
+    # public_hook_dispatch has already validated raw baseline+1 counts and
+    # normalized the public trace to one. Do not subtract the retained baseline
+    # a second time here.
+    actual_trace=normalize_hook_trace(hook.get('events'),0)
     require(actual_trace==expected_trace,'native_wasm_hook_trace_differs')
     require(hook.get('invocations')==native_hook['event_order']
         and [event['callback'] for event in actual_trace]==native_hook['event_order'],
@@ -125,9 +128,8 @@ def compare_hook_oracle(php,native_hook):
     wasm_reset=hook.get('after_dispatch')
     wasm_after_count=wasm_reset.get('did_filter') if isinstance(wasm_reset,dict) else None
     require(isinstance(wasm_after_count,int) and not isinstance(wasm_after_count,bool)
-        and wasm_after_count==baseline+1,'wasm_hook_after_did_filter_count')
+        and wasm_after_count==1,'wasm_hook_after_did_filter_count')
     normalized_wasm_reset=dict(wasm_reset)
-    normalized_wasm_reset['did_filter']=wasm_after_count-baseline
     require(native_reset.get('current_filter') is False
         and normalized_wasm_reset.get('current_filter') is False,
         'native_wasm_hook_current_filter_reset')
@@ -145,7 +147,8 @@ def compare_hook_oracle(php,native_hook):
         'event_order':native_hook['event_order'],'filtered_value':native_hook['filtered_value'],
         'normalization':{'trace_fields':HOOK_TRACE_FIELDS,'reset_fields':HOOK_RESET_FIELDS,
             'wasm_did_filter_baseline':baseline,'native_did_filter_baseline':0,
-            'normalization_applied_by':'rust_public_hook_dispatch',\n            'normalized_did_filter_count':1,
+            'normalization_applied_by':'rust_public_hook_dispatch',
+            'normalized_did_filter_count':1,
             'native_trace_sha256':sha(canonical(expected_trace)),
             'wasm_trace_sha256':sha(canonical(actual_trace)),
             'native_reset_did_filter':native_reset.get('did_filter'),
