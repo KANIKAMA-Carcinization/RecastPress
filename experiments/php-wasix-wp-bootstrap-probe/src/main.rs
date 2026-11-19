@@ -8,6 +8,7 @@ mod cgi_response;
 mod db;
 #[path = "../../php-wasix-host-probe/src/fiber_adapter.rs"]
 mod fiber_adapter;
+mod hook_rpc_fs;
 #[allow(dead_code)]
 #[path = "../../php-wasix-wpdb-probe/src/inputs.rs"]
 mod inputs;
@@ -44,6 +45,14 @@ const OWNED: &[(&str, &[u8])] = &[
     ("bootstrap.php", include_bytes!("../fixtures/bootstrap.php")),
     ("helpers.php", include_bytes!("../fixtures/helpers.php")),
     ("adapter.php", include_bytes!("../fixtures/adapter.php")),
+    (
+        "hook_adapter.php",
+        include_bytes!("../fixtures/hook_adapter.php"),
+    ),
+    (
+        "hook_handle_registry.php",
+        include_bytes!("../fixtures/hook_handle_registry.php"),
+    ),
     ("db.php", include_bytes!("../fixtures/db.php")),
 ];
 fn fixed(root: &Path, name: &str, limit: u64) -> Result<Vec<u8>> {
@@ -262,6 +271,7 @@ fn execute(
     context: SourceFs,
     access: &access_fs::ManagedAccessFs,
     rpc: &rpc_fs::RpcFs,
+    hooks: &hook_rpc_fs::HookRpcFs,
     mode: db::Mode,
     record: &mut Value,
 ) -> Result<Value> {
@@ -305,6 +315,7 @@ fn execute(
             .with_mount("/rp-bootstrap".into(), Arc::new(context))
             .with_mount("/rp-p0-fs".into(), Arc::new(access.clone()))
             .with_mount("/rp-wpdb".into(), Arc::new(rpc.clone()))
+            .with_mount("/rp-wp-hooks".into(), Arc::new(hooks.clone()))
             .with_stdin(Box::new(stdin_read))
             .with_stdout(Box::new(capture::LimitedPipe::new(out_send, over.clone())))
             .with_stderr(Box::new(capture::LimitedPipe::new(
@@ -380,7 +391,18 @@ fn completion(mode: db::Mode, value: &Value) -> bool {
         && value["warning_count"] == 0
         && value["wp_installing"] == json!(mode == db::Mode::Install)
         && value["public_options"]
-            == json!({"blogname":"RP Bootstrap Fixture","siteurl":"http://rp-fixture.invalid","home":"http://rp-fixture.invalid"})
+            == json!({"blogname":"RP Bootstrap Fixture|first|second","siteurl":"http://rp-fixture.invalid","home":"http://rp-fixture.invalid"})
+        && value["hook_dispatch"]["hook"] == "option_blogname"
+        && value["hook_dispatch"]["value"] == "RP Bootstrap Fixture|first|second"
+        && value["hook_dispatch"]["invocations"]
+            == json!(["rp_boot_hook_first", "rp_boot_hook_second"])
+        && value["hook_dispatch"]["did_filter_before"]
+            .as_u64()
+            .is_some_and(|baseline| baseline <= 4096)
+        && value["hook_dispatch"]["events"]
+            .as_array()
+            .is_some_and(|events| events.len() == 2)
+        && public_hook_dispatch(&value["hook_dispatch"]).is_some()
         && value["public_posts"] == expected_posts()
         && (mode != db::Mode::Install || value["install_completed"] == true)
 }
@@ -458,14 +480,69 @@ fn public_php(value: &Value) -> Value {
         safe.insert("outcome".into(), value["outcome"].clone());
     }
     if value["public_options"]
-        == json!({"blogname":"RP Bootstrap Fixture","siteurl":"http://rp-fixture.invalid","home":"http://rp-fixture.invalid"})
+        == json!({"blogname":"RP Bootstrap Fixture|first|second","siteurl":"http://rp-fixture.invalid","home":"http://rp-fixture.invalid"})
     {
         safe.insert("public_options".into(), value["public_options"].clone());
+    }
+    if let Some(hook) = public_hook_dispatch(&value["hook_dispatch"]) {
+        safe.insert("hook_dispatch".into(), hook);
     }
     if value["public_posts"] == expected_posts() {
         safe.insert("public_posts".into(), expected_posts());
     }
     Value::Object(safe)
+}
+fn public_hook_dispatch(value: &Value) -> Option<Value> {
+    let events = value["events"].as_array()?;
+    let did_filter_before = value["did_filter_before"].as_u64()?;
+    if did_filter_before > 4096 {
+        return None;
+    }
+    let expected_did_filter = did_filter_before.checked_add(1)?;
+    let callbacks = ["rp_boot_hook_first", "rp_boot_hook_second"];
+    let values = ["RP Bootstrap Fixture", "RP Bootstrap Fixture|first"];
+    let priorities = [10, 20];
+    if value["hook"] != "option_blogname"
+        || value["value"] != "RP Bootstrap Fixture|first|second"
+        || value["invocations"] != json!(callbacks)
+        || events.len() != 2
+    {
+        return None;
+    }
+    let mut safe_events = Vec::with_capacity(events.len());
+    for (i, event) in events.iter().enumerate() {
+        if event["callback"] != callbacks[i]
+            || event["value"] != values[i]
+            || event["did_filter"].as_u64() != Some(expected_did_filter)
+            || event["current_filter"] != "option_blogname"
+            || event["current_priority"] != priorities[i]
+            || event["doing_filter"] != true
+        {
+            return None;
+        }
+        safe_events.push(json!({
+            "callback": callbacks[i], "value": values[i], "did_filter": 1,
+            "current_filter": "option_blogname", "current_priority": priorities[i], "doing_filter": true
+        }));
+    }
+    let after = &value["after_dispatch"];
+    if after["current_filter"] != false
+        || after["doing_filter"] != false
+        || after["doing_selected_filter"] != false
+        || after["did_filter"].as_u64() != Some(expected_did_filter)
+        || after["stack"] != json!([])
+        || after["current_priority"] != false
+    {
+        return None;
+    }
+    Some(
+        json!({"hook":"option_blogname","did_filter_before":did_filter_before,
+        "value":"RP Bootstrap Fixture|first|second",
+        "invocations":callbacks,"events":safe_events,"after_dispatch":{
+            "current_filter":false,"doing_filter":false,"doing_selected_filter":false,
+            "did_filter":1,"stack":[],"current_priority":false
+        }}),
+    )
 }
 fn public_literal(name: &str) -> Vec<String> {
     let prefix = format!("const {name} = ");
@@ -499,7 +576,8 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
     let mode = input.mode;
     let nonce = input.nonce.clone();
     let mut actor = db::Actor::start(input).map_err(|e| anyhow::anyhow!(e))?;
-    let rpc = rpc_fs::RpcFs::new(nonce, actor.dispatch.clone());
+    let rpc = rpc_fs::RpcFs::new(nonce.clone(), actor.dispatch.clone());
+    let hooks = hook_rpc_fs::HookRpcFs::new(nonce);
     let access = access_fs::ManagedAccessFs::new(wp.clone(), php.clone(), context.clone())?;
     report["phase"] = json!("cgi_execution");
     report["guest_execution_started"] = json!(true);
@@ -513,6 +591,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
         context,
         &access,
         &rpc,
+        &hooks,
         mode,
         &mut report["cgi_capture"],
     );
@@ -520,6 +599,7 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
         report["php_result"] = safe;
     }
     report["rpc"] = rpc.finish();
+    report["hook_rpc"] = hooks.finish();
     let access_result = access.finish();
     if let Ok(snapshot) = access.snapshot() {
         report["managed_access"] = snapshot.report_value();
@@ -558,6 +638,18 @@ fn probe(input: db::Input, report: &mut Value) -> Result<()> {
         "managed_access_completion"
     );
     ensure!(completion(mode, &php), "full_bootstrap_php_contract");
+    ensure!(
+        report["hook_rpc"]["finished"] == true
+            && report["hook_rpc"]["failure"].is_null()
+            && report["hook_rpc"]["channel_open"] == false
+            && report["hook_rpc"]["close_dispatched"] == true
+            && report["hook_rpc"]["dispatcher_complete"] == true
+            && report["hook_rpc"]["complete_sent"] == true
+            && report["hook_rpc"]["live_handles"] == 0
+            && report["hook_rpc"]["pending_bytes"] == 0
+            && report["hook_rpc"]["unread_response_bytes"] == 0,
+        "owned_hook_rpc_completion"
+    );
     ensure!(
         report["rpc"]["finished"] == true
             && report["rpc"]["failure"].is_null()

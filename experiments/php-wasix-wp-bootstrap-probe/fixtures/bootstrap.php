@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/helpers.php';
 const RP_PUBLIC_PHASES = ["input","source_inventory","wp_settings","wp_install","public_observations","source_after","complete"];
-const RP_PUBLIC_FAILURE_CODES = ["autoload_stats","cgi_entry_guard","closed_bootstrap_mode","context_admin_shape","context_duplicate_keys","context_exact_keys","context_nonce_or_salts","context_object","context_open","context_profile","context_read","context_salt_keys","context_salt_shape","context_size","core_source_changed_during_bootstrap","fixed_guest_site","full_rpc_bootstrap_required","input_string_token","installer_not_complete","installer_return","local","native_disconnect_failed","native_outbound_guard_configuration","native_php_profile","owned_dropin_bytes","owned_dropin_context","owned_dropin_nonce","php_throwable","php_warning","public_observation_contract","public_secret_guard","rb","rp_unused_guest_db","rp_unused_guest_user","rpc_actual_session_charset_mismatch","rpc_channel_closed_or_budget","rpc_channel_open_failed","rpc_close_reply_keys","rpc_close_reply_not_eof","rpc_close_without_channel","rpc_column_integer","rpc_column_keys","rpc_column_object","rpc_column_offset_out_of_range","rpc_connect_reuse_refused","rpc_escape_failed","rpc_escape_out_of_fixed_scope","rpc_escape_reply_keys","rpc_flush_failed","rpc_hello_contract","rpc_hello_failed","rpc_hello_keys","rpc_hex_decode_failed","rpc_host_close_failed","rpc_host_close_not_completed","rpc_integer_out_of_native_range","rpc_internal_query_failed","rpc_invalid_hex","rpc_invalid_json","rpc_invalid_unsigned_decimal","rpc_mysqli_column_metadata_out_of_fixed_scope","rpc_query_collection_bounds","rpc_query_data_keys","rpc_query_string_required","rpc_query_u16","rpc_reconnect_not_supported","rpc_reply_exact_keys","rpc_reply_identity","rpc_reply_incomplete_or_quota","rpc_reply_object_required","rpc_reply_total_quota","rpc_request_frame_or_total_quota","rpc_request_shape","rpc_result_raw_byte_quota","rpc_rewind_before_read_failed","rpc_rewind_before_write_failed","rpc_row_width","rpc_server_error_keys","rpc_server_error_out_of_fixed_scope","rpc_server_info_before_connect","rpc_session_snapshot_shape","rpc_sql_mode_out_of_fixed_scope","rpc_sql_mode_shape","rpc_write_failed","single_site_table_set","source_complete_tree","source_extra_or_special_file","source_file_bytes_changed","source_link","source_manifest_fixed_inventory","source_manifest_profile","source_manifest_size","source_noncanonical_path","unclassified_failure","unexpected_php_shutdown","utf8mb4","utf8mb4_unicode_520_ci"];
+const RP_PUBLIC_FAILURE_CODES = ["autoload_stats","bootstrap_hook_result","cgi_entry_guard","closed_bootstrap_mode","context_admin_shape","context_duplicate_keys","context_exact_keys","context_nonce_or_salts","context_object","context_open","context_profile","context_read","context_salt_keys","context_salt_shape","context_size","core_source_changed_during_bootstrap","fixed_guest_site","full_rpc_bootstrap_required","input_string_token","installer_not_complete","installer_return","local","native_disconnect_failed","native_outbound_guard_configuration","native_php_profile","owned_dropin_bytes","owned_dropin_context","owned_dropin_nonce","php_throwable","php_warning","public_observation_contract","public_secret_guard","rb","rp_unused_guest_db","rp_unused_guest_user","rpc_actual_session_charset_mismatch","rpc_channel_closed_or_budget","rpc_channel_open_failed","rpc_close_reply_keys","rpc_close_reply_not_eof","rpc_close_without_channel","rpc_column_integer","rpc_column_keys","rpc_column_object","rpc_column_offset_out_of_range","rpc_connect_reuse_refused","rpc_escape_failed","rpc_escape_out_of_fixed_scope","rpc_escape_reply_keys","rpc_flush_failed","rpc_hello_contract","rpc_hello_failed","rpc_hello_keys","rpc_hex_decode_failed","rpc_host_close_failed","rpc_host_close_not_completed","rpc_integer_out_of_native_range","rpc_internal_query_failed","rpc_invalid_hex","rpc_invalid_json","rpc_invalid_unsigned_decimal","rpc_mysqli_column_metadata_out_of_fixed_scope","rpc_query_collection_bounds","rpc_query_data_keys","rpc_query_string_required","rpc_query_u16","rpc_reconnect_not_supported","rpc_reply_exact_keys","rpc_reply_identity","rpc_reply_incomplete_or_quota","rpc_reply_object_required","rpc_reply_total_quota","rpc_request_frame_or_total_quota","rpc_request_shape","rpc_result_raw_byte_quota","rpc_rewind_before_read_failed","rpc_rewind_before_write_failed","rpc_row_width","rpc_server_error_keys","rpc_server_error_out_of_fixed_scope","rpc_server_info_before_connect","rpc_session_snapshot_shape","rpc_sql_mode_out_of_fixed_scope","rpc_sql_mode_shape","rpc_write_failed","single_site_table_set","source_complete_tree","source_extra_or_special_file","source_file_bytes_changed","source_link","source_manifest_fixed_inventory","source_manifest_profile","source_manifest_size","source_noncanonical_path","unclassified_failure","unexpected_php_shutdown","utf8mb4","utf8mb4_unicode_520_ci"];
 const RP_PUBLIC_FAILURE_CLASSES = ["RpBootstrapFailure","RpNativeFailure","JsonException","Error","TypeError","ValueError","ArgumentCountError","RuntimeException","Exception","ParseError","ErrorException","unclassified_exception"];
 const RP_DROPIN_SHA = '2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8';
 
@@ -184,8 +184,50 @@ try {
         $rp_report['install_completed'] = is_blog_installed();
         rp_boot_check($rp_report['install_completed'], 'installer_not_complete');
     }
+    require_once __DIR__ . '/hook_handle_registry.php';
+    require_once __DIR__ . '/hook_adapter.php';
+    rp_bootstrap_install_blogname_dispatcher();
     $rp_report['phase'] = 'public_observations';
-    $rp_report['public_options'] = ['blogname' => get_option('blogname'), 'siteurl' => get_option('siteurl'), 'home' => get_option('home')];
+    $rp_blogname = get_option('blogname');
+    $rp_hook_trace = $GLOBALS['rp_boot_hook_trace'] ?? null;
+    $rp_hook_invocations = $GLOBALS['rp_boot_hook_invocations'] ?? null;
+    $rp_hook_did_filter_before = $GLOBALS['rp_boot_hook_did_filter_before'] ?? null;
+    $rp_hook_names = ['rp_boot_hook_first', 'rp_boot_hook_second'];
+    rp_boot_check(is_int($rp_hook_did_filter_before)
+        && $rp_blogname === 'RP Bootstrap Fixture|first|second'
+        && is_array($rp_hook_trace) && count($rp_hook_trace) === 2
+        && $rp_hook_invocations === $rp_hook_names
+        && array_column($rp_hook_trace, 'callback') === $rp_hook_names
+        && array_column($rp_hook_trace, 'value') === ['RP Bootstrap Fixture', 'RP Bootstrap Fixture|first']
+        && array_column($rp_hook_trace, 'did_filter') === [$rp_hook_did_filter_before + 1, $rp_hook_did_filter_before + 1],
+        'bootstrap_hook_result');
+    foreach ($rp_hook_trace as $rp_hook_index => $rp_hook_event) {
+        rp_boot_check(($rp_hook_event['current_filter'] ?? null) === 'option_blogname'
+            && ($rp_hook_event['doing_filter'] ?? null) === true
+            && ($rp_hook_event['did_filter'] ?? null) === $rp_hook_did_filter_before + 1
+            && ($rp_hook_event['current_priority'] ?? null) === ($rp_hook_index === 0 ? 10 : 20),
+            'bootstrap_hook_result');
+    }
+    $rp_hook_object = $GLOBALS['rp_boot_hook_object'] ?? null;
+    rp_boot_check($rp_hook_object instanceof RpBootstrapDispatcherHook, 'bootstrap_hook_result');
+    $rp_report['hook_dispatch'] = [
+        'hook' => 'option_blogname',
+        'value' => $rp_blogname,
+        'invocations' => $rp_hook_invocations,
+        'did_filter_before' => $rp_hook_did_filter_before,
+        'events' => $rp_hook_trace,
+        'after_dispatch' => [
+            'current_filter' => current_filter(),
+            'doing_filter' => doing_filter(),
+            'doing_selected_filter' => doing_filter('option_blogname'),
+            'did_filter' => did_filter('option_blogname'),
+            'stack' => $GLOBALS['wp_current_filter'] ?? [],
+            'current_priority' => $rp_hook_object->current_priority(),
+        ],
+    ];
+    rp_boot_check($rp_report['hook_dispatch']['after_dispatch']['did_filter'] === $rp_hook_did_filter_before + 1,
+        'bootstrap_hook_result');
+    $rp_report['public_options'] = ['blogname' => $rp_blogname, 'siteurl' => get_option('siteurl'), 'home' => get_option('home')];
     $rp_report['public_posts'] = [];
     foreach (get_posts(['post_type' => ['post', 'page'], 'post_status' => 'publish', 'numberposts' => 10, 'orderby' => 'ID', 'order' => 'ASC']) as $rp_post) {
         $rp_report['public_posts'][] = ['ID' => $rp_post->ID, 'type' => $rp_post->post_type, 'status' => $rp_post->post_status,
@@ -204,7 +246,7 @@ try {
     $rp_report['autoload_option_count'] = (int) $rp_stats['option_count'];
     $rp_report['autoload_max_value_bytes'] = (int) $rp_stats['max_value_bytes'];
     rp_boot_check($rp_report['known_wp_table_count'] === 12 && count($rp_report['public_posts']) >= 2
-        && $rp_report['public_options'] === ['blogname' => 'RP Bootstrap Fixture', 'siteurl' => 'http://rp-fixture.invalid', 'home' => 'http://rp-fixture.invalid']
+        && $rp_report['public_options'] === ['blogname' => 'RP Bootstrap Fixture|first|second', 'siteurl' => 'http://rp-fixture.invalid', 'home' => 'http://rp-fixture.invalid']
         && $wpdb->last_error === '', 'public_observation_contract');
     $rp_report['phase'] = 'source_after';
     $rp_report['source_after'] = rp_boot_inventory($rp_site, $rp_manifest);

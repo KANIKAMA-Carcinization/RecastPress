@@ -2,7 +2,7 @@ name: PHP WASIX full WordPress bootstrap
 
 "on":
   push:
-    branches: ["dev/v0.5"]
+    branches: ["dev/v0.5", "dev/v0.6"]
     paths:
       - "experiments/php-wasix-wp-bootstrap-probe/**"
       - "!experiments/php-wasix-wp-bootstrap-probe/evidence/**"

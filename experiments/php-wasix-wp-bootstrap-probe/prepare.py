@@ -16,7 +16,8 @@ WORK = ROOT / 'target/php-wasix-wp-bootstrap-probe'
 PREPARED = WORK / 'prepared.json'
 NATIVE = ROOT / 'experiments/wp-bootstrap-probe'
 OLD_WASM = ROOT / 'experiments/php-wasix-wpdb-probe'
-FIXTURES = ['install.php','read.php','bootstrap.php','helpers.php','adapter.php','db.php']
+FIXTURES = ['install.php','read.php','bootstrap.php','helpers.php','adapter.php','db.php','hook_adapter.php','hook_handle_registry.php']
+NATIVE_FIXTURES = ['hook_native_oracle.php']
 BASE_COMMIT = 'a1bb591c19dc897f1d41a42d17f8c33088f4362b'
 PINS = {
     'experiments/wp-bootstrap-probe/fixtures/bootstrap.php': (15581,'36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1'),
@@ -184,6 +185,55 @@ def expected_fixtures(original, wpdb):
         b"    $rp_report['failure'] = in_array($rp_failure, RP_PUBLIC_FAILURE_CODES, true) ? $rp_failure : 'unclassified_failure';\n"
         b"    $rp_class = get_class($rp_error);\n"
         b"    $rp_report['failure_class'] = in_array($rp_class, RP_PUBLIC_FAILURE_CLASSES, true) ? $rp_class : 'unclassified_exception';")
+    hook_install=(b"    require_once __DIR__ . '/hook_handle_registry.php';\n"
+        b"    require_once __DIR__ . '/hook_adapter.php';\n"
+        b"    rp_bootstrap_install_blogname_dispatcher();\n")
+    bootstrap=once(bootstrap,b"    $rp_report['phase'] = 'public_observations';\n",hook_install+b"    $rp_report['phase'] = 'public_observations';\n")
+    bootstrap=once(bootstrap,
+        b"    $rp_report['public_options'] = ['blogname' => get_option('blogname'), 'siteurl' => get_option('siteurl'), 'home' => get_option('home')];\n",
+        b"    $rp_blogname = get_option('blogname');\n"
+        b"    $rp_hook_trace = $GLOBALS['rp_boot_hook_trace'] ?? null;\n"
+        b"    $rp_hook_invocations = $GLOBALS['rp_boot_hook_invocations'] ?? null;\n"
+        b"    $rp_hook_did_filter_before = $GLOBALS['rp_boot_hook_did_filter_before'] ?? null;\n"
+        b"    $rp_hook_names = ['rp_boot_hook_first', 'rp_boot_hook_second'];\n"
+        b"    rp_boot_check(is_int($rp_hook_did_filter_before)\n"
+        b"        && $rp_blogname === 'RP Bootstrap Fixture|first|second'\n"
+        b"        && is_array($rp_hook_trace) && count($rp_hook_trace) === 2\n"
+        b"        && $rp_hook_invocations === $rp_hook_names\n"
+        b"        && array_column($rp_hook_trace, 'callback') === $rp_hook_names\n"
+        b"        && array_column($rp_hook_trace, 'value') === ['RP Bootstrap Fixture', 'RP Bootstrap Fixture|first']\n"
+        b"        && array_column($rp_hook_trace, 'did_filter') === [$rp_hook_did_filter_before + 1, $rp_hook_did_filter_before + 1],\n"
+        b"        'bootstrap_hook_result');\n"
+        b"    foreach ($rp_hook_trace as $rp_hook_index => $rp_hook_event) {\n"
+        b"        rp_boot_check(($rp_hook_event['current_filter'] ?? null) === 'option_blogname'\n"
+        b"            && ($rp_hook_event['doing_filter'] ?? null) === true\n"
+        b"            && ($rp_hook_event['did_filter'] ?? null) === $rp_hook_did_filter_before + 1\n"
+        b"            && ($rp_hook_event['current_priority'] ?? null) === ($rp_hook_index === 0 ? 10 : 20),\n"
+        b"            'bootstrap_hook_result');\n"
+        b"    }\n"
+        b"    $rp_hook_object = $GLOBALS['rp_boot_hook_object'] ?? null;\n"
+        b"    rp_boot_check($rp_hook_object instanceof RpBootstrapDispatcherHook, 'bootstrap_hook_result');\n"
+        b"    $rp_report['hook_dispatch'] = [\n"
+        b"        'hook' => 'option_blogname',\n"
+        b"        'value' => $rp_blogname,\n"
+        b"        'invocations' => $rp_hook_invocations,\n"
+        b"        'did_filter_before' => $rp_hook_did_filter_before,\n"
+        b"        'events' => $rp_hook_trace,\n"
+        b"        'after_dispatch' => [\n"
+        b"            'current_filter' => current_filter(),\n"
+        b"            'doing_filter' => doing_filter(),\n"
+        b"            'doing_selected_filter' => doing_filter('option_blogname'),\n"
+        b"            'did_filter' => did_filter('option_blogname'),\n"
+        b"            'stack' => $GLOBALS['wp_current_filter'] ?? [],\n"
+        b"            'current_priority' => $rp_hook_object->current_priority(),\n"
+        b"        ],\n"
+        b"    ];\n"
+        b"    rp_boot_check($rp_report['hook_dispatch']['after_dispatch']['did_filter'] === $rp_hook_did_filter_before + 1,\n"
+        b"        'bootstrap_hook_result');\n"
+        b"    $rp_report['public_options'] = ['blogname' => $rp_blogname, 'siteurl' => get_option('siteurl'), 'home' => get_option('home')];\n")
+    bootstrap=once(bootstrap,
+        b"&& $rp_report['public_options'] === ['blogname' => 'RP Bootstrap Fixture', 'siteurl' => 'http://rp-fixture.invalid', 'home' => 'http://rp-fixture.invalid']",
+        b"&& $rp_report['public_options'] === ['blogname' => 'RP Bootstrap Fixture|first|second', 'siteurl' => 'http://rp-fixture.invalid', 'home' => 'http://rp-fixture.invalid']")
     codes=set(re.findall(rb",\s*'([a-z][a-z0-9_]*)'\);",bootstrap+helpers+adapter+DROPIN))
     codes.update(re.findall(rb"new Rp(?:Native|Bootstrap)Failure\('([a-z][a-z0-9_]*)'\)",bootstrap+helpers+adapter))
     codes.update([b'php_throwable',b'public_secret_guard',b'unexpected_php_shutdown',b'unclassified_failure'])
@@ -195,6 +245,8 @@ def expected_fixtures(original, wpdb):
         +b'const RP_PUBLIC_FAILURE_CLASSES = '+json.dumps(classes,separators=(',',':')).encode()+b';\n')
     bootstrap=once(bootstrap,b"require __DIR__ . '/helpers.php';\n",b"require __DIR__ . '/helpers.php';\n"+constants)
     expected={'bootstrap.php':bootstrap,'helpers.php':helpers,'adapter.php':adapter,'db.php':DROPIN}
+    for name in ['hook_adapter.php','hook_handle_registry.php',*NATIVE_FIXTURES]:
+        expected[name]=read(HERE/'fixtures'/name)
     for mode in ['install','read']:
         expected[mode+'.php']=once(original['experiments/wp-bootstrap-probe/fixtures/'+mode+'.php'],b'declare(strict_types=1);\n',b"declare(strict_types=1);\nheader('Content-Type: application/json');\n")
     return expected,validation
@@ -205,11 +257,12 @@ def derivation_gate():
     wpdb=read(NATIVE.parents[1]/'target/wp-bootstrap-probe/site/wp-includes/class-wpdb.php')
     require(identity(wpdb)=={'bytes':121437,'sha256':'e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd'},'untouched_wpdb_source')
     expected,validation=expected_fixtures(original,wpdb)
-    for name in FIXTURES:
+    all_fixtures=FIXTURES+NATIVE_FIXTURES
+    for name in all_fixtures:
         wire=read(HERE/'fixtures'/name);require(b'\r' not in wire and wire==expected[name],'derived_bootstrap_fixture_changed')
-    require({p.name for p in (HERE/'fixtures').iterdir()}==set(FIXTURES),'closed_bootstrap_fixture_set')
+    require({p.name for p in (HERE/'fixtures').iterdir()}==set(all_fixtures),'closed_bootstrap_fixture_set')
     return {'base_commit':BASE_COMMIT,'original_git_objects_verified_by_preparer':False,
-        'parents':{n:identity(w) for n,w in original.items()},'derived':{n:identity(expected[n]) for n in FIXTURES},
+        'parents':{n:identity(w) for n,w in original.items()},'derived':{n:identity(expected[n]) for n in all_fixtures},
         'upstream_query_validation_block_sha256':sha(validation),'upstream_query_validation_bytes_preserved':True,
         'allowed_helper_changes':['extract-private-channel-validation-functions',
             'rename-native-duplicate-key-reader-and-check-function','strict-private-context-schema'],
@@ -217,7 +270,8 @@ def derivation_gate():
             'valid-UTF8-escape-only','bounded-general-server-error-code-state-private-message',
             'no-public-SQL-row-or-setup-trace'],
         'allowed_bootstrap_changes':['CGI-fixed-GET-and-private-context','owned-guest-source-paths-and-db-overlay',
-            'dummy-DB-constants-and-Rust-handle','Wasm-observation-schema-and-context-flags','private-count-only-RPC-statistics'],
+            'dummy-DB-constants-and-Rust-handle','Wasm-observation-schema-and-context-flags','private-count-only-RPC-statistics',
+            'single-selected-option_blogname-dispatch-after-full-bootstrap'],
         'original_core_theme_plugin_bytes_modified':False,'owned_db_overlay_files':1}
 
 
@@ -227,7 +281,7 @@ def modules():
 
 def input_hashes():
     native,old=modules();result={**old.input_hashes(),**native.inputs()}
-    for path in [Path(__file__).resolve(),*[HERE/'fixtures'/n for n in FIXTURES],*[ROOT/n for n in PINS]]:
+    for path in [Path(__file__).resolve(),*[HERE/'fixtures'/n for n in FIXTURES+NATIVE_FIXTURES],*[ROOT/n for n in PINS]]:
         result[path.relative_to(ROOT).as_posix()]=sha(read(path))
     return dict(sorted(result.items()))
 
