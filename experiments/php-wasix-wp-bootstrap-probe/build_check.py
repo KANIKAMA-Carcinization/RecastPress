@@ -67,6 +67,7 @@ STAGES = [('unit-build', 1200), ('unit-list', 10), ('unit-run', 60), ('normal-bu
 
 def inputs():
     paths = [p for p in HERE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
+        and 'target' not in p.relative_to(HERE).parts
         and p.name != 'import_evidence.py'
         and (p.suffix in ('.rs', '.php', '.py', '.toml') or p.name == 'Cargo.lock')]
     paths += derivation.inputs()

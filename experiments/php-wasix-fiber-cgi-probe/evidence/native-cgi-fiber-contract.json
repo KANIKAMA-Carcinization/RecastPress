@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "schema": "recastpress.php-wasix-fiber-cgi-native.v0.5",
-  "observed_at_utc": "2026-11-01T16:18:20.861892+00:00",
+  "observed_at_utc": "2026-11-19T20:16:20.933545+00:00",
   "role": "native CGI PHP comparison oracle only; never a Wasm or production fallback",
   "platform": {
     "system": "Windows",
@@ -48,7 +48,7 @@
     "experiments/php-wasix-fiber-probe/fixtures/fiber_contract.php": "9da4b5ffb45677eaa0e81ddbac8c101c692663bf685bbc1157a4689c61c17831",
     "experiments/php-wasix-fiber-cgi-probe/fixtures/fiber_cgi_contract.php": "3d6b17234b12d1f391293b79366ab1575f0d9322e699ef76131c86818eadeff2",
     "experiments/php-runtime-candidate-probe/native_contract.py": "d4b7268982df8cc9c223d7610cc2c0242db05f18f5ed65f470ed143639807b82",
-    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-wasi-host-probe/wordpress-fixture.json": "f25b298591e266cb2eaa8001807ff89aff44c60d46bade4224f7834ba0385543"
   },
   "native_reference": {
@@ -274,7 +274,7 @@
     "-d",
     "register_argc_argv=0"
   ],
-  "owned_process_pid": 22816,
+  "owned_process_pid": 19140,
   "exit_code": 0,
   "stdout_eof": true,
   "stderr_eof": true,
