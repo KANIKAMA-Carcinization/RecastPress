@@ -51,9 +51,10 @@ const PHP_ACTION_THROWABLE_DRIVER: &str = "/fixture/wp_action_throwable_driver.p
 const PHP_ACTION_NESTED_DRIVER: &str = "/fixture/wp_action_nested_driver.php";
 const PHP_ACTION_MUTATION_DRIVER: &str = "/fixture/wp_action_mutation_driver.php";
 const PHP_ACTION_REMOVAL_DRIVER: &str = "/fixture/wp_action_removal_driver.php";
+const PHP_ACTION_REMOVE_ALL_DRIVER: &str = "/fixture/wp_action_remove_all_driver.php";
 const PHP_ACTION_SAME_PRIORITY_DRIVER: &str = "/fixture/wp_action_same_priority_driver.php";
 
-const FILES: [(&str, &[u8]); 14] = [
+const FILES: [(&str, &[u8]); 15] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -120,6 +121,12 @@ const FILES: [(&str, &[u8]); 14] = [
         "wp_action_removal_driver.php",
         include_bytes!(
             "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_driver.php"
+        ),
+    ),
+    (
+        "wp_action_remove_all_driver.php",
+        include_bytes!(
+            "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php"
         ),
     ),
     (
@@ -3847,6 +3854,312 @@ fn run_action_removal_dispatch(
     }
 }
 
+fn run_action_remove_all_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, 0)?;
+    expect_frame(
+        &start,
+        0,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    let target = "wp-action-remove-all-1";
+    let hook = "rp-probe-action-remove-all";
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == target
+            && start["payload"]["hook"] == hook
+            && start["payload"]["args"] == json!([""]),
+        "action remove-all start identity"
+    );
+    let name = HookArgument::bytes(hook);
+    let initial = start["payload"]["rows"]
+        .as_array()
+        .context("remove-all rows")?
+        .clone();
+    ensure!(initial.len() == 5, "remove-all initial row count");
+    let fingerprint_for = |rows: &[Value]| -> Result<String> {
+        let projection: Vec<Value> = rows
+            .iter()
+            .map(|row| {
+                json!([
+                    row["priority"],
+                    row["uid"],
+                    row["accepted_args"],
+                    row["function"],
+                    row["handle"]["request"],
+                    row["handle"]["kind"],
+                    row["handle"]["slot"],
+                    row["handle"]["generation"],
+                    row["handle"]["token"]
+                ])
+            })
+            .collect();
+        Ok(sha256(&serde_json::to_vec(&projection)?))
+    };
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint_for(&initial)?,
+        "remove-all initial table fingerprint"
+    );
+    let mut dispatcher = Dispatcher::new();
+    let mut handles = std::collections::HashMap::new();
+    for row in &initial {
+        let uid = row["uid"].as_str().context("remove-all uid")?.to_string();
+        let function = row["function"].as_str().context("remove-all function")?;
+        ensure!(
+            matches!(
+                function,
+                "rp_action_remove_all_observer"
+                    | "rp_action_remove_all_mutator"
+                    | "rp_action_remove_all_peer"
+                    | "rp_action_remove_all_pending"
+                    | "rp_action_remove_all_tail"
+            ),
+            "unrecognized remove-all callback"
+        );
+        let priority = row["priority"].as_i64().context("remove-all priority")?;
+        ensure!(row["accepted_args"] == 0, "remove-all accepted args");
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles.insert(uid.clone(), php_handle).is_none(),
+            "duplicate remove-all callback uid"
+        );
+        let callback = ContextCallback::php_callable(
+            CallbackId {
+                module: "wordpress".into(),
+                callback: uid,
+            },
+            0,
+            php_handle,
+        )
+        .map_err(|error| anyhow::anyhow!("remove-all callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+    }
+    ensure!(
+        initial[0]["uid"] == "rp_action_remove_all_observer"
+            && initial[0]["priority"] == 1
+            && initial[1]["uid"] == "rp_action_remove_all_mutator"
+            && initial[1]["priority"] == 5
+            && initial[2]["uid"] == "rp_action_remove_all_peer"
+            && initial[2]["priority"] == 5
+            && initial[3]["uid"] == "rp_action_remove_all_pending"
+            && initial[3]["priority"] == 8
+            && initial[4]["uid"] == "rp_action_remove_all_tail"
+            && initial[4]["priority"] == 10,
+        "remove-all initial callback ordering"
+    );
+    let args = [PhpValue::Bytes(Vec::new())];
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("remove-all action start: {error:?}"))?;
+    let mut in_seq = 1u64;
+    let mut out_seq = 0u64;
+    let mut order = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("remove-all advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Zero && invocation.args.is_empty(),
+                    "remove-all callback args"
+                );
+                let uid = invocation.callback.callback.as_str().to_string();
+                ensure!(
+                    handles.get(&uid) == Some(&invocation.handle),
+                    "remove-all callback handle"
+                );
+                let priority = match invocation.priority {
+                    PhpKey::Integer(value) => value,
+                    _ => anyhow::bail!("remove-all priority type"),
+                };
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({"target":target,"uid":uid,"handle":desc,
+                    "priority":priority,"call_mode":"zero","args":[]}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                if uid == "rp_action_remove_all_mutator" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_callbacks_removed",
+                        &["target", "parent_uid", "rows", "table_fingerprint"],
+                    )?;
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["parent_uid"] == uid
+                            && reply["payload"]["rows"] == json!(initial)
+                            && reply["payload"]["table_fingerprint"] == fingerprint_for(&[])?,
+                        "remove-all callback rows or empty table fingerprint mismatch"
+                    );
+                    dispatcher.remove_all_typed(&name, None);
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_callbacks_removed_ack",
+                        json!({"target":target,"removed_count":initial.len()}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let resume = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        resume["payload"]["target"] == target
+                            && resume["payload"]["uid"] == uid
+                            && resume["payload"]["value"].is_null(),
+                        "remove-all mutator resume"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "remove-all callback resume"
+                    );
+                    in_seq += 1;
+                }
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| anyhow::anyhow!("remove-all callback resume: {error:?}"))?;
+                order.push(uid);
+            }
+            DispatchStep::ReleasePhp(php_handle) => {
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":php_handle.slot(),
+                    "generation":php_handle.generation(),"token":format!("{:016x}",php_handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":desc}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == desc,
+                    "remove-all callback release ack"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, php_handle)
+                    .map_err(|error| anyhow::anyhow!("remove-all release resume: {error:?}"))?;
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null
+                        && order
+                            == [
+                                "rp_action_remove_all_observer",
+                                "rp_action_remove_all_mutator",
+                                "rp_action_remove_all_peer"
+                            ],
+                    "removed callback invoked or survivor order mismatch"
+                );
+                dispatcher.remove_all_typed(&name, None);
+                for php_handle in dispatcher.take_php_releases() {
+                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":php_handle.slot(),
+                        "generation":php_handle.generation(),"token":format!("{:016x}",php_handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":desc}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == desc,
+                        "remove-all remaining handle release ack"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":target,"invocations":3}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let observed = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &observed,
+                    in_seq,
+                    "action_remove_all_observed",
+                    &["target", "observation"],
+                )?;
+                ensure!(
+                    observed["payload"]["target"] == target,
+                    "remove-all observation target"
+                );
+                in_seq += 1;
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":target,"result":null}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "observation",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "registry_closed",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["observation"] == observed["payload"]["observation"]
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["registry_closed"] == true,
+                    "remove-all final guest state"
+                );
+                return Ok(
+                    json!({"status":"passed","result":null,"callbacks":order,"guest":done["payload"],
+                    "bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,
+                    "output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
+                );
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected remove-all dispatch effect")
+            }
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let action_mode = std::env::args().nth(1).as_deref() == Some("action");
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
@@ -3855,6 +4168,7 @@ fn main() -> Result<()> {
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
     let action_removal_mode = std::env::args().nth(1).as_deref() == Some("action-removal");
+    let action_remove_all_mode = std::env::args().nth(1).as_deref() == Some("action-remove-all");
     let action_same_priority_mode =
         std::env::args().nth(1).as_deref() == Some("action-deferred-add");
     ensure!(
@@ -3865,12 +4179,15 @@ fn main() -> Result<()> {
             || action_nested_mode
             || action_mutation_mode
             || action_removal_mode
+            || action_remove_all_mode
             || action_same_priority_mode
             || std::env::args().nth(1).is_none(),
         "unknown hook-dispatch scenario"
     );
     let php_driver = if action_same_priority_mode {
         PHP_ACTION_SAME_PRIORITY_DRIVER
+    } else if action_remove_all_mode {
+        PHP_ACTION_REMOVE_ALL_DRIVER
     } else if action_removal_mode {
         PHP_ACTION_REMOVAL_DRIVER
     } else if action_mutation_mode {
@@ -3968,6 +4285,16 @@ fn main() -> Result<()> {
             1,
             0,
             0,
+        )
+    } else if action_remove_all_mode {
+        run_action_remove_all_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
         )
     } else if action_removal_mode {
         run_action_removal_dispatch(
@@ -4096,7 +4423,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -4123,7 +4450,13 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let runner_args = if driver == PHP_ACTION_SAME_PRIORITY_DRIVER {
+    let runner_args = if driver == PHP_ACTION_REMOVE_ALL_DRIVER {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "action-remove-all".to_string(),
+        ]
+    } else if driver == PHP_ACTION_SAME_PRIORITY_DRIVER {
         vec![
             "-n".to_string(),
             driver.to_string(),

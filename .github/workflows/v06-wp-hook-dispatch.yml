@@ -101,6 +101,8 @@ jobs:
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_mutation_oracle.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_driver.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_oracle.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php
+          php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_oracle.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_driver.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_oracle.php
           php -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_deferred_add_oracle.php
