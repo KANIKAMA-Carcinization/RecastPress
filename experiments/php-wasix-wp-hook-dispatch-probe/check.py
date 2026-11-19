@@ -93,7 +93,7 @@ def ref_array_contract_matches(native_observation, wasm_observation):
             keys = ("callback", "hook", "args", "current_filter", "doing_filter", "did_filter")
         else:
             keys = ("callback", "args", "current_filter", "doing_filter", "did_filter", "current_priority")
-            if event.get("callback") == "truncated":
+            if event.get("callback") in ("truncated", "zero"):
                 keys += ("received_arg_count",)
         actual_events.append({key: event.get(key) for key in keys})
     return (

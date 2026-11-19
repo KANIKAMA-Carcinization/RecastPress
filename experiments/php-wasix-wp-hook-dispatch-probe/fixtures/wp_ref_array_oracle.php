@@ -61,6 +61,21 @@ function rp_ref_array_truncated(string $value, mixed ...$extra): string
     return $value;
 }
 
+function rp_ref_array_zero(): string
+{
+    $args = func_get_args();
+    $GLOBALS['rp_ref_array_events'][] = [
+        'callback' => 'zero', 'args' => $args, 'received_arg_count' => count($args),
+        'current_filter' => current_filter(), 'doing_filter' => doing_filter('rp-probe-ref-array'),
+        'did_filter' => did_filter('rp-probe-ref-array'),
+        'current_priority' => $GLOBALS['wp_filter']['rp-probe-ref-array']->current_priority(),
+    ];
+    if ($args !== []) {
+        throw new RuntimeException('wp_ref_array_zero_received_arguments');
+    }
+    return 'zero-result';
+}
+
 function rp_ref_array_second(string &$value, string &$extra): string
 {
     $GLOBALS['rp_ref_array_events'][] = [
@@ -77,6 +92,7 @@ function rp_ref_array_second(string &$value, string &$extra): string
 
 add_filter('all', 'rp_ref_array_all', 10, 2);
 add_filter('rp-probe-ref-array', 'rp_ref_array_truncated', 1, 1);
+add_filter('rp-probe-ref-array', 'rp_ref_array_zero', 2, 0);
 add_filter('rp-probe-ref-array', 'rp_ref_array_first', 5, 2);
 add_filter('rp-probe-ref-array', 'rp_ref_array_second', 10, 2);
 
@@ -105,7 +121,12 @@ $expected = [
             'current_priority' => 1,
         ],
         [
-            'callback' => 'first', 'args' => ['seed', 'left'],
+            'callback' => 'zero', 'args' => [], 'received_arg_count' => 0,
+            'current_filter' => 'rp-probe-ref-array', 'doing_filter' => true, 'did_filter' => 1,
+            'current_priority' => 2,
+        ],
+        [
+            'callback' => 'first', 'args' => ['zero-result', 'left'],
             'current_filter' => 'rp-probe-ref-array', 'doing_filter' => true, 'did_filter' => 1,
             'current_priority' => 5,
         ],

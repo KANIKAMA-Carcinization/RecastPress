@@ -299,7 +299,7 @@ fn run_dispatch(
         .as_array()
         .context("rows must be array")?;
     ensure!(
-        rows.len() == 3,
+        rows.len() == if ref_array_mode { 4 } else { 3 },
         "imported callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -346,6 +346,7 @@ fn run_dispatch(
             Some("rp_probe_callback_a") if !ref_array_mode => "rp_probe_callback_a",
             Some("rp_probe_callback_b") if !ref_array_mode => "rp_probe_callback_b",
             Some("rp_ref_array_truncated") if ref_array_mode => "rp_ref_array_truncated",
+            Some("rp_ref_array_zero") if ref_array_mode => "rp_ref_array_zero",
             Some("rp_ref_array_first") if ref_array_mode => "rp_ref_array_first",
             Some("rp_ref_array_second") if ref_array_mode => "rp_ref_array_second",
             None if !ref_array_mode => "{closure}",
@@ -366,6 +367,7 @@ fn run_dispatch(
         if ref_array_mode {
             let expected = match uid {
                 "rp_ref_array_truncated" => (1, 1),
+                "rp_ref_array_zero" => (2, 0),
                 "rp_ref_array_first" => (5, 2),
                 "rp_ref_array_second" => (10, 2),
                 _ => anyhow::bail!("unexpected ref-array callback uid: {uid}"),
@@ -635,7 +637,11 @@ fn run_dispatch(
                         && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["table_fingerprint"] == fingerprint
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]]),
+                            == if ref_array_mode {
+                                json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]])
+                            } else {
+                                json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]])
+                            },
                     "guest final observation mismatch"
                 );
                 ensure!(
@@ -643,6 +649,7 @@ fn run_dispatch(
                         == if ref_array_mode {
                             vec![
                                 "rp_ref_array_truncated".to_string(),
+                                "rp_ref_array_zero".to_string(),
                                 "rp_ref_array_first".to_string(),
                                 "rp_ref_array_second".to_string(),
                             ]
@@ -659,7 +666,7 @@ fn run_dispatch(
                     .as_array()
                     .context("guest events missing")?;
                 ensure!(
-                    events.len() == 4,
+                    events.len() == if ref_array_mode { 5 } else { 4 },
                     "native all plus selected callback event count mismatch"
                 );
                 ensure!(
@@ -688,19 +695,26 @@ fn run_dispatch(
                             && events[1]["doing_filter"] == true
                             && events[1]["did_filter"] == 1
                             && events[1]["current_priority"] == 1
-                            && events[2]["callback"] == "first"
-                            && events[2]["args"] == json!(["seed", "left"])
+                            && events[2]["callback"] == "zero"
+                            && events[2]["args"] == json!([])
+                            && events[2]["received_arg_count"] == 0
                             && events[2]["current_filter"] == expected_hook
                             && events[2]["doing_filter"] == true
                             && events[2]["did_filter"] == 1
-                            && events[2]["current_priority"] == 5
-                            && events[3]["callback"] == "second"
-                            && events[3]["args"]
-                                == json!(["replacement-from-first", "extra-mutated-by-first"])
+                            && events[2]["current_priority"] == 2
+                            && events[3]["callback"] == "first"
+                            && events[3]["args"] == json!(["zero-result", "left"])
                             && events[3]["current_filter"] == expected_hook
                             && events[3]["doing_filter"] == true
                             && events[3]["did_filter"] == 1
-                            && events[3]["current_priority"] == 10,
+                            && events[3]["current_priority"] == 5
+                            && events[4]["callback"] == "second"
+                            && events[4]["args"]
+                                == json!(["replacement-from-first", "extra-mutated-by-first"])
+                            && events[4]["current_filter"] == expected_hook
+                            && events[4]["doing_filter"] == true
+                            && events[4]["did_filter"] == 1
+                            && events[4]["current_priority"] == 10,
                         "WordPress ref-array callback observations mismatch"
                     );
                 } else {
