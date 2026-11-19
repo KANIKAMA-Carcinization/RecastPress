@@ -60,6 +60,19 @@ function rp_action_remove_all_mutator():void
         'current_priority'=>$hook->current_priority(),'global_hook_present'=>isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]),
         'wp_hook_doing_action'=>rp_remove_all_oracle_wp_hook_doing_action($hook),
         'rows'=>rp_remove_all_oracle_rows($hook),'stack'=>$GLOBALS['wp_current_filter']];
+    add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_readded',7,0);
+    $replacement=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]??null;
+    if(!($replacement instanceof WP_Hook) || $replacement===$hook
+        || rp_remove_all_oracle_rows($replacement)!==[['priority'=>7,'uid'=>'rp_action_remove_all_readded',
+            'accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]) {
+        throw new RuntimeException('native action remove-all replacement object mismatch');
+    }
+    $GLOBALS['rp_remove_all_oracle_replacement_hook']=$replacement;
+    $GLOBALS['rp_remove_all_oracle_events'][]=['callback'=>'reregistered','old_hook_empty'=>rp_remove_all_oracle_rows($hook)===[],
+        'new_hook_present'=>isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]),
+        'new_hook_is_distinct'=>$replacement!==$hook,'new_rows'=>rp_remove_all_oracle_rows($replacement),
+        'new_hook_state'=>rp_remove_all_oracle_state($replacement),
+        'did_action'=>did_action(RP_REMOVE_ALL_HOOK),'stack'=>$GLOBALS['wp_current_filter']];
 }
 function rp_action_remove_all_peer():void
 {
@@ -71,6 +84,14 @@ function rp_action_remove_all_peer():void
 }
 function rp_action_remove_all_pending():void { throw new RuntimeException('native removed future callback was invoked'); }
 function rp_action_remove_all_tail():void { throw new RuntimeException('native removed tail callback was invoked'); }
+function rp_action_remove_all_readded():void
+{
+    $hook=$GLOBALS['rp_remove_all_oracle_active_hook'];
+    $GLOBALS['rp_remove_all_oracle_events'][]=['callback'=>'readded','current_action'=>current_action(),
+        'current_filter'=>current_filter(),'doing_action'=>doing_action(),'did_action'=>did_action(RP_REMOVE_ALL_HOOK),
+        'current_priority'=>$hook->current_priority(),'wp_hook_doing_action'=>rp_remove_all_oracle_wp_hook_doing_action($hook),
+        'stack'=>$GLOBALS['wp_current_filter']];
+}
 
 add_action('all','rp_remove_all_oracle_all',10,10);
 add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_observer',1,0);
@@ -79,17 +100,43 @@ add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_peer',5,0);
 add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_pending',8,0);
 add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_tail',10,0);
 $hook=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK];$GLOBALS['rp_remove_all_oracle_hook']=$hook;
+$GLOBALS['rp_remove_all_oracle_original_hook']=$hook;
+$GLOBALS['rp_remove_all_oracle_active_hook']=$hook;
 $result=do_action(RP_REMOVE_ALL_HOOK);
-$observation=['events'=>$GLOBALS['rp_remove_all_oracle_events'],'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
+$firstState=['result'=>$result,'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
+    'old_hook_state'=>rp_remove_all_oracle_state($hook),'old_rows'=>rp_remove_all_oracle_rows($hook),
+    'replacement_rows'=>rp_remove_all_oracle_rows($GLOBALS['rp_remove_all_oracle_replacement_hook'])];
+$GLOBALS['rp_remove_all_oracle_active_hook']=$GLOBALS['rp_remove_all_oracle_replacement_hook'];
+$secondResult=do_action(RP_REMOVE_ALL_HOOK);
+$newHook=$GLOBALS['rp_remove_all_oracle_replacement_hook'];
+$observation=['events'=>$GLOBALS['rp_remove_all_oracle_events'],'first_dispatch'=>$firstState,
+    'second_result'=>$secondResult,'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
     'current_action'=>current_action(),'current_filter'=>current_filter(),'doing_action'=>doing_action(),
-    'stack'=>$GLOBALS['wp_current_filter'],'hook_state'=>rp_remove_all_oracle_state($hook),
-    'registered_rows'=>rp_remove_all_oracle_rows($hook)];
-if($result!==null || array_column($observation['events'],'callback')!==['all','observer','mutator','cleared','peer']
-    || $observation['action_count']!==1 || $observation['current_action']!==false
+    'stack'=>$GLOBALS['wp_current_filter'],'old_hook_state'=>rp_remove_all_oracle_state($hook),
+    'new_hook_state'=>rp_remove_all_oracle_state($newHook),
+    'registered_rows'=>rp_remove_all_oracle_rows($newHook)];
+$reset=['nesting_level'=>0,'iterations'=>[],'current_priority'=>[],'doing_action'=>false];
+$events=$observation['events'];
+if($result!==null || $secondResult!==null || $firstState['action_count']!==1
+    || $firstState['result']!==null
+    || array_column($observation['events'],'callback')!==['all','observer','mutator','cleared','reregistered','peer','all','readded']
+    || $observation['action_count']!==2 || $observation['current_action']!==false
     || $observation['current_filter']!==false || $observation['doing_action']!==false
     || $observation['stack']!==[]
-    || $observation['hook_state']!==['nesting_level'=>0,'iterations'=>[],'current_priority'=>[],'doing_action'=>false]
-    || $observation['registered_rows']!==[] || isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK])) {
+    || $firstState['old_rows']!==[] || $firstState['replacement_rows']!==[
+        ['priority'=>7,'uid'=>'rp_action_remove_all_readded','accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]
+    || $firstState['old_hook_state']!==$reset
+    || $observation['old_hook_state']!==$reset || $observation['new_hook_state']!==$reset
+    || $events[3]['global_hook_present']!==false || $events[3]['rows']!==[]
+    || $events[4]['old_hook_empty']!==true || $events[4]['new_hook_present']!==true
+    || $events[4]['new_hook_is_distinct']!==true || $events[4]['did_action']!==1
+    || $events[4]['new_hook_state']!==$reset
+    || $events[5]['current_priority']!==false || $events[5]['doing_action']!==true
+    || $events[6]['did_action']!==2 || $events[6]['wp_hook_doing_action']!==false
+    || $events[7]['current_priority']!==7 || $events[7]['doing_action']!==true
+    || $events[7]['did_action']!==2 || $events[7]['wp_hook_doing_action']!==true
+    || $observation['registered_rows']!==[
+        ['priority'=>7,'uid'=>'rp_action_remove_all_readded','accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]) {
     fwrite(STDERR,json_encode(['actual'=>$observation],JSON_THROW_ON_ERROR)."\n");
     throw new RuntimeException('wp_action_remove_all_oracle_mismatch');
 }

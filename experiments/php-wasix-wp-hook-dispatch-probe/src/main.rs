@@ -4107,55 +4107,122 @@ fn run_action_remove_all_dispatch(
                     total_out,
                     &mut out_seq,
                 )?;
-                let observed = read_frame(reader, deadline, total_in, in_seq)?;
-                expect_frame(
-                    &observed,
-                    in_seq,
-                    "action_remove_all_observed",
-                    &["target", "observation"],
-                )?;
-                ensure!(
-                    observed["payload"]["target"] == target,
-                    "remove-all observation target"
-                );
-                in_seq += 1;
-                send_frame(
-                    writer,
-                    out_seq,
-                    "request_complete",
-                    json!({"target":target,"result":null}),
-                    total_out,
-                    &mut out_seq,
-                )?;
-                let done = read_frame(reader, deadline, total_in, in_seq)?;
-                expect_frame(
-                    &done,
-                    in_seq,
-                    "guest_done",
-                    &[
-                        "observation",
-                        "live_handles",
-                        "live_handles_before_close",
-                        "registry_closed",
-                        "frames",
-                    ],
-                )?;
-                ensure!(
-                    done["payload"]["observation"] == observed["payload"]["observation"]
-                        && done["payload"]["live_handles"] == 0
-                        && done["payload"]["live_handles_before_close"] == 0
-                        && done["payload"]["registry_closed"] == true,
-                    "remove-all final guest state"
-                );
-                return Ok(
-                    json!({"status":"passed","result":null,"callbacks":order,"guest":done["payload"],
-                    "bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,
-                    "output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
+                return run_action_remove_all_second_dispatch(
+                    reader, writer, total_in, total_out, dispatcher, name, order, in_seq, out_seq,
                 );
             }
             DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
                 anyhow::bail!("unexpected remove-all dispatch effect")
             }
+        }
+    }
+}
+
+fn run_action_remove_all_second_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+    mut dispatcher: Dispatcher,
+    name: HookArgument,
+    first_order: Vec<String>,
+    start_in_seq: u64,
+    start_out_seq: u64,
+) -> Result<Value> {
+    let deadline=Instant::now()+TIMEOUT;
+    let start=read_frame(reader,deadline,total_in,start_in_seq)?;
+    expect_frame(&start,start_in_seq,"action_dispatch_start",&[
+        "generation","target","hook","args","rows","table_fingerprint"])?;
+    let target="wp-action-remove-all-1";
+    ensure!(start["payload"]["generation"]==HANDLE_REQUEST
+        && start["payload"]["target"]==target
+        && start["payload"]["hook"]=="rp-probe-action-remove-all"
+        && start["payload"]["args"]==json!([""]),"remove-all second dispatch identity");
+    let rows=start["payload"]["rows"].as_array().context("remove-all replacement rows")?.clone();
+    ensure!(rows.len()==1 && rows[0]["priority"]==7
+        && rows[0]["uid"]=="rp_action_remove_all_readded"
+        && rows[0]["accepted_args"]==0
+        && rows[0]["function"]=="rp_action_remove_all_readded",
+        "remove-all replacement callback row");
+    let row=&rows[0];
+    let projection=json!([[row["priority"],row["uid"],row["accepted_args"],row["function"],
+        row["handle"]["request"],row["handle"]["kind"],row["handle"]["slot"],
+        row["handle"]["generation"],row["handle"]["token"]]]);
+    ensure!(start["payload"]["table_fingerprint"]==sha256(&serde_json::to_vec(&projection)?),
+        "remove-all replacement table fingerprint");
+    let php_handle=handle(&row["handle"])?;
+    let callback=ContextCallback::php_callable(CallbackId{
+        module:"wordpress".into(),callback:"rp_action_remove_all_readded".into()},0,php_handle)
+        .map_err(|error|anyhow::anyhow!("remove-all replacement callback import: {error:?}"))?;
+    dispatcher.add_typed(&name,HookPriority::integer(7),callback);
+    let args=[PhpValue::Bytes(Vec::new())];
+    let ticket=dispatcher.begin_action_after_counter_typed(&name,&args)
+        .map_err(|error|anyhow::anyhow!("remove-all second action start: {error:?}"))?;
+    let mut in_seq=start_in_seq+1;
+    let mut out_seq=start_out_seq;
+    let mut order=Vec::new();
+    loop {
+        match dispatcher.advance(ticket).map_err(|error|anyhow::anyhow!("remove-all second advance: {error:?}"))? {
+            DispatchStep::InvokePhp(invocation)=>{
+                ensure!(invocation.call_mode==PhpCallMode::Zero && invocation.args.is_empty()
+                    && invocation.callback.callback.as_str()=="rp_action_remove_all_readded"
+                    && invocation.handle==php_handle,"remove-all second invocation identity");
+                let priority=match invocation.priority {PhpKey::Integer(v)=>v,_=>anyhow::bail!("remove-all second priority type")};
+                let desc=json!({"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())});
+                send_frame(writer,out_seq,"invoke_php",json!({"target":target,"uid":"rp_action_remove_all_readded",
+                    "handle":desc,"priority":priority,"call_mode":"zero","args":[]}),total_out,&mut out_seq)?;
+                let reply=read_frame(reader,deadline,total_in,in_seq)?;
+                expect_frame(&reply,in_seq,"resume_value",&["target","uid","value"])?;
+                ensure!(reply["payload"]["target"]==target
+                    && reply["payload"]["uid"]=="rp_action_remove_all_readded"
+                    && reply["payload"]["value"].is_null(),"remove-all replacement callback resume");
+                in_seq+=1;
+                dispatcher.resume_php(ticket,PhpValue::Null)
+                    .map_err(|error|anyhow::anyhow!("remove-all second callback resume: {error:?}"))?;
+                order.push("rp_action_remove_all_readded".to_string());
+            }
+            DispatchStep::ReleasePhp(release)=>{
+                let desc=json!({"request":HANDLE_REQUEST,"kind":"callable","slot":release.slot(),
+                    "generation":release.generation(),"token":format!("{:016x}",release.token())});
+                send_frame(writer,out_seq,"release_php",json!({"handle":desc}),total_out,&mut out_seq)?;
+                let ack=read_frame(reader,deadline,total_in,in_seq)?;
+                expect_frame(&ack,in_seq,"release_ack",&["handle"])?;
+                ensure!(ack["payload"]["handle"]==desc,"remove-all replacement release ack");
+                in_seq+=1;
+                dispatcher.resume_php_release(ticket,release)
+                    .map_err(|error|anyhow::anyhow!("remove-all second release resume: {error:?}"))?;
+            }
+            DispatchStep::Complete(result)=>{
+                ensure!(result==PhpValue::Null && order==["rp_action_remove_all_readded"],
+                    "remove-all second dispatch callback order/result");
+                dispatcher.remove_all_typed(&name,None);
+                for release in dispatcher.take_php_releases(){
+                    let desc=json!({"request":HANDLE_REQUEST,"kind":"callable","slot":release.slot(),
+                        "generation":release.generation(),"token":format!("{:016x}",release.token())});
+                    send_frame(writer,out_seq,"release_php",json!({"handle":desc}),total_out,&mut out_seq)?;
+                    let ack=read_frame(reader,deadline,total_in,in_seq)?;
+                    expect_frame(&ack,in_seq,"release_ack",&["handle"])?;
+                    ensure!(ack["payload"]["handle"]==desc,"remove-all second registration release ack");
+                    in_seq+=1;
+                }
+                send_frame(writer,out_seq,"action_complete",json!({"target":target,"invocations":1}),total_out,&mut out_seq)?;
+                let observed=read_frame(reader,deadline,total_in,in_seq)?;
+                expect_frame(&observed,in_seq,"action_remove_all_observed",&["target","observation"])?;
+                ensure!(observed["payload"]["target"]==target,"remove-all two-pass observation target");
+                in_seq+=1;
+                send_frame(writer,out_seq,"request_complete",json!({"target":target,"result":null}),total_out,&mut out_seq)?;
+                let done=read_frame(reader,deadline,total_in,in_seq)?;
+                expect_frame(&done,in_seq,"guest_done",&["observation","live_handles","live_handles_before_close","registry_closed","frames"])?;
+                ensure!(done["payload"]["observation"]==observed["payload"]["observation"]
+                    && done["payload"]["live_handles"]==0 && done["payload"]["live_handles_before_close"]==0
+                    && done["payload"]["registry_closed"]==true,"remove-all two-pass guest cleanup");
+                let mut callbacks=first_order; callbacks.extend(order);
+                return Ok(json!({"status":"passed","result":null,"callbacks":callbacks,"guest":done["payload"],
+                    "bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,
+                    "output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}));
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_)=>anyhow::bail!("unexpected remove-all second dispatch effect"),
         }
     }
 }

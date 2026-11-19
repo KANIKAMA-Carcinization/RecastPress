@@ -12,7 +12,10 @@ const RP_REMOVE_ALL_HOOK = 'rp-probe-action-remove-all';
 
 function recastpress_wp_should_dispatch_selected_action(string $hookName, object $hook): bool
 {
-    return $hookName === RP_REMOVE_ALL_HOOK && $hook === ($GLOBALS['rp_remove_all_hook'] ?? null);
+    return $hookName === RP_REMOVE_ALL_HOOK && (
+        $hook === ($GLOBALS['rp_remove_all_original_hook'] ?? null)
+        || $hook === ($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK] ?? null)
+    );
 }
 function recastpress_wp_should_dispatch_selected_hook(string $hookName, object $hook): bool
 {
@@ -62,8 +65,12 @@ function recastpress_wp_dispatch_selected_action(
 ): null {
     $wire=$GLOBALS['rp_remove_all_wire'];
     $registry=$GLOBALS['rp_remove_all_registry'];
+    $GLOBALS['rp_remove_all_active_hook']=$hook;
     $rows=rp_remove_all_rows($hook);
-    if(count($rows)!==5) throw new RuntimeException('action_remove_all_initial_rows');
+    $pass=did_action(RP_REMOVE_ALL_HOOK);
+    if(($pass===1 && count($rows)!==5) || ($pass===2 && count($rows)!==1) || !in_array($pass,[1,2],true)) {
+        throw new RuntimeException('action_remove_all_pass_rows');
+    }
     $handles=[]; $exported=[];
     foreach($rows as $row) {
         $handle=$registry->retainCallable($row['function']);
@@ -87,11 +94,15 @@ function recastpress_wp_dispatch_selected_action(
                 || !is_int($call['priority']) || $call['call_mode']!=='zero' || $call['args']!==[]) {
                 throw new RuntimeException('action_remove_all_invoke_identity');
             }
-            $nextPriority = !empty($GLOBALS['rp_remove_all_cleared']) ? false : $call['priority'];
+            $nextPriority = $pass===1 && !empty($GLOBALS['rp_remove_all_cleared']) ? false : $call['priority'];
             if(!$sync('set_priority',$nextPriority)) throw new RuntimeException('action_remove_all_priority_sync');
             call_user_func_array($registry->resolve($call['handle'],'callable'),$call['args']);
             if($call['uid']==='rp_action_remove_all_mutator') {
-                if (rp_remove_all_rows($hook) !== [] || isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK])) {
+                $replacement=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]??null;
+                if (rp_remove_all_rows($hook) !== [] || $pass!==1
+                    || !($replacement instanceof WP_Hook) || $replacement===$hook
+                    || rp_remove_all_rows($replacement)!==[['priority'=>7,'uid'=>'rp_action_remove_all_readded',
+                        'accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]) {
                     throw new RuntimeException('action_remove_all_table_not_cleared');
                 }
                 $wire->send('action_callbacks_removed', [
@@ -125,8 +136,19 @@ function recastpress_wp_dispatch_selected_action(
         if($frame['kind']==='action_complete') {
             expect_parent_effect($frame,null); expect_payload_keys($frame,['target','invocations'],'action_remove_all_complete');
             $actual=rp_remove_all_rows($hook);
-            if($frame['payload']['target']!==RP_REMOVE_ALL_TARGET || $frame['payload']['invocations']!==3
-                || $actual!==[] || isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]) || !$sync('finish')) throw new RuntimeException('action_remove_all_completion_state');
+            $expectedInvocations=$pass===1?3:1;
+            $expectedRows=$pass===1?[]:[['priority'=>7,'uid'=>'rp_action_remove_all_readded',
+                'accepted_args'=>0,'function'=>'rp_action_remove_all_readded']];
+            $globalHook=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]??null;
+            $globalRows=$globalHook instanceof WP_Hook?rp_remove_all_rows($globalHook):null;
+            $tableMatches=$pass===1
+                ? ($actual===[] && $globalHook===$GLOBALS['rp_remove_all_replacement_hook']
+                    && $globalRows===[['priority'=>7,'uid'=>'rp_action_remove_all_readded',
+                        'accepted_args'=>0,'function'=>'rp_action_remove_all_readded']])
+                : ($actual===$expectedRows && $globalHook===$hook && $globalRows===$expectedRows);
+            if($frame['payload']['target']!==RP_REMOVE_ALL_TARGET
+                || $frame['payload']['invocations']!==$expectedInvocations
+                || !$tableMatches || !$sync('finish')) throw new RuntimeException('action_remove_all_completion_state');
             return null;
         }
         throw new RuntimeException('action_remove_all_unexpected_frame');
@@ -160,6 +182,19 @@ function rp_action_remove_all_mutator():void
         'current_priority'=>$hook->current_priority(),'global_hook_present'=>isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]),
         'wp_hook_doing_action'=>rp_remove_all_wp_hook_doing_action($hook),
         'rows'=>rp_remove_all_rows($hook),'stack'=>$GLOBALS['wp_current_filter']];
+    add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_readded',7,0);
+    $replacement=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]??null;
+    if(!($replacement instanceof WP_Hook) || $replacement===$hook
+        || rp_remove_all_rows($replacement)!==[['priority'=>7,'uid'=>'rp_action_remove_all_readded',
+            'accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]) {
+        throw new RuntimeException('action_remove_all_readd_object');
+    }
+    $GLOBALS['rp_remove_all_replacement_hook']=$replacement;
+    $GLOBALS['rp_remove_all_events'][]=['callback'=>'reregistered','old_hook_empty'=>rp_remove_all_rows($hook)===[],
+        'new_hook_present'=>isset($GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]),
+        'new_hook_is_distinct'=>$replacement!==$hook,'new_rows'=>rp_remove_all_rows($replacement),
+        'new_hook_state'=>rp_remove_all_state($replacement),
+        'did_action'=>did_action(RP_REMOVE_ALL_HOOK),'stack'=>$GLOBALS['wp_current_filter']];
 }
 function rp_action_remove_all_peer():void
 {
@@ -171,6 +206,14 @@ function rp_action_remove_all_peer():void
 }
 function rp_action_remove_all_pending():void { throw new RuntimeException('removed_future_callback_was_invoked'); }
 function rp_action_remove_all_tail():void { throw new RuntimeException('removed_tail_callback_was_invoked'); }
+function rp_action_remove_all_readded():void
+{
+    $hook=$GLOBALS['rp_remove_all_active_hook'];
+    $GLOBALS['rp_remove_all_events'][]=['callback'=>'readded','current_action'=>current_action(),
+        'current_filter'=>current_filter(),'doing_action'=>doing_action(),'did_action'=>did_action(RP_REMOVE_ALL_HOOK),
+        'current_priority'=>$hook->current_priority(),'wp_hook_doing_action'=>rp_remove_all_wp_hook_doing_action($hook),
+        'stack'=>$GLOBALS['wp_current_filter']];
+}
 
 try {
     $wire=new BridgeProtocol(); $registry=new HandleRegistry(RP_REMOVE_ALL_REQUEST,64,64);
@@ -183,20 +226,34 @@ try {
     add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_peer',5,0);
     add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_pending',8,0);
     add_action(RP_REMOVE_ALL_HOOK,'rp_action_remove_all_tail',10,0);
-    $hook=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK]; $GLOBALS['rp_remove_all_hook']=$hook;
+    $hook=$GLOBALS['wp_filter'][RP_REMOVE_ALL_HOOK];
+    $GLOBALS['rp_remove_all_hook']=$hook; $GLOBALS['rp_remove_all_original_hook']=$hook;
     $result=do_action(RP_REMOVE_ALL_HOOK);
-    $state=['events'=>$GLOBALS['rp_remove_all_events'],'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
+    $firstState=['result'=>$result,'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
+        'old_hook_state'=>rp_remove_all_state($hook),'old_rows'=>rp_remove_all_rows($hook),
+        'replacement_rows'=>rp_remove_all_rows($GLOBALS['rp_remove_all_replacement_hook'])];
+    $secondResult=do_action(RP_REMOVE_ALL_HOOK);
+    $newHook=$GLOBALS['rp_remove_all_replacement_hook'];
+    $state=['events'=>$GLOBALS['rp_remove_all_events'],'first_dispatch'=>$firstState,
+        'second_result'=>$secondResult,'action_count'=>did_action(RP_REMOVE_ALL_HOOK),
         'current_action'=>current_action(),'current_filter'=>current_filter(),'doing_action'=>doing_action(),
-        'stack'=>$GLOBALS['wp_current_filter'],'hook_state'=>rp_remove_all_state($hook),
+        'stack'=>$GLOBALS['wp_current_filter'],'old_hook_state'=>rp_remove_all_state($hook),
+        'new_hook_state'=>rp_remove_all_state($newHook),
         'registered_rows'=>array_map(static fn(array $row):array=>[
             'priority'=>$row['priority'],'uid'=>$row['uid'],'accepted_args'=>$row['accepted_args'],
             'function'=>is_string($row['function'])?$row['function']:null,
-        ],rp_remove_all_rows($hook))];
-    if($result!==null || $state['action_count']!==1
-        || array_column($state['events'],'callback')!==['all','observer','mutator','cleared','peer']
+        ],rp_remove_all_rows($newHook))];
+    $reset=['nesting_level'=>0,'iterations'=>[],'current_priority'=>[],'doing_action'=>false];
+    if($result!==null || $secondResult!==null || $state['first_dispatch']['action_count']!==1
+        || $state['action_count']!==2
+        || array_column($state['events'],'callback')!==['all','observer','mutator','cleared','reregistered','peer','all','readded']
         || $state['current_action']!==false || $state['current_filter']!==false
-        || $state['doing_action']!==false || $state['stack']!==[] || $state['registered_rows']!==[]
-        || $state['hook_state']!==['nesting_level'=>0,'iterations'=>[],'current_priority'=>[],'doing_action'=>false]) {
+        || $state['doing_action']!==false || $state['stack']!==[] || $state['registered_rows']!==[
+            ['priority'=>7,'uid'=>'rp_action_remove_all_readded','accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]
+        || $firstState['old_rows']!==[] || $firstState['replacement_rows']!==[
+            ['priority'=>7,'uid'=>'rp_action_remove_all_readded','accepted_args'=>0,'function'=>'rp_action_remove_all_readded']]
+        || $firstState['old_hook_state']!==$reset || $state['old_hook_state']!==$reset
+        || $state['new_hook_state']!==$reset) {
         throw new RuntimeException('action_remove_all_final_state');
     }
     $wire->send('action_remove_all_observed',['target'=>RP_REMOVE_ALL_TARGET,'observation'=>$state]);
