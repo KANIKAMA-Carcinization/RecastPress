@@ -32,7 +32,7 @@ final class RpBootstrapHookChannel
         $this->stream = $stream;
     }
 
-    public function exchange(string $op, array $payload): array
+    public function exchange(string $op, array|\stdClass $payload): array
     {
         if ($this->closed || !is_resource($this->stream)) {
             throw new RuntimeException('hook_channel_closed');
@@ -97,7 +97,7 @@ final class RpBootstrapHookChannel
         if ($this->closed) {
             throw new RuntimeException('hook_close_twice');
         }
-        $reply = $this->exchange('close', []);
+        $reply = $this->exchange('close', new \stdClass());
         if ($reply['event'] !== 'close' || $reply['payload'] !== ['closed' => true]) {
             throw new RuntimeException('hook_close_ack');
         }
