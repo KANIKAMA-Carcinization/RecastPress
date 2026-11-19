@@ -1,0 +1,69 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch.receipt.v2",
+  "status": "runtime_failed",
+  "workflow": {
+    "run_id": "44503715461",
+    "run_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44503715461",
+    "source_commit": "74ef0f14cc995481b3528a39d79b00558b55ebf8",
+    "run_attempt": 1,
+    "started_at_utc": "2026-11-19T10:14:44Z",
+    "completed_at_utc": "2026-11-19T10:29:05Z",
+    "artifact_id": "14518429131",
+    "artifact_name": "v06-wp-hook-dispatch-44503715461-1",
+    "artifact_sha256": "7a264b49fe4ad6c342857c34a4e9c90890d7980a24562bba1d69098c30267e14",
+    "artifact_expires_at_utc": "2026-12-03T10:29:05Z"
+  },
+  "execution": {
+    "build_exit_code": 0,
+    "build_duration_ms": 164285,
+    "scenario_exit_code": 1,
+    "scenario_duration_ms": 696681,
+    "timeout_seconds_per_scenario": 300
+  },
+  "scenarios": {
+    "filter": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "ref-array": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action": {
+      "exit_code": 0,
+      "status": "passed"
+    },
+    "action-ref-array": {
+      "exit_code": 1,
+      "status": "runtime_failed",
+      "error": "RuntimeException: wp_action_ref_array_unexpected_frame"
+    },
+    "action-throwable": {
+      "status": "not_reached"
+    },
+    "action-nested": {
+      "status": "not_reached"
+    },
+    "action-mutation": {
+      "status": "not_reached"
+    },
+    "action-removal": {
+      "status": "not_reached"
+    },
+    "action-deferred-add": {
+      "status": "not_reached"
+    }
+  },
+  "diagnosis": {
+    "phase": "active PHP callback dispatch",
+    "reason": "The dispatcher emitted release_php for the removed pending callback handle before action_complete. The PHP fixture dispatch loop did not acknowledge release_php frames in that state.",
+    "resolution_commit": "23da01fd5d427bc05f2b10fffe997b25e30c0941",
+    "resolution": "Handle callable release_php frames during dispatch, track each released uid, reject duplicate releases, and ACK."
+  },
+  "provenance": {
+    "source_inputs_unchanged": true,
+    "scope": "Diagnostic run for the first combined do_action_ref_array add/remove implementation. The other three scenarios reached before action-ref-array passed; remaining scenarios were not run after the first failure.",
+    "production_ready": false
+  },
+  "evidence_artifact_url": "https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44503715461/artifacts/14518429131"
+}
