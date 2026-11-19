@@ -242,16 +242,19 @@ final class RpBootstrapDispatcherHook
         };
 
         $this->dispatched = true;
-        $reply = $this->channel->exchange('begin', [
-            'hook' => RP_BOOT_HOOK_NAME,
-            'target' => RP_BOOT_HOOK_TARGET,
-            'value' => $value,
-            'extra' => array_slice($args, 1),
-            'rows' => $rows,
-            'fingerprint' => $fingerprint,
-        ]);
-        while (true) {
+        $failureStage = 'begin';
+        try {
+            $reply = $this->channel->exchange('begin', [
+                'hook' => RP_BOOT_HOOK_NAME,
+                'target' => RP_BOOT_HOOK_TARGET,
+                'value' => $value,
+                'extra' => array_slice($args, 1),
+                'rows' => $rows,
+                'fingerprint' => $fingerprint,
+            ]);
+            while (true) {
             if ($reply['event'] === 'invoke') {
+                $failureStage = 'invoke_contract';
                 $p = $reply['payload'];
                 $uid = $p['uid'] ?? null;
                 $handle = $p['handle'] ?? null;
@@ -266,6 +269,7 @@ final class RpBootstrapDispatcherHook
                     || !$sync('set_priority', $priority)) {
                     throw new RuntimeException('hook_invoke_identity');
                 }
+                $failureStage = 'callback';
                 $callback = $this->registry->resolve($handle, 'callable');
                 $result = call_user_func_array($callback, $p['args']);
                 if (!is_string($result)) {
@@ -273,6 +277,7 @@ final class RpBootstrapDispatcherHook
                 }
                 $value = $result;
                 $this->invocations[] = $uid;
+                $failureStage = 'resume';
                 $reply = $this->channel->exchange('resume', [
                     'target' => RP_BOOT_HOOK_TARGET,
                     'uid' => $uid,
@@ -281,6 +286,7 @@ final class RpBootstrapDispatcherHook
                 continue;
             }
             if ($reply['event'] === 'release') {
+                $failureStage = 'release';
                 $handle = $reply['payload']['handle'] ?? null;
                 $uid = null;
                 foreach ($this->handles as $candidate => $candidateHandle) {
@@ -297,6 +303,7 @@ final class RpBootstrapDispatcherHook
                 continue;
             }
             if ($reply['event'] === 'complete') {
+                $failureStage = 'complete';
                 if (($reply['payload']['target'] ?? null) !== RP_BOOT_HOOK_TARGET
                     || ($reply['payload']['value'] ?? null) !== $value
                     || ($reply['payload']['invocations'] ?? null) !== 2
@@ -311,6 +318,9 @@ final class RpBootstrapDispatcherHook
                 return $value;
             }
             throw new RuntimeException('hook_reply_op');
+            }
+        } catch (Throwable $error) {
+            throw new RpBootstrapFailure('hook_dispatch_' . $failureStage);
         }
     }
 }
@@ -329,3 +339,4 @@ function rp_bootstrap_install_blogname_dispatcher(): void
     $GLOBALS['rp_boot_hook_object'] = $hook;
     $GLOBALS['rp_boot_hook_trace'] = [];
 }
+

@@ -236,6 +236,8 @@ def expected_fixtures(original, wpdb):
         b"&& $rp_report['public_options'] === ['blogname' => 'RP Bootstrap Fixture|first|second', 'siteurl' => 'http://rp-fixture.invalid', 'home' => 'http://rp-fixture.invalid']")
     codes=set(re.findall(rb",\s*'([a-z][a-z0-9_]*)'\);",bootstrap+helpers+adapter+DROPIN))
     codes.update(re.findall(rb"new Rp(?:Native|Bootstrap)Failure\('([a-z][a-z0-9_]*)'\)",bootstrap+helpers+adapter))
+    codes.update([b'hook_dispatch_begin',b'hook_dispatch_invoke_contract',b'hook_dispatch_callback',
+        b'hook_dispatch_resume',b'hook_dispatch_release',b'hook_dispatch_complete'])
     codes.update([b'php_throwable',b'public_secret_guard',b'unexpected_php_shutdown',b'unclassified_failure'])
     phases=['input','source_inventory','wp_settings','wp_install','public_observations','source_after','complete']
     classes=['RpBootstrapFailure','RpNativeFailure','JsonException','Error','TypeError','ValueError',
@@ -336,3 +338,4 @@ def prepare():
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--verify-only',action='store_true')
     args=parser.parse_args();print((verify_prepared() if args.verify_only else prepare())['outcome'])
+
