@@ -59,12 +59,22 @@ def native_hook_oracle():
         and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
         'native_hook_oracle_execution_failed')
     value=json.loads(result.stdout)
-    require(value['schema']==HOOK_ORACLE_SCHEMA and value['status']=='passed'
-        and value['wordpress_version']=='7.1.3'
-        and value['scenario']=='option_blogname'
-        and value['event_order']==['rp_boot_hook_first','rp_boot_hook_second']
-        and value['filtered_value']=='RP Bootstrap Fixture|first|second',
-        'native_hook_oracle_contract')
+    require(value.get('schema')==HOOK_ORACLE_SCHEMA, 'native_hook_oracle_schema')
+    if value.get('status')!='passed':
+        failure=value.get('failure')
+        allowed={'cli_entry_guard','fixed_wordpress_tree_missing','pinned_wordpress_source_mismatch',
+            'pinned_wordpress_version_missing','pinned_wordpress_version_mismatch',
+            'native_callback_table_mismatch','native_dispatch_incomplete','native_callback_order_mismatch',
+            'native_filter_state_mismatch','native_filter_value_mismatch','native_filter_reset_mismatch',
+            'selected_hook_missing','result_size_limit','native_oracle_execution_failed'}
+        require(failure in allowed, 'native_hook_oracle_failed')
+        require(False, 'native_hook_php_'+failure)
+    require(value.get('wordpress_version')=='7.1.3', 'native_hook_oracle_wordpress_version')
+    require(value.get('scenario')=='option_blogname', 'native_hook_oracle_scenario')
+    require(value.get('event_order')==['rp_boot_hook_first','rp_boot_hook_second'],
+        'native_hook_oracle_event_order')
+    require(value.get('filtered_value')=='RP Bootstrap Fixture|first|second',
+        'native_hook_oracle_filtered_value')
     return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
         'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
         'php_cli_mode':'-n'}
