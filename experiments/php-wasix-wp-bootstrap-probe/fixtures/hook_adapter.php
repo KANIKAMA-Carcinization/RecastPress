@@ -184,6 +184,28 @@ final class RpBootstrapDispatcherHook
         return $this->activePriority ?? false;
     }
 
+    private static function sameHandle(array $actual, array $expected): bool
+    {
+        $keys = ['generation', 'kind', 'request', 'slot', 'token'];
+        if (count($actual) !== count($keys) || count($expected) !== count($keys)) {
+            return false;
+        }
+        $actualKeys = array_keys($actual);
+        $expectedKeys = array_keys($expected);
+        sort($actualKeys, SORT_STRING);
+        sort($expectedKeys, SORT_STRING);
+        if ($actualKeys !== $keys || $expectedKeys !== $keys) {
+            return false;
+        }
+        foreach (['generation', 'kind', 'request', 'slot'] as $key) {
+            if ($actual[$key] !== $expected[$key]) {
+                return false;
+            }
+        }
+        return is_string($actual['token']) && is_string($expected['token'])
+            && hash_equals($expected['token'], $actual['token']);
+    }
+
     public function apply_filters($value, $args)
     {
         if ($this->dispatched) {
@@ -261,7 +283,7 @@ final class RpBootstrapDispatcherHook
                 $priority = $p['priority'] ?? null;
                 if (($p['target'] ?? null) !== RP_BOOT_HOOK_TARGET
                     || !is_string($uid) || !isset($this->handles[$uid])
-                    || !is_array($handle) || $handle !== $this->handles[$uid]
+                    || !is_array($handle) || !self::sameHandle($handle, $this->handles[$uid])
                     || !is_int($priority) || !in_array($priority, [10, 20], true)
                     || ($p['value'] ?? null) !== $value
                     || ($p['call_mode'] ?? null) !== 'array'
@@ -290,7 +312,7 @@ final class RpBootstrapDispatcherHook
                 $handle = $reply['payload']['handle'] ?? null;
                 $uid = null;
                 foreach ($this->handles as $candidate => $candidateHandle) {
-                    if ($candidateHandle === $handle) {
+                    if (is_array($handle) && self::sameHandle($handle, $candidateHandle)) {
                         $uid = $candidate;
                         break;
                     }
@@ -339,4 +361,3 @@ function rp_bootstrap_install_blogname_dispatcher(): void
     $GLOBALS['rp_boot_hook_object'] = $hook;
     $GLOBALS['rp_boot_hook_trace'] = [];
 }
-
