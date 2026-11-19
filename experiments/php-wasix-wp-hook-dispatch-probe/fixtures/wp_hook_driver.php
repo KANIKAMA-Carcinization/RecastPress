@@ -255,6 +255,21 @@ function rp_ref_array_first(string &$value, string &$extra): string
     return 'replacement-from-first';
 }
 
+function rp_ref_array_truncated(string $value, mixed ...$extra): string
+{
+    $args = func_get_args();
+    $GLOBALS['rp_hook_events'][] = [
+        'callback' => 'truncated', 'args' => $args, 'received_arg_count' => count($args),
+        'current_filter' => current_filter(), 'doing_filter' => doing_filter('rp-probe-ref-array'),
+        'did_filter' => did_filter('rp-probe-ref-array'),
+        'current_priority' => $GLOBALS['rp_hook_selected_object']->current_priority(),
+    ];
+    if ($extra !== []) {
+        throw new RuntimeException('wp_hook_ref_array_truncated_callback_received_extra');
+    }
+    return $value;
+}
+
 function rp_ref_array_all(string $hookName, array $arguments): void
 {
     $GLOBALS['rp_hook_events'][] = [
@@ -296,6 +311,7 @@ try {
 
     if ($refArrayMode) {
         add_filter('all', 'rp_ref_array_all', 10, 2);
+        add_filter($hookName, 'rp_ref_array_truncated', 1, 1);
         add_filter($hookName, 'rp_ref_array_first', 5, 2);
         add_filter($hookName, 'rp_ref_array_second', 10, 2);
     } else {
@@ -342,15 +358,17 @@ try {
 
     if ($refArrayMode) {
         $selectedEvents = array_values(array_filter($GLOBALS['rp_hook_events'], static fn (array $event): bool => ($event['callback'] ?? null) !== 'all'));
-        if (array_column($selectedEvents, 'callback') !== ['first', 'second']
+        if (array_column($selectedEvents, 'callback') !== ['truncated', 'first', 'second']
             || array_column($selectedEvents, 'args') !== [
+                ['seed'],
                 ['seed', 'left'],
                 ['replacement-from-first', 'extra-mutated-by-first'],
             ]
-            || array_column($selectedEvents, 'current_filter') !== [$hookName, $hookName]
-            || array_column($selectedEvents, 'doing_filter') !== [true, true]
-            || array_column($selectedEvents, 'did_filter') !== [1, 1]
-            || array_column($selectedEvents, 'current_priority') !== [5, 10]
+            || ($selectedEvents[0]['received_arg_count'] ?? null) !== 1
+            || array_column($selectedEvents, 'current_filter') !== [$hookName, $hookName, $hookName]
+            || array_column($selectedEvents, 'doing_filter') !== [true, true, true]
+            || array_column($selectedEvents, 'did_filter') !== [1, 1, 1]
+            || array_column($selectedEvents, 'current_priority') !== [1, 5, 10]
             || $value !== 'replacement-from-first'
             || $extra !== 'extra-mutated-by-second'
             || ($GLOBALS['rp_hook_events'][0]['args'] ?? null) !== ['seed', 'left']

@@ -89,11 +89,12 @@ def ref_array_contract_matches(native_observation, wasm_observation):
     guest = wasm_observation.get("guest", {})
     actual_events = []
     for event in guest.get("events", []):
-        keys = (
-            ("callback", "hook", "args", "current_filter", "doing_filter", "did_filter")
-            if event.get("callback") == "all"
-            else ("callback", "args", "current_filter", "doing_filter", "did_filter")
-        )
+        if event.get("callback") == "all":
+            keys = ("callback", "hook", "args", "current_filter", "doing_filter", "did_filter")
+        else:
+            keys = ("callback", "args", "current_filter", "doing_filter", "did_filter", "current_priority")
+            if event.get("callback") == "truncated":
+                keys += ("received_arg_count",)
         actual_events.append({key: event.get(key) for key in keys})
     return (
         actual_events == native_observation.get("events")
