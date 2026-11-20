@@ -53,6 +53,6 @@ python3 -B experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend maria
 
 ## 現在の証跡
 
-Windows の隔離 target で現在の host sources を locked/offline build し、正確な31 unit の inventory 一致と31件成功、通常 host binary build を確認しました。[ローカル receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-local-host-validation.json) は149 source inputs の前後一致、toolchain version、実行 argv、成果物 hash を記録します。既存の staged DB driver seed lock が現在の固定参照と一致しなかったため、`build_check.py` の完全 gate は別途失敗記録を残しています。このローカル確認では PHP-Wasm、native PHP oracle、MySQL/MariaDB を実行していません。
+Windows の隔離 clone と専用 target で `build_check.py` の完全 gate が成功しました。[build receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json) は149 source inputs の前後 hash 一致、固定 DB driver source の準備、31 unit の inventory 一致と実行、通常 host binary build を記録します。以前の共有 target で検出した古い staged DB driver seed lock の失敗 receipt は[診断履歴](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build-before-4a37bdfe4afff245.json)として保存しています。[ローカル host receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-local-host-validation.json) は別の隔離 build による詳細記録です。この Windows gate は host 側の確認であり、PHP-Wasm、native PHP oracle、MySQL/MariaDB は実行していません。
 
 過去の CI receipt は、それぞれの記録済み commit と source hash の範囲でのみ有効です。hook adapter の現在の差分を含む MySQL/MariaDB の成功 receipt が存在しない間は、この統合デモを実行確認済みと表示しません。失敗 run と build gate の失敗 receipt は診断履歴として成功証跡と区別して保管します。
