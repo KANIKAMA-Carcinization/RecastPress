@@ -113,7 +113,12 @@ def prepared_gate(value,source):
     last=adapter.index(b'        $this->check_current_query = true;',first)
     validation=adapter[first:last];require(sha(validation)==UPSTREAM_VALIDATION_SHA,'upstream_query_validation_block')
     end=b'\t\t$this->check_current_query = true;\n\n\t\t// Keep track of the last query'
-    pure=source.functions(PREFIX+'prepare.py',['once','section','expected_fixtures'],constants)
+    def source_fixture(path):
+        relative=path.relative_to(Path(PREFIX.rstrip('/'))).as_posix()
+        require(relative.startswith('fixtures/'),'source_preparation_fixture_path')
+        return source.read(PREFIX+relative)
+    pure=source.functions(PREFIX+'prepare.py',['once','section','expected_fixtures'],
+        {**constants,'HERE':Path(PREFIX.rstrip('/')),'read':source_fixture})
     fixtures,_=pure['expected_fixtures'](original,validation+end)
     for name in constants['FIXTURES']:exact(source.read(PREFIX+'fixtures/'+name),fixtures[name],'whole_derived_fixture')
     tree=source.tree(PREFIX+'prepare.py')
@@ -122,8 +127,9 @@ def prepared_gate(value,source):
     require(set(returns)=={'metadata','derivation_gate'} and all(isinstance(v,ast.Dict) for v in returns.values()),
         'source_preparation_return_shapes')
     fields={ast.literal_eval(k):v for k,v in zip(returns['derivation_gate'].keys,returns['derivation_gate'].values)}
+    fixture_names=constants['FIXTURES']+constants['NATIVE_FIXTURES']
     expected_derivation={'base_commit':constants['BASE_COMMIT'],'original_git_objects_verified_by_preparer':False,
-        'parents':{n:identity(w) for n,w in original.items()},'derived':{n:identity(fixtures[n]) for n in constants['FIXTURES']},
+        'parents':{n:identity(w) for n,w in original.items()},'derived':{n:identity(fixtures[n]) for n in fixture_names},
         'upstream_query_validation_block_sha256':UPSTREAM_VALIDATION_SHA,'upstream_query_validation_bytes_preserved':True,
         'original_core_theme_plugin_bytes_modified':False,'owned_db_overlay_files':1}
     for key in ['allowed_helper_changes','allowed_adapter_changes','allowed_bootstrap_changes']:
@@ -140,8 +146,8 @@ def prepared_gate(value,source):
     exact(value['native_oracles'],oracles,'native_oracle_byte_pins')
     baseline=parse_json(source.read(oracles['mysql']['path']))['preparation_before']
     names=set(previous['input_files'])|set(baseline['input_files'])|set(constants['PINS'])
-    names|={PREFIX+'prepare.py',*[PREFIX+'fixtures/'+n for n in constants['FIXTURES']]}
-    require(len(names)==30,'thirty_preparation_inputs');exact(value['input_files'],source.hashes(names),'complete_preparation_inventory')
+    names|={PREFIX+'prepare.py',*[PREFIX+'fixtures/'+n for n in constants['FIXTURES']+constants['NATIVE_FIXTURES']]}
+    require(len(names)==33,'thirty_three_preparation_inputs');exact(value['input_files'],source.hashes(names),'complete_preparation_inventory')
     for key,native_key in [('core_site','site'),('core_manifest','source_manifest'),('core_inventory','source_tree')]:
         exact(value[key],baseline[native_key],'unchanged_full_core_'+key)
     exact(value['core_archive'],{'bytes':baseline['archive_bytes'],'sha256':baseline['archive_sha256']},'full_wp_archive_metadata')
@@ -152,14 +158,14 @@ def prepared_gate(value,source):
         files.append({'source':PREFIX+'fixtures/'+name,'guest':'/wordpress/wp-content/db.php' if name=='db.php'
             else '/experiments/php-wasix-wp-bootstrap-probe/fixtures/'+name,**identity(fixtures[name]),
             'guest_read_only':True,'kind':'owned_wpdb_dropin' if name=='db.php' else 'derived_fixture'})
-    exact(value['files'],files,'all_six_guest_files_and_single_overlay')
+    exact(value['files'],files,'all_guest_fixture_files_and_single_overlay')
     require(value['schema']=='recastpress.php-wasix-wp-bootstrap-prepared.v0.5'
         and value['outcome']=='full_core_and_owned_db_overlay_prepared' and value['inputs_unchanged'] is True,'prepared_identity')
     for key in ['guest_context_contains_db_credentials','native_reference_binaries_reverified','core_files_modified',
         'secret_context_in_prepared_metadata','php_executed','wasm_executed','database_connected',
         'product_runtime_selected','guest_readonly_enforcement_executed']:
         require(value[key] is False,'prepared_unclaimed_'+key)
-    return {'fixture_derivations_verified':True,'preparation_inputs':30,'core_files':3782,'core_directories':467,
+    return {'fixture_derivations_verified':True,'preparation_inputs':33,'core_files':3782,'core_directories':467,
         'owned_overlay_files':1,'source_archive_binaries_reverified_offline':False}
 
 
@@ -181,11 +187,46 @@ def operation_limit(source):
     return bounds[0]
 
 
+def native_hook_oracle(source):
+    wire=source.read(PREFIX+'fixtures/hook_native_oracle.php')
+    def constant(name):
+        match=re.search(rb"const "+name.encode()+rb" = '([^']+)';",wire)
+        require(match is not None,'native_hook_source_constant')
+        return match[1].decode('ascii')
+    schema=constant('RP_HOOK_ORACLE_SCHEMA');hook=constant('RP_HOOK_ORACLE_NAME');value=constant('RP_HOOK_ORACLE_INPUT')
+    block=re.search(rb'const RP_HOOK_ORACLE_SOURCE = \[(.*?)\];',wire,re.S)
+    require(block is not None,'native_hook_source_hash_map')
+    sources={path.decode('ascii'):digest.decode('ascii') for path,digest in
+        re.findall(rb"'([^']+)' => '([0-9a-f]{64})'",block[1])}
+    exact(set(sources),{'wp-includes/plugin.php','wp-includes/class-wp-hook.php'},'native_hook_source_hash_paths')
+    exact(schema,'recastpress.wp-bootstrap-hook-native-oracle.v0.1','native_hook_schema_pin')
+    exact((hook,value),('option_blogname','RP Bootstrap Fixture'),'native_hook_scenario_pin')
+    names=['rp_boot_hook_first','rp_boot_hook_second']
+    priorities=[10,20]
+    events=[]
+    for callback,priority,event_value in zip(names,priorities,[value,value+'|first']):
+        events.append({'callback':callback,'current_filter':hook,'doing_filter':True,
+            'doing_selected_filter':True,'did_filter':1,'current_priority':priority,'stack':[hook],
+            'value':event_value,'argument_count':1})
+    expected={'schema':schema,'status':'passed',
+        'scope':'Pinned native WordPress 7.1.3 plugin API and WP_Hook only; no wp-settings.php bootstrap, database, plugins, themes, or network.',
+        'wordpress_version':'7.1.3','wordpress_source_sha256':sources,'scenario':hook,'input_value':value,
+        'extra_args':['blogname'],'registered_callbacks':[
+            {'callback':names[0],'priority':priorities[0],'accepted_args':1},
+            {'callback':names[1],'priority':priorities[1],'accepted_args':1}],
+        'event_order':names,'events':events,'filtered_value':value+'|first|second',
+        'after_dispatch':{'current_filter':False,'doing_filter':False,'doing_selected_filter':False,
+            'did_filter':1,'stack':[],'hook_state':{'nesting_level':0,'iterations':[],
+                'current_priority':[],'doing_action':False}}}
+    stdout=(json.dumps(expected,separators=(',',':'),ensure_ascii=False,allow_nan=False)+'\n').encode('utf-8')
+    return expected,stdout
+
+
 def frozen_checker(source):
     name=PREFIX+'run_check.py';constants=source.constants(name)
     def reader(path,maximum):
         wire=source.read(Path(path).relative_to(ROOT).as_posix());require(len(wire)<=maximum,'native_reference_quota');return wire
-    namespace=source.functions(name,['canonical','reference','validate'],{**constants,
+    namespace=source.functions(name,['canonical','reference','validate','normalize_hook_trace','compare_hook_oracle'],{**constants,
         'build':SimpleNamespace(read=reader)})
     namespace['source_operation_limit']=operation_limit(source)
     return namespace
@@ -234,6 +275,15 @@ def positive_gate(data,raw,source,backend):
     require(run['module_provenance']==run['module_provenance_after'],'module_unchanged')
     managed=old.managed_gate(data,raw,source,run['module_provenance'])
     checker=frozen_checker(source);native=checker['reference'](backend)
+    native_hook=run['native_hook_oracle'];hook_execution=run['native_hook_oracle_execution']
+    expected_hook,hook_stdout=native_hook_oracle(source)
+    exact(native_hook,expected_hook,'complete_native_hook_oracle')
+    exact(set(hook_execution),{'exit_code','php_cli_mode','stderr_bytes','stdout_bytes','stdout_sha256'},
+        'native_hook_execution_fields')
+    require(hook_execution['exit_code']==0 and hook_execution['php_cli_mode']=='-n'
+        and hook_execution['stderr_bytes']==0 and hook_execution['stdout_bytes']==len(hook_stdout)
+        and hook_execution['stdout_sha256']==sha(hook_stdout),
+        'native_hook_oracle_execution')
     lock=tomllib.loads(source.read(PREFIX+'Cargo.lock').decode('utf-8'))
     json_crates=[p for p in lock['package'] if p['name']=='serde_json']
     require(len(json_crates)==1 and not any(d.startswith('indexmap') for d in json_crates[0].get('dependencies',[])),
@@ -241,7 +291,8 @@ def positive_gate(data,raw,source,backend):
     exact(set(run['observations']),{'install','read'},'two_fresh_guest_modes')
     for mode in ['install','read']:
         value=run['observations'][mode]
-        expected=checker['validate'](value,mode,native[mode]);exact(run['validations'][mode],expected,'source_bound_native_comparison')
+        expected=checker['validate'](value,mode,native[mode],native_hook)
+        exact(run['validations'][mode],expected,'source_bound_native_comparison')
         execution=run[mode+'_execution'];require(execution['owned_reaped'] is True and execution['exit_code']==0
             and execution['stderr_bytes']==0 and execution['stderr_sha256']==sha(b''),'owned_mode_execution')
         require(execution['stdout_sha256']==sha(canonical(value)+b'\n'),'public_host_stdout_identity')

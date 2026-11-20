@@ -17,3 +17,14 @@ callbackはこのfixture専用です。すべてのWordPress hook、一般plugin
 ## 実行と確認
 
 GitHub Actionsの`PHP WASIX full WordPress bootstrap` workflowは、`dev/v0.6`への対象source pushでMySQLとMariaDBのjobを実行します。成功後はworkflow artifactの`linux-mysql.json`／`linux-mariadb.json`で、`hook_dispatch`、`native_hook_oracle_match`、`hook_rpc`を確認します。PHP lint、native oracle、Wasm install/read、DB最終状態の確認が全て通ることをデモ受入条件にします。
+
+### 最新の成功run
+
+[run 44649976739](https://github.com/KANIKAMA-Carcinization/ReCastPress/actions/runs/44649976739)はsource commit `0b0d68d032adff6dc2b80d1254e04a323c18b83a`で実行し、MySQL job `136002149219`とMariaDB job `136002149544`が両方successでした。各artifactの`linux-<backend>.json`ではinstall/readの両方で固定WordPress 7.1.3のnative `WP_Hook` oracleと一致し、callback順は`rp_boot_hook_first -> rp_boot_hook_second`、結果は`RP Bootstrap Fixture|first|second`です。native/Wasm traceとreset stateが一致し、hook RPCはclose済み、failureなし、live handles・pending bytes・unread response bytesがすべて0でした。
+
+| backend | artifact | SHA-256 | 取得期限 |
+| --- | --- | --- | --- |
+| MySQL | [14590399453](https://github.com/KANIKAMA-Carcinization/ReCastPress/actions/runs/44649976739/artifacts/14590399453) | `7c5bb54e1caf25345819c835c202af047b482abe7544d18d594b6883e80ba98e` | 2026-12-20 01:17 UTC |
+| MariaDB | [14591199141](https://github.com/KANIKAMA-Carcinization/ReCastPress/actions/runs/44649976739/artifacts/14591199141) | `ec4dff7acba1eae64364aea6ee45dadec6e5f22ec1d4c3a438570ee54ed8b4ea` | 2026-12-20 01:17 UTC |
+
+source-bound import receiptは[MySQL](../experiments/php-wasix-wp-bootstrap-probe/evidence/ci-44649976739-mysql/provenance.json)と[MariaDB](../experiments/php-wasix-wp-bootstrap-probe/evidence/ci-44649976739-mariadb/provenance.json)にあります。offline importerはartifact digest、Windows/Linuxのsource inventory、fixture derivation、native/Wasm比較を検証します。importer自身はPHP・Wasm・DBを再実行せず、CIの非公開SQL等のbytesも再構成しません。
