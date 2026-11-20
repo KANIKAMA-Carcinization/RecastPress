@@ -1,0 +1,57 @@
+{
+  "schema": "recastpress.php-wasix-wp-bootstrap-windows-source-preparation-run.v0.1",
+  "observed_at_utc": "2026-11-20T04:18:41Z",
+  "outcome": "source_and_owned_overlay_preparation_verified",
+  "prepared_metadata": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-source-preparation.json",
+    "bytes": 16239,
+    "sha256": "5f1e6f9d340df84aafff9d583d3abdbec2a7dbfaa7f508d600033c498d68315c"
+  },
+  "source_snapshot": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",
+    "sha256": "7337631ec0c4b97403153e2b305c964295ff443431d5a703edccb8a16e4fa37a",
+    "input_count": 149,
+    "prepared_input_count": 33,
+    "prepared_inputs_match_snapshot": true
+  },
+  "wordpress_archive": {
+    "bytes": 35368461,
+    "sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5"
+  },
+  "source_manifest": {
+    "bytes": 650759,
+    "sha256": "734275a54c29e1df269ae5fe34782f567de05a1b3230aad7faed252b37d783b3",
+    "wordpress_version": "7.1.3",
+    "files": 3782,
+    "directories": 467,
+    "members": 4250,
+    "expanded_bytes": 110077999,
+    "core_theme_plugin_bytes_modified": false,
+    "wp_config_created": false,
+    "manifest_artifact_retained": false
+  },
+  "scope": {
+    "php_executed": false,
+    "wasm_executed": false,
+    "database_connected": false,
+    "product_runtime_selected": false,
+    "native_reference_binaries_reverified": false,
+    "guest_readonly_enforcement_executed": false,
+    "secret_context_in_prepared_metadata": false,
+    "inputs_unchanged": true
+  },
+  "verification": {
+    "observed_at_utc": "2026-11-20T04:21:37Z",
+    "argv": [
+      "python.exe",
+      "-B",
+      "experiments/php-wasix-wp-bootstrap-probe/prepare.py",
+      "--verify-only"
+    ],
+    "exit_code": 0,
+    "stdout_bytes": 41,
+    "stdout_sha256": "f69e352db38d9501370c51b0e1d8fe77ba4445bb42f4453bf856a8e83d0f033e",
+    "stderr_bytes": 0,
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
