@@ -680,7 +680,10 @@ fn run_dispatch(
                                 "rp_ref_array_second".to_string(),
                             ]
                         } else if object_method_mode {
-                            vec![rows[0]["uid"].as_str().unwrap().to_string(), rows[1]["uid"].as_str().unwrap().to_string()]
+                            vec![
+                                "RpHookObjectMethodProbe::apply".to_string(),
+                                "RpHookObjectMethodProbe::apply".to_string(),
+                            ]
                         } else {
                             vec![
                                 "rp_probe_callback_a".to_string(),
