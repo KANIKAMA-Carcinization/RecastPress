@@ -1,0 +1,121 @@
+{
+  "schema": "recastpress.php-wasix-wp-bootstrap-windows-php-fixture-lint.v0.1",
+  "observed_at_utc": "2026-11-20T04:45:00Z",
+  "passed": true,
+  "php_cli": {
+    "path": ".reference/php-8.5.12/php.exe",
+    "version": "8.5.12",
+    "manifest_archive_sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477",
+    "binary_sha256": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+    "arguments": [
+      "-n",
+      "-l"
+    ]
+  },
+  "source_snapshot": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",
+    "sha256": "7337631ec0c4b97403153e2b305c964295ff443431d5a703edccb8a16e4fa37a",
+    "input_count": 149
+  },
+  "fixtures": [
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/install.php",
+      "bytes": 149,
+      "sha256": "8e7489b5c0e821314386ed3dc7951b6433ceeee656acbd22697fb2bd124352f4",
+      "exit_code": 0,
+      "stdout_bytes": 136,
+      "stdout_sha256": "5586884703d0b53169ac74688c3a3b0eb32a5b56fece571e2bfc078c73e4cc79",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/read.php",
+      "bytes": 146,
+      "sha256": "855db45d512920ccadffa9104686691cdae6468fd3fc934f9ad8416920a4095a",
+      "exit_code": 0,
+      "stdout_bytes": 133,
+      "stdout_sha256": "2401bf2d982c053ae52d0eb0ca879240ec21ec543737179d85384f61149a84e4",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php",
+      "bytes": 20609,
+      "sha256": "d4991c81686fef88562b950e8777f414fa9b9f7f1fe9f0c1c980635dafbd6d0b",
+      "exit_code": 0,
+      "stdout_bytes": 138,
+      "stdout_sha256": "50b51217215a90f3cc32ce16f3b5426c4faa52f35de77aaaa356ea7e07f5985a",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/helpers.php",
+      "bytes": 3381,
+      "sha256": "0581034ca4f4ce54e1a4a515c8e803503b8b79ae906ffd2d879b9f8e2b319850",
+      "exit_code": 0,
+      "stdout_bytes": 136,
+      "stdout_sha256": "8ffa9f511c44d35a67fedf1544273149250dea3f69e61d54676e12c032a4f7ac",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/adapter.php",
+      "bytes": 16212,
+      "sha256": "55f7042bebb6abbdd73104e52688a913dc38f2ae2b59abba292f303200f91b1f",
+      "exit_code": 0,
+      "stdout_bytes": 136,
+      "stdout_sha256": "a62146417d8e5164b3823c299853cdb774ed246ca746ca448b05f16b266b64e9",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/db.php",
+      "bytes": 606,
+      "sha256": "2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8",
+      "exit_code": 0,
+      "stdout_bytes": 131,
+      "stdout_sha256": "05210ec42e84b14cde544e0c4c732cc773616a4c8fd4dd886b84cd6bfaeec715",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_adapter.php",
+      "bytes": 14182,
+      "sha256": "493a962a6b9a5e03c7bdf8cacf6635d3b2810253f1151dfd357468b9caf1f10f",
+      "exit_code": 0,
+      "stdout_bytes": 141,
+      "stdout_sha256": "f011c60080955da26b8de5d863e425da080702851854d2a53ccbce404fc88812",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_handle_registry.php",
+      "bytes": 11351,
+      "sha256": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
+      "exit_code": 0,
+      "stdout_bytes": 149,
+      "stdout_sha256": "21c401f900b92e7e69f15287fbc7382952b9d35411e0496ab06e480c913788a3",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
+      "bytes": 9900,
+      "sha256": "6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4",
+      "exit_code": 0,
+      "stdout_bytes": 147,
+      "stdout_sha256": "073ed8ead04b6ece29b5f3978e3ed981857798c35154da4bec223973238356bc",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": {
+    "syntax_check_only": true,
+    "php_fixture_executed": false,
+    "native_oracle_executed_by_this_command": false,
+    "wasm_executed": false,
+    "database_started": false,
+    "database_connected": false,
+    "product_runtime_selected": false
+  }
+}
