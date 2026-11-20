@@ -1,10 +1,10 @@
 {
   "schema": "recastpress.php-wasix-wp-bootstrap-windows-native-hook-demo-run.v0.1",
-  "observed_at_utc": "2026-11-20T05:04:01.199986+00:00",
+  "observed_at_utc": "2026-11-20T05:05:07.481498+00:00",
   "passed": true,
   "runner": {
     "path": "scripts/run_recastpress_native_hook_demo.py",
-    "sha256": "ea2ad8c0c55bfdbda5819cb8c44fcb90940311c753cc10d85d0780f001db27ac"
+    "sha256": "9e54c23216ad04075589fc0c606d2231f18f2a422b17cdf3458b94d5d89c95b8"
   },
   "host_build_receipt": {
     "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",

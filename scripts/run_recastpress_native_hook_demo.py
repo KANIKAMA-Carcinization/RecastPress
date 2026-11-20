@@ -163,7 +163,7 @@ def main():
         and (not RUN_RECEIPT.exists()
              or (RUN_RECEIPT.is_file() and RUN_RECEIPT.resolve(strict=True) == RUN_RECEIPT)),
         'unsafe_demo_receipt_output_path')
-    RUN_RECEIPT.write_text(json.dumps(run_record, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    RUN_RECEIPT.write_bytes((json.dumps(run_record, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
 
     print('PASS: RecastPress native WordPress hook oracle')
     print('PHP: 8.5.12; WordPress: 7.1.3; scenario: option_blogname')
