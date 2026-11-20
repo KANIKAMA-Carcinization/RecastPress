@@ -261,6 +261,7 @@ fn run_dispatch(
     total_in: &mut usize,
     total_out: &mut usize,
     ref_array_mode: bool,
+    object_method_mode: bool,
 ) -> Result<Value> {
     let deadline = Instant::now() + TIMEOUT;
     let start = read_frame(reader, deadline, total_in, 0)?;
@@ -306,7 +307,7 @@ fn run_dispatch(
         .as_array()
         .context("rows must be array")?;
     ensure!(
-        rows.len() == if ref_array_mode { 4 } else { 3 },
+        rows.len() == if ref_array_mode { 4 } else if object_method_mode { 2 } else { 3 },
         "imported callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -316,7 +317,7 @@ fn run_dispatch(
                 row["priority"],
                 row["uid"],
                 row["accepted_args"],
-                row["function"],
+                row["callable_descriptor"],
                 row["handle"]["request"],
                 row["handle"]["kind"],
                 row["handle"]["slot"],
@@ -337,8 +338,8 @@ fn run_dispatch(
     for row in rows {
         let obj = row.as_object().context("callback row must be object")?;
         ensure!(
-            obj.len() == 5
-                && ["priority", "uid", "accepted_args", "function", "handle"]
+            obj.len() == 6
+                && ["priority", "uid", "accepted_args", "function", "callable_descriptor", "handle"]
                     .iter()
                     .all(|k| obj.contains_key(*k)),
             "callback row schema"
@@ -350,6 +351,7 @@ fn run_dispatch(
             .position(|candidate| candidate["uid"] == uid)
             .context("callback insertion order")? as u64;
         let callback = match row["function"].as_str() {
+            None if object_method_mode => "RpHookObjectMethodProbe::apply",
             Some("rp_probe_callback_a") if !ref_array_mode => "rp_probe_callback_a",
             Some("rp_probe_callback_b") if !ref_array_mode => "rp_probe_callback_b",
             Some("rp_ref_array_truncated") if ref_array_mode => "rp_ref_array_truncated",
@@ -360,11 +362,24 @@ fn run_dispatch(
             None => anyhow::bail!("ref-array probe does not accept closure callbacks"),
             Some(other) => anyhow::bail!("unrecognized PHP callback descriptor: {other}"),
         };
+        if object_method_mode {
+            ensure!(row["function"].is_null(), "object method must not be serialized as a function string");
+            ensure!(row["callable_descriptor"] == json!({"kind":"object_method","class":"RpHookObjectMethodProbe","method":"apply"}),
+                "object method descriptor is outside the fixed probe contract");
+        } else if row["function"].is_null() {
+            ensure!(row["callable_descriptor"] == json!({"kind":"closure"}), "closure descriptor mismatch");
+        } else {
+            ensure!(row["callable_descriptor"] == json!({"kind":"function","name":row["function"]}), "function descriptor mismatch");
+        }
         let accepted_args = row["accepted_args"].as_i64().context("accepted_args")?;
         ensure!(
             accepted_args >= 0 && accepted_args <= 32,
             "accepted_args outside probe bounds"
         );
+        if object_method_mode {
+            ensure!(accepted_args == 3 && (priority == 5 || priority == 10) && !uid.is_empty(),
+                "object method priority/accepted_args outside the fixed probe contract");
+        }
         if callback == "rp_ref_array_truncated" {
             ensure!(
                 ref_array_mode && priority == 1 && accepted_args == 1,
@@ -619,6 +634,8 @@ fn run_dispatch(
                         "argument_frame_released_before_close",
                         "frames",
                         "invocations",
+                        "object_method_outcomes",
+                        "object_method_presence",
                     ],
                 )?;
                 ensure!(
@@ -646,6 +663,8 @@ fn run_dispatch(
                         && done["payload"]["invocations"]
                             == if ref_array_mode {
                                 json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]])
+                            } else if object_method_mode {
+                                json!([rows[0]["uid"], rows[1]["uid"]])
                             } else {
                                 json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]])
                             },
@@ -660,6 +679,8 @@ fn run_dispatch(
                                 "rp_ref_array_first".to_string(),
                                 "rp_ref_array_second".to_string(),
                             ]
+                        } else if object_method_mode {
+                            vec![rows[0]["uid"].as_str().unwrap().to_string(), rows[1]["uid"].as_str().unwrap().to_string()]
                         } else {
                             vec![
                                 "rp_probe_callback_a".to_string(),
@@ -673,7 +694,7 @@ fn run_dispatch(
                     .as_array()
                     .context("guest events missing")?;
                 ensure!(
-                    events.len() == if ref_array_mode { 5 } else { 4 },
+                    events.len() == if ref_array_mode { 5 } else if object_method_mode { 3 } else { 4 },
                     "native all plus selected callback event count mismatch"
                 );
                 ensure!(
@@ -690,7 +711,14 @@ fn run_dispatch(
                         && events[0]["did_filter"] == 1,
                     "WordPress all callback observation mismatch"
                 );
-                if ref_array_mode {
+                if object_method_mode {
+                    ensure!(events[1]["callback"] == "first" && events[1]["args"] == json!(["seed","left","right"])
+                        && events[1]["current_priority"] == 5 && events[2]["callback"] == "second"
+                        && events[2]["args"] == json!(["seed|first","left","right"])
+                        && events[2]["current_priority"] == 10 && done["payload"]["object_method_outcomes"] == json!([false,true,true])
+                        && done["payload"]["object_method_presence"] == json!([5,5]),
+                        "object method identity and dispatch observation mismatch");
+                } else if ref_array_mode {
                     ensure!(
                         rows[0]["uid"] == "rp_ref_array_truncated"
                             && rows[0]["priority"] == 1
@@ -724,7 +752,7 @@ fn run_dispatch(
                             && events[4]["current_priority"] == 10,
                         "WordPress ref-array callback observations mismatch"
                     );
-                } else {
+                } else if !object_method_mode {
                     ensure!(
                         events[1]["callback"] == "a"
                             && events[1]["args"] == json!(["seed", "left", "right"])
@@ -735,7 +763,7 @@ fn run_dispatch(
                         "first selected callback observation mismatch"
                     );
                 }
-                if !ref_array_mode {
+                if !ref_array_mode && !object_method_mode {
                     ensure!(
                         events[2]["callback"] == "zero"
                             && events[2]["args"] == json!([])
@@ -4230,6 +4258,7 @@ fn run_action_remove_all_second_dispatch(
 fn main() -> Result<()> {
     let action_mode = std::env::args().nth(1).as_deref() == Some("action");
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
+    let object_method_mode = std::env::args().nth(1).as_deref() == Some("object-method");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array");
     let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
@@ -4241,6 +4270,7 @@ fn main() -> Result<()> {
     ensure!(
         action_mode
             || ref_array_mode
+            || object_method_mode
             || action_ref_array_mode
             || action_throwable_mode
             || action_nested_mode
@@ -4433,6 +4463,7 @@ fn main() -> Result<()> {
             &mut total_in,
             &mut total_out,
             ref_array_mode,
+            object_method_mode,
         )
     };
     eprintln!("PHP_WASIX_WP_HOOK_PHASE=host_wait_done");
@@ -4490,7 +4521,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if object_method_mode {"object-method"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -4561,11 +4592,11 @@ fn run_guest(
         ]
     } else if driver == PHP_ACTION_DRIVER {
         vec!["-n".to_string(), driver.to_string(), "action".to_string()]
-    } else if driver == PHP_DRIVER && std::env::args().nth(1).as_deref() == Some("ref-array") {
+    } else if driver == PHP_DRIVER && matches!(std::env::args().nth(1).as_deref(), Some("ref-array" | "object-method")) {
         vec![
             "-n".to_string(),
             driver.to_string(),
-            "ref-array".to_string(),
+            std::env::args().nth(1).unwrap(),
         ]
     } else {
         vec!["-n".to_string(), driver.to_string()]

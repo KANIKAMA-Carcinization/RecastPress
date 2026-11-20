@@ -34,10 +34,26 @@ function rp_hook_table_snapshot(WP_Hook $hook): array
                 'uid' => (string) $uid,
                 'accepted_args' => (int) $entry['accepted_args'],
                 'function' => $entry['function'],
+                'callable_descriptor' => rp_hook_callable_descriptor($entry['function']),
             ];
         }
     }
     return $rows;
+}
+
+function rp_hook_callable_descriptor(mixed $callable): array
+{
+    if (is_string($callable)) {
+        return ['kind' => 'function', 'name' => $callable];
+    }
+    if ($callable instanceof Closure) {
+        return ['kind' => 'closure'];
+    }
+    if (is_array($callable) && count($callable) === 2
+        && is_object($callable[0]) && is_string($callable[1])) {
+        return ['kind' => 'object_method', 'class' => get_class($callable[0]), 'method' => $callable[1]];
+    }
+    throw new RuntimeException('wp_hook_unsupported_callable_descriptor');
 }
 
 function rp_hook_handles_equal(array $left, array $right): bool
@@ -50,11 +66,15 @@ function rp_hook_handles_equal(array $left, array $right): bool
 function rp_hook_table_fingerprint(array $rows): string
 {
     $projection = array_map(
-        static fn (array $row): array => [
-            $row['priority'], $row['uid'], $row['accepted_args'], $row['function'],
-            $row['handle']['request'], $row['handle']['kind'], $row['handle']['slot'],
-            $row['handle']['generation'], $row['handle']['token'],
-        ],
+        static function (array $row): array {
+            $descriptor = $row['callable_descriptor'];
+            ksort($descriptor);
+            return [
+                $row['priority'], $row['uid'], $row['accepted_args'], $descriptor,
+                $row['handle']['request'], $row['handle']['kind'], $row['handle']['slot'],
+                $row['handle']['generation'], $row['handle']['token'],
+            ];
+        },
         $rows,
     );
     return hash('sha256', json_encode($projection, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
@@ -90,6 +110,7 @@ function recastpress_wp_dispatch_selected_hook(
             'uid' => $row['uid'],
             'accepted_args' => $row['accepted_args'],
             'function' => is_string($row['function']) ? $row['function'] : null,
+            'callable_descriptor' => $row['callable_descriptor'],
             'handle' => $handle,
         ];
     }
@@ -308,8 +329,24 @@ function rp_ref_array_second(string &$value, string &$extra): string
     return $value . '|' . $extra;
 }
 
+final class RpHookObjectMethodProbe
+{
+    public function __construct(private string $label) {}
+    public function apply(string $value, string $left, string $right): string
+    {
+        $GLOBALS['rp_hook_events'][] = [
+            'callback' => $this->label, 'args' => [$value, $left, $right],
+            'current_filter' => current_filter(), 'doing_filter' => doing_filter('rp-probe-filter'),
+            'did_filter' => did_filter('rp-probe-filter'),
+            'current_priority' => $GLOBALS['rp_hook_selected_object']->current_priority(),
+        ];
+        return "{$value}|{$this->label}";
+    }
+}
+
 try {
     fwrite(STDERR, "RP_HOOK_PHASE=protocol_start\n");
+    $objectMethodMode = ($argv[1] ?? '') === 'object-method';
     $refArrayMode = ($argv[1] ?? '') === 'ref-array';
     $hookName = $refArrayMode ? 'rp-probe-ref-array' : 'rp-probe-filter';
     $wire = new BridgeProtocol();
@@ -319,6 +356,7 @@ try {
     $GLOBALS['rp_hook_events'] = [];
     $GLOBALS['rp_hook_invocations'] = [];
     $GLOBALS['rp_hook_ref_array_mode'] = $refArrayMode;
+    $GLOBALS['rp_hook_object_method_mode'] = $objectMethodMode;
     $GLOBALS['rp_hook_name'] = $hookName;
     $GLOBALS['rp_hook_argument_frame_handle'] = null;
     $GLOBALS['rp_hook_argument_frame_release_acked'] = false;
@@ -326,7 +364,21 @@ try {
     $GLOBALS['wp_filters'] = [];
     $GLOBALS['wp_current_filter'] = [];
 
-    if ($refArrayMode) {
+    if ($objectMethodMode) {
+        add_filter('all', 'rp_probe_all', 10, 10);
+        $first = new RpHookObjectMethodProbe('first');
+        $second = new RpHookObjectMethodProbe('second');
+        $wrong = new RpHookObjectMethodProbe('wrong');
+        add_filter($hookName, [$first, 'apply'], 5, 3);
+        add_filter($hookName, [$second, 'apply'], 10, 3);
+        $presentBeforeWrongRemoval = has_filter($hookName, [$first, 'apply']);
+        $wrongRemoved = remove_filter($hookName, [$wrong, 'apply'], 5);
+        $presentAfterWrongRemoval = has_filter($hookName, [$first, 'apply']);
+        $firstRemoved = remove_filter($hookName, [$first, 'apply'], 5);
+        $firstReadded = add_filter($hookName, [$first, 'apply'], 5, 3);
+        $GLOBALS['rp_hook_object_method_outcomes'] = [$wrongRemoved, $firstRemoved, $firstReadded];
+        $GLOBALS['rp_hook_object_method_presence'] = [$presentBeforeWrongRemoval, $presentAfterWrongRemoval];
+    } elseif ($refArrayMode) {
         add_filter('all', 'rp_ref_array_all', 10, 2);
         add_filter($hookName, 'rp_ref_array_truncated', 1, 1);
         add_filter($hookName, 'rp_ref_array_zero', 2, 0);
@@ -365,7 +417,7 @@ try {
         $result = apply_filters($hookName, 'seed', 'left', 'right');
     }
     fwrite(STDERR, "RP_HOOK_PHASE=apply_filters_done\n");
-    if ($result !== ($refArrayMode ? 'replacement-from-first|extra-mutated-by-second' : 'B(Z|left|right)')
+    if ($result !== ($refArrayMode ? 'replacement-from-first|extra-mutated-by-second' : ($objectMethodMode ? 'seed|first|second' : 'B(Z|left|right)'))
         || current_filter() !== false
         || doing_filter()
         || did_filter($hookName) !== 1
@@ -399,7 +451,15 @@ try {
 
     $events = $GLOBALS['rp_hook_events'];
     $selectedEvents = array_values(array_filter($events, static fn (array $event): bool => ($event['callback'] ?? null) !== 'all'));
-    if (!$refArrayMode) {
+    if ($objectMethodMode) {
+        if (array_column($selectedEvents, 'callback') !== ['first', 'second']
+            || array_column($selectedEvents, 'args') !== [['seed', 'left', 'right'], ['seed|first', 'left', 'right']]
+            || array_column($selectedEvents, 'current_priority') !== [5, 10]
+            || $GLOBALS['rp_hook_object_method_outcomes'] !== [false, true, true]
+            || $GLOBALS['rp_hook_object_method_presence'] !== [5, 5]) {
+            throw new RuntimeException('wp_hook_object_method_observation');
+        }
+    } elseif (!$refArrayMode) {
     if (array_column($selectedEvents, 'callback') !== ['a', 'zero', 'b']
             || array_column($selectedEvents, 'args') !== [['seed', 'left', 'right'], [], ['Z', 'left', 'right']]
             || array_column($selectedEvents, 'current_filter') !== ['rp-probe-filter', 'rp-probe-filter', 'rp-probe-filter']
@@ -457,6 +517,8 @@ try {
                 'argument_frame_released_before_close' => !$GLOBALS['rp_hook_ref_array_mode']
                     || $GLOBALS['rp_hook_argument_frame_release_acked'],
                 'invocations' => $GLOBALS['rp_hook_invocations'],
+                'object_method_outcomes' => $GLOBALS['rp_hook_object_method_outcomes'] ?? null,
+                'object_method_presence' => $GLOBALS['rp_hook_object_method_presence'] ?? null,
                 'frames' => $wire->stats(),
             ]);
             break;

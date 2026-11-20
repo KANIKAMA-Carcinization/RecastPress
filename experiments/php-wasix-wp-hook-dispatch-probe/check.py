@@ -20,6 +20,7 @@ ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4ed
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
 REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
+OBJECT_METHOD_ORACLE = HERE / "fixtures/wp_hook_object_method_oracle.php"
 ACTION_REF_ARRAY_ORACLE = HERE / "fixtures/wp_action_ref_array_oracle.php"
 ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE = HERE / "fixtures/wp_action_overlarge_accepted_args_oracle.php"
 ACTION_THROWABLE_ORACLE = HERE / "fixtures/wp_action_throwable_oracle.php"
@@ -59,6 +60,7 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_same_priority_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_deferred_add_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_ref_array_oracle.php",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_object_method_oracle.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_php.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/prepare_overlay.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md",
@@ -286,6 +288,17 @@ def main():
     action_same_priority_reference_oracle = json.loads(action_same_priority_oracle_run.stdout.decode("utf-8", "strict"))
     if action_same_priority_reference_oracle.get("status") != "passed" or action_same_priority_reference_oracle.get("scenario") != "wp_action_deferred_add_native_oracle":
         raise SystemExit("pinned WordPress deferred-add action oracle reported an unexpected result")
+    object_method_oracle_run = subprocess.run(
+        ["php", "-n", str(OBJECT_METHOD_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
+        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
+    )
+    if object_method_oracle_run.returncode != 0 or object_method_oracle_run.stderr:
+        raise SystemExit("pinned WordPress object-method oracle failed:\n" +
+            object_method_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
+    object_method_reference_oracle = json.loads(object_method_oracle_run.stdout.decode("utf-8", "strict"))
+    if object_method_reference_oracle.get("status") != "passed" or object_method_reference_oracle.get("scenario") != "wp_hook_object_method_native_oracle":
+        raise SystemExit("pinned WordPress object-method oracle reported an unexpected result")
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -320,6 +333,7 @@ def main():
         run_codes = {}
         scenarios = [
             ("filter", []),
+            ("object-method", ["object-method"]),
             ("ref-array", ["ref-array"]),
             ("action", ["action"]),
             ("action-ref-array", ["action-ref-array"]),
@@ -401,6 +415,20 @@ def main():
                     guest_observation = scenario_result.get("observation", {}).get("guest", {}).get("observation")
                     contract_match = guest_observation == action_same_priority_reference_oracle.get("observation")
                     scenario_result["native_oracle_contract_match"] = contract_match
+                elif scenario == "object-method":
+                    guest = scenario_result.get("observation", {}).get("guest", {})
+                    native = object_method_reference_oracle.get("observation", {})
+                    contract_match = (
+                        guest.get("events") == native.get("events")
+                        and scenario_result.get("observation", {}).get("result") == native.get("result")
+                        and guest.get("object_method_outcomes") == native.get("outcomes")
+                        and guest.get("object_method_presence") == native.get("presence")
+                        and guest.get("filter_count") == native.get("filter_count")
+                        and guest.get("current_filter") == native.get("current_filter")
+                        and guest.get("doing_filter") == native.get("doing_filter")
+                        and len(native.get("rows", [])) == 2
+                    )
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
@@ -408,7 +436,7 @@ def main():
                     status = "oracle_mismatch"
                     outputs.append("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.\n")
                     print("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.", file=sys.stderr)
-                elif scenario in ("ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-remove-all", "action-deferred-add") and not contract_match:
+                elif scenario in ("object-method", "ref-array", "action-ref-array", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-remove-all", "action-deferred-add") and not contract_match:
                     status = "oracle_mismatch"
                     outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
                     print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
@@ -454,6 +482,7 @@ def main():
         "action_removal_reference_oracle": action_removal_reference_oracle,
         "action_remove_all_reference_oracle": action_remove_all_reference_oracle,
         "action_same_priority_reference_oracle": action_same_priority_reference_oracle,
+        "object_method_reference_oracle": object_method_reference_oracle,
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,
