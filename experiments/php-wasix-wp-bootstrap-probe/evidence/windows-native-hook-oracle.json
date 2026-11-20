@@ -1,0 +1,113 @@
+{
+  "schema": "recastpress.php-wasix-wp-bootstrap-windows-native-hook-oracle.v0.1",
+  "observed_at_utc": "2026-11-20T04:41:51Z",
+  "passed": true,
+  "source_snapshot": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",
+    "sha256": "7337631ec0c4b97403153e2b305c964295ff443431d5a703edccb8a16e4fa37a",
+    "input_hashes_current": true
+  },
+  "php_cli": {
+    "path": ".reference/php-8.5.12/php.exe",
+    "version": "8.5.12",
+    "manifest_archive_sha256": "2ab242af38d76bdf417cde5ec048b1bcd76a5a40f39a3d15d5f046f38571c477",
+    "binary_sha256": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef",
+    "arguments": [
+      "-n"
+    ]
+  },
+  "fixture": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
+    "bytes": 9900,
+    "sha256": "6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4"
+  },
+  "execution": {
+    "exit_code": 0,
+    "stdout_bytes": 1522,
+    "stdout_sha256": "806c8925e1a576f5038e078e8884916ea8661ee9c93881883d4ec61012461cbb",
+    "stderr_bytes": 0,
+    "php_cli_mode": "-n"
+  },
+  "native_hook_oracle": {
+    "schema": "recastpress.wp-bootstrap-hook-native-oracle.v0.1",
+    "status": "passed",
+    "scope": "Pinned native WordPress 7.1.3 plugin API and WP_Hook only; no wp-settings.php bootstrap, database, plugins, themes, or network.",
+    "wordpress_version": "7.1.3",
+    "wordpress_source_sha256": {
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "scenario": "option_blogname",
+    "input_value": "RP Bootstrap Fixture",
+    "extra_args": [
+      "blogname"
+    ],
+    "registered_callbacks": [
+      {
+        "callback": "rp_boot_hook_first",
+        "priority": 10,
+        "accepted_args": 1
+      },
+      {
+        "callback": "rp_boot_hook_second",
+        "priority": 20,
+        "accepted_args": 1
+      }
+    ],
+    "event_order": [
+      "rp_boot_hook_first",
+      "rp_boot_hook_second"
+    ],
+    "events": [
+      {
+        "callback": "rp_boot_hook_first",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "doing_selected_filter": true,
+        "did_filter": 1,
+        "current_priority": 10,
+        "stack": [
+          "option_blogname"
+        ],
+        "value": "RP Bootstrap Fixture",
+        "argument_count": 1
+      },
+      {
+        "callback": "rp_boot_hook_second",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "doing_selected_filter": true,
+        "did_filter": 1,
+        "current_priority": 20,
+        "stack": [
+          "option_blogname"
+        ],
+        "value": "RP Bootstrap Fixture|first",
+        "argument_count": 1
+      }
+    ],
+    "filtered_value": "RP Bootstrap Fixture|first|second",
+    "after_dispatch": {
+      "current_filter": false,
+      "doing_filter": false,
+      "doing_selected_filter": false,
+      "did_filter": 1,
+      "stack": [],
+      "hook_state": {
+        "nesting_level": 0,
+        "iterations": [],
+        "current_priority": [],
+        "doing_action": false
+      }
+    }
+  },
+  "scope": {
+    "native_wp_hook_api_only": true,
+    "wp_settings_executed": false,
+    "full_wordpress_bootstrap_executed": false,
+    "rust_dispatcher_executed": false,
+    "wasm_executed": false,
+    "database_started": false,
+    "database_connected": false
+  }
+}
