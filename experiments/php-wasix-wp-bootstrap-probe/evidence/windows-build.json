@@ -2,47 +2,47 @@
   "schema": "recastpress.php-wasix-wp-bootstrap-build.v0.5",
   "outcome": "locked_offline_bootstrap_host_build_passed",
   "passed": true,
-  "observed_at_utc": "2026-11-20T04:35:49.880879+00:00",
+  "observed_at_utc": "2026-11-20T05:11:01.610422+00:00",
   "commands": [
     {
       "stage": "unit-build",
       "timeout_seconds": 1200,
-      "owned_pid": 12276,
+      "owned_pid": 39188,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 21.881,
-      "stdout_sha256": "5d64ffac2a5242cac32e13d77fdceb4d55bcb7b75f15b815d9b3fdb6f5a4e92d",
-      "stderr_sha256": "b6d4c592e40e7eb914dad213d08ecf4114d3b6ceefd80973c0da84e86267c50e"
+      "elapsed_seconds": 11.63,
+      "stdout_sha256": "571bb15958644ddd183195cf28b326f45bd67e4e2eb5ade4a3a804dc6d210419",
+      "stderr_sha256": "d8ba19cf8c617c0593ffb3d0d14ca7bb050b8cd78bdca6c73a4fea22c2a31e8f"
     },
     {
       "stage": "unit-list",
       "timeout_seconds": 10,
-      "owned_pid": 10160,
+      "owned_pid": 33956,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.865,
-      "stdout_sha256": "51f5675365c2909ddc9e4e998998deb2c7f249fb533146ed2f6f47364f2ee997",
+      "elapsed_seconds": 0.491,
+      "stdout_sha256": "2368f8f205905a69a6d30cd49386db5d61773a11c5004bbfbf49c146d9c6ceb0",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "unit-run",
       "timeout_seconds": 60,
-      "owned_pid": 29356,
+      "owned_pid": 39612,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 0.218,
-      "stdout_sha256": "846306693d2441ebcc579845f46025b535df1145a735a2666ced55787452dbb8",
+      "elapsed_seconds": 0.156,
+      "stdout_sha256": "1db2b1f1c48be8f1c6e08c83b6c5f87d4a9be717d91045249512f49a2b54b13c",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "stage": "normal-build",
       "timeout_seconds": 1200,
-      "owned_pid": 16584,
+      "owned_pid": 33180,
       "owned_reaped": true,
       "exit_code": 0,
-      "elapsed_seconds": 19.13,
-      "stdout_sha256": "d8bf1e64880d17701230d75d7088822917ab443df5c41c542d5a42fd9b2349f8",
-      "stderr_sha256": "641c7d3885e81c04daad01961a05af8bca31d1e080d7833537dfcef22c25bad4"
+      "elapsed_seconds": 11.545,
+      "stdout_sha256": "9f4df0232281ac64933afd59aa715f931af93923e7b72066679907ba127d62f2",
+      "stderr_sha256": "cefe7fec00b5006f1bf6a3550c62fa70008dbdf9f6f25919d33cf33cce0f14f1"
     }
   ],
   "locked_offline": true,
@@ -135,7 +135,7 @@
     "experiments/php-wasix-managed-access-probe/patch_source.py": "e725a0edacbd859b3f952683c85ac9ef67176f02709fcccc442f79fb259e3a67",
     "experiments/php-wasix-managed-access-probe/patches/0001-wasi-managed-access.patch": "343bd0bcd1adb4abcf22653973a5f2d3a75360c1fe06c2748ed83b5646fe3be1",
     "experiments/php-wasix-managed-access-probe/source_profile.py": "e38c16665f2e8f23f2e212f4a49bd793bca3136d381e5aaadab22e5f20f436b0",
-    "experiments/php-wasix-wp-bootstrap-probe/build_check.py": "979610e084ef91e056251b702a27e0689c07fc586161b6b1173f0721dac44590",
+    "experiments/php-wasix-wp-bootstrap-probe/build_check.py": "3d9169349709b6ea402dfe07456d9358f08948ab363a0dedd78c304586d0e796",
     "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "ca6fd99f5b1c668e32c5c119f8e1d2f7b962cb26bf3bfed0b5ce269a48b4fe1e",
     "experiments/php-wasix-wp-bootstrap-probe/Cargo.toml": "adb83b15df688b0a84471c88e06a2d41daebcec0ebbc8b188864ee9236737277",
     "experiments/php-wasix-wp-bootstrap-probe/derivation_gate.py": "24594b7abb0da39d15cbbad84732754d010b54acf0ff8e0fe58f2a6c30e86179",
@@ -156,7 +156,7 @@
     "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "6f6ec144e47dba2612b0976aea13ad6b01cfa6f1e67a925b7f3289aeb8d8aaf7",
     "experiments/php-wasix-wp-bootstrap-probe/src/db.rs": "368cbf4736cec5c24f7f8c213d756dbb52955f2df3a9878b55f141e13d0d299f",
     "experiments/php-wasix-wp-bootstrap-probe/src/hook_rpc_fs.rs": "8f584e0f2bef9f7abebf4b3645393ff94d297809912172924e0a2ad02bba96ef",
-    "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "e72eff72b21bc2bc974c00e0f0bb05e9d2dd92d1bfc975565ecfb656ce568b4e",
+    "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "e0085c27f607111b43d3e14834a2133a18441630099adfe9e237c6a9e09d1a08",
     "experiments/php-wasix-wp-bootstrap-probe/src/result_budget.rs": "616ff411eb024b96ba0d572cd84da91a2107de25d37e9d8a9401d99565ac7776",
     "experiments/php-wasix-wp-bootstrap-probe/src/rpc_fs.rs": "d9d86f4f72016423990147f9c0cb6bc2b6c9bd486864000995a3d90b762a53fa",
     "experiments/php-wasix-wpdb-probe/Cargo.lock": "45db5e715c7be7ffdf838154584aff56de356658d20c250870e34956348b7793",
@@ -283,20 +283,23 @@
       "tests::cgi_environment_carries_neither_database_nor_nonce_context",
       "tests::complete_cgi_failure_keeps_only_source_bound_public_diagnostics",
       "tests::expanded_columns_are_explicit_and_other_result_limits_stay_fixed",
+      "tests::public_hook_dispatch_normalizes_nonzero_baseline",
+      "tests::public_hook_dispatch_rejects_invalid_baseline_and_event_identity",
+      "tests::public_hook_dispatch_requires_clean_dispatch_reset",
       "tests::public_php_excludes_unexpected_rows_secrets_and_nonfixture_titles"
     ],
     "passed": true,
     "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/deps/recastpress_php_wasix_wp_bootstrap_probe-16f6dfbce80444b9.exe",
     "executable_identity": {
-      "bytes": 8841216,
-      "sha256": "bc2f066ec3e013d64577842ffcd6025a0b280eb2c73c2d841348f2d394d218dc"
+      "bytes": 8878080,
+      "sha256": "40620b3943be57a6d840c50a5cf110f2b74aa2a372d1820a5b1546fd00dcec64"
     },
-    "stdout_sha256": "846306693d2441ebcc579845f46025b535df1145a735a2666ced55787452dbb8"
+    "stdout_sha256": "1db2b1f1c48be8f1c6e08c83b6c5f87d4a9be717d91045249512f49a2b54b13c"
   },
   "executable": "target/php-wasix-wp-bootstrap-probe/cargo-target/debug/recastpress-php-wasix-wp-bootstrap-probe.exe",
   "executable_identity": {
     "bytes": 54264832,
-    "sha256": "8ee26222c46090797d4eab5e1b953c71d61852b1357e816737fe5d8dc8e42e51"
+    "sha256": "d7fde729dff03dd4722f6141d9a656a80c9c503cd871df000f76d877cf55b7de"
   },
   "driver_after": {
     "source_trees": {

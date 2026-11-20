@@ -59,7 +59,7 @@ python3 -B experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend maria
 
 ## 現在の証跡
 
-Windows の隔離 clone と専用 target で `build_check.py` の locked/offline host gate が成功しています。[build receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json) は149 source inputs の前後 hash、固定 DB driver source の準備、4段階の build/test 成功を記録します。これは host 側の検証で、PHP-Wasm、DB、全体 bootstrap は実行していません。
+Windows の隔離 clone と専用 target で `build_check.py` の locked/offline host gate が成功しています。[build receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json) は149 source inputs の前後 hash、固定 DB driver source の準備、37 unit tests と4段階の build/test 成功を記録します。更新前の34-test receipt は[前版記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build-before-7337631ec0c4b974.json)、追加テストで最初に誤った期待値を使った失敗runは[診断記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build-before-09b8a41a31444406.json)に保持しています。これは host 側の検証で、PHP-Wasm、DB、全体 bootstrap は実行していません。
 
 固定 WordPress 7.1.3 archive から core source tree と専用 DB drop-in の準備も成功し、`prepare.py --verify-only` で入力一致を確認しました。[source preparation metadata](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-source-preparation.json) と[実行記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-source-preparation-run.json) は archive hash、3,782 files、467 directories、host build receipt と一致する33入力を記録します。source manifest 本体は repository に保存せず、サイズ・hash・集計を記録しています。
 

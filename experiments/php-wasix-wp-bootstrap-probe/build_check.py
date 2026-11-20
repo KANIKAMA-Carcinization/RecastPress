@@ -64,6 +64,9 @@ TESTS = sorted([
     *['tests::' + x for x in ['public_php_excludes_unexpected_rows_secrets_and_nonfixture_titles',
         'complete_cgi_failure_keeps_only_source_bound_public_diagnostics',
         'cgi_environment_carries_neither_database_nor_nonce_context',
+        'public_hook_dispatch_normalizes_nonzero_baseline',
+        'public_hook_dispatch_rejects_invalid_baseline_and_event_identity',
+        'public_hook_dispatch_requires_clean_dispatch_reset',
         'expanded_columns_are_explicit_and_other_result_limits_stay_fixed']],
 ])
 STAGES = [('unit-build', 1200), ('unit-list', 10), ('unit-run', 60), ('normal-build', 1200)]

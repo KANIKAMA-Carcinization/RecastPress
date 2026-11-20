@@ -1,6 +1,6 @@
 {
   "schema": "recastpress.php-wasix-wp-bootstrap-windows-native-hook-demo-run.v0.1",
-  "observed_at_utc": "2026-11-20T05:05:07.481498+00:00",
+  "observed_at_utc": "2026-11-20T05:16:58.537262+00:00",
   "passed": true,
   "runner": {
     "path": "scripts/run_recastpress_native_hook_demo.py",
@@ -8,11 +8,11 @@
   },
   "host_build_receipt": {
     "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",
-    "sha256": "7337631ec0c4b97403153e2b305c964295ff443431d5a703edccb8a16e4fa37a"
+    "sha256": "050703c9b683fea9d04c126c61cb1d911e756e7ecadb8d19f819ccfb008ff0e6"
   },
   "oracle_receipt": {
     "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-native-hook-oracle.json",
-    "sha256": "cdc78c638147eb1333a6a181ac4a92a237d31df8da7cc5970e75ca8f746e9409"
+    "sha256": "0b510a45bea7e4a06fc197b88213722879d8fe5b8655a455a799ec1f2ecd6b44"
   },
   "php_cli": {
     "path": ".reference/php-8.5.12/php.exe",

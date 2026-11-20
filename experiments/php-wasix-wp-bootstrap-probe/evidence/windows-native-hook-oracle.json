@@ -1,10 +1,10 @@
 {
   "schema": "recastpress.php-wasix-wp-bootstrap-windows-native-hook-oracle.v0.1",
-  "observed_at_utc": "2026-11-20T04:41:51Z",
+  "observed_at_utc": "2026-11-20T05:15:45.042150+00:00",
   "passed": true,
   "source_snapshot": {
     "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json",
-    "sha256": "7337631ec0c4b97403153e2b305c964295ff443431d5a703edccb8a16e4fa37a",
+    "sha256": "050703c9b683fea9d04c126c61cb1d911e756e7ecadb8d19f819ccfb008ff0e6",
     "input_hashes_current": true
   },
   "php_cli": {
