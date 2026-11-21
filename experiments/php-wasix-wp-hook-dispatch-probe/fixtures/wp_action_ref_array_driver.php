@@ -69,7 +69,7 @@ function recastpress_wp_dispatch_selected_action(
         throw new RuntimeException('wp_action_ref_array_frame_shape');
     }
     $rows = rp_action_ref_array_table_snapshot($hook);
-    $before = $rows;
+    $expectedRows = $rows;
     $argumentFrame = $registry->retainArgument($args);
     $GLOBALS['rp_action_ref_array_argument_frame'] = $argumentFrame;
     $exported = [];
@@ -103,6 +103,28 @@ function recastpress_wp_dispatch_selected_action(
 
     while (true) {
         $frame = $wire->receive();
+        if ($frame['kind'] === 'release_php') {
+            expect_parent_effect($frame, null);
+            expect_payload_keys($frame, ['handle'], 'wp_action_ref_array_dispatch_release');
+            $releasedHandle = $frame['payload']['handle'];
+            if (($releasedHandle['kind'] ?? null) !== 'callable') {
+                throw new RuntimeException('wp_action_ref_array_dispatch_release_kind');
+            }
+            $releasedUid = null;
+            foreach ($handles as $uid => $knownHandle) {
+                if (rp_action_ref_array_handles_equal($knownHandle, $releasedHandle)) {
+                    $releasedUid = $uid;
+                    break;
+                }
+            }
+            if ($releasedUid === null || isset($GLOBALS['rp_action_ref_array_released'][$releasedUid])) {
+                throw new RuntimeException('wp_action_ref_array_dispatch_release_identity');
+            }
+            $registry->release($releasedHandle);
+            $GLOBALS['rp_action_ref_array_released'][$releasedUid] = true;
+            $wire->send('release_ack', ['handle' => $releasedHandle]);
+            continue;
+        }
         if ($frame['kind'] === 'invoke_php') {
             expect_parent_effect($frame, null);
             expect_payload_keys($frame, [
@@ -155,6 +177,91 @@ function recastpress_wp_dispatch_selected_action(
                 call_user_func_array($callback, $callbackArgs);
             }
             unset($callbackArgs, $arguments);
+            if ($payload['uid'] === 'rp_action_ref_array_first') {
+                $current = rp_action_ref_array_table_snapshot($hook);
+                $newRows = array_values(array_filter(
+                    $current,
+                    static fn (array $row): bool => !array_key_exists($row['uid'], $handles),
+                ));
+                if (count($newRows) !== 1
+                    || $newRows[0]['priority'] !== 7
+                    || $newRows[0]['uid'] !== 'rp_action_ref_array_added'
+                    || $newRows[0]['accepted_args'] !== 2
+                    || $newRows[0]['function'] !== 'rp_action_ref_array_added'
+                ) {
+                    throw new RuntimeException('wp_action_ref_array_added_callback_identity');
+                }
+                $addedHandle = $registry->retainCallable($newRows[0]['function']);
+                $handles[$newRows[0]['uid']] = $addedHandle;
+                $acceptedArgsByUid[$newRows[0]['uid']] = $newRows[0]['accepted_args'];
+                $priorityByUid[$newRows[0]['uid']] = $newRows[0]['priority'];
+                $added = [
+                    'priority' => $newRows[0]['priority'],
+                    'uid' => $newRows[0]['uid'],
+                    'accepted_args' => $newRows[0]['accepted_args'],
+                    'function' => $newRows[0]['function'],
+                    'handle' => $addedHandle,
+                ];
+                $exported[] = $added;
+                usort(
+                    $exported,
+                    static fn (array $left, array $right): int => [$left['priority'], $left['uid']] <=> [$right['priority'], $right['uid']],
+                );
+                $expectedRows = $current;
+                $GLOBALS['rp_action_ref_array_handles'] = $handles;
+                $wire->send('action_callback_added', [
+                    'target' => RP_ACTION_REF_ARRAY_TARGET,
+                    'parent_uid' => $payload['uid'],
+                    'row' => $added,
+                    'table_fingerprint' => rp_action_ref_array_fingerprint($exported),
+                ]);
+                $ack = $wire->receive();
+                expect_parent_effect($ack, null);
+                expect_payload_keys($ack, ['target', 'uid', 'priority'], 'wp_action_ref_array_mutation_ack');
+                if ($ack['kind'] !== 'action_mutation_ack'
+                    || $ack['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
+                    || $ack['payload']['uid'] !== $newRows[0]['uid']
+                    || $ack['payload']['priority'] !== 7
+                ) {
+                    throw new RuntimeException('wp_action_ref_array_mutation_ack_identity');
+                }
+                $removedRow = null;
+                foreach ($exported as $candidate) {
+                    if ($candidate['uid'] === 'rp_action_ref_array_pending') {
+                        $removedRow = $candidate;
+                        break;
+                    }
+                }
+                $pendingStillRegistered = array_filter(
+                    rp_action_ref_array_table_snapshot($hook),
+                    static fn (array $candidate): bool => $candidate['uid'] === 'rp_action_ref_array_pending',
+                );
+                if (!is_array($removedRow) || $pendingStillRegistered !== []) {
+                    throw new RuntimeException('wp_action_ref_array_remove_pending');
+                }
+                $exported = array_values(array_filter(
+                    $exported,
+                    static fn (array $candidate): bool => $candidate['uid'] !== 'rp_action_ref_array_pending',
+                ));
+                $wire->send('action_callback_removed', [
+                    'target' => RP_ACTION_REF_ARRAY_TARGET,
+                    'parent_uid' => $payload['uid'],
+                    'row' => $removedRow,
+                    'removed_handle' => $removedRow['handle'],
+                    'table_fingerprint' => rp_action_ref_array_fingerprint($exported),
+                ]);
+                $removeAck = $wire->receive();
+                expect_parent_effect($removeAck, null);
+                expect_payload_keys($removeAck, ['target', 'uid', 'priority'], 'wp_action_ref_array_remove_ack');
+                if ($removeAck['kind'] !== 'action_removal_ack'
+                    || $removeAck['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
+                    || $removeAck['payload']['uid'] !== 'rp_action_ref_array_pending'
+                    || $removeAck['payload']['priority'] !== 8
+                ) {
+                    throw new RuntimeException('wp_action_ref_array_remove_ack_identity');
+                }
+                $expectedRows = rp_action_ref_array_table_snapshot($hook);
+            }
             $GLOBALS['rp_action_ref_array_invocations'][] = $payload['uid'];
             $wire->send('resume_value', [
                 'target' => RP_ACTION_REF_ARRAY_TARGET,
@@ -168,13 +275,13 @@ function recastpress_wp_dispatch_selected_action(
             expect_parent_effect($frame, null);
             expect_payload_keys($frame, ['target', 'invocations'], 'wp_action_ref_array_complete');
             if ($frame['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
-                || $frame['payload']['invocations'] !== count($rows)
-                || count($GLOBALS['rp_action_ref_array_invocations']) !== count($rows)
+                || $frame['payload']['invocations'] !== count($exported)
+                || count($GLOBALS['rp_action_ref_array_invocations']) !== count($exported)
                 || !$sync('finish')
             ) {
                 throw new RuntimeException('wp_action_ref_array_completion_state');
             }
-            if (rp_action_ref_array_table_snapshot($hook) !== $before) {
+            if (rp_action_ref_array_table_snapshot($hook) !== $expectedRows) {
                 throw new RuntimeException('wp_action_ref_array_table_mutated');
             }
             $GLOBALS['rp_action_ref_array_imported_rows'] = $exported;
@@ -238,7 +345,29 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     ];
     $value = 'value-mutated-by-first';
     $extra = 'extra-mutated-by-first';
+    add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_added', 7, 2);
+    if (!remove_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_pending', 8)) {
+        throw new RuntimeException('wp_action_ref_array_remove_return');
+    }
     return 'ignored-first-action-result';
+}
+
+function rp_action_ref_array_pending(string &$value, string &$extra): void
+{
+    throw new RuntimeException('wp_action_ref_array_removed_callback_invoked');
+}
+
+function rp_action_ref_array_added(string &$value, string &$extra): void
+{
+    $hook = $GLOBALS['rp_action_ref_array_selected_object'];
+    $GLOBALS['rp_action_ref_array_events'][] = [
+        'callback' => 'added', 'args' => [$value, $extra],
+        'current_action' => current_action(), 'doing_action' => doing_action(RP_ACTION_REF_ARRAY_NAME),
+        'did_action' => did_action(RP_ACTION_REF_ARRAY_NAME), 'current_priority' => $hook->current_priority(),
+        'wp_hook_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook),
+    ];
+    $value = 'value-mutated-by-added';
+    $extra = 'extra-mutated-by-added';
 }
 
 function rp_action_ref_array_second(string &$value, string &$extra): string
@@ -263,6 +392,7 @@ try {
     $GLOBALS['rp_action_ref_array_events'] = [];
     $GLOBALS['rp_action_ref_array_invocations'] = [];
     $GLOBALS['rp_action_ref_array_argument_frame_released'] = false;
+    $GLOBALS['rp_action_ref_array_released'] = [];
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];
@@ -272,6 +402,7 @@ try {
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_truncated', 1, 1);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_zero', 2, 0);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_first', 5, 2);
+    add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_pending', 8, 2);
     add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_second', 10, 2);
     $selected = $GLOBALS['wp_filter'][RP_ACTION_REF_ARRAY_NAME];
     $tokens = new WeakMap();
@@ -286,7 +417,7 @@ try {
     $result = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $args);
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_done\n");
     if ($result !== null
-        || $value !== 'value-mutated-by-first'
+        || $value !== 'value-mutated-by-added'
         || $extra !== 'extra-mutated-by-second'
         || current_action() !== false
         || current_filter() !== false
@@ -321,7 +452,12 @@ try {
             'current_priority' => 5, 'wp_hook_doing_action' => true,
         ],
         [
-            'callback' => 'second', 'args' => ['value-mutated-by-first', 'extra-mutated-by-first'],
+            'callback' => 'added', 'args' => ['value-mutated-by-first', 'extra-mutated-by-first'],
+            'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 1,
+            'current_priority' => 7, 'wp_hook_doing_action' => true,
+        ],
+        [
+            'callback' => 'second', 'args' => ['value-mutated-by-added', 'extra-mutated-by-added'],
             'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 1,
             'current_priority' => 10, 'wp_hook_doing_action' => true,
         ],
@@ -348,9 +484,13 @@ try {
                 $GLOBALS['rp_action_ref_array_argument_frame_released'] = true;
             } elseif (($handle['kind'] ?? null) === 'callable') {
                 $found = false;
-                foreach ($GLOBALS['rp_action_ref_array_handles'] as $candidate) {
+                foreach ($GLOBALS['rp_action_ref_array_handles'] as $uid => $candidate) {
                     if (rp_action_ref_array_handles_equal($candidate, $handle)) {
+                        if (isset($GLOBALS['rp_action_ref_array_released'][$uid])) {
+                            throw new RuntimeException('wp_action_ref_array_release_duplicate');
+                        }
                         $found = true;
+                        $GLOBALS['rp_action_ref_array_released'][$uid] = true;
                         break;
                     }
                 }

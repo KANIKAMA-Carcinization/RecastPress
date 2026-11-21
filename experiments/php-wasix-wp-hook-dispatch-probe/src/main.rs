@@ -51,9 +51,10 @@ const PHP_ACTION_THROWABLE_DRIVER: &str = "/fixture/wp_action_throwable_driver.p
 const PHP_ACTION_NESTED_DRIVER: &str = "/fixture/wp_action_nested_driver.php";
 const PHP_ACTION_MUTATION_DRIVER: &str = "/fixture/wp_action_mutation_driver.php";
 const PHP_ACTION_REMOVAL_DRIVER: &str = "/fixture/wp_action_removal_driver.php";
+const PHP_ACTION_REMOVE_ALL_DRIVER: &str = "/fixture/wp_action_remove_all_driver.php";
 const PHP_ACTION_SAME_PRIORITY_DRIVER: &str = "/fixture/wp_action_same_priority_driver.php";
 
-const FILES: [(&str, &[u8]); 14] = [
+const FILES: [(&str, &[u8]); 15] = [
     (
         "bridge_driver.php",
         include_bytes!("../../php-compat-v06-probe/fixtures/bridge_driver.php"),
@@ -120,6 +121,12 @@ const FILES: [(&str, &[u8]); 14] = [
         "wp_action_removal_driver.php",
         include_bytes!(
             "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_removal_driver.php"
+        ),
+    ),
+    (
+        "wp_action_remove_all_driver.php",
+        include_bytes!(
+            "../../php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php"
         ),
     ),
     (
@@ -638,7 +645,12 @@ fn run_dispatch(
                         && done["payload"]["table_fingerprint"] == fingerprint
                         && done["payload"]["invocations"]
                             == if ref_array_mode {
-                                json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]])
+                                json!([
+                                    rows[0]["uid"],
+                                    rows[1]["uid"],
+                                    rows[2]["uid"],
+                                    rows[3]["uid"]
+                                ])
                             } else {
                                 json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"]])
                             },
@@ -2207,7 +2219,7 @@ fn run_action_ref_array_dispatch(
         .as_array()
         .context("reference-array action rows must be array")?;
     ensure!(
-        rows.len() == 4,
+        rows.len() == 5,
         "imported reference-array action callback row count"
     );
     let fingerprint_rows: Vec<Value> = rows
@@ -2236,6 +2248,8 @@ fn run_action_ref_array_dispatch(
     let mut handles_by_uid = std::collections::HashMap::new();
     let mut callback_labels = std::collections::HashMap::new();
     let mut accepted_args_by_uid = std::collections::HashMap::new();
+    let mut priorities_by_uid = std::collections::HashMap::new();
+    let mut imported_rows = rows.clone();
     for row in rows {
         let object = row
             .as_object()
@@ -2259,6 +2273,7 @@ fn run_action_ref_array_dispatch(
             Some("rp_action_ref_array_truncated") => "rp_action_ref_array_truncated",
             Some("rp_action_ref_array_zero") => "rp_action_ref_array_zero",
             Some("rp_action_ref_array_first") => "rp_action_ref_array_first",
+            Some("rp_action_ref_array_pending") => "rp_action_ref_array_pending",
             Some("rp_action_ref_array_second") => "rp_action_ref_array_second",
             Some(other) => anyhow::bail!("unrecognized reference-array action callback: {other}"),
             None => anyhow::bail!("reference-array action fixture does not accept closures"),
@@ -2270,6 +2285,7 @@ fn run_action_ref_array_dispatch(
             "rp_action_ref_array_truncated" => (1, 1),
             "rp_action_ref_array_zero" => (2, 0),
             "rp_action_ref_array_first" => (5, 2),
+            "rp_action_ref_array_pending" => (8, 2),
             "rp_action_ref_array_second" => (10, 2),
             _ => anyhow::bail!("unexpected reference-array action callback uid: {uid}"),
         };
@@ -2285,6 +2301,7 @@ fn run_action_ref_array_dispatch(
         );
         callback_labels.insert(uid.to_string(), label.to_string());
         accepted_args_by_uid.insert(uid.to_string(), accepted_args as usize);
+        priorities_by_uid.insert(uid.to_string(), priority);
         let id = CallbackId {
             module: "wordpress".into(),
             callback: uid.to_string(),
@@ -2324,8 +2341,7 @@ fn run_action_ref_array_dispatch(
                         invocation.call_mode == PhpCallMode::Zero
                     } else {
                         invocation.call_mode == PhpCallMode::Array
-                    })
-                        && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
+                    }) && accepted_args_by_uid.get(uid).copied() == Some(invocation.args.len()),
                     "reference-array action invocation argument count mismatch"
                 );
                 ensure!(
@@ -2340,6 +2356,10 @@ fn run_action_ref_array_dispatch(
                     PhpKey::Integer(value) => value,
                     _ => anyhow::bail!("reference-array action priority must be integer"),
                 };
+                ensure!(
+                    priorities_by_uid.get(uid).copied() == Some(priority),
+                    "reference-array action invocation priority mismatch"
+                );
                 let frame_descriptor = json!({
                     "request":HANDLE_REQUEST,
                     "kind":"argument",
@@ -2387,14 +2407,200 @@ fn run_action_ref_array_dispatch(
                     &mut out_seq,
                 )?;
                 let reply = read_frame(reader, deadline, total_in, in_seq)?;
-                expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
-                ensure!(
-                    reply["payload"]["target"] == "wp-action-ref-array-1"
-                        && reply["payload"]["uid"] == uid
-                        && reply["payload"]["value"].is_null(),
-                    "reference-array action callback must resume with ignored null result"
-                );
-                in_seq += 1;
+                if uid == "rp_action_ref_array_first" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_callback_added",
+                        &["target", "parent_uid", "row", "table_fingerprint"],
+                    )?;
+                    let row = reply["payload"]["row"].clone();
+                    let added_object = row
+                        .as_object()
+                        .context("added reference-array row object")?;
+                    ensure!(
+                        reply["payload"]["target"] == "wp-action-ref-array-1"
+                            && reply["payload"]["parent_uid"] == uid
+                            && row["priority"] == 7
+                            && row["uid"] == "rp_action_ref_array_added"
+                            && row["accepted_args"] == 2
+                            && row["function"] == "rp_action_ref_array_added"
+                            && row["handle"]["request"] == HANDLE_REQUEST
+                            && row["handle"]["kind"] == "callable"
+                            && added_object.len() == 5
+                            && ["priority", "uid", "accepted_args", "function", "handle"]
+                                .iter()
+                                .all(|key| added_object.contains_key(*key)),
+                        "added reference-array callback identity/schema"
+                    );
+                    let added_uid = row["uid"]
+                        .as_str()
+                        .context("added reference-array uid")?
+                        .to_string();
+                    let added_handle = handle(&row["handle"])?;
+                    ensure!(
+                        row["handle"]["slot"].as_u64().is_some()
+                            && row["handle"]["generation"].as_u64().is_some()
+                            && row["handle"]["token"].as_str().is_some(),
+                        "added reference-array callback handle schema"
+                    );
+                    ensure!(
+                        handles_by_uid
+                            .insert(added_uid.clone(), added_handle)
+                            .is_none(),
+                        "duplicate added reference-array callback"
+                    );
+                    callback_labels
+                        .insert(added_uid.clone(), "rp_action_ref_array_added".to_string());
+                    accepted_args_by_uid.insert(added_uid.clone(), 2);
+                    priorities_by_uid.insert(added_uid.clone(), 7);
+                    let callback = ContextCallback::php_callable(
+                        CallbackId {
+                            module: "wordpress".into(),
+                            callback: added_uid.clone(),
+                        },
+                        2,
+                        added_handle,
+                    )
+                    .map_err(|error| {
+                        anyhow::anyhow!("added reference-array callback import: {error:?}")
+                    })?;
+                    dispatcher.add_typed(&name, HookPriority::integer(7), callback);
+                    imported_rows.push(row);
+                    imported_rows.sort_by_key(|row| row["priority"].as_i64().unwrap_or_default());
+                    let updated_projection: Vec<Value> = imported_rows
+                        .iter()
+                        .map(|row| {
+                            json!([
+                                row["priority"],
+                                row["uid"],
+                                row["accepted_args"],
+                                row["function"],
+                                row["handle"]["request"],
+                                row["handle"]["kind"],
+                                row["handle"]["slot"],
+                                row["handle"]["generation"],
+                                row["handle"]["token"]
+                            ])
+                        })
+                        .collect();
+                    let updated_fingerprint = sha256(&serde_json::to_vec(&updated_projection)?);
+                    ensure!(
+                        reply["payload"]["table_fingerprint"] == updated_fingerprint,
+                        "updated reference-array callback fingerprint"
+                    );
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_mutation_ack",
+                        json!({"target":"wp-action-ref-array-1","uid":added_uid,"priority":7}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let removal = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(
+                        &removal,
+                        in_seq,
+                        "action_callback_removed",
+                        &[
+                            "target",
+                            "parent_uid",
+                            "row",
+                            "removed_handle",
+                            "table_fingerprint",
+                        ],
+                    )?;
+                    let removed_row = removal["payload"]["row"].clone();
+                    let removed_object = removed_row
+                        .as_object()
+                        .context("removed reference-array row object")?;
+                    ensure!(
+                        removal["payload"]["target"] == "wp-action-ref-array-1"
+                            && removal["payload"]["parent_uid"] == uid
+                            && removed_row["priority"] == 8
+                            && removed_row["uid"] == "rp_action_ref_array_pending"
+                            && removed_row["accepted_args"] == 2
+                            && removed_row["function"] == "rp_action_ref_array_pending"
+                            && removed_row["handle"]["request"] == HANDLE_REQUEST
+                            && removed_row["handle"]["kind"] == "callable"
+                            && removal["payload"]["removed_handle"] == removed_row["handle"]
+                            && removed_object.len() == 5
+                            && ["priority", "uid", "accepted_args", "function", "handle"]
+                                .iter()
+                                .all(|key| removed_object.contains_key(*key)),
+                        "removed reference-array callback identity"
+                    );
+                    let removed_handle = handle(&removed_row["handle"])?;
+                    ensure!(
+                        handles_by_uid.get("rp_action_ref_array_pending") == Some(&removed_handle),
+                        "removed reference-array callback handle mismatch"
+                    );
+                    let mut remaining_rows = imported_rows.clone();
+                    remaining_rows
+                        .retain(|candidate| candidate["uid"] != "rp_action_ref_array_pending");
+                    let remaining_projection: Vec<Value> = remaining_rows
+                        .iter()
+                        .map(|row| {
+                            json!([
+                                row["priority"],
+                                row["uid"],
+                                row["accepted_args"],
+                                row["function"],
+                                row["handle"]["request"],
+                                row["handle"]["kind"],
+                                row["handle"]["slot"],
+                                row["handle"]["generation"],
+                                row["handle"]["token"]
+                            ])
+                        })
+                        .collect();
+                    ensure!(
+                        removal["payload"]["table_fingerprint"]
+                            == sha256(&serde_json::to_vec(&remaining_projection)?),
+                        "removed reference-array callback table fingerprint"
+                    );
+                    let removed = dispatcher.remove_typed(
+                        &name,
+                        &HookPriority::integer(8),
+                        &CallbackId {
+                            module: "wordpress".into(),
+                            callback: "rp_action_ref_array_pending".into(),
+                        },
+                    );
+                    ensure!(
+                        removed,
+                        "reference-array dispatcher removal missed pending callback"
+                    );
+                    imported_rows = remaining_rows;
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_removal_ack",
+                        json!({"target":"wp-action-ref-array-1","uid":"rp_action_ref_array_pending","priority":8}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let resume = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        resume["payload"]["target"] == "wp-action-ref-array-1"
+                            && resume["payload"]["uid"] == uid
+                            && resume["payload"]["value"].is_null(),
+                        "reference-array add/remove mutator resume"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == "wp-action-ref-array-1"
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "reference-array action callback must resume with ignored null result"
+                    );
+                    in_seq += 1;
+                }
                 dispatcher
                     .resume_php(ticket, PhpValue::Null)
                     .map_err(|error| {
@@ -2443,12 +2649,14 @@ fn run_action_ref_array_dispatch(
                     "reference-array action returned non-null value"
                 );
                 ensure!(
-                    imported == [
-                        "rp_action_ref_array_truncated",
-                        "rp_action_ref_array_zero",
-                        "rp_action_ref_array_first",
-                        "rp_action_ref_array_second"
-                    ],
+                    imported
+                        == [
+                            "rp_action_ref_array_truncated",
+                            "rp_action_ref_array_zero",
+                            "rp_action_ref_array_first",
+                            "rp_action_ref_array_added",
+                            "rp_action_ref_array_second"
+                        ],
                     "reference-array action callback order mismatch"
                 );
                 send_frame(
@@ -2574,15 +2782,37 @@ fn run_action_ref_array_dispatch(
                         "current_priority":5, "wp_hook_doing_action":true
                     },
                     {
-                        "callback":"second", "args":["value-mutated-by-first", "extra-mutated-by-first"],
+                        "callback":"added", "args":["value-mutated-by-first", "extra-mutated-by-first"],
+                        "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
+                        "current_priority":7, "wp_hook_doing_action":true
+                    },
+                    {
+                        "callback":"second", "args":["value-mutated-by-added", "extra-mutated-by-added"],
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
                         "current_priority":10, "wp_hook_doing_action":true
                     }
                 ]);
+                let final_projection: Vec<Value> = imported_rows
+                    .iter()
+                    .map(|row| {
+                        json!([
+                            row["priority"],
+                            row["uid"],
+                            row["accepted_args"],
+                            row["function"],
+                            row["handle"]["request"],
+                            row["handle"]["kind"],
+                            row["handle"]["slot"],
+                            row["handle"]["generation"],
+                            row["handle"]["token"]
+                        ])
+                    })
+                    .collect();
+                let final_fingerprint = sha256(&serde_json::to_vec(&final_projection)?);
                 ensure!(
                     done["payload"]["result"].is_null()
                         && done["payload"]["events"] == expected_events
-                        && done["payload"]["caller_value"] == "value-mutated-by-first"
+                        && done["payload"]["caller_value"] == "value-mutated-by-added"
                         && done["payload"]["caller_extra"] == "extra-mutated-by-second"
                         && done["payload"]["action_count"] == 1
                         && done["payload"]["current_action"] == false
@@ -2590,12 +2820,17 @@ fn run_action_ref_array_dispatch(
                         && done["payload"]["doing_action"] == false
                         && done["payload"]["wp_hook_doing_action"] == false
                         && done["payload"]["current_priority"] == false
-                        && done["payload"]["table_fingerprint"] == fingerprint
+                        && done["payload"]["table_fingerprint"] == final_fingerprint
                         && done["payload"]["live_handles"] == 0
                         && done["payload"]["live_handles_before_close"] == 0
                         && done["payload"]["argument_frame_released_before_close"] == true
                         && done["payload"]["invocations"]
-                            == json!([rows[0]["uid"], rows[1]["uid"], rows[2]["uid"], rows[3]["uid"]]),
+                            == json!(
+                                imported_rows
+                                    .iter()
+                                    .map(|row| row["uid"].clone())
+                                    .collect::<Vec<_>>()
+                            ),
                     "WordPress reference-array action final observation mismatch"
                 );
                 return Ok(json!({
@@ -3640,6 +3875,506 @@ fn run_action_removal_dispatch(
     }
 }
 
+fn run_action_remove_all_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, 0)?;
+    expect_frame(
+        &start,
+        0,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    let target = "wp-action-remove-all-1";
+    let hook = "rp-probe-action-remove-all";
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == target
+            && start["payload"]["hook"] == hook
+            && start["payload"]["args"] == json!([""]),
+        "action remove-all start identity"
+    );
+    let name = HookArgument::bytes(hook);
+    let initial = start["payload"]["rows"]
+        .as_array()
+        .context("remove-all rows")?
+        .clone();
+    ensure!(initial.len() == 5, "remove-all initial row count");
+    let fingerprint_for = |rows: &[Value]| -> Result<String> {
+        let projection: Vec<Value> = rows
+            .iter()
+            .map(|row| {
+                json!([
+                    row["priority"],
+                    row["uid"],
+                    row["accepted_args"],
+                    row["function"],
+                    row["handle"]["request"],
+                    row["handle"]["kind"],
+                    row["handle"]["slot"],
+                    row["handle"]["generation"],
+                    row["handle"]["token"]
+                ])
+            })
+            .collect();
+        Ok(sha256(&serde_json::to_vec(&projection)?))
+    };
+    ensure!(
+        start["payload"]["table_fingerprint"] == fingerprint_for(&initial)?,
+        "remove-all initial table fingerprint"
+    );
+    let mut dispatcher = Dispatcher::new();
+    let mut handles = std::collections::HashMap::new();
+    for row in &initial {
+        let uid = row["uid"].as_str().context("remove-all uid")?.to_string();
+        let function = row["function"].as_str().context("remove-all function")?;
+        ensure!(
+            matches!(
+                function,
+                "rp_action_remove_all_observer"
+                    | "rp_action_remove_all_mutator"
+                    | "rp_action_remove_all_peer"
+                    | "rp_action_remove_all_pending"
+                    | "rp_action_remove_all_tail"
+            ),
+            "unrecognized remove-all callback"
+        );
+        let priority = row["priority"].as_i64().context("remove-all priority")?;
+        ensure!(row["accepted_args"] == 0, "remove-all accepted args");
+        let php_handle = handle(&row["handle"])?;
+        ensure!(
+            handles.insert(uid.clone(), php_handle).is_none(),
+            "duplicate remove-all callback uid"
+        );
+        let callback = ContextCallback::php_callable(
+            CallbackId {
+                module: "wordpress".into(),
+                callback: uid,
+            },
+            0,
+            php_handle,
+        )
+        .map_err(|error| anyhow::anyhow!("remove-all callback import: {error:?}"))?;
+        dispatcher.add_typed(&name, HookPriority::integer(priority), callback);
+    }
+    ensure!(
+        initial[0]["uid"] == "rp_action_remove_all_observer"
+            && initial[0]["priority"] == 1
+            && initial[1]["uid"] == "rp_action_remove_all_mutator"
+            && initial[1]["priority"] == 5
+            && initial[2]["uid"] == "rp_action_remove_all_peer"
+            && initial[2]["priority"] == 5
+            && initial[3]["uid"] == "rp_action_remove_all_pending"
+            && initial[3]["priority"] == 8
+            && initial[4]["uid"] == "rp_action_remove_all_tail"
+            && initial[4]["priority"] == 10,
+        "remove-all initial callback ordering"
+    );
+    let args = [PhpValue::Bytes(Vec::new())];
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("remove-all action start: {error:?}"))?;
+    let mut in_seq = 1u64;
+    let mut out_seq = 0u64;
+    let mut order = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("remove-all advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Zero && invocation.args.is_empty(),
+                    "remove-all callback args"
+                );
+                let uid = invocation.callback.callback.as_str().to_string();
+                ensure!(
+                    handles.get(&uid) == Some(&invocation.handle),
+                    "remove-all callback handle"
+                );
+                let priority = match invocation.priority {
+                    PhpKey::Integer(value) => value,
+                    _ => anyhow::bail!("remove-all priority type"),
+                };
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({"target":target,"uid":uid,"handle":desc,
+                    "priority":priority,"call_mode":"zero","args":[]}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                if uid == "rp_action_remove_all_mutator" {
+                    expect_frame(
+                        &reply,
+                        in_seq,
+                        "action_callbacks_removed",
+                        &["target", "parent_uid", "rows", "table_fingerprint"],
+                    )?;
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["parent_uid"] == uid
+                            && reply["payload"]["rows"] == json!(initial)
+                            && reply["payload"]["table_fingerprint"] == fingerprint_for(&[])?,
+                        "remove-all callback rows or empty table fingerprint mismatch"
+                    );
+                    dispatcher.remove_all_typed(&name, None);
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_callbacks_removed_ack",
+                        json!({"target":target,"removed_count":initial.len()}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    in_seq += 1;
+                    let resume = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&resume, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        resume["payload"]["target"] == target
+                            && resume["payload"]["uid"] == uid
+                            && resume["payload"]["value"].is_null(),
+                        "remove-all mutator resume"
+                    );
+                    in_seq += 1;
+                } else {
+                    expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                    ensure!(
+                        reply["payload"]["target"] == target
+                            && reply["payload"]["uid"] == uid
+                            && reply["payload"]["value"].is_null(),
+                        "remove-all callback resume"
+                    );
+                    in_seq += 1;
+                }
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| anyhow::anyhow!("remove-all callback resume: {error:?}"))?;
+                order.push(uid);
+            }
+            DispatchStep::ReleasePhp(php_handle) => {
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":php_handle.slot(),
+                    "generation":php_handle.generation(),"token":format!("{:016x}",php_handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":desc}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == desc,
+                    "remove-all callback release ack"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, php_handle)
+                    .map_err(|error| anyhow::anyhow!("remove-all release resume: {error:?}"))?;
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null
+                        && order
+                            == [
+                                "rp_action_remove_all_observer",
+                                "rp_action_remove_all_mutator",
+                                "rp_action_remove_all_peer"
+                            ],
+                    "removed callback invoked or survivor order mismatch"
+                );
+                dispatcher.remove_all_typed(&name, None);
+                for php_handle in dispatcher.take_php_releases() {
+                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":php_handle.slot(),
+                        "generation":php_handle.generation(),"token":format!("{:016x}",php_handle.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":desc}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == desc,
+                        "remove-all remaining handle release ack"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":target,"invocations":3}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                return run_action_remove_all_second_dispatch(
+                    reader, writer, total_in, total_out, dispatcher, name, order, in_seq, out_seq,
+                );
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected remove-all dispatch effect")
+            }
+        }
+    }
+}
+
+fn run_action_remove_all_second_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+    mut dispatcher: Dispatcher,
+    name: HookArgument,
+    first_order: Vec<String>,
+    start_in_seq: u64,
+    start_out_seq: u64,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, start_in_seq)?;
+    expect_frame(
+        &start,
+        start_in_seq,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "args",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    let target = "wp-action-remove-all-1";
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == target
+            && start["payload"]["hook"] == "rp-probe-action-remove-all"
+            && start["payload"]["args"] == json!([""]),
+        "remove-all second dispatch identity"
+    );
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("remove-all replacement rows")?
+        .clone();
+    ensure!(
+        rows.len() == 1
+            && rows[0]["priority"] == 7
+            && rows[0]["uid"] == "rp_action_remove_all_readded"
+            && rows[0]["accepted_args"] == 0
+            && rows[0]["function"] == "rp_action_remove_all_readded",
+        "remove-all replacement callback row"
+    );
+    let row = &rows[0];
+    let projection = json!([[
+        row["priority"],
+        row["uid"],
+        row["accepted_args"],
+        row["function"],
+        row["handle"]["request"],
+        row["handle"]["kind"],
+        row["handle"]["slot"],
+        row["handle"]["generation"],
+        row["handle"]["token"]
+    ]]);
+    ensure!(
+        start["payload"]["table_fingerprint"] == sha256(&serde_json::to_vec(&projection)?),
+        "remove-all replacement table fingerprint"
+    );
+    let php_handle = handle(&row["handle"])?;
+    let callback = ContextCallback::php_callable(
+        CallbackId {
+            module: "wordpress".into(),
+            callback: "rp_action_remove_all_readded".into(),
+        },
+        0,
+        php_handle,
+    )
+    .map_err(|error| anyhow::anyhow!("remove-all replacement callback import: {error:?}"))?;
+    dispatcher.add_typed(&name, HookPriority::integer(7), callback);
+    let args = [PhpValue::Bytes(Vec::new())];
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("remove-all second action start: {error:?}"))?;
+    let mut in_seq = start_in_seq + 1;
+    let mut out_seq = start_out_seq;
+    let mut order = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("remove-all second advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.call_mode == PhpCallMode::Zero
+                        && invocation.args.is_empty()
+                        && invocation.callback.callback.as_str() == "rp_action_remove_all_readded"
+                        && invocation.handle == php_handle,
+                    "remove-all second invocation identity"
+                );
+                let priority = match invocation.priority {
+                    PhpKey::Integer(v) => v,
+                    _ => anyhow::bail!("remove-all second priority type"),
+                };
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":invocation.handle.slot(),
+                    "generation":invocation.handle.generation(),"token":format!("{:016x}",invocation.handle.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({"target":target,"uid":"rp_action_remove_all_readded",
+                    "handle":desc,"priority":priority,"call_mode":"zero","args":[]}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                ensure!(
+                    reply["payload"]["target"] == target
+                        && reply["payload"]["uid"] == "rp_action_remove_all_readded"
+                        && reply["payload"]["value"].is_null(),
+                    "remove-all replacement callback resume"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| {
+                        anyhow::anyhow!("remove-all second callback resume: {error:?}")
+                    })?;
+                order.push("rp_action_remove_all_readded".to_string());
+            }
+            DispatchStep::ReleasePhp(release) => {
+                let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":release.slot(),
+                    "generation":release.generation(),"token":format!("{:016x}",release.token())});
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":desc}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == desc,
+                    "remove-all replacement release ack"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, release)
+                    .map_err(|error| {
+                        anyhow::anyhow!("remove-all second release resume: {error:?}")
+                    })?;
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null && order == ["rp_action_remove_all_readded"],
+                    "remove-all second dispatch callback order/result"
+                );
+                dispatcher.remove_all_typed(&name, None);
+                for release in dispatcher.take_php_releases() {
+                    let desc = json!({"request":HANDLE_REQUEST,"kind":"callable","slot":release.slot(),
+                        "generation":release.generation(),"token":format!("{:016x}",release.token())});
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":desc}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == desc,
+                        "remove-all second registration release ack"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":target,"invocations":1}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let observed = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &observed,
+                    in_seq,
+                    "action_remove_all_observed",
+                    &["target", "observation"],
+                )?;
+                ensure!(
+                    observed["payload"]["target"] == target,
+                    "remove-all two-pass observation target"
+                );
+                in_seq += 1;
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":target,"result":null}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "observation",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "registry_closed",
+                        "frames",
+                    ],
+                )?;
+                ensure!(
+                    done["payload"]["observation"] == observed["payload"]["observation"]
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["registry_closed"] == true,
+                    "remove-all two-pass guest cleanup"
+                );
+                let mut callbacks = first_order;
+                callbacks.extend(order);
+                return Ok(
+                    json!({"status":"passed","result":null,"callbacks":callbacks,"guest":done["payload"],
+                    "bridge":{"input_frames":in_seq+1,"output_frames":out_seq,"input_bytes":*total_in,
+                    "output_bytes":*total_out,"timeout_seconds":TIMEOUT.as_secs()}}),
+                );
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected remove-all second dispatch effect")
+            }
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let action_mode = std::env::args().nth(1).as_deref() == Some("action");
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
@@ -3648,6 +4383,7 @@ fn main() -> Result<()> {
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
     let action_removal_mode = std::env::args().nth(1).as_deref() == Some("action-removal");
+    let action_remove_all_mode = std::env::args().nth(1).as_deref() == Some("action-remove-all");
     let action_same_priority_mode =
         std::env::args().nth(1).as_deref() == Some("action-deferred-add");
     ensure!(
@@ -3658,12 +4394,15 @@ fn main() -> Result<()> {
             || action_nested_mode
             || action_mutation_mode
             || action_removal_mode
+            || action_remove_all_mode
             || action_same_priority_mode
             || std::env::args().nth(1).is_none(),
         "unknown hook-dispatch scenario"
     );
     let php_driver = if action_same_priority_mode {
         PHP_ACTION_SAME_PRIORITY_DRIVER
+    } else if action_remove_all_mode {
+        PHP_ACTION_REMOVE_ALL_DRIVER
     } else if action_removal_mode {
         PHP_ACTION_REMOVAL_DRIVER
     } else if action_mutation_mode {
@@ -3761,6 +4500,16 @@ fn main() -> Result<()> {
             1,
             0,
             0,
+        )
+    } else if action_remove_all_mode {
+        run_action_remove_all_dispatch(
+            &mut reader,
+            &mut DeadlinePipeWriter {
+                pipe: &mut host_stdin,
+                deadline: Instant::now() + TIMEOUT,
+            },
+            &mut total_in,
+            &mut total_out,
         )
     } else if action_removal_mode {
         run_action_removal_dispatch(
@@ -3889,7 +4638,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -3916,7 +4665,13 @@ fn run_guest(
     wasix.set_networking_implementation(UnsupportedVirtualNetworking::default());
     wasix.http_client = None;
     let mut runner = WasiRunner::new();
-    let runner_args = if driver == PHP_ACTION_SAME_PRIORITY_DRIVER {
+    let runner_args = if driver == PHP_ACTION_REMOVE_ALL_DRIVER {
+        vec![
+            "-n".to_string(),
+            driver.to_string(),
+            "action-remove-all".to_string(),
+        ]
+    } else if driver == PHP_ACTION_SAME_PRIORITY_DRIVER {
         vec![
             "-n".to_string(),
             driver.to_string(),

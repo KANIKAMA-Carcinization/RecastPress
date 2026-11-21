@@ -1,0 +1,86 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch-windows-current-mutation-source-validation.v0.1",
+  "status": "passed",
+  "observed_at_utc": "2026-11-21T02:07:36Z",
+  "tested_git_head": "f77bda513800218fdd808dc2c0ac9a4e4619f3cc",
+  "validation_basis": "Current working tree; this receipt binds the current action-ref-array mutation and action-remove-all source hashes. It is local source/native validation only.",
+  "checks": {
+    "action_ref_array_native_oracle": {
+      "exit_code": 0,
+      "scenario": "wp_action_ref_array_native_oracle",
+      "wordpress": "7.1.3",
+      "observed_event_order": [
+        "all",
+        "truncated",
+        "zero",
+        "first",
+        "added",
+        "second"
+      ],
+      "caller_value": "value-mutated-by-added",
+      "caller_extra": "extra-mutated-by-second",
+      "action_result": null
+    },
+    "action_remove_all_native_oracle": {
+      "exit_code": 0,
+      "scenario": "wp_action_remove_all_native_oracle",
+      "wordpress": "7.1.3",
+      "observed_event_order": [
+        "all",
+        "observer",
+        "mutator",
+        "cleared",
+        "reregistered",
+        "peer",
+        "all",
+        "readded"
+      ],
+      "action_count": 2,
+      "final_hook_state_reset": true
+    },
+    "php_fixture_lint": {
+      "exit_code": 0,
+      "fixtures": [
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php",
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php",
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_oracle.php"
+      ],
+      "php_version": "8.5.12"
+    },
+    "rustfmt_check": {
+      "exit_code": 0,
+      "toolchain": "1.94.0"
+    },
+    "rust_host_compile": {
+      "exit_code": 0,
+      "command": "cargo +1.94.0 test --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-review --no-run"
+    },
+    "diff_check": {
+      "exit_code": 0,
+      "command": "git diff --check"
+    }
+  },
+  "input_files_sha256": {
+    "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md": "6696d222ce8c94be2805aaacaa7e44dc5b7687bd191e3a700333651182a9a72c",
+    "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs": "68a1987574b9205e75f07dedf9393ba384b5069efe8932ca2cfe954564f2b20c",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php": "3ebeb2906cb870a94f1a75c333edad2edbefaef08cada60f0744bfa55cf200b3",
+    "experiments/php-wasix-wp-hook-dispatch-probe/check.py": "88787af2ede44d1e0d83dd54b7b0af59a94a34bca3ea916380aaafb14f7f76a7",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_oracle.php": "508e1b3817f80f3e22b69ef22e2fcd2d3462ca436f8b83f528b1fc64275cc72e",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php": "acecb92d8f831a9a53bf71af7d9375ce5cb9e99425c388ad3e091e897b360276",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php": "a5d93c02d367dcc34ad8faaad842f8b9e961966438b7ba9a8504d2e3d3f5a1e6"
+  },
+  "scope": {
+    "native_wordpress_oracles": true,
+    "php_fixture_lint": true,
+    "rust_host_compile": true,
+    "rustfmt": true,
+    "actual_php_wasm_execution": false,
+    "actual_php_wasix_execution": false,
+    "github_workflow_or_ci_checked": false,
+    "production_runtime_selected": false
+  },
+  "acceptance_note": "Both pinned native WordPress oracles and local source checks pass. Windows checker exits at its Linux-only platform gate, and the known Cranelift lowering panic prevents guest execution. No PHP-Wasm behavior or CI result is claimed."
+}
