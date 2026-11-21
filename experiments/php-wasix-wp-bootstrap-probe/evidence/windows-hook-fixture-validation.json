@@ -1,0 +1,145 @@
+{
+  "schema": "recastpress.php-wasix-wp-bootstrap-windows-hook-fixture-validation.v0.1",
+  "status": "passed",
+  "tested_git_head": "3fac12100a78239c0ee8e65552af3a4930180480",
+  "validation_basis": "Current uncommitted worktree with exact per-file hashes.",
+  "input_files_sha256": {
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_handle_registry.php": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php": "6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_adapter.php": "4932c190dfcf1f65b745ca181225d263506b27a1a2eee5e3c87c15ab8d129e72",
+    "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php": "d4991c81686fef88562b950e8777f414fa9b9f7f1fe9f0c1c980635dafbd6d0b",
+    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "7eb907f7bb0d57eef509b6d22e22fa283249ef27337bee9cd5cac2f169059ee7",
+    "experiments/php-wasix-wp-bootstrap-probe/Cargo.toml": "adb83b15df688b0a84471c88e06a2d41daebcec0ebbc8b188864ee9236737277",
+    "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "ca6fd99f5b1c668e32c5c119f8e1d2f7b962cb26bf3bfed0b5ce269a48b4fe1e"
+  },
+  "checks": [
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_adapter.php",
+      "exit_code": 0,
+      "stdout_sha256": "f011c60080955da26b8de5d863e425da080702851854d2a53ccbce404fc88812",
+      "stderr_bytes": 0
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_handle_registry.php",
+      "exit_code": 0,
+      "stdout_sha256": "21c401f900b92e7e69f15287fbc7382952b9d35411e0496ab06e480c913788a3",
+      "stderr_bytes": 0
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
+      "exit_code": 0,
+      "stdout_sha256": "073ed8ead04b6ece29b5f3978e3ed981857798c35154da4bec223973238356bc",
+      "stderr_bytes": 0
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/bootstrap.php",
+      "exit_code": 0,
+      "stdout_sha256": "50b51217215a90f3cc32ce16f3b5426c4faa52f35de77aaaa356ea7e07f5985a",
+      "stderr_bytes": 0
+    },
+    {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
+      "execution_exit_code": 0,
+      "stdout_sha256": "806c8925e1a576f5038e078e8884916ea8661ee9c93881883d4ec61012461cbb",
+      "stderr_bytes": 0,
+      "result": {
+        "schema": "recastpress.wp-bootstrap-hook-native-oracle.v0.1",
+        "status": "passed",
+        "scope": "Pinned native WordPress 7.1.3 plugin API and WP_Hook only; no wp-settings.php bootstrap, database, plugins, themes, or network.",
+        "wordpress_version": "7.1.3",
+        "wordpress_source_sha256": {
+          "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+          "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+        },
+        "scenario": "option_blogname",
+        "input_value": "RP Bootstrap Fixture",
+        "extra_args": [
+          "blogname"
+        ],
+        "registered_callbacks": [
+          {
+            "callback": "rp_boot_hook_first",
+            "priority": 10,
+            "accepted_args": 1
+          },
+          {
+            "callback": "rp_boot_hook_second",
+            "priority": 20,
+            "accepted_args": 1
+          }
+        ],
+        "event_order": [
+          "rp_boot_hook_first",
+          "rp_boot_hook_second"
+        ],
+        "events": [
+          {
+            "callback": "rp_boot_hook_first",
+            "current_filter": "option_blogname",
+            "doing_filter": true,
+            "doing_selected_filter": true,
+            "did_filter": 1,
+            "current_priority": 10,
+            "stack": [
+              "option_blogname"
+            ],
+            "value": "RP Bootstrap Fixture",
+            "argument_count": 1
+          },
+          {
+            "callback": "rp_boot_hook_second",
+            "current_filter": "option_blogname",
+            "doing_filter": true,
+            "doing_selected_filter": true,
+            "did_filter": 1,
+            "current_priority": 20,
+            "stack": [
+              "option_blogname"
+            ],
+            "value": "RP Bootstrap Fixture|first",
+            "argument_count": 1
+          }
+        ],
+        "filtered_value": "RP Bootstrap Fixture|first|second",
+        "after_dispatch": {
+          "current_filter": false,
+          "doing_filter": false,
+          "doing_selected_filter": false,
+          "did_filter": 1,
+          "stack": [],
+          "hook_state": {
+            "nesting_level": 0,
+            "iterations": [],
+            "current_priority": [],
+            "doing_action": false
+          }
+        }
+      }
+    }
+  ],
+  "prepare_derivation": {
+    "status": "passed",
+    "derived_fixtures": [
+      "install.php",
+      "read.php",
+      "bootstrap.php",
+      "helpers.php",
+      "adapter.php",
+      "db.php",
+      "hook_adapter.php",
+      "hook_handle_registry.php",
+      "hook_native_oracle.php"
+    ]
+  },
+  "scope": {
+    "pinned_native_wordpress_hook_oracle": true,
+    "php_cli_syntax": true,
+    "full_php_wasm_execution": false,
+    "database_execution": false,
+    "handle_registry_general_invariants_tested": false,
+    "handle_registry_use_in_cleanup_path_tested": true,
+    "runtime_32bit_wasm_integer_boundaries_validated": false
+  },
+  "observed_at_utc": "2026-11-21T01:38:10.464716+00:00",
+  "acceptance_note": "Fixture derivation and one narrow pinned native WordPress hook oracle are verified. The registry is exercised only for callable handles used by the cleanup path; its broader invariants and 32-bit Wasm integer boundaries are not validated. This receipt is not a complete transitive source fingerprint."
+}
