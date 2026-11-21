@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.php-wasix-wp-bootstrap-windows-hook-failure-cleanup-validation.v0.1",
   "status": "passed",
-  "observed_at_utc": "2026-11-21T01:28:47.868757+00:00",
+  "observed_at_utc": "2026-11-21T01:35:47.163115+00:00",
   "platform": {
     "system": "Windows",
     "release": "11",
@@ -21,8 +21,8 @@
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_handle_registry.php": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
     "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php": "6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4",
     "experiments/php-wasix-wp-bootstrap-probe/tests/hook_failure_cleanup.php": "07319a16cf90289e393d709a26b34ab544928da33ee6e95f56ffe1e00ccdf8f3",
-    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "2a87b6e80d411ce1bbaed0ac1bcde5ef2960704711617de33690bc4d639f3a6d",
-    "experiments/php-wasix-wp-bootstrap-probe/README.ja.md": "be1ae81c91c8d3051c8a20577e5cd82bdbb9930293284b86aa8ece1f92cab817",
+    "experiments/php-wasix-wp-bootstrap-probe/prepare.py": "7eb907f7bb0d57eef509b6d22e22fa283249ef27337bee9cd5cac2f169059ee7",
+    "experiments/php-wasix-wp-bootstrap-probe/README.ja.md": "14408538cc838d40fd66a334dd1cf79274b01471b606e7d74be9d11fafe671ae",
     "docs/proposals/2026-11-10-rust-wp-core-v0.6/implementation-and-validation.ja.md": "fdb7da2736a4cb2a47e08addc0311885166d1468043b77c6930cf238f8fb55d6"
   },
   "pinned_php": {
@@ -3133,5 +3133,13 @@
   },
   "acceptance_note": "Host/native failure-cleanup contract only. PHP CLI test verifies the adapter catch preserves hook_dispatch_begin, closes the registry and aborts the local channel stream; Rust host tests verify one-shot cancellation of an incomplete dispatcher ticket. PHP-Wasm EOF/in-flight integration and full database bootstrap remain unvalidated.",
   "previous_complete_source_fingerprint_receipt": "experiments/php-wasix-wp-bootstrap-probe/evidence/windows-hook-host-validation.json",
-  "validation_basis": "Current worktree at tested_git_head plus the exact input_files_sha256 map; edits were uncommitted during these local checks."
+  "validation_basis": "Current worktree at tested_git_head plus the exact input_files_sha256 map; edits were uncommitted during these local checks.",
+  "worktree_validation_notes": {
+    "prepare_verify_only": "passed after refreshing only target/php-wasix-wp-bootstrap-probe/prepared.json",
+    "locked_offline_rust_tests": "38 passed",
+    "cargo_metadata_offline_locked": "passed",
+    "build_check_verify_only": "failed because existing host receipt inputs no longer match current worktree; fresh full host build is gated by shared db driver stage seed mismatch and was not run",
+    "php_wasm_execution": false,
+    "database_execution": false
+  }
 }

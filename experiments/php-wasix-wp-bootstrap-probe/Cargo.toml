@@ -20,6 +20,7 @@ wasmer-compiler-cranelift = "=7.2.0"
 wasmer-wasix = { version = "=0.702.0", default-features = false, features = ["sys-minimal"] }
 
 recastpress-wp-source-fs-probe = { path = "../wp-source-fs-probe" }
+recastpress-wp = { path = "../../crates/recastpress-wp", default-features = false }
 
 [patch.crates-io]
 mysql_common = { path = "../../target/wpdb-rpc-probe/workspace/source/mysql_common-0.37.3" }
