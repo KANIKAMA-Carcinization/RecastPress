@@ -54,6 +54,7 @@ TESTS = sorted([
         'rejects_bad_schema_fingerprint_and_release_ack_identity',
         'unread_reply_wrong_sequence_nonce_and_multiple_frames_fail_closed',
         'finish_cancels_incomplete_dispatch_once_and_preserves_first_failure']],
+    'catalog::tests::validates_original_catalog_then_mounts_two_pinned_hook_files_and_owned_dropin',
     *['result_budget::tests::' + x for x in ['metadata_and_zero_rows_are_preserved',
         'binary_null_empty_and_raw_bytes_are_exact', 'row_and_width_limits_return_no_materialized_result',
         'cell_and_raw_boundaries_are_exact', 'encoded_boundary_and_metadata_limits_fail_closed',

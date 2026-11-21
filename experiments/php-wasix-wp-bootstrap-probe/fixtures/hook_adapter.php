@@ -151,7 +151,7 @@ function rp_boot_hook_second(string $value): string
 function rp_boot_hook_record(string $callback, string $value): void
 {
     $hook = $GLOBALS['rp_boot_hook_object'] ?? null;
-    if (!$hook instanceof RpBootstrapDispatcherHook) {
+    if (!$hook instanceof WP_Hook) {
         throw new RuntimeException('hook_object_missing');
     }
     $GLOBALS['rp_boot_hook_trace'][] = [
@@ -164,162 +164,139 @@ function rp_boot_hook_record(string $callback, string $value): void
     ];
 }
 
-/** Narrow selected-hook object for the public plugin.php apply_filters path. */
-final class RpBootstrapDispatcherHook
+function recastpress_wp_should_dispatch_selected_hook(string $hookName, object $hook): bool
 {
-    public array $callbacks = [];
-    private array $priorities = [10, 20];
-    private ?int $activePriority = null;
-    private RpBootstrapHookChannel $channel;
-    private HandleRegistry $registry;
-    private array $handles = [];
-    private array $invocations = [];
-    private bool $dispatched = false;
+    return $hook instanceof WP_Hook
+        && $hook === ($GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME] ?? null)
+        && $hook === ($GLOBALS['rp_boot_hook_object'] ?? null)
+        && $hookName === RP_BOOT_HOOK_NAME
+        && ($GLOBALS['rp_boot_hook_dispatched'] ?? false) === false;
+}
 
-    public function __construct(string $nonce)
-    {
-        $this->channel = new RpBootstrapHookChannel($nonce);
-        $this->registry = new HandleRegistry(RP_BOOT_HOOK_HANDLE_REQUEST);
-        $this->callbacks = [
-            10 => ['rp_boot_hook_first' => [
-                'function' => 'rp_boot_hook_first',
-                'accepted_args' => 1,
-            ]],
-            20 => ['rp_boot_hook_second' => [
-                'function' => 'rp_boot_hook_second',
-                'accepted_args' => 1,
-            ]],
-        ];
-        foreach (['rp_boot_hook_first', 'rp_boot_hook_second'] as $uid) {
-            $this->handles[$uid] = $this->registry->retainCallable($uid);
-        }
+function rp_boot_hook_same_handle(array $actual, array $expected): bool
+{
+    $keys = ['generation', 'kind', 'request', 'slot', 'token'];
+    sort($keys, SORT_STRING);
+    if (count($actual) !== count($keys) || count($expected) !== count($keys)) {
+        return false;
     }
-
-    public function current_priority(): int|false
-    {
-        return $this->activePriority ?? false;
+    $actualKeys = array_keys($actual);
+    $expectedKeys = array_keys($expected);
+    sort($actualKeys, SORT_STRING);
+    sort($expectedKeys, SORT_STRING);
+    if ($actualKeys !== $keys || $expectedKeys !== $keys) {
+        return false;
     }
-
-    private static function sameHandle(array $actual, array $expected): bool
-    {
-        $keys = ['generation', 'kind', 'request', 'slot', 'token'];
-        if (count($actual) !== count($keys) || count($expected) !== count($keys)) {
+    foreach (['generation', 'kind', 'request', 'slot'] as $key) {
+        if ($actual[$key] !== $expected[$key]) {
             return false;
         }
-        $actualKeys = array_keys($actual);
-        $expectedKeys = array_keys($expected);
-        sort($actualKeys, SORT_STRING);
-        sort($expectedKeys, SORT_STRING);
-        if ($actualKeys !== $keys || $expectedKeys !== $keys) {
-            return false;
-        }
-        foreach (['generation', 'kind', 'request', 'slot'] as $key) {
-            if ($actual[$key] !== $expected[$key]) {
-                return false;
-            }
-        }
-        return is_string($actual['token']) && is_string($expected['token'])
-            && hash_equals($expected['token'], $actual['token']);
     }
+    return is_string($actual['token']) && is_string($expected['token'])
+        && hash_equals($expected['token'], $actual['token']);
+}
 
-    public function apply_filters($value, $args)
-    {
-        if ($this->dispatched) {
-            throw new RuntimeException('hook_dispatch_repeated');
-        }
-        if (!is_string($value) || $value !== 'RP Bootstrap Fixture'
-            || !is_array($args) || array_is_list($args) === false
-            || ($args[0] ?? null) !== $value || ($args[1] ?? null) !== 'blogname'
-            || count($this->callbacks) !== 2 || array_keys($this->callbacks) !== [10, 20]) {
+/** Called only from the fixed WP_Hook overlay for the selected real hook. */
+function recastpress_wp_dispatch_selected_hook(
+    string $hookName,
+    WP_Hook $hook,
+    mixed $value,
+    array $args,
+    int $nestingLevel,
+    Closure $sync,
+): mixed {
+    $registry = $GLOBALS['rp_boot_hook_registry'] ?? null;
+    $channel = $GLOBALS['rp_boot_hook_channel'] ?? null;
+    $expectedCallbacks = ['rp_boot_hook_first', 'rp_boot_hook_second'];
+    $GLOBALS['rp_boot_hook_dispatched'] = true;
+    $invocations = [];
+    $failureStage = 'begin';
+    try {
+        if (!$registry instanceof HandleRegistry || !$channel instanceof RpBootstrapHookChannel
+            || $hook !== ($GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME] ?? null)
+            || $hook !== ($GLOBALS['rp_boot_hook_object'] ?? null)
+            || ($GLOBALS['rp_boot_hook_dispatched'] ?? false) !== true
+            || $hookName !== RP_BOOT_HOOK_NAME || !is_string($value)
+            || $value !== 'RP Bootstrap Fixture' || !array_is_list($args)
+            || $args !== [$value, 'blogname'] || $nestingLevel < 0) {
             throw new RuntimeException('hook_filter_context');
         }
 
         $rows = [];
-        foreach ([10 => 'rp_boot_hook_first', 20 => 'rp_boot_hook_second'] as $priority => $uid) {
-            $bucket = $this->callbacks[$priority] ?? [];
-            if (count($bucket) !== 1) {
+        foreach ($hook->callbacks as $priority => $bucket) {
+            if (!is_int($priority) || !is_array($bucket)) {
                 throw new RuntimeException('hook_callback_bucket_shape');
             }
-            $row = reset($bucket);
-            if (($row['function'] ?? null) !== $uid || ($row['accepted_args'] ?? null) !== 1) {
-                throw new RuntimeException('hook_callback_identity');
+            foreach ($bucket as $uid => $entry) {
+                $function = $entry['function'] ?? null;
+                $acceptedArgs = $entry['accepted_args'] ?? null;
+                if (!is_string($uid) || !is_string($function) || $uid !== $function
+                    || !in_array($uid, $expectedCallbacks, true) || $acceptedArgs !== 1) {
+                    throw new RuntimeException('hook_callback_identity');
+                }
+                $rows[] = [
+                    'priority' => $priority,
+                    'uid' => $uid,
+                    'accepted_args' => $acceptedArgs,
+                    'function' => $function,
+                ];
             }
-            $rows[] = [
-                'priority' => $priority,
-                'uid' => $uid,
-                'accepted_args' => 1,
-                'function' => $uid,
-                'handle' => $this->handles[$uid],
-            ];
         }
+        if (count($rows) !== 2 || array_column($rows, 'uid') !== $expectedCallbacks
+            || array_column($rows, 'priority') !== [10, 20]) {
+            throw new RuntimeException('hook_callback_table_contract');
+        }
+        foreach ($rows as &$row) {
+            $row['handle'] = $registry->retainCallable($row['function']);
+        }
+        unset($row);
+        $GLOBALS['rp_boot_hook_exported_handles'] = array_column($rows, 'handle', 'uid');
         $projection = array_map(static fn(array $row): array => [
             $row['priority'], $row['uid'], $row['accepted_args'], $row['function'],
             $row['handle']['request'], $row['handle']['kind'], $row['handle']['slot'],
             $row['handle']['generation'], $row['handle']['token'],
         ], $rows);
-        $fingerprint = hash('sha256', json_encode(
-            $projection,
-            JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-        ));
-
-        // The public plugin.php wrapper owns the global current-filter stack
-        // and count. This narrow object mirrors only the selected priority.
-        $sync = function (string $operation, ?int $priority = null): bool {
-            if ($operation === 'set_priority') {
-                if (!in_array($priority, $this->priorities, true)) {
-                    return false;
-                }
-                $this->activePriority = $priority;
-                return true;
-            }
-            if ($operation === 'finish') {
-                $this->activePriority = null;
-                return true;
-            }
-            return false;
-        };
-
-        $this->dispatched = true;
+        $fingerprint = hash('sha256', json_encode($projection, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
         $failureStage = 'begin';
-        try {
-            $reply = $this->channel->exchange('begin', [
-                'hook' => RP_BOOT_HOOK_NAME,
-                'target' => RP_BOOT_HOOK_TARGET,
-                'value' => $value,
-                'extra' => array_slice($args, 1),
-                'rows' => $rows,
-                'fingerprint' => $fingerprint,
-            ]);
-            while (true) {
+        $reply = $channel->exchange('begin', [
+            'hook' => $hookName,
+            'target' => RP_BOOT_HOOK_TARGET,
+            'value' => $value,
+            'extra' => array_slice($args, 1),
+            'rows' => $rows,
+            'fingerprint' => $fingerprint,
+        ]);
+        while (true) {
             if ($reply['event'] === 'invoke') {
                 $failureStage = 'invoke_contract';
-                $p = $reply['payload'];
-                $uid = $p['uid'] ?? null;
-                $handle = $p['handle'] ?? null;
-                $priority = $p['priority'] ?? null;
-                if (($p['target'] ?? null) !== RP_BOOT_HOOK_TARGET
-                    || !is_string($uid) || !isset($this->handles[$uid])
-                    || !is_array($handle) || !self::sameHandle($handle, $this->handles[$uid])
+                $payload = $reply['payload'];
+                $uid = $payload['uid'] ?? null;
+                $handle = $payload['handle'] ?? null;
+                $priority = $payload['priority'] ?? null;
+                $expectedHandle = is_string($uid) ? ($GLOBALS['rp_boot_hook_exported_handles'][$uid] ?? null) : null;
+                if (($payload['target'] ?? null) !== RP_BOOT_HOOK_TARGET
+                    || !is_string($uid) || !is_array($expectedHandle) || !is_array($handle)
+                    || !rp_boot_hook_same_handle($handle, $expectedHandle)
                     || !is_int($priority) || !in_array($priority, [10, 20], true)
-                    || ($p['value'] ?? null) !== $value
-                    || ($p['call_mode'] ?? null) !== 'array'
-                    || ($p['args'] ?? null) !== [$value]
+                    || ($payload['value'] ?? null) !== $value
+                    || ($payload['call_mode'] ?? null) !== 'array'
+                    || ($payload['args'] ?? null) !== [$value]
                     || !$sync('set_priority', $priority)) {
                     throw new RuntimeException('hook_invoke_identity');
                 }
                 $failureStage = 'callback';
-                $callback = $this->registry->resolve($handle, 'callable');
-                $result = call_user_func_array($callback, $p['args']);
-                if (!is_string($result)) {
+                $callback = $registry->resolve($handle, 'callable');
+                $returned = call_user_func_array($callback, $payload['args']);
+                if (!is_string($returned)) {
                     throw new RuntimeException('hook_callback_result');
                 }
-                $value = $result;
-                $this->invocations[] = $uid;
+                $value = $returned;
+                $invocations[] = $uid;
                 $failureStage = 'resume';
-                $reply = $this->channel->exchange('resume', [
+                $reply = $channel->exchange('resume', [
                     'target' => RP_BOOT_HOOK_TARGET,
                     'uid' => $uid,
-                    'value' => $result,
+                    'value' => $returned,
                 ]);
                 continue;
             }
@@ -327,8 +304,8 @@ final class RpBootstrapDispatcherHook
                 $failureStage = 'release';
                 $handle = $reply['payload']['handle'] ?? null;
                 $uid = null;
-                foreach ($this->handles as $candidate => $candidateHandle) {
-                    if (is_array($handle) && self::sameHandle($handle, $candidateHandle)) {
+                foreach ($GLOBALS['rp_boot_hook_exported_handles'] as $candidate => $candidateHandle) {
+                    if (is_array($handle) && rp_boot_hook_same_handle($handle, $candidateHandle)) {
                         $uid = $candidate;
                         break;
                     }
@@ -336,8 +313,8 @@ final class RpBootstrapDispatcherHook
                 if ($uid === null) {
                     throw new RuntimeException('hook_release_identity');
                 }
-                $this->registry->release($handle);
-                $reply = $this->channel->exchange('release_ack', ['handle' => $handle]);
+                $registry->release($handle);
+                $reply = $channel->exchange('release_ack', ['handle' => $handle]);
                 continue;
             }
             if ($reply['event'] === 'complete') {
@@ -345,31 +322,25 @@ final class RpBootstrapDispatcherHook
                 if (($reply['payload']['target'] ?? null) !== RP_BOOT_HOOK_TARGET
                     || ($reply['payload']['value'] ?? null) !== $value
                     || ($reply['payload']['invocations'] ?? null) !== 2
-                    || $this->invocations !== ['rp_boot_hook_first', 'rp_boot_hook_second']
-                    || $this->registry->liveCount() !== 0
+                    || $invocations !== $expectedCallbacks || $registry->liveCount() !== 0
                     || !$sync('finish')) {
                     throw new RuntimeException('hook_completion_contract');
                 }
-                $this->registry->close();
-                $this->channel->close();
-                $GLOBALS['rp_boot_hook_invocations'] = $this->invocations;
+                $registry->close();
+                $channel->close();
+                $GLOBALS['rp_boot_hook_invocations'] = $invocations;
                 return $value;
             }
             throw new RuntimeException('hook_reply_op');
-            }
-        } catch (Throwable $error) {
-            try {
-                $this->registry->close();
-            } catch (Throwable) {
-                // Cleanup must not replace the stable public failure stage.
-            }
-            try {
-                $this->channel->abort();
-            } catch (Throwable) {
-                // The protocol `close` operation is success-only.
-            }
-            throw new RpBootstrapFailure('hook_dispatch_' . $failureStage);
         }
+    } catch (Throwable $error) {
+        if ($registry instanceof HandleRegistry) {
+            try { $registry->close(); } catch (Throwable) { /* preserve dispatch stage */ }
+        }
+        if ($channel instanceof RpBootstrapHookChannel) {
+            try { $channel->abort(); } catch (Throwable) { /* close is success-only */ }
+        }
+        throw new RpBootstrapFailure('hook_dispatch_' . $failureStage);
     }
 }
 
@@ -378,12 +349,19 @@ function rp_bootstrap_install_blogname_dispatcher(): void
 {
     if (!class_exists(WP_Hook::class, false)
         || !isset($GLOBALS['rp_input']['nonce'])
-        || isset($GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME])) {
+        || isset($GLOBALS['rp_boot_hook_object'])) {
         throw new RuntimeException('hook_install_context');
     }
     $GLOBALS['rp_boot_hook_did_filter_before'] = did_filter(RP_BOOT_HOOK_NAME);
-    $hook = new RpBootstrapDispatcherHook($GLOBALS['rp_input']['nonce']);
-    $GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME] = $hook;
+    $GLOBALS['rp_boot_hook_channel'] = new RpBootstrapHookChannel($GLOBALS['rp_input']['nonce']);
+    $GLOBALS['rp_boot_hook_registry'] = new HandleRegistry(RP_BOOT_HOOK_HANDLE_REQUEST);
+    $GLOBALS['rp_boot_hook_dispatched'] = false;
+    add_filter(RP_BOOT_HOOK_NAME, 'rp_boot_hook_first', 10, 1);
+    add_filter(RP_BOOT_HOOK_NAME, 'rp_boot_hook_second', 20, 1);
+    $hook = $GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME] ?? null;
+    if (!$hook instanceof WP_Hook) {
+        throw new RuntimeException('hook_install_wp_hook_missing');
+    }
     $GLOBALS['rp_boot_hook_object'] = $hook;
     $GLOBALS['rp_boot_hook_trace'] = [];
 }

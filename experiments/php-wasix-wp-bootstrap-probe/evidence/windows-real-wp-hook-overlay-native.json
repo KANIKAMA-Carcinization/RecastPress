@@ -1,0 +1,229 @@
+{
+  "schema": "recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.1",
+  "passed": true,
+  "outcome": "native_real_wp_hook_overlay_passed",
+  "scope": "Pinned PHP 8.5.12 CLI + WordPress 7.1.3 plugin.php/WP_Hook overlay; two registered callbacks and clean WP_Hook state. This is not full wp-settings.php bootstrap or PHP-Wasm execution.",
+  "native_php_version": "8.5.12",
+  "guest_executed": false,
+  "wasm_executed": false,
+  "full_wordpress_bootstrap_verified": false,
+  "source_inputs": {
+    "php_executable": {
+      "path": ".reference/php-8.5.12/php.exe",
+      "bytes": 186368,
+      "sha256": "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef"
+    },
+    "fixture": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_overlay_native_oracle.php",
+      "bytes": 10325,
+      "sha256": "6e076ea8a6849e8fa564c05ccddfe416be6d3157df81f4e8a5eceedbb889728d"
+    },
+    "baseline_fixture": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
+      "bytes": 9900,
+      "sha256": "6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4"
+    },
+    "overlay_receipt": {
+      "path": "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/overlay.json",
+      "bytes": 2045,
+      "sha256": "73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360"
+    },
+    "overlay_files": {
+      "wp-includes/plugin.php": {
+        "source_sha256": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+        "overlay_sha256": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c"
+      },
+      "wp-includes/class-wp-hook.php": {
+        "source_sha256": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+        "overlay_sha256": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+      }
+    },
+    "wp_filter_sentinel": {
+      "path": "target/wp-bootstrap-probe/site/wp-includes/class-wp-filter-sentinel.php",
+      "bytes": 760,
+      "sha256": "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
+    },
+    "runner": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/record_native_hook_overlay.py",
+      "sha256": "cba5fbe116795c6557695e9612087dfddc9a7efc14ac729d62c2133d6da16dfb"
+    },
+    "host_sources": {
+      "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "872af01b2af48e07eeb637dc3a9da8398635a90f7c52b6dcd97995db4e5fa8ed",
+      "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "a21dcd409c13057269f296e6f5856b5d01b01ce7001c02a43995441c458828c6",
+      "experiments/php-wasix-wp-bootstrap-probe/build_check.py": "ef9e7ffdb7a9c54cc3397d941057d5da29fbb84604f999a097819e652320e5ff",
+      "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "ca6fd99f5b1c668e32c5c119f8e1d2f7b962cb26bf3bfed0b5ce269a48b4fe1e"
+    }
+  },
+  "oracle": {
+    "schema": "recastpress.wp-bootstrap-hook-overlay-native-oracle.v0.1",
+    "status": "passed",
+    "wordpress_version": "7.1.3",
+    "source_sha256": {
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "overlay_sha256": {
+      "wp-includes/plugin.php": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+      "wp-includes/class-wp-hook.php": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+    },
+    "overlay_receipt_sha256": "73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360",
+    "scenario": "option_blogname",
+    "callback_table": [
+      {
+        "priority": 10,
+        "uid": "rp_overlay_oracle_first",
+        "function": "rp_overlay_oracle_first",
+        "accepted_args": 1
+      },
+      {
+        "priority": 20,
+        "uid": "rp_overlay_oracle_second",
+        "function": "rp_overlay_oracle_second",
+        "accepted_args": 1
+      }
+    ],
+    "event_order": [
+      "rp_overlay_oracle_first",
+      "rp_overlay_oracle_second"
+    ],
+    "events": [
+      {
+        "callback": "rp_overlay_oracle_first",
+        "value": "RP Bootstrap Fixture",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "did_filter": 1,
+        "current_priority": 10,
+        "stack": [
+          "option_blogname"
+        ]
+      },
+      {
+        "callback": "rp_overlay_oracle_second",
+        "value": "RP Bootstrap Fixture|first",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "did_filter": 1,
+        "current_priority": 20,
+        "stack": [
+          "option_blogname"
+        ]
+      }
+    ],
+    "value": "RP Bootstrap Fixture|first|second",
+    "after_dispatch": {
+      "current_filter": false,
+      "doing_filter": false,
+      "did_filter": 1,
+      "stack": [],
+      "wp_hook_state": {
+        "nesting_level": 0,
+        "iterations": [],
+        "current_priority": [],
+        "doing_action": false
+      }
+    }
+  },
+  "unpatched_wordpress_oracle": {
+    "schema": "recastpress.wp-bootstrap-hook-native-oracle.v0.1",
+    "status": "passed",
+    "scope": "Pinned native WordPress 7.1.3 plugin API and WP_Hook only; no wp-settings.php bootstrap, database, plugins, themes, or network.",
+    "wordpress_version": "7.1.3",
+    "wordpress_source_sha256": {
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "scenario": "option_blogname",
+    "input_value": "RP Bootstrap Fixture",
+    "extra_args": [
+      "blogname"
+    ],
+    "registered_callbacks": [
+      {
+        "callback": "rp_boot_hook_first",
+        "priority": 10,
+        "accepted_args": 1
+      },
+      {
+        "callback": "rp_boot_hook_second",
+        "priority": 20,
+        "accepted_args": 1
+      }
+    ],
+    "event_order": [
+      "rp_boot_hook_first",
+      "rp_boot_hook_second"
+    ],
+    "events": [
+      {
+        "callback": "rp_boot_hook_first",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "doing_selected_filter": true,
+        "did_filter": 1,
+        "current_priority": 10,
+        "stack": [
+          "option_blogname"
+        ],
+        "value": "RP Bootstrap Fixture",
+        "argument_count": 1
+      },
+      {
+        "callback": "rp_boot_hook_second",
+        "current_filter": "option_blogname",
+        "doing_filter": true,
+        "doing_selected_filter": true,
+        "did_filter": 1,
+        "current_priority": 20,
+        "stack": [
+          "option_blogname"
+        ],
+        "value": "RP Bootstrap Fixture|first",
+        "argument_count": 1
+      }
+    ],
+    "filtered_value": "RP Bootstrap Fixture|first|second",
+    "after_dispatch": {
+      "current_filter": false,
+      "doing_filter": false,
+      "doing_selected_filter": false,
+      "did_filter": 1,
+      "stack": [],
+      "hook_state": {
+        "nesting_level": 0,
+        "iterations": [],
+        "current_priority": [],
+        "doing_action": false
+      }
+    }
+  },
+  "execution": {
+    "exit_code": 0,
+    "stdout_bytes": 1578,
+    "stdout_sha256": "5dabd9137ef7f11a068687e3abba6b4d47bf5e5272dc7ddcc2116df4e4522d3c",
+    "stderr_bytes": 0,
+    "php_cli_mode": "-n"
+  },
+  "baseline_execution": {
+    "exit_code": 0,
+    "stdout_bytes": 1522,
+    "stdout_sha256": "806c8925e1a576f5038e078e8884916ea8661ee9c93881883d4ec61012461cbb",
+    "stderr_bytes": 0,
+    "php_cli_mode": "-n"
+  },
+  "rust_host_contract_tests": {
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "experiments/php-wasix-wp-bootstrap-probe/Cargo.toml",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "tests_passed": 39,
+    "stdout_sha256": "63a440980cf6b204fb8f3f2aa39a09734591275fae127b975ff38fec9dbf04ce",
+    "stderr_bytes": 280,
+    "scope": "host unit contracts including pinned catalog overlay replacement; no Wasm guest execution"
+  }
+}

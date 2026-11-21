@@ -502,9 +502,18 @@ fn public_hook_dispatch(value: &Value) -> Option<Value> {
     let callbacks = ["rp_boot_hook_first", "rp_boot_hook_second"];
     let values = ["RP Bootstrap Fixture", "RP Bootstrap Fixture|first"];
     let priorities = [10, 20];
+    let callback_table = json!([
+        {"priority":10,"uid":"rp_boot_hook_first","function":"rp_boot_hook_first","accepted_args":1},
+        {"priority":20,"uid":"rp_boot_hook_second","function":"rp_boot_hook_second","accepted_args":1}
+    ]);
+    let clean_wp_hook_state = json!({
+        "nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false
+    });
     if value["hook"] != "option_blogname"
         || value["value"] != "RP Bootstrap Fixture|first|second"
         || value["invocations"] != json!(callbacks)
+        || value["callback_table"] != callback_table
+        || value["wp_hook_state"] != clean_wp_hook_state
         || events.len() != 2
     {
         return None;
@@ -541,7 +550,7 @@ fn public_hook_dispatch(value: &Value) -> Option<Value> {
         "invocations":callbacks,"events":safe_events,"after_dispatch":{
             "current_filter":false,"doing_filter":false,"doing_selected_filter":false,
             "did_filter":1,"stack":[],"current_priority":false
-        }}),
+        },"callback_table":callback_table,"wp_hook_state":clean_wp_hook_state}),
     )
 }
 fn public_literal(name: &str) -> Vec<String> {
@@ -728,6 +737,11 @@ mod tests {
                 {"callback":"rp_boot_hook_first","value":"RP Bootstrap Fixture","did_filter":did_filter,"current_filter":"option_blogname","current_priority":10,"doing_filter":true},
                 {"callback":"rp_boot_hook_second","value":"RP Bootstrap Fixture|first","did_filter":did_filter,"current_filter":"option_blogname","current_priority":20,"doing_filter":true}
             ],
+            "callback_table":[
+                {"priority":10,"uid":"rp_boot_hook_first","function":"rp_boot_hook_first","accepted_args":1},
+                {"priority":20,"uid":"rp_boot_hook_second","function":"rp_boot_hook_second","accepted_args":1}
+            ],
+            "wp_hook_state":{"nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false},
             "after_dispatch":{
                 "current_filter":false,"doing_filter":false,"doing_selected_filter":false,
                 "did_filter":did_filter,"stack":[],"current_priority":false

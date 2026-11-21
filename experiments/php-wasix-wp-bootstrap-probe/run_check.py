@@ -34,8 +34,10 @@ COMPARE=['bootstrap_completed','install_completed','physical_disconnect_complete
 HOOK_TRACE_FIELDS=['callback','value','current_filter','doing_filter','did_filter','current_priority']
 HOOK_RESET_FIELDS=['current_filter','doing_filter','doing_selected_filter','did_filter','stack']
 HOOK_ORACLE_SCHEMA='recastpress.wp-bootstrap-hook-native-oracle.v0.1'
+HOOK_OVERLAY_ORACLE_SCHEMA='recastpress.wp-bootstrap-hook-overlay-native-oracle.v0.1'
 HOOK_PHP_FILES=['fixtures/hook_adapter.php','fixtures/hook_handle_registry.php',
-    'fixtures/hook_native_oracle.php','tests/hook_failure_cleanup.php']
+    'fixtures/hook_native_oracle.php','fixtures/hook_overlay_native_oracle.php',
+    'tests/hook_failure_cleanup.php']
 
 
 def canonical(value):
@@ -79,6 +81,31 @@ def native_hook_oracle():
     return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
         'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
         'php_cli_mode':'-n'}
+
+
+def native_hook_overlay_oracle():
+    version=subprocess.run(['php','-n','-r','echo PHP_VERSION_ID;'],cwd=ROOT,
+        stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15,check=False)
+    require(version.returncode==0 and not version.stderr and version.stdout==b'80512',
+        'native_hook_overlay_php_version')
+    path=HERE/'fixtures/hook_overlay_native_oracle.php'
+    result=subprocess.run(['php','-n',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=8192
+        and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
+        'native_hook_overlay_oracle_execution_failed')
+    value=json.loads(result.stdout)
+    require(value.get('schema')==HOOK_OVERLAY_ORACLE_SCHEMA and value.get('status')=='passed',
+        'native_hook_overlay_oracle_failed')
+    require(value.get('wordpress_version')=='7.1.3'
+        and value.get('event_order')==['rp_overlay_oracle_first','rp_overlay_oracle_second']
+        and value.get('value')=='RP Bootstrap Fixture|first|second'
+        and value.get('after_dispatch',{}).get('wp_hook_state')=={
+            'nesting_level':0,'iterations':[],'current_priority':[],'doing_action':False},
+        'native_hook_overlay_oracle_contract')
+    return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
+        'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
+        'php_version_id':80512,'php_cli_mode':'-n'}
 
 
 def native_hook_failure_cleanup():
@@ -300,6 +327,10 @@ def main():
         native_hook,native_hook_execution=native_hook_oracle()
         report['native_hook_oracle']=native_hook
         report['native_hook_oracle_execution']=native_hook_execution
+        stage='native_hook_overlay_oracle'
+        native_hook_overlay,native_hook_overlay_execution=native_hook_overlay_oracle()
+        report['native_hook_overlay_oracle']=native_hook_overlay
+        report['native_hook_overlay_oracle_execution']=native_hook_overlay_execution
         stage='hook_failure_cleanup'
         hook_failure_cleanup,hook_failure_cleanup_execution=native_hook_failure_cleanup()
         report['hook_failure_cleanup']=hook_failure_cleanup
