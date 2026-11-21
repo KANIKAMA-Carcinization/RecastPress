@@ -1,8 +1,8 @@
 {
-  "schema": "recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.1",
+  "schema": "recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.2",
   "passed": true,
   "outcome": "native_real_wp_hook_overlay_passed",
-  "scope": "Pinned PHP 8.5.12 CLI + WordPress 7.1.3 plugin.php/WP_Hook overlay; two registered callbacks and clean WP_Hook state. This is not full wp-settings.php bootstrap or PHP-Wasm execution.",
+  "scope": "Pinned PHP 8.5.12 CLI + WordPress 7.1.3 plugin.php/WP_Hook overlay; original loop and overlay handoff observation comparison plus exact PHP adapter execution against a deterministic simulated Rust peer. No wp-settings.php bootstrap or PHP-Wasm guest.",
   "native_php_version": "8.5.12",
   "guest_executed": false,
   "wasm_executed": false,
@@ -17,6 +17,21 @@
       "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_overlay_native_oracle.php",
       "bytes": 10325,
       "sha256": "6e076ea8a6849e8fa564c05ccddfe416be6d3157df81f4e8a5eceedbb889728d"
+    },
+    "adapter_fixture": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/hook_adapter_native_oracle.php",
+      "bytes": 19435,
+      "sha256": "716b0e34f5ce75178ce4618cfa1789e7a98a4d3ec867556f73bd9c02cb438d60"
+    },
+    "adapter_sources": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_adapter.php",
+      "bytes": 14908,
+      "sha256": "9e4c6c3cca280e94b7079f2dcf473b6b6ae941d7a4c9d358b6b68f2870bc1483"
+    },
+    "handle_registry_source": {
+      "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_handle_registry.php",
+      "bytes": 11351,
+      "sha256": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8"
     },
     "baseline_fixture": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_native_oracle.php",
@@ -45,7 +60,7 @@
     },
     "runner": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/record_native_hook_overlay.py",
-      "sha256": "8f6e0c8173d4d368b2b1d4ebd801b5e2855224bfbcdbe9962de784388be3d0cf"
+      "sha256": "f526149b06f4b1c1cdb21ef3dd8b01e2924d42204d5065884aa86c173609e61c"
     },
     "host_sources": {
       "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "872af01b2af48e07eeb637dc3a9da8398635a90f7c52b6dcd97995db4e5fa8ed",
@@ -256,12 +271,97 @@
       }
     }
   },
+  "adapter_native_oracle": {
+    "schema": "recastpress.wp-bootstrap-hook-adapter-native-oracle.v0.1",
+    "status": "passed",
+    "scope": "pinned PHP 8.5.12 native WP_Hook overlay plus exact hook_adapter.php with only the fixed channel path redirected to a deterministic PHP stream wrapper; Rust HookRpcFs is simulated, no WordPress bootstrap or Wasm guest",
+    "wordpress_version": "7.1.3",
+    "adapter_path_transform_count": 1,
+    "callback_order": [
+      "rp_boot_hook_first",
+      "rp_boot_hook_second"
+    ],
+    "events": [
+      {
+        "callback": "rp_boot_hook_first",
+        "value": "RP Bootstrap Fixture",
+        "did_filter": 1,
+        "current_filter": "option_blogname",
+        "current_priority": 10,
+        "doing_filter": true
+      },
+      {
+        "callback": "rp_boot_hook_second",
+        "value": "RP Bootstrap Fixture|first",
+        "did_filter": 1,
+        "current_filter": "option_blogname",
+        "current_priority": 20,
+        "doing_filter": true
+      }
+    ],
+    "filtered_value": "RP Bootstrap Fixture|first|second",
+    "did_filter": 1,
+    "hook_state_after": {
+      "nesting_level": 0,
+      "iterations": [],
+      "current_priority": [],
+      "doing_action": false
+    },
+    "registry_live_handles_after": 0,
+    "mock_peer_operations": [
+      {
+        "op": "begin",
+        "seq": 1
+      },
+      {
+        "op": "resume",
+        "seq": 2
+      },
+      {
+        "op": "resume",
+        "seq": 3
+      },
+      {
+        "op": "release_ack",
+        "seq": 4
+      },
+      {
+        "op": "release_ack",
+        "seq": 5
+      },
+      {
+        "op": "close",
+        "seq": 6
+      }
+    ],
+    "mock_peer_closed": true,
+    "source_sha256": {
+      "adapter": "9e4c6c3cca280e94b7079f2dcf473b6b6ae941d7a4c9d358b6b68f2870bc1483",
+      "transformed_adapter": "63a53a55ea4f41be02648b63da68861808fa385396f6da744a9d33bed3043d14",
+      "handle_registry": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
+      "overlay_receipt": "73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360",
+      "overlay_files": {
+        "wp-includes/plugin.php": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+        "wp-includes/class-wp-hook.php": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+      }
+    },
+    "temporary_cleanup": true
+  },
   "execution": {
     "exit_code": 0,
     "stdout_bytes": 1578,
     "stdout_sha256": "5dabd9137ef7f11a068687e3abba6b4d47bf5e5272dc7ddcc2116df4e4522d3c",
     "stderr_bytes": 0,
     "php_cli_mode": "-n"
+  },
+  "adapter_execution": {
+    "exit_code": 0,
+    "stdout_bytes": 1758,
+    "stdout_sha256": "b42b9104e6335659bf694edaacd45288f5cc4055061c5e24bba35bea09913a2d",
+    "stderr_bytes": 0,
+    "php_cli_mode": "-n",
+    "simulated_peer": true,
+    "wasm_executed": false
   },
   "baseline_execution": {
     "exit_code": 0,
@@ -281,7 +381,7 @@
     ],
     "exit_code": 0,
     "tests_passed": 39,
-    "stdout_sha256": "c694d54b619da888802098b3251f5e9dffb610e5ccf7df0005ac30cbeac75613",
+    "stdout_sha256": "91c1039a54f46b773e1f4c677b1322d0bf283a2adb2a3d2536a2f778accf66b8",
     "stderr_bytes": 280,
     "scope": "host unit contracts including pinned catalog overlay replacement; no Wasm guest execution"
   }
