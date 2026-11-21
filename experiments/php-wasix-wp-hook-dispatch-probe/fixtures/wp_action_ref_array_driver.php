@@ -11,6 +11,7 @@ use RecastPress\V06\Handles\HandleRegistry;
 const RP_ACTION_REF_ARRAY_REQUEST = '81';
 const RP_ACTION_REF_ARRAY_TARGET = 'wp-action-ref-array-1';
 const RP_ACTION_REF_ARRAY_NAME = 'rp-probe-action-ref-array';
+$GLOBALS['rp_action_ref_array_scenario'] = $argv[1] ?? 'action-ref-array';
 
 function rp_action_ref_array_handles_equal(array $left, array $right): bool
 {
@@ -183,47 +184,59 @@ function recastpress_wp_dispatch_selected_action(
                     $current,
                     static fn (array $row): bool => !array_key_exists($row['uid'], $handles),
                 ));
-                if (count($newRows) !== 1
-                    || $newRows[0]['priority'] !== 8
-                    || $newRows[0]['uid'] !== 'rp_action_ref_array_added'
-                    || $newRows[0]['accepted_args'] !== 2
-                    || $newRows[0]['function'] !== 'rp_action_ref_array_added'
-                ) {
-                    throw new RuntimeException('wp_action_ref_array_added_callback_identity');
-                }
-                $addedHandle = $registry->retainCallable($newRows[0]['function']);
-                $handles[$newRows[0]['uid']] = $addedHandle;
-                $acceptedArgsByUid[$newRows[0]['uid']] = $newRows[0]['accepted_args'];
-                $priorityByUid[$newRows[0]['uid']] = $newRows[0]['priority'];
-                $added = [
-                    'priority' => $newRows[0]['priority'],
-                    'uid' => $newRows[0]['uid'],
-                    'accepted_args' => $newRows[0]['accepted_args'],
-                    'function' => $newRows[0]['function'],
-                    'handle' => $addedHandle,
-                ];
-                $exported[] = $added;
-                usort(
-                    $exported,
-                    static fn (array $left, array $right): int => [$left['priority'], $left['uid']] <=> [$right['priority'], $right['uid']],
-                );
-                $expectedRows = $current;
-                $GLOBALS['rp_action_ref_array_handles'] = $handles;
-                $wire->send('action_callback_added', [
-                    'target' => RP_ACTION_REF_ARRAY_TARGET,
-                    'parent_uid' => $payload['uid'],
-                    'row' => $added,
-                    'table_fingerprint' => rp_action_ref_array_fingerprint($exported),
-                ]);
-                $ack = $wire->receive();
-                expect_parent_effect($ack, null);
-                expect_payload_keys($ack, ['target', 'uid', 'priority'], 'wp_action_ref_array_mutation_ack');
-                if ($ack['kind'] !== 'action_mutation_ack'
-                    || $ack['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
-                    || $ack['payload']['uid'] !== $newRows[0]['uid']
-                    || $ack['payload']['priority'] !== 8
-                ) {
-                    throw new RuntimeException('wp_action_ref_array_mutation_ack_identity');
+                if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket') {
+                    if ($newRows !== []
+                        || !isset($hook->callbacks[8])
+                        || !is_array($hook->callbacks[8])
+                        || array_keys($hook->callbacks[8]) !== []
+                        || !in_array(8, (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook), true)
+                    ) {
+                        throw new RuntimeException('wp_action_ref_array_empty_bucket_state');
+                    }
+                    $expectedRows = $current;
+                } else {
+                    if (count($newRows) !== 1
+                        || $newRows[0]['priority'] !== 8
+                        || $newRows[0]['uid'] !== 'rp_action_ref_array_added'
+                        || $newRows[0]['accepted_args'] !== 2
+                        || $newRows[0]['function'] !== 'rp_action_ref_array_added'
+                    ) {
+                        throw new RuntimeException('wp_action_ref_array_added_callback_identity');
+                    }
+                    $addedHandle = $registry->retainCallable($newRows[0]['function']);
+                    $handles[$newRows[0]['uid']] = $addedHandle;
+                    $acceptedArgsByUid[$newRows[0]['uid']] = $newRows[0]['accepted_args'];
+                    $priorityByUid[$newRows[0]['uid']] = $newRows[0]['priority'];
+                    $added = [
+                        'priority' => $newRows[0]['priority'],
+                        'uid' => $newRows[0]['uid'],
+                        'accepted_args' => $newRows[0]['accepted_args'],
+                        'function' => $newRows[0]['function'],
+                        'handle' => $addedHandle,
+                    ];
+                    $exported[] = $added;
+                    usort(
+                        $exported,
+                        static fn (array $left, array $right): int => [$left['priority'], $left['uid']] <=> [$right['priority'], $right['uid']],
+                    );
+                    $expectedRows = $current;
+                    $GLOBALS['rp_action_ref_array_handles'] = $handles;
+                    $wire->send('action_callback_added', [
+                        'target' => RP_ACTION_REF_ARRAY_TARGET,
+                        'parent_uid' => $payload['uid'],
+                        'row' => $added,
+                        'table_fingerprint' => rp_action_ref_array_fingerprint($exported),
+                    ]);
+                    $ack = $wire->receive();
+                    expect_parent_effect($ack, null);
+                    expect_payload_keys($ack, ['target', 'uid', 'priority'], 'wp_action_ref_array_mutation_ack');
+                    if ($ack['kind'] !== 'action_mutation_ack'
+                        || $ack['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
+                        || $ack['payload']['uid'] !== $newRows[0]['uid']
+                        || $ack['payload']['priority'] !== 8
+                    ) {
+                        throw new RuntimeException('wp_action_ref_array_mutation_ack_identity');
+                    }
                 }
                 $removedRow = null;
                 foreach ($exported as $candidate) {
@@ -348,6 +361,29 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     if (isset($hook->callbacks[8]['rp_action_ref_array_added'])) {
         throw new RuntimeException('wp_action_ref_array_direct_add_duplicate_entry');
     }
+    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket') {
+        if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+            throw new RuntimeException('wp_action_ref_array_empty_bucket_missing_pending');
+        }
+        $hook->callbacks[8] = [];
+        $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+        $bucketExists = array_key_exists(8, $hook->callbacks);
+        $bucketUids = array_keys($hook->callbacks[8] ?? []);
+        $priorityStillScheduled = in_array(8, $priorities, true);
+        $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+            ['direct_table_edit'] = [
+                'operation' => 'replace_future_bucket_with_empty_array',
+                'removed_uid' => 'rp_action_ref_array_pending',
+                'priority' => 8,
+                'bucket_exists' => $bucketExists,
+                'bucket_uids' => $bucketUids,
+                'priority_still_scheduled' => $priorityStillScheduled,
+            ];
+        if (!$bucketExists || $bucketUids !== [] || !$priorityStillScheduled) {
+            throw new RuntimeException('wp_action_ref_array_empty_bucket_state');
+        }
+        return 'ignored-first-action-result';
+    }
     $hook->callbacks[8]['rp_action_ref_array_added'] = [
         'function' => 'rp_action_ref_array_added',
         'accepted_args' => 2,
@@ -438,8 +474,9 @@ try {
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_start\n");
     $result = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $args);
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_done\n");
+    $emptyBucketMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket';
     if ($result !== null
-        || $value !== 'value-mutated-by-added'
+        || $value !== ($emptyBucketMode ? 'value-mutated-by-first' : 'value-mutated-by-added')
         || $extra !== 'extra-mutated-by-second'
         || current_action() !== false
         || current_filter() !== false
@@ -492,6 +529,26 @@ try {
             'current_priority' => 10, 'wp_hook_doing_action' => true,
         ],
     ];
+    if ($emptyBucketMode) {
+        $expected = array_slice($expected, 0, 4);
+        $expected[3]['direct_table_edit'] = [
+            'operation' => 'replace_future_bucket_with_empty_array',
+            'removed_uid' => 'rp_action_ref_array_pending',
+            'priority' => 8,
+            'bucket_exists' => true,
+            'bucket_uids' => [],
+            'priority_still_scheduled' => true,
+        ];
+        $expected[] = [
+            'callback' => 'second',
+            'args' => ['value-mutated-by-first', 'extra-mutated-by-first'],
+            'current_action' => RP_ACTION_REF_ARRAY_NAME,
+            'doing_action' => true,
+            'did_action' => 1,
+            'current_priority' => 10,
+            'wp_hook_doing_action' => true,
+        ];
+    }
     if ($events !== $expected || $GLOBALS['rp_action_ref_array_invocations'] !== array_column($GLOBALS['rp_action_ref_array_imported_rows'], 'uid')) {
         throw new RuntimeException('wp_action_ref_array_observation:' . json_encode($events, JSON_THROW_ON_ERROR));
     }
