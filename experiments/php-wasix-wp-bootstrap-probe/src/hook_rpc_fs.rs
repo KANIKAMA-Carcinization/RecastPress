@@ -70,6 +70,8 @@ struct State {
     cleanup_releases: VecDeque<PhpHandle>,
     invoked: Vec<String>,
     dispatcher_complete: bool,
+    dispatcher_cancel_attempted: bool,
+    dispatcher_cancelled: bool,
     complete_sent: bool,
     target_seen: bool,
     current_value: Vec<u8>,
@@ -614,6 +616,8 @@ impl HookRpcFs {
             cleanup_releases: VecDeque::new(),
             invoked: Vec::new(),
             dispatcher_complete: false,
+            dispatcher_cancel_attempted: false,
+            dispatcher_cancelled: false,
             complete_sent: false,
             target_seen: false,
             current_value: Vec::new(),
@@ -649,6 +653,8 @@ impl HookRpcFs {
                 "finished": state.finished,
                 "close_dispatched": state.close_dispatched,
                 "dispatcher_complete": state.dispatcher_complete,
+                "dispatcher_cancel_attempted": state.dispatcher_cancel_attempted,
+                "dispatcher_cancelled": state.dispatcher_cancelled,
                 "complete_sent": state.complete_sent,
                 "invoked_callbacks": state.invoked,
                 "live_handles": state.live_handles.len(),
@@ -686,6 +692,21 @@ impl HookRpcFs {
                 || !state.cleanup_releases.is_empty()
             {
                 state.fail("wp_hooks_dispatch_not_clean_at_finish");
+            }
+            if state.failure.is_some()
+                && !state.dispatcher_complete
+                && !state.dispatcher_cancel_attempted
+            {
+                let cancel_ticket = state.ticket;
+                let cancelled = match (state.dispatcher.as_mut(), cancel_ticket) {
+                    (Some(dispatcher), Some(ticket)) => {
+                        let result = dispatcher.cancel(ticket).is_ok();
+                        state.dispatcher_cancel_attempted = true;
+                        result
+                    }
+                    _ => false,
+                };
+                state.dispatcher_cancelled = cancelled;
             }
             state.finished = true;
         }
@@ -1205,6 +1226,8 @@ mod tests {
             assert_eq!(finished["finished"], true);
             assert_eq!(finished["close_dispatched"], true);
             assert_eq!(finished["dispatcher_complete"], true);
+            assert_eq!(finished["dispatcher_cancel_attempted"], false);
+            assert_eq!(finished["dispatcher_cancelled"], false);
             assert_eq!(finished["complete_sent"], true);
             assert_eq!(finished["live_handles"], 0);
             assert_eq!(finished["unread_response_bytes"], 0);
@@ -1286,6 +1309,38 @@ mod tests {
                 .is_err()
             );
             assert_eq!(fs.snapshot()["failure"], "wp_hooks_release_ack_identity");
+        });
+    }
+
+    #[test]
+    fn finish_cancels_incomplete_dispatch_once_and_preserves_first_failure() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let invoke = exchange(&mut file, 1, "begin", begin_payload()).await;
+            assert_eq!(invoke["event"], "invoke");
+
+            file.seek(SeekFrom::Start(0)).await.unwrap();
+            assert!(file
+                .write_all(&frame(NONCE, 2, "invalid", json!({})))
+                .await
+                .is_err());
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_unknown_operation");
+            file.shutdown().await.unwrap();
+            drop(file);
+
+            let failed = fs.finish();
+            assert_eq!(failed["failure"], "wp_hooks_unknown_operation");
+            assert_eq!(failed["dispatcher_cancel_attempted"], true);
+            assert_eq!(failed["dispatcher_cancelled"], true);
+
+            let repeated = fs.finish();
+            assert_eq!(repeated["failure"], "wp_hooks_unknown_operation");
+            assert_eq!(repeated["dispatcher_cancel_attempted"], true);
+            assert_eq!(repeated["dispatcher_cancelled"], true);
         });
     }
 

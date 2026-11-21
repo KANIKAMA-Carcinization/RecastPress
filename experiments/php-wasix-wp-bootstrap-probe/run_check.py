@@ -5,6 +5,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 HERE=Path(__file__).resolve().parent
@@ -30,6 +31,11 @@ COMPARE=['bootstrap_completed','install_completed','physical_disconnect_complete
     'wp_installing','wp_version','public_options','public_posts','known_wp_table_count',
     'autoload_option_count','autoload_max_value_bytes','site_config_file_created',
     'source_core_theme_plugin_modified','outbound_mail_or_http_sent_by_fixture']
+HOOK_TRACE_FIELDS=['callback','value','current_filter','doing_filter','did_filter','current_priority']
+HOOK_RESET_FIELDS=['current_filter','doing_filter','doing_selected_filter','did_filter','stack']
+HOOK_ORACLE_SCHEMA='recastpress.wp-bootstrap-hook-native-oracle.v0.1'
+HOOK_PHP_FILES=['fixtures/hook_adapter.php','fixtures/hook_handle_registry.php',
+    'fixtures/hook_native_oracle.php','tests/hook_failure_cleanup.php']
 
 
 def canonical(value):
@@ -46,7 +52,131 @@ def reference(backend):
     return value['observations']
 
 
-def validate(value,mode,native):
+def native_hook_oracle():
+    path=HERE/'fixtures/hook_native_oracle.php'
+    result=subprocess.run(['php','-n',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=8192
+        and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
+        'native_hook_oracle_execution_failed')
+    value=json.loads(result.stdout)
+    require(value.get('schema')==HOOK_ORACLE_SCHEMA, 'native_hook_oracle_schema')
+    if value.get('status')!='passed':
+        failure=value.get('failure')
+        allowed={'cli_entry_guard','fixed_wordpress_tree_missing','pinned_wordpress_source_mismatch',
+            'pinned_wordpress_version_missing','pinned_wordpress_version_mismatch',
+            'native_callback_table_mismatch','native_dispatch_incomplete','native_callback_order_mismatch',
+            'native_filter_state_mismatch','native_filter_value_mismatch','native_filter_reset_mismatch',
+            'selected_hook_missing','result_size_limit','native_oracle_execution_failed'}
+        require(failure in allowed, 'native_hook_oracle_failed')
+        require(False, 'native_hook_php_'+failure)
+    require(value.get('wordpress_version')=='7.1.3', 'native_hook_oracle_wordpress_version')
+    require(value.get('scenario')=='option_blogname', 'native_hook_oracle_scenario')
+    require(value.get('event_order')==['rp_boot_hook_first','rp_boot_hook_second'],
+        'native_hook_oracle_event_order')
+    require(value.get('filtered_value')=='RP Bootstrap Fixture|first|second',
+        'native_hook_oracle_filtered_value')
+    return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
+        'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
+        'php_cli_mode':'-n'}
+
+
+def native_hook_failure_cleanup():
+    path=HERE/'tests/hook_failure_cleanup.php'
+    result=subprocess.run(['php','-n',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=4096
+        and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
+        'hook_failure_cleanup_test_execution_failed')
+    value=json.loads(result.stdout)
+    require(value=={'status':'passed','failure_stage':'hook_dispatch_begin',
+        'registry_closed':True,'live_handles':0,'channel_aborted':True,'stream_closed':True,
+        'transport_failure_stage':'hook_dispatch_begin','transport_registry_closed':True,
+        'transport_channel_aborted':True,'transport_stream_closed':True,
+        'protocol_operations':['begin'],'protocol_close_not_attempted':True},
+        'hook_failure_cleanup_test_contract')
+    return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
+        'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),'php_cli_mode':'-n'}
+
+
+def lint_hook_fixtures():
+    results=[]
+    for relative in HOOK_PHP_FILES:
+        path=HERE/relative
+        result=subprocess.run(['php','-n','-l',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+        require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=4096
+            and result.stdout.count(b'\n')==1,'hook_php_lint_failed')
+        results.append({'path':path.relative_to(ROOT).as_posix(),'exit_code':result.returncode,
+            'stdout_bytes':len(result.stdout),'stdout_sha256':sha(result.stdout),'stderr_bytes':0})
+    return results
+
+
+def normalize_hook_trace(events,did_filter_baseline):
+    require(isinstance(did_filter_baseline,int) and not isinstance(did_filter_baseline,bool)
+        and 0<=did_filter_baseline<=4096,'hook_did_filter_baseline_shape')
+    require(isinstance(events,list) and len(events)==2,'hook_trace_shape')
+    normalized=[]
+    for event in events:
+        require(isinstance(event,dict) and set(HOOK_TRACE_FIELDS)<=set(event),'hook_trace_event_shape')
+        require(isinstance(event['did_filter'],int) and not isinstance(event['did_filter'],bool)
+            and event['did_filter']==did_filter_baseline+1,'hook_trace_did_filter_count')
+        normalized.append({key:(event[key]-did_filter_baseline if key=='did_filter' else event[key])
+            for key in HOOK_TRACE_FIELDS})
+    return normalized
+
+
+def compare_hook_oracle(php,native_hook):
+    hook=php.get('hook_dispatch')
+    require(isinstance(hook,dict) and hook.get('hook')=='option_blogname'
+        and hook.get('value')=='RP Bootstrap Fixture|first|second'
+        and hook.get('value')==native_hook['filtered_value'], 'wasm_hook_result')
+    baseline=hook.get('did_filter_before')
+    require(isinstance(baseline,int) and not isinstance(baseline,bool) and 0<=baseline<=4096,
+        'wasm_hook_did_filter_baseline')
+    expected_trace=normalize_hook_trace(native_hook['events'],0)
+    # public_hook_dispatch has already validated raw baseline+1 counts and
+    # normalized the public trace to one. Do not subtract the retained baseline
+    # a second time here.
+    actual_trace=normalize_hook_trace(hook.get('events'),0)
+    require(actual_trace==expected_trace,'native_wasm_hook_trace_differs')
+    require(hook.get('invocations')==native_hook['event_order']
+        and [event['callback'] for event in actual_trace]==native_hook['event_order'],
+        'native_wasm_hook_order_differs')
+    native_reset=native_hook['after_dispatch']
+    wasm_reset=hook.get('after_dispatch')
+    wasm_after_count=wasm_reset.get('did_filter') if isinstance(wasm_reset,dict) else None
+    require(isinstance(wasm_after_count,int) and not isinstance(wasm_after_count,bool)
+        and wasm_after_count==1,'wasm_hook_after_did_filter_count')
+    normalized_wasm_reset=dict(wasm_reset)
+    require(native_reset.get('current_filter') is False
+        and normalized_wasm_reset.get('current_filter') is False,
+        'native_wasm_hook_current_filter_reset')
+    require(isinstance(wasm_reset,dict)
+        and {key:normalized_wasm_reset.get(key) for key in HOOK_RESET_FIELDS}
+            =={key:native_reset.get(key) for key in HOOK_RESET_FIELDS}
+        and wasm_reset.get('current_priority') is False
+        and native_reset['hook_state']['current_priority']==[],
+        'native_wasm_hook_reset_differs')
+    return {'native_hook_oracle_match':True,'hook':'option_blogname',
+        'native_oracle_identity':{'schema':native_hook['schema'],
+            'wordpress_version':native_hook['wordpress_version'],
+            'wordpress_source_sha256':native_hook['wordpress_source_sha256'],
+            'scenario':native_hook['scenario'],'output_sha256':sha(canonical(native_hook))},
+        'event_order':native_hook['event_order'],'filtered_value':native_hook['filtered_value'],
+        'normalization':{'trace_fields':HOOK_TRACE_FIELDS,'reset_fields':HOOK_RESET_FIELDS,
+            'wasm_did_filter_baseline':baseline,'native_did_filter_baseline':0,
+            'normalization_applied_by':'rust_public_hook_dispatch',
+            'normalized_did_filter_count':1,
+            'native_trace_sha256':sha(canonical(expected_trace)),
+            'wasm_trace_sha256':sha(canonical(actual_trace)),
+            'native_reset_did_filter':native_reset.get('did_filter'),
+            'wasm_reset_did_filter':wasm_after_count,
+            'normalized_reset_did_filter':normalized_wasm_reset['did_filter'],
+            'trace_equal':True,'reset_equal':True,'current_filter_reset_false':True}}
+
+
+def validate(value,mode,native,native_hook):
     require(value['schema']=='recastpress.php-wasix-wp-bootstrap-observation.v0.5'
         and value['mode']==mode and value['passed'] is True
         and value['outcome']=='fixed_wasix_wp_bootstrap_passed'
@@ -71,8 +201,18 @@ def validate(value,mode,native):
         and php['rust_executed'] is True and php['wasm_executed'] is True
         and php['native_mysqli_handle'] is False and php['owned_db_dropin_loaded'] is True,
         'php_rust_bootstrap_contract')
+    hook_validation=compare_hook_oracle(php,native_hook)
     for key in COMPARE:
-        require(canonical(php[key])==canonical(native[key]),'native_bootstrap_'+key+'_differs')
+        if key=='public_options':
+            require(isinstance(php[key],dict) and isinstance(native[key],dict)
+                and php[key].get('blogname')==native_hook['filtered_value'],
+                'native_bootstrap_blogname_hook_result')
+            normalized_options=dict(php[key])
+            normalized_options['blogname']=native[key]['blogname']
+            require(canonical(normalized_options)==canonical(native[key]),
+                'native_bootstrap_public_options_differs')
+        else:
+            require(canonical(php[key])==canonical(native[key]),'native_bootstrap_'+key+'_differs')
     access=value['managed_access']
     require(access['finished'] is True and access['protocol_error'] is None
         and access['pending_bytes']==access['unread_response_bytes']==access['active_handles']==0,
@@ -82,6 +222,19 @@ def validate(value,mode,native):
         'managed_access_complete_transactions')
     require(sum(access[k] for k in ['allowed','denied','missing','unmanaged','invalid','io_errors'])
         ==access['requests'],'managed_access_status_balance')
+    hook_rpc=value['hook_rpc']
+    require(hook_rpc['finished'] is True and hook_rpc['failure'] is None
+        and hook_rpc['opened_once'] is True and hook_rpc['close_dispatched'] is True
+        and hook_rpc['dispatcher_complete'] is True and hook_rpc['complete_sent'] is True
+        and hook_rpc['channel_open'] is False
+        and hook_rpc['invoked_callbacks']==['rp_boot_hook_first','rp_boot_hook_second']
+        and hook_rpc['live_handles']==0
+        and hook_rpc['pending_bytes']==hook_rpc['unread_response_bytes']==0
+        and 0<hook_rpc['operations']<=12
+        and 0<hook_rpc['request_bytes']<=262144
+        and hook_rpc['response_bytes']==hook_rpc['response_read_bytes']
+        and 0<hook_rpc['response_bytes']<=262144,
+        'hook_rpc_lifecycle')
     rpc=value['rpc'];ops=value['operations']
     require(rpc['finished'] is True and rpc['opened_once'] is True and rpc['close_dispatched'] is True
         and rpc['failure'] is None and rpc['channel_open'] is False and rpc['response_pending'] is False
@@ -111,8 +264,9 @@ def validate(value,mode,native):
     replied=sum(op['reply_frame_bytes'] for op in ops)
     require(requested==rpc['request_bytes']<=8388608
         and replied==rpc['response_bytes']==rpc['response_read_bytes']<=16777216,'rpc_byte_balance')
-    return {'fixed_windows_native_public_observations_match':True,'same_job_native_php_executed':False,
-        'compared_fields':COMPARE,'operation_counts':counts,
+    return {'fixed_windows_native_public_observations_match':True,'same_job_native_php_executed':True,
+        'native_wasm_hook_oracle':hook_validation,'compared_fields':COMPARE,
+        'public_options_blogname_checked_by_hook_oracle':True,'operation_counts':counts,
         'largest_row_count':max((op['row_count'] or 0) for op in ops),
         'largest_column_count':max((op['column_count'] or 0) for op in ops),
         'largest_reply_frame_bytes':max(op['reply_frame_bytes'] for op in ops),'private_query_bytes_recomputed_offline':False,
@@ -140,6 +294,16 @@ def main():
         environment=build.environment()
         report['module_provenance']=managed.verify_build()
         native=reference(args.backend)
+        stage='hook_php_lint'
+        report['hook_php_lint']=lint_hook_fixtures()
+        stage='native_hook_oracle'
+        native_hook,native_hook_execution=native_hook_oracle()
+        report['native_hook_oracle']=native_hook
+        report['native_hook_oracle_execution']=native_hook_execution
+        stage='hook_failure_cleanup'
+        hook_failure_cleanup,hook_failure_cleanup_execution=native_hook_failure_cleanup()
+        report['hook_failure_cleanup']=hook_failure_cleanup
+        report['hook_failure_cleanup_execution']=hook_failure_cleanup_execution
         database=linux.Database(args.backend,report)
         with database:
             for mode in ['install','read']:
@@ -153,7 +317,7 @@ def main():
                     and result.stdout.count(b'\n')==1 and len(result.stderr)<=65536,'host_output_shape')
                 value=report['observations'][mode]=json.loads(result.stdout)
                 require(result.returncode==0 and value['passed'] is True and not result.stderr,'host_bootstrap_failed')
-                report['validations'][mode]=validate(value,mode,native[mode])
+                report['validations'][mode]=validate(value,mode,native[mode],native_hook)
             stage='independent_database_verification'
             database.final_rows()
         require(report['container_stopped'] and report['container_removed']
