@@ -1,15 +1,15 @@
 {
   "schema": "recastpress.php-wasix-wp-hook-dispatch-windows-remove-all-source-validation.v0.1",
   "status": "passed",
-  "observed_at_utc": "2026-11-21T01:46:33.935617+00:00",
-  "tested_git_head": "3ae657b75332455cc2409119d00c86579022a5dd",
-  "validation_basis": "Current worktree. This receipt covers only the native oracle and its fixtures. The dispatcher scenario in check.py, src/main.rs, and ref-array driver remains separate, uncommitted, and unexecuted under PHP-WASIX.",
+  "observed_at_utc": "2026-11-21T01:50:41.805939+00:00",
+  "tested_git_head": "317f97d712e35d27d00acbc6e66bd35c31644bad",
+  "validation_basis": "Current worktree. Native oracle/fixture source is committed. Dispatcher runtime code remains uncommitted and is bound separately by the local attempts below.",
   "input_files_sha256": {
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_driver.php": "a5d93c02d367dcc34ad8faaad842f8b9e961966438b7ba9a8504d2e3d3f5a1e6",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_remove_all_oracle.php": "508e1b3817f80f3e22b69ef22e2fcd2d3462ca436f8b83f528b1fc64275cc72e",
     ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
     ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
-    "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md": "2961e9904bc4f2e28318e81e080aebb2f4004476b40e3f15b8365567d3a71af7"
+    "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md": "2e3acdf3ab3860b43dddf9059fdfccf7a6c0a6928d24d7b75d5b13cf30eabbe9"
   },
   "php_lint": [
     {
@@ -216,5 +216,29 @@
     "production_runtime_selected": false,
     "actual_php_wasix_execution": false
   },
-  "acceptance_note": "Pinned native oracle, PHP lint and local Rust compile only. No claim is made for the separate uncommitted action-remove-all PHP-WASIX scenario."
+  "acceptance_note": "Pinned native oracle, PHP lint, and Rust host compile pass. A local Cranelift run failed during Windows module compilation before guest start; LLVM could not compile because system LLVM is absent. No real PHP-WASIX behavior or CI result is claimed.",
+  "local_php_wasix_attempts": [
+    {
+      "backend": "Cranelift",
+      "command": "cargo +1.94.0 run --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-review -- action-remove-all",
+      "exit_code": 101,
+      "phase": "module_compile_start",
+      "result": "Windows Cranelift lowering panicked at lower.rs:1107, before guest execution",
+      "guest_started": false
+    },
+    {
+      "backend": "LLVM",
+      "command": "cargo +1.94.0 run --offline --locked --no-default-features --features llvm --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-llvm-review -- action-remove-all",
+      "exit_code": 101,
+      "phase": "Rust compilation",
+      "result": "llvm-sys 221.1.2 could not find a system LLVM installation",
+      "guest_started": false
+    }
+  ],
+  "runtime_dispatch_sources_sha256": {
+    "experiments/php-wasix-wp-hook-dispatch-probe/check.py": "88787af2ede44d1e0d83dd54b7b0af59a94a34bca3ea916380aaafb14f7f76a7",
+    "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs": "164830de0c4d708df22fb3074a3d67b92bde06aacdc58b012601f04265eb7cee",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php": "acecb92d8f831a9a53bf71af7d9375ce5cb9e99425c388ad3e091e897b360276",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php": "3ebeb2906cb870a94f1a75c333edad2edbefaef08cada60f0744bfa55cf200b3"
+  }
 }
