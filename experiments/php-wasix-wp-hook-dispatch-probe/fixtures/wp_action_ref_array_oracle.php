@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 $root = $argv[1] ?? throw new RuntimeException('missing pinned WordPress root');
-$emptyBucketMode = ($argv[2] ?? '') === 'action-ref-array-empty-bucket';
-$GLOBALS['rp_action_ref_array_scenario'] = $emptyBucketMode ? 'action-ref-array-empty-bucket' : 'action-ref-array';
+$oracleMode = $argv[2] ?? '';
+$emptyBucketMode = $oracleMode === 'action-ref-array-empty-bucket';
+$emptyBucketReinsertMode = $oracleMode === 'action-ref-array-empty-bucket-reinsert';
+$GLOBALS['rp_action_ref_array_scenario'] = $oracleMode !== '' ? $oracleMode : 'action-ref-array';
 $pinned = [
     $root . '/wp-includes/plugin.php' => 'd70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d',
     $root . '/wp-includes/class-wp-hook.php' => 'b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e',
@@ -98,6 +100,32 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
             ];
         if (!$bucketExists || $bucketUids !== [] || !$priorityStillScheduled) {
             throw new RuntimeException('wp_action_ref_array_oracle_empty_bucket_state');
+        }
+        return 'ignored-first-action-result';
+    }
+    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-reinsert') {
+        if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+            throw new RuntimeException('wp_action_ref_array_oracle_reinsert_missing_pending');
+        }
+        $hook->callbacks[8] = [];
+        $hook->callbacks[8]['rp_action_ref_array_added'] = [
+            'function' => 'rp_action_ref_array_added',
+            'accepted_args' => 2,
+        ];
+        $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+        $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+            ['direct_table_edit'] = [
+                'operation' => 'empty_bucket_then_insert_callback_directly',
+                'removed_uid' => 'rp_action_ref_array_pending',
+                'inserted_uid' => 'rp_action_ref_array_added',
+                'priority' => 8,
+                'bucket_uids' => array_keys($hook->callbacks[8]),
+                'priority_still_scheduled' => in_array(8, $priorities, true),
+            ];
+        if (array_keys($hook->callbacks[8]) !== ['rp_action_ref_array_added']
+            || !in_array(8, $priorities, true)
+        ) {
+            throw new RuntimeException('wp_action_ref_array_oracle_reinsert_state');
         }
         return 'ignored-first-action-result';
     }
@@ -237,7 +265,16 @@ $expected = [
     'wp_hook_doing_action' => false,
     'current_priority' => false,
 ];
-if ($emptyBucketMode) {
+if ($emptyBucketReinsertMode) {
+    $expected['events'][3]['direct_table_edit'] = [
+        'operation' => 'empty_bucket_then_insert_callback_directly',
+        'removed_uid' => 'rp_action_ref_array_pending',
+        'inserted_uid' => 'rp_action_ref_array_added',
+        'priority' => 8,
+        'bucket_uids' => ['rp_action_ref_array_added'],
+        'priority_still_scheduled' => true,
+    ];
+} elseif ($emptyBucketMode) {
     $expected['events'] = array_slice($expected['events'], 0, 4);
     $expected['events'][3]['direct_table_edit'] = [
         'operation' => 'replace_future_bucket_with_empty_array',
@@ -265,9 +302,9 @@ if ($observation !== $expected) {
 
 echo json_encode([
     'status' => 'passed',
-    'scenario' => $emptyBucketMode
-        ? 'wp_action_ref_array_empty_bucket_native_oracle'
-        : 'wp_action_ref_array_native_oracle',
+    'scenario' => $emptyBucketReinsertMode
+        ? 'wp_action_ref_array_empty_bucket_reinsert_native_oracle'
+        : ($emptyBucketMode ? 'wp_action_ref_array_empty_bucket_native_oracle' : 'wp_action_ref_array_native_oracle'),
     'wordpress' => '7.1.3',
     'source_sha256' => [
         'wp-includes/plugin.php' => $pinned[$root . '/wp-includes/plugin.php'],

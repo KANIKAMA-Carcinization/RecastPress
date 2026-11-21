@@ -2192,6 +2192,8 @@ fn run_action_ref_array_dispatch(
 ) -> Result<Value> {
     let empty_bucket_mode =
         std::env::args().nth(1).as_deref() == Some("action-ref-array-empty-bucket");
+    let empty_bucket_reinsert_mode = std::env::args().nth(1).as_deref()
+        == Some("action-ref-array-empty-bucket-reinsert");
     let deadline = Instant::now() + TIMEOUT;
     let start = read_frame(reader, deadline, total_in, 0)?;
     expect_frame(
@@ -2845,6 +2847,15 @@ fn run_action_ref_array_dispatch(
                             "current_priority":10, "wp_hook_doing_action":true
                         }
                     ]);
+                } else if empty_bucket_reinsert_mode {
+                    expected_events[3]["direct_table_edit"] = json!({
+                        "operation":"empty_bucket_then_insert_callback_directly",
+                        "removed_uid":"rp_action_ref_array_pending",
+                        "inserted_uid":"rp_action_ref_array_added",
+                        "priority":8,
+                        "bucket_uids":["rp_action_ref_array_added"],
+                        "priority_still_scheduled":true
+                    });
                 }
                 let final_projection: Vec<Value> = imported_rows
                     .iter()
@@ -4439,8 +4450,11 @@ fn main() -> Result<()> {
     let ref_array_mode = std::env::args().nth(1).as_deref() == Some("ref-array");
     let action_ref_array_empty_bucket_mode =
         std::env::args().nth(1).as_deref() == Some("action-ref-array-empty-bucket");
+    let action_ref_array_empty_bucket_reinsert_mode = std::env::args().nth(1).as_deref()
+        == Some("action-ref-array-empty-bucket-reinsert");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array")
-        || action_ref_array_empty_bucket_mode;
+        || action_ref_array_empty_bucket_mode
+        || action_ref_array_empty_bucket_reinsert_mode;
     let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
@@ -4700,7 +4714,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_empty_bucket_reinsert_mode {"action-ref-array-empty-bucket-reinsert"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -4769,6 +4783,10 @@ fn run_guest(
             driver.to_string(),
             if std::env::args().nth(1).as_deref() == Some("action-ref-array-empty-bucket") {
                 "action-ref-array-empty-bucket".to_string()
+            } else if std::env::args().nth(1).as_deref()
+                == Some("action-ref-array-empty-bucket-reinsert")
+            {
+                "action-ref-array-empty-bucket-reinsert".to_string()
             } else {
                 "action-ref-array".to_string()
             },

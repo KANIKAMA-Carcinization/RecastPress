@@ -384,6 +384,32 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
         }
         return 'ignored-first-action-result';
     }
+    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-reinsert') {
+        if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+            throw new RuntimeException('wp_action_ref_array_reinsert_missing_pending');
+        }
+        $hook->callbacks[8] = [];
+        $hook->callbacks[8]['rp_action_ref_array_added'] = [
+            'function' => 'rp_action_ref_array_added',
+            'accepted_args' => 2,
+        ];
+        $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+        $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+            ['direct_table_edit'] = [
+                'operation' => 'empty_bucket_then_insert_callback_directly',
+                'removed_uid' => 'rp_action_ref_array_pending',
+                'inserted_uid' => 'rp_action_ref_array_added',
+                'priority' => 8,
+                'bucket_uids' => array_keys($hook->callbacks[8]),
+                'priority_still_scheduled' => in_array(8, $priorities, true),
+            ];
+        if (array_keys($hook->callbacks[8]) !== ['rp_action_ref_array_added']
+            || !in_array(8, $priorities, true)
+        ) {
+            throw new RuntimeException('wp_action_ref_array_reinsert_state');
+        }
+        return 'ignored-first-action-result';
+    }
     $hook->callbacks[8]['rp_action_ref_array_added'] = [
         'function' => 'rp_action_ref_array_added',
         'accepted_args' => 2,
@@ -475,6 +501,7 @@ try {
     $result = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $args);
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_done\n");
     $emptyBucketMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket';
+    $emptyBucketReinsertMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-reinsert';
     if ($result !== null
         || $value !== ($emptyBucketMode ? 'value-mutated-by-first' : 'value-mutated-by-added')
         || $extra !== 'extra-mutated-by-second'
