@@ -1020,6 +1020,65 @@ fn resumable_future_priority_bucket_add_remove_releases_after_dispatch_cleanup()
 }
 
 #[test]
+fn resumable_future_priority_bucket_unset_releases_before_next_priority() {
+    let mut dispatcher = Dispatcher::new();
+    let mutator = callable_handle(933);
+    let pending = callable_handle(934);
+    let tail = callable_handle(935);
+
+    dispatcher.add(
+        "unset-future-priority",
+        5,
+        DispatcherCallback::php_callable(id("mutator"), 0, mutator).unwrap(),
+    );
+    dispatcher.add(
+        "unset-future-priority",
+        8,
+        DispatcherCallback::php_callable(id("pending"), 0, pending).unwrap(),
+    );
+    dispatcher.add(
+        "unset-future-priority",
+        10,
+        DispatcherCallback::php_callable(id("tail"), 0, tail).unwrap(),
+    );
+
+    let name = HookArgument::bytes("unset-future-priority");
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &[])
+        .unwrap();
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(ticket).unwrap() else {
+        panic!("priority-5 PHP callback should suspend the action")
+    };
+    assert_eq!(invocation.callback, id("mutator"));
+
+    assert!(dispatcher.remove_typed(&name, &HookPriority::integer(8), &id("pending")));
+    dispatcher.resume_php(ticket, PhpValue::Null).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(pending)
+    );
+    dispatcher.resume_php_release(ticket, pending).unwrap();
+
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(ticket).unwrap() else {
+        panic!("priority-10 PHP callback should run after the removed priority-8 row")
+    };
+    assert_eq!(invocation.callback, id("tail"));
+    dispatcher.resume_php(ticket, PhpValue::Null).unwrap();
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(PhpValue::Null)
+    );
+    assert!(!dispatcher.has_at("unset-future-priority", 8, &id("pending")));
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+
+    dispatcher.remove_all_typed(&name, None);
+    let releases = dispatcher.take_php_releases();
+    assert!(releases.contains(&mutator));
+    assert!(releases.contains(&tail));
+    assert!(!releases.contains(&pending));
+}
+
+#[test]
 fn resumable_native_dispatch_matches_sync_all_and_named_binding_mutation() {
     let sync_trace = Arc::new(Mutex::new(Vec::new()));
     let mut sync = mutating_dispatcher(Arc::clone(&sync_trace));

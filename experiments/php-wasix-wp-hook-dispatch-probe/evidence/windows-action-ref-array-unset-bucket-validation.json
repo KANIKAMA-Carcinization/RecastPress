@@ -1,0 +1,124 @@
+{
+    "schema":  "recastpress.php-wasix-wp-hook-dispatch-direct-priority-bucket-unset-validation.v0.1",
+    "status":  "passed_native_boundary_validation",
+    "observed_at_utc":  "2026-11-21T02:59:14Z",
+    "tested_git_head":  "3d5970ab35db9db987e2adbc8f6f14df5b205b4f",
+    "validation_basis":  "Pinned WordPress 7.1.3 native oracle plus Rust Dispatcher contract suite. This documents the direct unset warning boundary and release ordering; no PHP-WASM guest is claimed.",
+    "php_runtime":  {
+                        "version":  "8.5.12",
+                        "executable_sha256":  "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef"
+                    },
+    "wordpress":  {
+                      "version":  "7.1.3",
+                      "source_sha256":  {
+                                            "wp-includes/plugin.php":  "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+                                            "wp-includes/class-wp-hook.php":  "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+                                        }
+                  },
+    "native_oracle":  {
+                          "exit_code":  0,
+                          "scenario":  "wp_action_ref_array_unset_bucket_native_oracle",
+                          "observation":  {
+                                              "events":  [
+                                                             {
+                                                                 "callback":  "all",
+                                                                 "hook":  "rp-probe-action-ref-array-unset-bucket",
+                                                                 "args":  [
+                                                                              "rp-probe-action-ref-array-unset-bucket",
+                                                                              [
+                                                                                  "seed",
+                                                                                  "left"
+                                                                              ]
+                                                                          ],
+                                                                 "current_action":  "rp-probe-action-ref-array-unset-bucket",
+                                                                 "doing_action":  true,
+                                                                 "did_action":  1
+                                                             },
+                                                             {
+                                                                 "callback":  "first",
+                                                                 "args":  [
+                                                                              "seed",
+                                                                              "left"
+                                                                          ],
+                                                                 "current_action":  "rp-probe-action-ref-array-unset-bucket",
+                                                                 "doing_action":  true,
+                                                                 "did_action":  1,
+                                                                 "current_priority":  5,
+                                                                 "wp_hook_doing_action":  true,
+                                                                 "direct_table_edit":  {
+                                                                                           "operation":  "unset_priority_bucket_directly",
+                                                                                           "removed_uid":  "rp_unset_bucket_pending",
+                                                                                           "priority":  8,
+                                                                                           "bucket_exists":  false,
+                                                                                           "priority_still_scheduled":  true
+                                                                                       }
+                                                             },
+                                                             {
+                                                                 "callback":  "tail",
+                                                                 "args":  [
+                                                                              "value-mutated-by-first",
+                                                                              "left"
+                                                                          ],
+                                                                 "current_action":  "rp-probe-action-ref-array-unset-bucket",
+                                                                 "doing_action":  true,
+                                                                 "did_action":  1,
+                                                                 "current_priority":  10,
+                                                                 "wp_hook_doing_action":  true
+                                                             }
+                                                         ],
+                                              "result":  null,
+                                              "caller_value":  "value-mutated-by-first",
+                                              "caller_extra":  "extra-mutated-by-tail",
+                                              "did_action":  1,
+                                              "current_action":  false,
+                                              "doing_action":  false,
+                                              "wp_hook_doing_action":  false,
+                                              "current_priority":  false,
+                                              "warnings":  [
+                                                               {
+                                                                   "severity":  2,
+                                                                   "message":  "Undefined array key 8"
+                                                               },
+                                                               {
+                                                                   "severity":  2,
+                                                                   "message":  "foreach() argument must be of type array|object, null given"
+                                                               }
+                                                           ]
+                                          },
+                          "capture":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-action-ref-array-unset-bucket-attempt.log",
+                          "capture_sha256":  "975b3cab0ebd1ed05b11bb7ef29170f3d711957e2f2901a4b1a839504a851a8c"
+                      },
+    "rust_contract":  {
+                          "test":  "resumable_future_priority_bucket_unset_releases_before_next_priority",
+                          "suite_passed":  66,
+                          "suite_failed":  0,
+                          "command":  "cargo +1.94.0 test --offline --locked -p recastpress-wp --test dispatcher_contract --quiet --target-dir %TEMP%\\recastpress-dispatcher-contract-review"
+                      },
+    "checks":  {
+                   "php_lint_exit_code":  0,
+                   "rustfmt_exit_code":  0,
+                   "diff_check_exit_code":  0
+               },
+    "input_files_sha256":  {
+                               "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_unset_bucket_oracle.php":  "29a8e2e3483165bac98cdd300564bec6e536b18cc3b9def01a6432ea46319aba",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md":  "9487b7e77781d06f2730005e431b8a5a34c1174215cd19541f9086951ea9cd03",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-action-ref-array-unset-bucket-attempt.log":  "975b3cab0ebd1ed05b11bb7ef29170f3d711957e2f2901a4b1a839504a851a8c",
+                               "crates/recastpress-wp/tests/dispatcher_contract.rs":  "a46848f2363931522332835b6faa0b275bc5e22edda7c8069e680dc8ffd03cb4",
+                               "crates/recastpress-wp/src/dispatcher.rs":  "a176efeed1298d65357e50d7cac479373297434187c0c8be84ba5116550eb336",
+                               "crates/recastpress-wp/src/hooks.rs":  "539e93dad9d5d29dd2f6be890acb5c6f0f182dc80168fe2284ee2067d53ba355",
+                               "crates/recastpress-wp/src/continuation.rs":  "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849",
+                               ".reference/wordpress-7.1.3/wp-includes/plugin.php":  "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+                               ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php":  "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+                               ".reference/php-8.5.12/php.exe":  "02273af2cb60375c95d1a4d9244fd1bb8abad898e63055235a06ee36af0380ef"
+                           },
+    "scope":  {
+                  "native_wordpress_oracle":  true,
+                  "rust_dispatcher_contract":  true,
+                  "actual_php_wasm_execution":  false,
+                  "actual_php_wasix_execution":  false,
+                  "ci_checked":  false,
+                  "github_used":  false,
+                  "wsl_used":  false
+              },
+    "acceptance_note":  "Directly unsetting a future priority bucket leaves priority 8 scheduled and causes two E_WARNING messages when WordPress indexes callbacks[8] and iterates null. The oracle records and suppresses both warnings so it can observe priority 10; production handlers may promote them to exceptions. WordPress then continues and completes the action under this oracle handler. Do not treat direct whole-bucket unset as warning-free behavior."
+}
