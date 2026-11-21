@@ -1,0 +1,33 @@
+{
+    "schema":  "recastpress.php-wasix-windows-llvm-backend-offline-validation.v0.1",
+    "status":  "llvm_backend_unavailable_before_guest_start",
+    "observed_at_utc":  "2026-11-21T03:44:33Z",
+    "tested_git_head":  "6c8332d307bc372c26dffd2ebc1afcd51aa87eff",
+    "environment":  {
+                        "os":  "Windows x86_64 MSVC",
+                        "rust":  "1.94.0",
+                        "wasmer":  "7.2.0",
+                        "llvm_sys":  "221.1.2",
+                        "llvm_available":  false
+                    },
+    "validation":  {
+                       "command":  "cargo +1.94.0 check --offline --locked --no-default-features --features llvm --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-llvm-review",
+                       "exit_code":  101,
+                       "failure":  "No suitable version of LLVM was found system-wide or pointed to by LLVM_SYS_221_PREFIX",
+                       "attempt_log":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-llvm-backend-offline-attempt.log",
+                       "attempt_log_sha256":  "4e06772f28db92a4b50f23b26bb3c21bbb16995f9e4922c8aaf18586dfcafb07",
+                       "actual_php_wasix_execution":  false,
+                       "github_used":  false,
+                       "wsl_used":  false
+                   },
+    "inputs":  {
+                   "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml":  "f0fdd14938bc49e629b3877ea8a0478560b6378da79c6b42f1454ffd65f664ad",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.lock":  "6764c6e6d650744bf8add40e6464c27b14e5daf9e27264c5240626218b779e92",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs":  "4627e4957429765c57e7583850acc39bee17462903fa4a03bbb2001e80f994f8",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md":  "7622c40b8873c3f9ecb0c077d741fb3488184229a1bfdf38e3bbdc460ebdab36",
+                   "experiments/php-wasix-eh-compile-probe/Cargo.toml":  "71f6e48ce6d732e720e26ea9cacfeb165f9955e13edfade4240ab2b6d3a1195e",
+                   "experiments/php-wasix-eh-compile-probe/Cargo.lock":  "8617c9e0690aad8bf813231b21d791c94413a1d8dc21a61a8426e7a184245441",
+                   "experiments/php-wasix-eh-compile-probe/src/main.rs":  "25cb055edb8b56225a24c9977765284b740a9149379b17620f7763912af9d266",
+                   "experiments/php-wasix-eh-compile-probe/evidence/windows-x86_64-msvc.json":  "9b80ba0cbaf6b521439abe08c2dfd893152412e2bd2db1c62085f4812e7e9c0e"
+               }
+}

@@ -1,0 +1,36 @@
+Command: cargo +1.94.0 check --offline --locked --no-default-features --features llvm --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\recastpress-hook-dispatch-llvm-review
+Exit code: 101
+    Checking wasmer-vm v7.2.0
+    Checking derive_more v2.1.1
+    Checking llvm-sys v221.1.2
+   Compiling proc-macro-error-attr2 v2.0.0
+    Checking bstr v1.13.1
+    Checking rangemap v1.8.0
+    Checking unicode-xid v0.2.6
+   Compiling symbolic-demangle v13.9.0
+   Compiling paste v1.0.15
+    Checking which v8.0.6
+    Checking winnow v1.0.4
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+error: No suitable version of LLVM was found system-wide or pointed
+              to by LLVM_SYS_221_PREFIX.
+
+              Consider using `llvmenv` to compile an appropriate copy of LLVM, and
+              refer to the llvm-sys documentation for more information.
+
+              llvm-sys: https://crates.io/crates/llvm-sys
+              llvmenv: https://crates.io/crates/llvmenv
+   --> C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\llvm-sys-221.1.2\src\lib.rs:542:1
+    |
+542 | / std::compile_error!(concat!(
+543 | |     "No suitable version of LLVM was found system-wide or pointed
+544 | |        to by LLVM_SYS_",
+545 | |     env!("CARGO_PKG_VERSION_MAJOR"),
+...   |
+552 | |        llvmenv: https://crates.io/crates/llvmenv"
+553 | | ));
+    | |__^
+System.Management.Automation.RemoteException
+   Compiling pkg-config v0.3.34
+error: could not compile `llvm-sys` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
