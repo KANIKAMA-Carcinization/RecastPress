@@ -1,0 +1,19 @@
+[package]
+name = "recastpress-php-wasix-wasmtime-probe"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+license = "GPL-2.0-or-later"
+publish = false
+
+[workspace]
+
+[dependencies]
+anyhow = "1.0"
+serde_json = "1.0"
+sha2 = "=0.10.9"
+wasmtime = { version = "=36.0.19", default-features = false, features = ["std", "runtime", "cranelift", "threads"] }
+wasmtime-wasi = "=36.0.19"
+
+[lints.rust]
+unsafe_code = "forbid"

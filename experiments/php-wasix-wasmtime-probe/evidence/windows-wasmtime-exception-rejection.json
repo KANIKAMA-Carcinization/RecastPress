@@ -1,0 +1,78 @@
+{
+  "schema": "recastpress.php-wasix-wasmtime-exception-rejection.v0.1",
+  "status": "expected_engine_rejection",
+  "outcome": "wasmtime_cranelift_rejected_php_wasix_exception_operator_before_guest_start",
+  "observed_at_utc": "2026-11-21T06:55:56.750239+00:00",
+  "platform": {
+    "system": "Windows",
+    "machine": "AMD64"
+  },
+  "scope": "fixed PHP-WASIX 8.5.12 module compile attempt under Wasmtime 36 Cranelift on the local host; no guest execution or hook adapter run",
+  "artifact": {
+    "path": ".reference/php-wasix-8.5.12/php.wasm",
+    "bytes": 39727549,
+    "sha256": "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+  },
+  "host_binary": {
+    "path": "target/recastpress-local-wasi-host/release/recastpress-php-wasix-wasmtime-probe.exe",
+    "bytes": 12630528,
+    "sha256": "5b16dcc10cf19ee12c96cc571e2002ea824280fa12a011723a6f1cc06b3ffff3"
+  },
+  "source_inputs": {
+    "experiments/php-wasix-wasmtime-probe/Cargo.toml": {
+      "bytes": 419,
+      "sha256": "91227ad0b3d4416e714c4cf71fa9c7c396d7f81a33913b7f9336c26cfcacdc68"
+    },
+    "experiments/php-wasix-wasmtime-probe/Cargo.lock": {
+      "bytes": 56949,
+      "sha256": "97072153ff5026c3c6b6fe805fd51805cbfcbbf73e6e7634c66e87d421a23a5a"
+    },
+    "experiments/php-wasix-wasmtime-probe/src/main.rs": {
+      "bytes": 7697,
+      "sha256": "070dd93579ca063e760e296fd41ccd095fd0a5621e6b7742e7418ed6dbf9a2ad"
+    },
+    "experiments/php-wasix-wasmtime-probe/record.py": {
+      "bytes": 6249,
+      "sha256": "f6d8ef3fe8d13e4be5bc58e018592355abbdf8e9f6143d998517bda0f4f3bcf3"
+    }
+  },
+  "build": {
+    "command": [
+      "cargo",
+      "build",
+      "--manifest-path",
+      "experiments/php-wasix-wasmtime-probe/Cargo.toml",
+      "--target-dir",
+      "target/recastpress-local-wasi-host",
+      "--locked",
+      "--offline",
+      "--release"
+    ],
+    "exit_code": 0,
+    "stderr_bytes": 111,
+    "stdout_sha256": "72c1489efe707ed5b5b2d051f5a7477a50890947c9a567c250d4bd37defeecd3"
+  },
+  "execution": {
+    "exit_code": 1,
+    "stdout_bytes": 373,
+    "stdout_sha256": "9d22f98eba64826bbbdbdd12366ebb125f7afbf5d0e71c665d6e30ece8e85683",
+    "stderr_bytes": 0
+  },
+  "observation": {
+    "failure": "php_wasix_module_compile: failed to compile: wasm[0]::function[174]: WebAssembly translation error: Unsupported feature: proposed exception handling operator Throw { tag_index: 0 }",
+    "guest_executed": false,
+    "hook_adapter_executed": false,
+    "passed": false,
+    "phase": "module_compile",
+    "product_runtime": false,
+    "schema": "recastpress.php-wasix-wasmtime-version-probe.v0.1"
+  },
+  "claims": {
+    "guest_executed": false,
+    "php_version_verified": false,
+    "hook_adapter_executed": false,
+    "rust_peer_executed": false,
+    "wordpress_bootstrapped": false,
+    "product_runtime": false
+  }
+}
