@@ -2778,6 +2778,13 @@ fn run_action_ref_array_dispatch(
                     },
                     {
                         "callback":"first", "args":["seed", "left"],
+                        "direct_table_edit":{
+                            "operation":"unset_callback_entry",
+                            "uid":"rp_action_ref_array_pending",
+                            "priority":8,
+                            "empty_bucket_retained":true,
+                            "priority_still_scheduled":true
+                        },
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
                         "current_priority":5, "wp_hook_doing_action":true
                     },

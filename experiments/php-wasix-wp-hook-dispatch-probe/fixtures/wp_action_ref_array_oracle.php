@@ -76,8 +76,24 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     $value = 'value-mutated-by-first';
     $extra = 'extra-mutated-by-first';
     add_action('rp-probe-action-ref-array', 'rp_action_ref_array_added', 7, 2);
-    if (!remove_action('rp-probe-action-ref-array', 'rp_action_ref_array_pending', 8)) {
-        throw new RuntimeException('wp_action_ref_array_oracle_remove_return');
+    $hook = $GLOBALS['rp_action_ref_array_selected'];
+    if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+        throw new RuntimeException('wp_action_ref_array_oracle_direct_unset_missing_entry');
+    }
+    unset($hook->callbacks[8]['rp_action_ref_array_pending']);
+    $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+    $emptyBucketRetained = array_key_exists(8, $hook->callbacks) && $hook->callbacks[8] === [];
+    $priorityStillScheduled = in_array(8, $priorities, true);
+    $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+        ['direct_table_edit'] = [
+            'operation' => 'unset_callback_entry',
+            'uid' => 'rp_action_ref_array_pending',
+            'priority' => 8,
+            'empty_bucket_retained' => $emptyBucketRetained,
+            'priority_still_scheduled' => $priorityStillScheduled,
+        ];
+    if (!$emptyBucketRetained || !$priorityStillScheduled) {
+        throw new RuntimeException('wp_action_ref_array_oracle_direct_unset_state');
     }
     return 'ignored-first-action-result';
 }
@@ -160,6 +176,13 @@ $expected = [
             'callback' => 'first', 'args' => ['seed', 'left'],
             'current_action' => $hookName, 'doing_action' => true, 'did_action' => 1,
             'current_priority' => 5, 'wp_hook_doing_action' => true,
+            'direct_table_edit' => [
+                'operation' => 'unset_callback_entry',
+                'uid' => 'rp_action_ref_array_pending',
+                'priority' => 8,
+                'empty_bucket_retained' => true,
+                'priority_still_scheduled' => true,
+            ],
         ],
         [
             'callback' => 'added', 'args' => ['value-mutated-by-first', 'extra-mutated-by-first'],

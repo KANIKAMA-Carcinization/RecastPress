@@ -1,0 +1,171 @@
+{
+  "schema": "recastpress.php-wasix-wp-hook-dispatch-direct-callback-table-edit-validation.v0.1",
+  "status": "passed",
+  "observed_at_utc": "2026-11-21T02:18:19Z",
+  "tested_git_head": "bff2640f154b5696ab2b61ee3de44b6a17d1e79a",
+  "validation_basis": "Current working tree; source hashes bind the direct public callback-table edit, Rust expected observation, and documentation. Local native/source checks only.",
+  "wordpress_source_sha256": {
+    "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+  },
+  "native_oracle": {
+    "status": "passed",
+    "scenario": "wp_action_ref_array_native_oracle",
+    "wordpress": "7.1.3",
+    "source_sha256": {
+      "wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+      "wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e"
+    },
+    "observation": {
+      "events": [
+        {
+          "callback": "all",
+          "hook": "rp-probe-action-ref-array",
+          "args": [
+            "rp-probe-action-ref-array",
+            [
+              "seed",
+              "left"
+            ]
+          ],
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1
+        },
+        {
+          "callback": "truncated",
+          "args": [
+            "seed"
+          ],
+          "received_arg_count": 1,
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1,
+          "current_priority": 1,
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "zero",
+          "args": [],
+          "received_arg_count": 0,
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1,
+          "current_priority": 2,
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "first",
+          "args": [
+            "seed",
+            "left"
+          ],
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1,
+          "current_priority": 5,
+          "wp_hook_doing_action": true,
+          "direct_table_edit": {
+            "operation": "unset_callback_entry",
+            "uid": "rp_action_ref_array_pending",
+            "priority": 8,
+            "empty_bucket_retained": true,
+            "priority_still_scheduled": true
+          }
+        },
+        {
+          "callback": "added",
+          "args": [
+            "value-mutated-by-first",
+            "extra-mutated-by-first"
+          ],
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1,
+          "current_priority": 7,
+          "wp_hook_doing_action": true
+        },
+        {
+          "callback": "second",
+          "args": [
+            "value-mutated-by-added",
+            "extra-mutated-by-added"
+          ],
+          "current_action": "rp-probe-action-ref-array",
+          "doing_action": true,
+          "did_action": 1,
+          "current_priority": 10,
+          "wp_hook_doing_action": true
+        }
+      ],
+      "result": null,
+      "caller_value": "value-mutated-by-added",
+      "caller_extra": "extra-mutated-by-second",
+      "did_action": 1,
+      "current_action": false,
+      "doing_action": false,
+      "wp_hook_doing_action": false,
+      "current_priority": false
+    }
+  },
+  "checks": {
+    "php_fixture_lint": {
+      "exit_code": 0,
+      "php_version": "8.5.12",
+      "fixtures": [
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
+        "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php"
+      ]
+    },
+    "rustfmt_check": {
+      "exit_code": 0,
+      "toolchain": "1.94.0"
+    },
+    "rust_host_compile": {
+      "exit_code": 0,
+      "command": "cargo +1.94.0 test --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-review --no-run"
+    }
+  },
+  "input_files_sha256": {
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php": "f04cf0ddbb9344042218d76a7b24bd61d9be07742ef5d0c51175443245840299",
+    "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php": "261263c0a1afe621ab09afd7dffdde7910e3bebb3bfe054e942b37fb4668de3d",
+    "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs": "ebcf945a6f4e092c524bf0e2278a084df8ed537f358547235234ba7913f465a6",
+    "experiments/php-wasix-wp-hook-dispatch-probe/check.py": "88787af2ede44d1e0d83dd54b7b0af59a94a34bca3ea916380aaafb14f7f76a7",
+    "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md": "207e4c10447e42c02b8257e5bd173625fca7d8ed5d4b75dd8e2774afee3e11d6",
+    ".reference/wordpress-7.1.3/wp-includes/plugin.php": "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+    ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php": "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+    "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-direct-callback-table-edit-attempt.log": "eb684fc00e9c2b3cb6622543080e60d8584856586518699c7c379377c89a7a60"
+  },
+  "scope": {
+    "native_wordpress_oracle": true,
+    "php_fixture_lint": true,
+    "rustfmt": true,
+    "rust_host_compile": true,
+    "actual_php_wasm_execution": false,
+    "actual_php_wasix_execution": false,
+    "github_ci_checked": false,
+    "production_runtime_selected": false,
+    "windows_guest_attempted": true,
+    "guest_execution_completed": false,
+    "ci_checked": false
+  },
+  "acceptance_note": "The oracle confirms direct removal of the future callback entry leaves the empty priority-8 bucket and private scheduled priority in place; dispatch skips that callback and reaches priority 10. The existing Rust removal/handle-release protocol is represented in source but guest execution is unverified.",
+  "php_wasix_attempt": {
+    "command": "<temp>/recastpress-hook-dispatch-review/debug/recastpress-wp-hook-dispatch-probe.exe action-ref-array",
+    "exit_code": 101,
+    "phases": [
+      "PHP_WASIX_WP_HOOK_PHASE=artifact_read_start",
+      "PHP_WASIX_WP_HOOK_PHASE=artifact_read_done",
+      "PHP_WASIX_WP_HOOK_PHASE=module_compile_start"
+    ],
+    "guest_started": false,
+    "failure": "Cranelift 0.133.0 lowering panic at machinst/lower.rs:1107 during module compilation",
+    "stdout_bytes": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_bytes": 2823,
+    "stderr_sha256": "e4696786e63bdee51c81f517418b8b048085cd5b98e1d9b0dd3884d1041ff872",
+    "capture": "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-direct-callback-table-edit-attempt.log",
+    "capture_bytes": 2854,
+    "capture_sha256": "eb684fc00e9c2b3cb6622543080e60d8584856586518699c7c379377c89a7a60"
+  }
+}
