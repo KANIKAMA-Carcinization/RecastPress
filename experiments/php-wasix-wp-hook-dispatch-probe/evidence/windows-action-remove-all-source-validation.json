@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.php-wasix-wp-hook-dispatch-windows-remove-all-source-validation.v0.1",
   "status": "passed",
-  "observed_at_utc": "2026-11-21T01:51:58.497196+00:00",
+  "observed_at_utc": "2026-11-21T01:58:24.752848+00:00",
   "tested_git_head": "317f97d712e35d27d00acbc6e66bd35c31644bad",
   "validation_basis": "Current worktree. Native oracle/fixture source is committed. Dispatcher runtime code remains uncommitted and is bound separately by the local attempts below.",
   "input_files_sha256": {
@@ -240,6 +240,15 @@
       "exit_code": 101,
       "phase": "module_compile_start",
       "result": "same Windows Cranelift lowering panic at lower.rs:1107; panic persists with RAYON_NUM_THREADS=1",
+      "guest_started": false
+    },
+    {
+      "backend": "Cranelift explicit compiler num_threads=1 (isolated package copy)",
+      "command": "cargo +1.94.0 build --offline --locked --manifest-path target/recastpress-cranelift-thread-probe/experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-cranelift-thread-probe-cargo-target; <built executable> action-remove-all",
+      "source_adjustment": "Only temporary copy set compiler.num_threads(NonZeroUsize::new(1)); shared worktree source was unchanged. Compile-time include graph and pinned PHP-WASIX module were copied into isolated temporary root.",
+      "exit_code": 101,
+      "phase": "module_compile_start",
+      "result": "same Windows Cranelift lower.rs:1107 panic with the compiler-owned worker pool explicitly set to one",
       "guest_started": false
     }
   ],
