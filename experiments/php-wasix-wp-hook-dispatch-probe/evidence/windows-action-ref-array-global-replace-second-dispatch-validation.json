@@ -55,5 +55,11 @@
                    "crates/recastpress-wp/src/dispatcher.rs":  "a176efeed1298d65357e50d7cac479373297434187c0c8be84ba5116550eb336",
                    "crates/recastpress-wp/src/hooks.rs":  "539e93dad9d5d29dd2f6be890acb5c6f0f182dc80168fe2284ee2067d53ba355",
                    "crates/recastpress-wp/src/continuation.rs":  "d7f9fb465f24a38fe6b68bb1b4446180e0d18b5c4ed46c1c53753ae81bd5c849"
-               }
+               },
+    "documentation_refresh":  {
+                                  "previous_sha256":  "c61f034f1cb704c1b03e358a965ea4f4bfad496c63a856877d952ed09547c20e",
+                                  "current_sha256":  "115e1350dc7ed8e8a2d8da8421c4da172627973e40bf79e34d193dfe177e3b05",
+                                  "validation_rerun":  false,
+                                  "reason":  "The development log received later documentation updates; implementation inputs and captured validation results are unchanged."
+                              }
 }
