@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "observed_at_utc": "2026-11-01T08:14:12.992667+00:00",
+  "observed_at_utc": "2026-11-21T06:26:25.926538+00:00",
   "platform": {
     "system": "Windows",
     "machine": "AMD64"
@@ -19,15 +19,15 @@
     "experiments/php-wasi-host-probe/src/descriptor_bridge.rs": "0b925dc87eb6f4f12d1157c6171f68634805f59e9b20eef3b18117a9c7939644",
     "experiments/php-wasi-host-probe/src/epoch.rs": "e2bd59c3183f6f7c4a974191b2ab98a4ef0d896671d97d7bb962ea4b41dc61b4",
     "experiments/php-wasi-host-probe/src/http_probe.rs": "ab8d567e0f78e57c3b2b2f18c5ead649f86ab9b1ffc8ac5e015f97661fdcf0e9",
-    "experiments/php-wasi-host-probe/src/main.rs": "ecad53fe968beeb858432a23f34a5b83caf8a44879bde2874fcb23f59b987973",
+    "experiments/php-wasi-host-probe/src/main.rs": "42a1721f055e35a37df276b0749edf95429143f43a462a09011a626cf82227e0",
     "experiments/php-wasi-host-probe/src/parallel.rs": "5a77eb8e7855d67c12e2951958bf2bc71b5a8dbab59ce2e9b7c0161b75b5a893",
     "experiments/php-wasi-host-probe/src/wasi_rpc.rs": "ce75e5163ecbc0e88bc8082e360e7a5833281a26412d7b6d0530363f22cf186b",
     "experiments/php-wasi-host-probe/wordpress-fixture.json": "f25b298591e266cb2eaa8001807ff89aff44c60d46bade4224f7834ba0385543",
     "scripts/dependency_inventory.py": "c179a10577b8317e7b080cc66d5313f82dd8906f5c67b0c4a30409159e23bdb6",
-    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761"
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4"
   },
   "native_artifact": "target/php-wasi-host-probe/release/recastpress-php-wasi-host-probe.exe",
-  "native_artifact_sha256": "cd44ca1ea00407e6f3a816fd8efa6d6422d7b10f3600fd9cd3b7d63cf2722a83",
+  "native_artifact_sha256": "27b2f0b07754f72c5e5f154dd69880bace6982d8fa1b703b3f2d039f17bf6ba6",
   "result": {
     "artifact_sha256": "4fd2e8c42ae529ba72f88a0f1e46de1fc69a4b4f01e01fedd65ca966b8ffe6fa",
     "bridge": "fixed-fixture dedicated WASI descriptor channel; not the product ABI",
@@ -83,7 +83,7 @@
     "milestone": "v0.5-P0-experiment",
     "parallel_requests": 4,
     "php_version": "8.2.6",
-    "process_pid": 18984,
+    "process_pid": 23316,
     "product_ready": false,
     "real_database_connected": false,
     "recovery_requests": 11,
