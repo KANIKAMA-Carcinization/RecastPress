@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.php-wasix-wp-hook-dispatch-windows-remove-all-source-validation.v0.1",
   "status": "passed",
-  "observed_at_utc": "2026-11-21T01:50:41.805939+00:00",
+  "observed_at_utc": "2026-11-21T01:51:58.497196+00:00",
   "tested_git_head": "317f97d712e35d27d00acbc6e66bd35c31644bad",
   "validation_basis": "Current worktree. Native oracle/fixture source is committed. Dispatcher runtime code remains uncommitted and is bound separately by the local attempts below.",
   "input_files_sha256": {
@@ -232,6 +232,14 @@
       "exit_code": 101,
       "phase": "Rust compilation",
       "result": "llvm-sys 221.1.2 could not find a system LLVM installation",
+      "guest_started": false
+    },
+    {
+      "backend": "Cranelift single-threaded",
+      "command": "RAYON_NUM_THREADS=1 cargo +1.94.0 run --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-hook-dispatch-review -- action-remove-all",
+      "exit_code": 101,
+      "phase": "module_compile_start",
+      "result": "same Windows Cranelift lowering panic at lower.rs:1107; panic persists with RAYON_NUM_THREADS=1",
       "guest_started": false
     }
   ],
