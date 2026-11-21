@@ -54,7 +54,21 @@ impl RequestInput {
 }
 
 fn wordpress_directory() -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.reference/wordpress-7.1.3/wp-includes")
+    let compiled =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.reference/wordpress-7.1.3/wp-includes");
+    if [
+        "plugin.php",
+        "class-wp-hook.php",
+        "class-wp-filter-sentinel.php",
+    ]
+    .iter()
+    .all(|name| compiled.join(name).is_file())
+    {
+        return compiled;
+    }
+    std::env::current_dir()
+        .unwrap_or_default()
+        .join(".reference/wordpress-7.1.3/wp-includes")
 }
 
 fn verify_wordpress_sources() -> Result<()> {
