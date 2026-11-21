@@ -69,10 +69,17 @@ function recastpress_wp_dispatch_selected_action(
     if (!array_is_list($args) || count($args) !== 2) {
         throw new RuntimeException('wp_action_ref_array_frame_shape');
     }
+    $pass = did_action($hookName);
+    if (!in_array($pass, [1, 2], true)
+        || ($pass === 2 && $GLOBALS['rp_action_ref_array_scenario'] !== 'action-ref-array-global-replace-second-dispatch')
+    ) {
+        throw new RuntimeException('wp_action_ref_array_dispatch_pass');
+    }
+    $GLOBALS['rp_action_ref_array_selected_object'] = $hook;
     $rows = rp_action_ref_array_table_snapshot($hook);
     $expectedRows = $rows;
     $argumentFrame = $registry->retainArgument($args);
-    $GLOBALS['rp_action_ref_array_argument_frame'] = $argumentFrame;
+    $GLOBALS['rp_action_ref_array_argument_frames'][$pass] = $argumentFrame;
     $exported = [];
     $handles = [];
     $acceptedArgsByUid = [];
@@ -90,7 +97,9 @@ function recastpress_wp_dispatch_selected_action(
             'handle' => $handle,
         ];
     }
-    $GLOBALS['rp_action_ref_array_handles'] = $handles;
+    $GLOBALS['rp_action_ref_array_handles_by_pass'][$pass] = $handles;
+    $GLOBALS['rp_action_ref_array_released_by_pass'][$pass] = [];
+    $invocationCount = 0;
 
     $wire->send('action_dispatch_start', [
         'generation' => RP_ACTION_REF_ARRAY_REQUEST,
@@ -112,17 +121,21 @@ function recastpress_wp_dispatch_selected_action(
                 throw new RuntimeException('wp_action_ref_array_dispatch_release_kind');
             }
             $releasedUid = null;
-            foreach ($handles as $uid => $knownHandle) {
-                if (rp_action_ref_array_handles_equal($knownHandle, $releasedHandle)) {
-                    $releasedUid = $uid;
-                    break;
+            foreach ($GLOBALS['rp_action_ref_array_handles_by_pass'] as $handlePass => $passHandles) {
+                foreach ($passHandles as $uid => $knownHandle) {
+                    if (rp_action_ref_array_handles_equal($knownHandle, $releasedHandle)) {
+                        $releasedUid = [$handlePass, $uid];
+                        break 2;
+                    }
                 }
             }
-            if ($releasedUid === null || isset($GLOBALS['rp_action_ref_array_released'][$releasedUid])) {
+            if ($releasedUid === null
+                || isset($GLOBALS['rp_action_ref_array_released_by_pass'][$releasedUid[0]][$releasedUid[1]])
+            ) {
                 throw new RuntimeException('wp_action_ref_array_dispatch_release_identity');
             }
             $registry->release($releasedHandle);
-            $GLOBALS['rp_action_ref_array_released'][$releasedUid] = true;
+            $GLOBALS['rp_action_ref_array_released_by_pass'][$releasedUid[0]][$releasedUid[1]] = true;
             $wire->send('release_ack', ['handle' => $releasedHandle]);
             continue;
         }
@@ -220,7 +233,7 @@ function recastpress_wp_dispatch_selected_action(
                         static fn (array $left, array $right): int => [$left['priority'], $left['uid']] <=> [$right['priority'], $right['uid']],
                     );
                     $expectedRows = $current;
-                    $GLOBALS['rp_action_ref_array_handles'] = $handles;
+            $GLOBALS['rp_action_ref_array_handles_by_pass'][$pass] = $handles;
                     $wire->send('action_callback_added', [
                         'target' => RP_ACTION_REF_ARRAY_TARGET,
                         'parent_uid' => $payload['uid'],
@@ -276,6 +289,7 @@ function recastpress_wp_dispatch_selected_action(
                 $expectedRows = rp_action_ref_array_table_snapshot($hook);
             }
             $GLOBALS['rp_action_ref_array_invocations'][] = $payload['uid'];
+            $invocationCount++;
             $wire->send('resume_value', [
                 'target' => RP_ACTION_REF_ARRAY_TARGET,
                 'uid' => $payload['uid'],
@@ -288,8 +302,7 @@ function recastpress_wp_dispatch_selected_action(
             expect_parent_effect($frame, null);
             expect_payload_keys($frame, ['target', 'invocations'], 'wp_action_ref_array_complete');
             if ($frame['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
-                || $frame['payload']['invocations'] !== count($exported)
-                || count($GLOBALS['rp_action_ref_array_invocations']) !== count($exported)
+                || $frame['payload']['invocations'] !== $invocationCount
                 || !$sync('finish')
             ) {
                 throw new RuntimeException('wp_action_ref_array_completion_state');
@@ -297,7 +310,7 @@ function recastpress_wp_dispatch_selected_action(
             if (rp_action_ref_array_table_snapshot($hook) !== $expectedRows) {
                 throw new RuntimeException('wp_action_ref_array_table_mutated');
             }
-            $GLOBALS['rp_action_ref_array_imported_rows'] = $exported;
+            $GLOBALS['rp_action_ref_array_imported_rows_by_pass'][$pass] = $exported;
             return null;
         }
         throw new RuntimeException('wp_action_ref_array_unexpected_frame');
@@ -436,7 +449,10 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
         }
         return 'ignored-first-action-result';
     }
-    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace') {
+    if (in_array($GLOBALS['rp_action_ref_array_scenario'], [
+        'action-ref-array-global-replace',
+        'action-ref-array-global-replace-second-dispatch',
+    ], true)) {
         if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
             throw new RuntimeException('wp_action_ref_array_global_replace_missing_pending');
         }
@@ -511,7 +527,21 @@ function rp_action_ref_array_pending(string &$value, string &$extra): void
 
 function rp_action_ref_array_global_marker(string &$value, string &$extra): void
 {
-    throw new RuntimeException('wp_action_ref_array_global_marker_should_not_run_in_old_iteration');
+    if ($GLOBALS['rp_action_ref_array_scenario'] !== 'action-ref-array-global-replace-second-dispatch'
+        || did_action(RP_ACTION_REF_ARRAY_NAME) !== 2
+        || $GLOBALS['rp_action_ref_array_selected_object'] !== $GLOBALS['wp_filter'][RP_ACTION_REF_ARRAY_NAME]
+    ) {
+        throw new RuntimeException('wp_action_ref_array_global_marker_unexpected_dispatch');
+    }
+    $hook = $GLOBALS['rp_action_ref_array_selected_object'];
+    $GLOBALS['rp_action_ref_array_events'][] = [
+        'callback' => 'global_marker', 'args' => [$value, $extra],
+        'current_action' => current_action(), 'doing_action' => doing_action(RP_ACTION_REF_ARRAY_NAME),
+        'did_action' => did_action(RP_ACTION_REF_ARRAY_NAME), 'current_priority' => $hook->current_priority(),
+        'wp_hook_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook),
+    ];
+    $value = 'value-mutated-by-global-marker';
+    $extra = 'extra-mutated-by-global-marker';
 }
 
 function rp_action_ref_array_added(string &$value, string &$extra): void
@@ -548,8 +578,11 @@ try {
     $GLOBALS['rp_action_ref_array_registry'] = $registry;
     $GLOBALS['rp_action_ref_array_events'] = [];
     $GLOBALS['rp_action_ref_array_invocations'] = [];
-    $GLOBALS['rp_action_ref_array_argument_frame_released'] = false;
-    $GLOBALS['rp_action_ref_array_released'] = [];
+    $GLOBALS['rp_action_ref_array_argument_frames'] = [];
+    $GLOBALS['rp_action_ref_array_argument_frames_released'] = [];
+    $GLOBALS['rp_action_ref_array_handles_by_pass'] = [];
+    $GLOBALS['rp_action_ref_array_released_by_pass'] = [];
+    $GLOBALS['rp_action_ref_array_imported_rows_by_pass'] = [];
     $GLOBALS['wp_filter'] = [];
     $GLOBALS['wp_actions'] = [];
     $GLOBALS['wp_filters'] = [];
@@ -573,18 +606,53 @@ try {
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_start\n");
     $result = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $args);
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_done\n");
+    $globalReplaceSecondDispatchMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace-second-dispatch';
+    $firstValue = $value;
+    $firstExtra = $extra;
+    $replacement = null;
+    if ($globalReplaceSecondDispatchMode) {
+        if ($firstValue !== 'value-mutated-by-added' || $firstExtra !== 'extra-mutated-by-second') {
+            throw new RuntimeException('wp_action_ref_array_global_replace_first_refs');
+        }
+        $replacement = $GLOBALS['wp_filter'][RP_ACTION_REF_ARRAY_NAME] ?? null;
+        if (!($replacement instanceof WP_Hook) || $replacement === $selected
+            || rp_action_ref_array_table_snapshot($replacement) === []
+        ) {
+            throw new RuntimeException('wp_action_ref_array_global_replace_second_hook');
+        }
+        $tokens[$replacement] = RP_ACTION_REF_ARRAY_TARGET;
+        $GLOBALS['rp_action_ref_array_selected_object'] = $replacement;
+        $secondValue = 'second-seed';
+        $secondExtra = 'second-extra';
+        $secondArgs = [&$secondValue, &$secondExtra];
+        $secondResult = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $secondArgs);
+        if ($secondResult !== null
+            || $secondValue !== 'value-mutated-by-global-marker'
+            || $secondExtra !== 'extra-mutated-by-global-marker'
+        ) {
+            throw new RuntimeException('wp_action_ref_array_global_replace_second_result');
+        }
+    }
+    $finalValue = $globalReplaceSecondDispatchMode ? $secondValue : $value;
+    $finalExtra = $globalReplaceSecondDispatchMode ? $secondExtra : $extra;
     $emptyBucketMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket';
     $emptyBucketAddActionMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-add-action';
     if ($result !== null
-        || $value !== ($emptyBucketMode ? 'value-mutated-by-first' : 'value-mutated-by-added')
-        || $extra !== 'extra-mutated-by-second'
+        || $finalValue !== ($globalReplaceSecondDispatchMode ? 'value-mutated-by-global-marker' : ($emptyBucketMode ? 'value-mutated-by-first' : 'value-mutated-by-added'))
+        || $finalExtra !== ($globalReplaceSecondDispatchMode ? 'extra-mutated-by-global-marker' : 'extra-mutated-by-second')
         || current_action() !== false
         || current_filter() !== false
         || doing_action()
-        || did_action(RP_ACTION_REF_ARRAY_NAME) !== 1
+        || did_action(RP_ACTION_REF_ARRAY_NAME) !== ($globalReplaceSecondDispatchMode ? 2 : 1)
         || did_filter(RP_ACTION_REF_ARRAY_NAME) !== 0
         || $selected->current_priority() !== false
         || (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($selected) !== false
+        || ($globalReplaceSecondDispatchMode && ($replacement->current_priority() !== false
+            || (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($replacement) !== false
+            || (new ReflectionProperty(WP_Hook::class, 'nesting_level'))->getValue($selected) !== 0
+            || (new ReflectionProperty(WP_Hook::class, 'iterations'))->getValue($selected) !== []
+            || (new ReflectionProperty(WP_Hook::class, 'nesting_level'))->getValue($replacement) !== 0
+            || (new ReflectionProperty(WP_Hook::class, 'iterations'))->getValue($replacement) !== []))
     ) {
         throw new RuntimeException('wp_action_ref_array_final_observation');
     }
@@ -629,7 +697,10 @@ try {
             'current_priority' => 10, 'wp_hook_doing_action' => true,
         ],
     ];
-    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace') {
+    if (in_array($GLOBALS['rp_action_ref_array_scenario'], [
+        'action-ref-array-global-replace',
+        'action-ref-array-global-replace-second-dispatch',
+    ], true)) {
         $expected[3]['direct_table_edit'] = [
             'operation' => 'replace_global_wp_hook_while_old_receiver_runs',
             'active_hook_is_global' => false,
@@ -644,6 +715,18 @@ try {
         ];
         if ($GLOBALS['wp_filter'][RP_ACTION_REF_ARRAY_NAME] === $selected) {
             throw new RuntimeException('wp_action_ref_array_global_object_not_replaced');
+        }
+        if ($globalReplaceSecondDispatchMode) {
+            $expected[] = [
+                'callback' => 'all', 'hook' => RP_ACTION_REF_ARRAY_NAME,
+                'args' => [RP_ACTION_REF_ARRAY_NAME, ['second-seed', 'second-extra']],
+                'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 2,
+            ];
+            $expected[] = [
+                'callback' => 'global_marker', 'args' => ['second-seed', 'second-extra'],
+                'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 2,
+                'current_priority' => 3, 'wp_hook_doing_action' => true,
+            ];
         }
     } elseif ($emptyBucketAddActionMode) {
         $expected[3]['direct_table_edit'] = [
@@ -675,7 +758,13 @@ try {
             'wp_hook_doing_action' => true,
         ];
     }
-    if ($events !== $expected || $GLOBALS['rp_action_ref_array_invocations'] !== array_column($GLOBALS['rp_action_ref_array_imported_rows'], 'uid')) {
+    $importedRows = [];
+    foreach ($GLOBALS['rp_action_ref_array_imported_rows_by_pass'] as $passRows) {
+        foreach ($passRows as $row) {
+            $importedRows[] = $row;
+        }
+    }
+    if ($events !== $expected || $GLOBALS['rp_action_ref_array_invocations'] !== array_column($importedRows, 'uid')) {
         throw new RuntimeException('wp_action_ref_array_observation:' . json_encode($events, JSON_THROW_ON_ERROR));
     }
 
@@ -691,20 +780,29 @@ try {
             expect_payload_keys($frame, ['handle'], 'wp_action_ref_array_release');
             $handle = $frame['payload']['handle'];
             if (($handle['kind'] ?? null) === 'argument') {
-                if (!rp_action_ref_array_handles_equal($handle, $GLOBALS['rp_action_ref_array_argument_frame'])) {
+                $matchedPass = null;
+                foreach ($GLOBALS['rp_action_ref_array_argument_frames'] as $pass => $frameHandle) {
+                    if (rp_action_ref_array_handles_equal($handle, $frameHandle)) {
+                        $matchedPass = $pass;
+                        break;
+                    }
+                }
+                if ($matchedPass === null || isset($GLOBALS['rp_action_ref_array_argument_frames_released'][$matchedPass])) {
                     throw new RuntimeException('wp_action_ref_array_release_identity');
                 }
-                $GLOBALS['rp_action_ref_array_argument_frame_released'] = true;
+                $GLOBALS['rp_action_ref_array_argument_frames_released'][$matchedPass] = true;
             } elseif (($handle['kind'] ?? null) === 'callable') {
                 $found = false;
-                foreach ($GLOBALS['rp_action_ref_array_handles'] as $uid => $candidate) {
-                    if (rp_action_ref_array_handles_equal($candidate, $handle)) {
-                        if (isset($GLOBALS['rp_action_ref_array_released'][$uid])) {
-                            throw new RuntimeException('wp_action_ref_array_release_duplicate');
+                foreach ($GLOBALS['rp_action_ref_array_handles_by_pass'] as $pass => $passHandles) {
+                    foreach ($passHandles as $uid => $candidate) {
+                        if (rp_action_ref_array_handles_equal($candidate, $handle)) {
+                            if (isset($GLOBALS['rp_action_ref_array_released_by_pass'][$pass][$uid])) {
+                                throw new RuntimeException('wp_action_ref_array_release_duplicate');
+                            }
+                            $found = true;
+                            $GLOBALS['rp_action_ref_array_released_by_pass'][$pass][$uid] = true;
+                            break 2;
                         }
-                        $found = true;
-                        $GLOBALS['rp_action_ref_array_released'][$uid] = true;
-                        break;
                     }
                 }
                 if (!$found) {
@@ -731,18 +829,18 @@ try {
             $wire->send('guest_done', [
                 'events' => $events,
                 'result' => null,
-                'caller_value' => $value,
-                'caller_extra' => $extra,
+                'caller_value' => $finalValue,
+                'caller_extra' => $finalExtra,
                 'action_count' => did_action(RP_ACTION_REF_ARRAY_NAME),
                 'current_action' => current_action(),
                 'current_filter' => current_filter(),
                 'doing_action' => doing_action(),
-                'wp_hook_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($selected),
-                'current_priority' => $selected->current_priority(),
-                'table_fingerprint' => rp_action_ref_array_fingerprint($GLOBALS['rp_action_ref_array_imported_rows']),
+                'wp_hook_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($replacement ?? $selected),
+                'current_priority' => ($replacement ?? $selected)->current_priority(),
+                'table_fingerprint' => rp_action_ref_array_fingerprint($GLOBALS['rp_action_ref_array_imported_rows_by_pass'][did_action(RP_ACTION_REF_ARRAY_NAME)]),
                 'live_handles' => $registry->liveCount(),
                 'live_handles_before_close' => $liveHandlesBeforeClose,
-                'argument_frame_released_before_close' => $GLOBALS['rp_action_ref_array_argument_frame_released'],
+                'argument_frame_released_before_close' => count($GLOBALS['rp_action_ref_array_argument_frames_released']) === count($GLOBALS['rp_action_ref_array_argument_frames']),
                 'invocations' => $GLOBALS['rp_action_ref_array_invocations'],
                 'frames' => $wire->stats(),
             ]);

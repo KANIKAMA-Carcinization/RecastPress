@@ -2198,6 +2198,8 @@ fn run_action_ref_array_dispatch(
         == Some("action-ref-array-empty-bucket-add-action");
     let global_replace_mode =
         std::env::args().nth(1).as_deref() == Some("action-ref-array-global-replace");
+    let global_replace_second_dispatch_mode = std::env::args().nth(1).as_deref()
+        == Some("action-ref-array-global-replace-second-dispatch");
     let deadline = Instant::now() + TIMEOUT;
     let start = read_frame(reader, deadline, total_in, 0)?;
     expect_frame(
@@ -2674,6 +2676,52 @@ fn run_action_ref_array_dispatch(
                         ],
                     "reference-array action callback order mismatch"
                 );
+                if global_replace_second_dispatch_mode {
+                    dispatcher.remove_all_typed(&name, None);
+                    for php_handle in dispatcher.take_php_releases() {
+                        let descriptor = json!({
+                            "request":HANDLE_REQUEST,
+                            "kind":"callable",
+                            "slot":php_handle.slot(),
+                            "generation":php_handle.generation(),
+                            "token":format!("{:016x}", php_handle.token())
+                        });
+                        send_frame(
+                            writer,
+                            out_seq,
+                            "release_php",
+                            json!({"handle":descriptor}),
+                            total_out,
+                            &mut out_seq,
+                        )?;
+                        let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                        expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                        ensure!(
+                            ack["payload"]["handle"] == descriptor,
+                            "global-replacement first-pass callback release ACK"
+                        );
+                        in_seq += 1;
+                    }
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "action_complete",
+                        json!({"target":"wp-action-ref-array-1","invocations":imported.len()}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    return run_action_ref_array_global_replace_second_dispatch(
+                        reader,
+                        writer,
+                        total_in,
+                        total_out,
+                        dispatcher,
+                        name,
+                        frame_handle,
+                        in_seq,
+                        out_seq,
+                    );
+                }
                 send_frame(
                     writer,
                     out_seq,
@@ -2943,6 +2991,369 @@ fn run_action_ref_array_dispatch(
                         "timeout_seconds":TIMEOUT.as_secs()
                     }
                 }));
+            }
+        }
+    }
+}
+
+fn run_action_ref_array_global_replace_second_dispatch(
+    reader: &mut BufReader<impl Read>,
+    writer: &mut impl Write,
+    total_in: &mut usize,
+    total_out: &mut usize,
+    mut dispatcher: Dispatcher,
+    name: HookArgument,
+    first_frame_handle: PhpHandle,
+    start_in_seq: u64,
+    start_out_seq: u64,
+) -> Result<Value> {
+    let deadline = Instant::now() + TIMEOUT;
+    let start = read_frame(reader, deadline, total_in, start_in_seq)?;
+    expect_frame(
+        &start,
+        start_in_seq,
+        "action_dispatch_start",
+        &[
+            "generation",
+            "target",
+            "hook",
+            "argument_frame",
+            "argument_count",
+            "rows",
+            "table_fingerprint",
+        ],
+    )?;
+    ensure!(
+        start["payload"]["generation"] == HANDLE_REQUEST
+            && start["payload"]["target"] == "wp-action-ref-array-1"
+            && start["payload"]["hook"] == "rp-probe-action-ref-array"
+            && start["payload"]["argument_count"] == 2,
+        "global-replacement second dispatch identity"
+    );
+    let frame_handle = argument_handle(&start["payload"]["argument_frame"])?;
+    ensure!(
+        frame_handle != first_frame_handle,
+        "global-replacement second dispatch must use a distinct argument frame"
+    );
+    let rows = start["payload"]["rows"]
+        .as_array()
+        .context("global-replacement second dispatch rows")?;
+    ensure!(rows.len() == 1, "global-replacement replacement row count");
+    let row = &rows[0];
+    let row_object = row
+        .as_object()
+        .context("global-replacement replacement row object")?;
+    ensure!(
+        row_object.len() == 5
+            && ["priority", "uid", "accepted_args", "function", "handle"]
+                .iter()
+                .all(|key| row_object.contains_key(*key))
+            && row["priority"] == 3
+            && row["uid"] == "rp_action_ref_array_global_marker"
+            && row["accepted_args"] == 2
+            && row["function"] == "rp_action_ref_array_global_marker"
+            && row["handle"]["request"] == HANDLE_REQUEST
+            && row["handle"]["kind"] == "callable",
+        "global-replacement replacement callback identity/schema"
+    );
+    let fingerprint_rows = json!([[
+        row["priority"],
+        row["uid"],
+        row["accepted_args"],
+        row["function"],
+        row["handle"]["request"],
+        row["handle"]["kind"],
+        row["handle"]["slot"],
+        row["handle"]["generation"],
+        row["handle"]["token"]
+    ]]);
+    ensure!(
+        start["payload"]["table_fingerprint"]
+            == sha256(&serde_json::to_vec(&fingerprint_rows)?),
+        "global-replacement replacement callback fingerprint"
+    );
+    let callback_handle = handle(&row["handle"])?;
+    let callback = ContextCallback::php_callable(
+        CallbackId {
+            module: "wordpress".into(),
+            callback: "rp_action_ref_array_global_marker".into(),
+        },
+        2,
+        callback_handle,
+    )
+    .map_err(|error| anyhow::anyhow!("global-replacement callback import: {error:?}"))?;
+    dispatcher.add_typed(&name, HookPriority::integer(3), callback);
+    let args = [
+        PhpValue::ArgumentHandle(frame_handle),
+        PhpValue::ArgumentHandle(frame_handle),
+    ];
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &args)
+        .map_err(|error| anyhow::anyhow!("global-replacement second action start: {error:?}"))?;
+    let mut in_seq = start_in_seq + 1;
+    let mut out_seq = start_out_seq;
+    let mut callbacks = Vec::new();
+    loop {
+        match dispatcher
+            .advance(ticket)
+            .map_err(|error| anyhow::anyhow!("global-replacement second advance: {error:?}"))?
+        {
+            DispatchStep::InvokePhp(invocation) => {
+                ensure!(
+                    invocation.callback.callback.as_str() == "rp_action_ref_array_global_marker"
+                        && invocation.handle == callback_handle
+                        && invocation.call_mode == PhpCallMode::Array
+                        && invocation.args.len() == 2
+                        && invocation.args.iter().all(
+                            |value| *value == PhpValue::ArgumentHandle(frame_handle)
+                        )
+                        && invocation.priority == PhpKey::Integer(3),
+                    "global-replacement second invocation identity/arguments"
+                );
+                let frame_descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"argument",
+                    "slot":frame_handle.slot(),
+                    "generation":frame_handle.generation(),
+                    "token":format!("{:016x}", frame_handle.token())
+                });
+                let callback_descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"callable",
+                    "slot":callback_handle.slot(),
+                    "generation":callback_handle.generation(),
+                    "token":format!("{:016x}", callback_handle.token())
+                });
+                let args = (0..2)
+                    .map(|index| {
+                        json!({
+                            "type":"argument_frame_slot",
+                            "handle":frame_descriptor,
+                            "index":index
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                send_frame(
+                    writer,
+                    out_seq,
+                    "invoke_php",
+                    json!({
+                        "target":"wp-action-ref-array-1",
+                        "uid":"rp_action_ref_array_global_marker",
+                        "handle":callback_descriptor,
+                        "priority":3,
+                        "call_mode":"array",
+                        "args":args,
+                        "argument_frame":frame_descriptor
+                    }),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let reply = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&reply, in_seq, "resume_value", &["target", "uid", "value"])?;
+                ensure!(
+                    reply["payload"]["target"] == "wp-action-ref-array-1"
+                        && reply["payload"]["uid"] == "rp_action_ref_array_global_marker"
+                        && reply["payload"]["value"].is_null(),
+                    "global-replacement marker resume"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php(ticket, PhpValue::Null)
+                    .map_err(|error| {
+                        anyhow::anyhow!("global-replacement marker resume: {error:?}")
+                    })?;
+                callbacks.push("rp_action_ref_array_global_marker");
+            }
+            DispatchStep::ReleasePhp(release) => {
+                let descriptor = json!({
+                    "request":HANDLE_REQUEST,
+                    "kind":"callable",
+                    "slot":release.slot(),
+                    "generation":release.generation(),
+                    "token":format!("{:016x}", release.token())
+                });
+                send_frame(
+                    writer,
+                    out_seq,
+                    "release_php",
+                    json!({"handle":descriptor}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                ensure!(
+                    ack["payload"]["handle"] == descriptor,
+                    "global-replacement second callback release ACK"
+                );
+                in_seq += 1;
+                dispatcher
+                    .resume_php_release(ticket, release)
+                    .map_err(|error| {
+                        anyhow::anyhow!("global-replacement release resume: {error:?}")
+                    })?;
+            }
+            DispatchStep::Complete(result) => {
+                ensure!(
+                    result == PhpValue::Null
+                        && callbacks == ["rp_action_ref_array_global_marker"],
+                    "global-replacement second dispatch callback order/result"
+                );
+                send_frame(
+                    writer,
+                    out_seq,
+                    "action_complete",
+                    json!({"target":"wp-action-ref-array-1","invocations":1}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let php_done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &php_done,
+                    in_seq,
+                    "request_complete",
+                    &["target", "result", "did_action"],
+                )?;
+                ensure!(
+                    php_done["payload"]["target"] == "wp-action-ref-array-1"
+                        && php_done["payload"]["result"].is_null()
+                        && php_done["payload"]["did_action"] == 2,
+                    "global-replacement request completion/did_action"
+                );
+                in_seq += 1;
+                dispatcher.remove_all_typed(&name, None);
+                for php_handle in dispatcher.take_php_releases() {
+                    let descriptor = json!({
+                        "request":HANDLE_REQUEST,
+                        "kind":"callable",
+                        "slot":php_handle.slot(),
+                        "generation":php_handle.generation(),
+                        "token":format!("{:016x}", php_handle.token())
+                    });
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "global-replacement callback release ACK"
+                    );
+                    in_seq += 1;
+                }
+                for argument_handle in [first_frame_handle, frame_handle] {
+                    let descriptor = json!({
+                        "request":HANDLE_REQUEST,
+                        "kind":"argument",
+                        "slot":argument_handle.slot(),
+                        "generation":argument_handle.generation(),
+                        "token":format!("{:016x}", argument_handle.token())
+                    });
+                    send_frame(
+                        writer,
+                        out_seq,
+                        "release_php",
+                        json!({"handle":descriptor}),
+                        total_out,
+                        &mut out_seq,
+                    )?;
+                    let ack = read_frame(reader, deadline, total_in, in_seq)?;
+                    expect_frame(&ack, in_seq, "release_ack", &["handle"])?;
+                    ensure!(
+                        ack["payload"]["handle"] == descriptor,
+                        "global-replacement argument-frame release ACK"
+                    );
+                    in_seq += 1;
+                }
+                send_frame(
+                    writer,
+                    out_seq,
+                    "request_complete",
+                    json!({"target":"wp-action-ref-array-1","result":null}),
+                    total_out,
+                    &mut out_seq,
+                )?;
+                let done = read_frame(reader, deadline, total_in, in_seq)?;
+                expect_frame(
+                    &done,
+                    in_seq,
+                    "guest_done",
+                    &[
+                        "events",
+                        "result",
+                        "caller_value",
+                        "caller_extra",
+                        "action_count",
+                        "current_action",
+                        "current_filter",
+                        "doing_action",
+                        "wp_hook_doing_action",
+                        "current_priority",
+                        "table_fingerprint",
+                        "live_handles",
+                        "live_handles_before_close",
+                        "argument_frame_released_before_close",
+                        "invocations",
+                        "frames",
+                    ],
+                )?;
+                let expected_fingerprint = sha256(&serde_json::to_vec(&fingerprint_rows)?);
+                ensure!(
+                    done["payload"]["result"].is_null()
+                        && done["payload"]["caller_value"]
+                            == "value-mutated-by-global-marker"
+                        && done["payload"]["caller_extra"]
+                            == "extra-mutated-by-global-marker"
+                        && done["payload"]["action_count"] == 2
+                        && done["payload"]["current_action"] == false
+                        && done["payload"]["current_filter"] == false
+                        && done["payload"]["doing_action"] == false
+                        && done["payload"]["wp_hook_doing_action"] == false
+                        && done["payload"]["current_priority"] == false
+                        && done["payload"]["table_fingerprint"] == expected_fingerprint
+                        && done["payload"]["live_handles"] == 0
+                        && done["payload"]["live_handles_before_close"] == 0
+                        && done["payload"]["argument_frame_released_before_close"] == true
+                        && done["payload"]["invocations"]
+                            == json!([
+                                "rp_action_ref_array_truncated",
+                                "rp_action_ref_array_zero",
+                                "rp_action_ref_array_first",
+                                "rp_action_ref_array_added",
+                                "rp_action_ref_array_second",
+                                "rp_action_ref_array_global_marker"
+                            ]),
+                    "global-replacement second dispatch final observation"
+                );
+                return Ok(json!({
+                    "status":"passed",
+                    "result":null,
+                    "callbacks":[
+                        "rp_action_ref_array_truncated",
+                        "rp_action_ref_array_zero",
+                        "rp_action_ref_array_first",
+                        "rp_action_ref_array_added",
+                        "rp_action_ref_array_second",
+                        "rp_action_ref_array_global_marker"
+                    ],
+                    "guest":done["payload"],
+                    "bridge":{
+                        "input_frames":in_seq + 1,
+                        "output_frames":out_seq,
+                        "input_bytes":*total_in,
+                        "output_bytes":*total_out,
+                        "timeout_seconds":TIMEOUT.as_secs()
+                    }
+                }));
+            }
+            DispatchStep::Boundary(_) | DispatchStep::PhpThrowable(_) => {
+                anyhow::bail!("unexpected global-replacement second dispatch effect")
             }
         }
     }
@@ -4483,11 +4894,14 @@ fn main() -> Result<()> {
         == Some("action-ref-array-empty-bucket-add-action");
     let action_ref_array_global_replace_mode =
         std::env::args().nth(1).as_deref() == Some("action-ref-array-global-replace");
+    let action_ref_array_global_replace_second_dispatch_mode = std::env::args().nth(1).as_deref()
+        == Some("action-ref-array-global-replace-second-dispatch");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array")
         || action_ref_array_empty_bucket_mode
         || action_ref_array_empty_bucket_reinsert_mode
         || action_ref_array_empty_bucket_add_action_mode
-        || action_ref_array_global_replace_mode;
+        || action_ref_array_global_replace_mode
+        || action_ref_array_global_replace_second_dispatch_mode;
     let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
@@ -4747,7 +5161,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_global_replace_mode {"action-ref-array-global-replace"} else if action_ref_array_empty_bucket_add_action_mode {"action-ref-array-empty-bucket-add-action"} else if action_ref_array_empty_bucket_reinsert_mode {"action-ref-array-empty-bucket-reinsert"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_global_replace_second_dispatch_mode {"action-ref-array-global-replace-second-dispatch"} else if action_ref_array_global_replace_mode {"action-ref-array-global-replace"} else if action_ref_array_empty_bucket_add_action_mode {"action-ref-array-empty-bucket-add-action"} else if action_ref_array_empty_bucket_reinsert_mode {"action-ref-array-empty-bucket-reinsert"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -4828,6 +5242,10 @@ fn run_guest(
                 == Some("action-ref-array-global-replace")
             {
                 "action-ref-array-global-replace".to_string()
+            } else if std::env::args().nth(1).as_deref()
+                == Some("action-ref-array-global-replace-second-dispatch")
+            {
+                "action-ref-array-global-replace-second-dispatch".to_string()
             } else {
                 "action-ref-array".to_string()
             },

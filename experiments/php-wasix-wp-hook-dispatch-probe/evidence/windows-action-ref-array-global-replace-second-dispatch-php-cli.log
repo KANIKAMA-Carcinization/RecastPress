@@ -1,0 +1,8 @@
+PHP CLI: .reference/php-8.5.12/php.exe
+Version: PHP 8.5.12 (cli) (built: Oct 20 2026 04:19:56) (NTS Visual C++ 2022 x64)
+Command: .reference/php-8.5.12/php.exe -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php
+No syntax errors detected in experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php
+Exit code: 0
+Command: .reference/php-8.5.12/php.exe -n -l experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php
+No syntax errors detected in experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php
+Exit code: 0

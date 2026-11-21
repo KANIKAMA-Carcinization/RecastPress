@@ -1,0 +1,43 @@
+Command: cargo +1.94.0 run --quiet --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\recastpress-global-replace-second-review -- action-ref-array-global-replace-second-dispatch
+--- output ---
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_start
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_done
+PHP_WASIX_WP_HOOK_PHASE=module_compile_start
+System.Management.Automation.RemoteException
+thread '<unnamed>' (23044) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+System.Management.Automation.RemoteException
+thread '<unnamed>' (15632) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (24636) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (1728) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (26516) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (15404) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (26824) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (1588) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (14200) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (16316) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (14740) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+System.Management.Automation.RemoteException
+thread '<unnamed>' (1732) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+Exit code: 101
