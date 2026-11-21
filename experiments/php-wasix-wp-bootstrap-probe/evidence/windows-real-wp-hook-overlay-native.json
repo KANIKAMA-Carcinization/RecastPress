@@ -45,13 +45,14 @@
     },
     "runner": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/record_native_hook_overlay.py",
-      "sha256": "cba5fbe116795c6557695e9612087dfddc9a7efc14ac729d62c2133d6da16dfb"
+      "sha256": "8f6e0c8173d4d368b2b1d4ebd801b5e2855224bfbcdbe9962de784388be3d0cf"
     },
     "host_sources": {
       "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "872af01b2af48e07eeb637dc3a9da8398635a90f7c52b6dcd97995db4e5fa8ed",
       "experiments/php-wasix-wp-bootstrap-probe/src/main.rs": "a21dcd409c13057269f296e6f5856b5d01b01ce7001c02a43995441c458828c6",
       "experiments/php-wasix-wp-bootstrap-probe/build_check.py": "ef9e7ffdb7a9c54cc3397d941057d5da29fbb84604f999a097819e652320e5ff",
-      "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "ca6fd99f5b1c668e32c5c119f8e1d2f7b962cb26bf3bfed0b5ce269a48b4fe1e"
+      "experiments/php-wasix-wp-bootstrap-probe/Cargo.lock": "ca6fd99f5b1c668e32c5c119f8e1d2f7b962cb26bf3bfed0b5ce269a48b4fe1e",
+      "experiments/php-wasix-wp-bootstrap-probe/hook_oracle_contract.py": "d2f7036fceff4594d4185e6e9645e057087d84159edde361506ef21afc4517df"
     }
   },
   "oracle": {
@@ -197,6 +198,64 @@
       }
     }
   },
+  "cross_oracle_contract": {
+    "schema": "recastpress.wp-bootstrap-hook-cross-oracle.v0.1",
+    "status": "passed",
+    "scope": "same callback-value-priority-filter-stack and WP_Hook reset observations across pinned original and selected overlay fixtures; overlay handoff invokes the two callback rows itself; no full bootstrap or Wasm guest",
+    "wordpress_version": "7.1.3",
+    "hook": "option_blogname",
+    "original_loop": {
+      "callback_order": [
+        "rp_boot_hook_first",
+        "rp_boot_hook_second"
+      ],
+      "filtered_value": "RP Bootstrap Fixture|first|second"
+    },
+    "overlay_handoff": {
+      "callback_order": [
+        "rp_overlay_oracle_first",
+        "rp_overlay_oracle_second"
+      ],
+      "filtered_value": "RP Bootstrap Fixture|first|second"
+    },
+    "compared_observations": {
+      "events": [
+        {
+          "callback": "rp_boot_hook_first",
+          "value": "RP Bootstrap Fixture",
+          "current_filter": "option_blogname",
+          "doing_filter": true,
+          "current_priority": 10,
+          "stack": [
+            "option_blogname"
+          ]
+        },
+        {
+          "callback": "rp_boot_hook_second",
+          "value": "RP Bootstrap Fixture|first",
+          "current_filter": "option_blogname",
+          "doing_filter": true,
+          "current_priority": 20,
+          "stack": [
+            "option_blogname"
+          ]
+        }
+      ],
+      "filtered_value": "RP Bootstrap Fixture|first|second",
+      "after_dispatch": {
+        "current_filter": false,
+        "doing_filter": false,
+        "did_filter": 1,
+        "stack": [],
+        "hook_state": {
+          "nesting_level": 0,
+          "iterations": [],
+          "current_priority": [],
+          "doing_action": false
+        }
+      }
+    }
+  },
   "execution": {
     "exit_code": 0,
     "stdout_bytes": 1578,
@@ -222,7 +281,7 @@
     ],
     "exit_code": 0,
     "tests_passed": 39,
-    "stdout_sha256": "cb5c9ba4de7969ec058651bb861c6e97a0778216774434b638f04b000fb77cb3",
+    "stdout_sha256": "c694d54b619da888802098b3251f5e9dffb610e5ccf7df0005ac30cbeac75613",
     "stderr_bytes": 280,
     "scope": "host unit contracts including pinned catalog overlay replacement; no Wasm guest execution"
   }

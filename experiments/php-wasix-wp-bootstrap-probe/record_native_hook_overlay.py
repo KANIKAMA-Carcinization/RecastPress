@@ -6,6 +6,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
+from hook_oracle_contract import record as cross_oracle_record
 PHP = ROOT / '.reference/php-8.5.12/php.exe'
 FIXTURE = HERE / 'fixtures/hook_overlay_native_oracle.php'
 BASELINE_FIXTURE = HERE / 'fixtures/hook_native_oracle.php'
@@ -101,6 +102,12 @@ def run():
             or len(cargo.stdout) > 4 * 1024 * 1024 or len(cargo.stderr) > 65536:
         raise ValueError('rust_host_contract_tests')
 
+    oracle_pair = {
+        'oracle': observation,
+        'unpatched_wordpress_oracle': baseline_observation,
+    }
+    cross_oracle = cross_oracle_record(oracle_pair)
+
     inputs = {
         'php_executable': {'path': PHP.relative_to(ROOT).as_posix(), 'bytes': len(executable), 'sha256': sha(executable)},
         'fixture': {'path': FIXTURE.relative_to(ROOT).as_posix(), 'bytes': len(fixture), 'sha256': sha(fixture)},
@@ -114,7 +121,7 @@ def run():
             'sha256': sha(read(Path(__file__).resolve(), 128 * 1024))},
         'host_sources': {
             path.relative_to(ROOT).as_posix(): sha(read(path, 256 * 1024))
-            for path in [HERE / 'src/catalog.rs', HERE / 'src/main.rs', HERE / 'build_check.py', HERE / 'Cargo.lock']
+            for path in [HERE / 'src/catalog.rs', HERE / 'src/main.rs', HERE / 'build_check.py', HERE / 'Cargo.lock', Path(__file__).resolve().parent / 'hook_oracle_contract.py']
         },
     }
     return {
@@ -129,6 +136,7 @@ def run():
         'source_inputs': inputs,
         'oracle': observation,
         'unpatched_wordpress_oracle': baseline_observation,
+        'cross_oracle_contract': cross_oracle,
         'execution': {
             'exit_code': result.returncode,
             'stdout_bytes': len(result.stdout),
