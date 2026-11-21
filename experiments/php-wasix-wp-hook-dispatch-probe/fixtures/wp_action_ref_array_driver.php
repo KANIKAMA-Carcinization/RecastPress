@@ -410,6 +410,32 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
         }
         return 'ignored-first-action-result';
     }
+    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-add-action') {
+        if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+            throw new RuntimeException('wp_action_ref_array_add_action_missing_pending');
+        }
+        $hook->callbacks[8] = [];
+        add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_added', 8, 2);
+        $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+        $bucketUids = array_keys($hook->callbacks[8] ?? []);
+        $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+            ['direct_table_edit'] = [
+                'operation' => 'empty_bucket_then_add_action',
+                'removed_uid' => 'rp_action_ref_array_pending',
+                'inserted_uid' => 'rp_action_ref_array_added',
+                'priority' => 8,
+                'bucket_uids' => $bucketUids,
+                'priority_still_scheduled' => in_array(8, $priorities, true),
+                'priority_occurrences' => count(array_keys($priorities, 8, true)),
+            ];
+        if ($bucketUids !== ['rp_action_ref_array_added']
+            || !in_array(8, $priorities, true)
+            || count(array_keys($priorities, 8, true)) !== 1
+        ) {
+            throw new RuntimeException('wp_action_ref_array_add_action_state');
+        }
+        return 'ignored-first-action-result';
+    }
     $hook->callbacks[8]['rp_action_ref_array_added'] = [
         'function' => 'rp_action_ref_array_added',
         'accepted_args' => 2,
@@ -501,7 +527,7 @@ try {
     $result = do_action_ref_array(RP_ACTION_REF_ARRAY_NAME, $args);
     fwrite(STDERR, "RP_ACTION_REF_ARRAY_PHASE=do_action_ref_array_done\n");
     $emptyBucketMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket';
-    $emptyBucketReinsertMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-reinsert';
+    $emptyBucketAddActionMode = $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-add-action';
     if ($result !== null
         || $value !== ($emptyBucketMode ? 'value-mutated-by-first' : 'value-mutated-by-added')
         || $extra !== 'extra-mutated-by-second'
@@ -556,7 +582,17 @@ try {
             'current_priority' => 10, 'wp_hook_doing_action' => true,
         ],
     ];
-    if ($emptyBucketMode) {
+    if ($emptyBucketAddActionMode) {
+        $expected[3]['direct_table_edit'] = [
+            'operation' => 'empty_bucket_then_add_action',
+            'removed_uid' => 'rp_action_ref_array_pending',
+            'inserted_uid' => 'rp_action_ref_array_added',
+            'priority' => 8,
+            'bucket_uids' => ['rp_action_ref_array_added'],
+            'priority_still_scheduled' => true,
+            'priority_occurrences' => 1,
+        ];
+    } elseif ($emptyBucketMode) {
         $expected = array_slice($expected, 0, 4);
         $expected[3]['direct_table_edit'] = [
             'operation' => 'replace_future_bucket_with_empty_array',

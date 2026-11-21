@@ -229,6 +229,21 @@ def main():
     action_empty_bucket_reinsert_reference_oracle = json.loads(action_empty_bucket_reinsert_oracle_run.stdout.decode("utf-8", "strict"))
     if action_empty_bucket_reinsert_reference_oracle.get("status") != "passed" or action_empty_bucket_reinsert_reference_oracle.get("scenario") != "wp_action_ref_array_empty_bucket_reinsert_native_oracle":
         raise SystemExit("pinned WordPress empty-bucket reinsert oracle reported an unexpected result")
+    action_empty_bucket_add_action_oracle_run = subprocess.run(
+        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-empty-bucket-add-action"],
+        cwd=ROOT,
+        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if action_empty_bucket_add_action_oracle_run.returncode != 0 or action_empty_bucket_add_action_oracle_run.stderr:
+        raise SystemExit("pinned WordPress empty-bucket add_action oracle failed:\n" +
+            action_empty_bucket_add_action_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
+    action_empty_bucket_add_action_reference_oracle = json.loads(action_empty_bucket_add_action_oracle_run.stdout.decode("utf-8", "strict"))
+    if action_empty_bucket_add_action_reference_oracle.get("status") != "passed" or action_empty_bucket_add_action_reference_oracle.get("scenario") != "wp_action_ref_array_empty_bucket_add_action_native_oracle":
+        raise SystemExit("pinned WordPress empty-bucket add_action oracle reported an unexpected result")
     action_overlarge_oracle_run = subprocess.run(
         ["php", "-n", str(ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
         cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
@@ -357,6 +372,7 @@ def main():
             ("action-ref-array", ["action-ref-array"]),
             ("action-ref-array-empty-bucket", ["action-ref-array-empty-bucket"]),
             ("action-ref-array-empty-bucket-reinsert", ["action-ref-array-empty-bucket-reinsert"]),
+            ("action-ref-array-empty-bucket-add-action", ["action-ref-array-empty-bucket-add-action"]),
             ("action-throwable", ["action-throwable"]),
             ("action-nested", ["action-nested"]),
             ("action-mutation", ["action-mutation"]),
@@ -408,6 +424,11 @@ def main():
                         action_empty_bucket_reinsert_reference_oracle["observation"], scenario_result.get("observation", {})
                     )
                     scenario_result["native_oracle_contract_match"] = contract_match
+                elif scenario == "action-ref-array-empty-bucket-add-action":
+                    contract_match = action_ref_array_contract_matches(
+                        action_empty_bucket_add_action_reference_oracle["observation"], scenario_result.get("observation", {})
+                    )
+                    scenario_result["native_oracle_contract_match"] = contract_match
                 elif scenario == "action-throwable":
                     contract_match = action_throwable_contract_matches(
                         action_throwable_reference_oracle["observation"], scenario_result.get("observation", {})
@@ -452,7 +473,7 @@ def main():
                     status = "oracle_mismatch"
                     outputs.append("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.\n")
                     print("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.", file=sys.stderr)
-                elif scenario in ("ref-array", "action-ref-array", "action-ref-array-empty-bucket", "action-ref-array-empty-bucket-reinsert", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-remove-all", "action-deferred-add") and not contract_match:
+                elif scenario in ("ref-array", "action-ref-array", "action-ref-array-empty-bucket", "action-ref-array-empty-bucket-reinsert", "action-ref-array-empty-bucket-add-action", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-remove-all", "action-deferred-add") and not contract_match:
                     status = "oracle_mismatch"
                     outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
                     print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)

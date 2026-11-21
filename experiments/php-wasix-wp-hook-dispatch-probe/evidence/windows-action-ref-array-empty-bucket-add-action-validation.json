@@ -1,0 +1,48 @@
+{
+    "schema":  "recastpress.php-wasix-action-ref-array-empty-bucket-add-action.validation.v0.1",
+    "status":  "passed_native_boundary_validation",
+    "observed_at_utc":  "2026-11-21T03:40:02Z",
+    "tested_git_head":  "2abb4ce1051bee4ac2bea53e8950fc7f0da03859",
+    "validation":  {
+                       "native_oracle_exit_code":  0,
+                       "native_capture":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-action-ref-array-empty-bucket-add-action-native.json",
+                       "native_capture_sha256":  "d206496cee7a39397c29c549e02f74829630f5d0d9a458f2f7488a680acf2c56",
+                       "php_lint_exit_code":  0,
+                       "python_syntax_exit_code":  0,
+                       "host_cargo_check_exit_code":  0,
+                       "dispatcher_contract_suite":  "66 passed; supports dispatcher removal/release ordering only, not direct PHP add_action edit",
+                       "cargo_fmt_exit_code":  0,
+                       "git_diff_check_exit_code":  0,
+                       "guest_attempt_log":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-action-ref-array-empty-bucket-add-action-attempt.log",
+                       "guest_attempt_exit_code":  1,
+                       "actual_php_wasix_execution":  false,
+                       "ci_checked":  false,
+                       "github_used":  false,
+                       "wsl_used":  false,
+                       "commands":  {
+                                        "php_lint":  "php.exe -n -l fixtures/wp_action_ref_array_driver.php; php.exe -n -l fixtures/wp_action_ref_array_oracle.php",
+                                        "oracle":  "php.exe -n fixtures/wp_action_ref_array_oracle.php .reference/wordpress-7.1.3 action-ref-array-empty-bucket-add-action",
+                                        "python":  "python -B -m py_compile experiments/php-wasix-wp-hook-dispatch-probe/check.py",
+                                        "host_compile":  "cargo +1.94.0 check --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml",
+                                        "contract":  "cargo +1.94.0 test --offline --locked --manifest-path crates/recastpress-wp/Cargo.toml --test dispatcher_contract",
+                                        "format":  "cargo +1.94.0 fmt --all -- --check",
+                                        "diff":  "git diff --check"
+                                    }
+                   },
+    "inputs":  {
+                   "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml":  "f0fdd14938bc49e629b3877ea8a0478560b6378da79c6b42f1454ffd65f664ad",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.lock":  "6764c6e6d650744bf8add40e6464c27b14e5daf9e27264c5240626218b779e92",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs":  "4627e4957429765c57e7583850acc39bee17462903fa4a03bbb2001e80f994f8",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/check.py":  "9c9c4e436536386ece24a17fc06ea82ebe7ba3ca9f59db8305b364ef889c36da",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php":  "5b3e668d0389891ccd2d82078aafb18565f27f15f37ac8315b967c708b8d4961",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php":  "722171a7763f21153c1c58b5d8b63a2f46920d8b20bfed53e4635748c640c810",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md":  "3ca00ec71f25a8b43463c4222ce3875c9c484b19961f571c1f5fafe34499e64c",
+                   ".reference/php-wasix-8.5.12/php.wasm":  "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+                   ".reference/wordpress-7.1.3/wp-includes/plugin.php":  "d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d",
+                   ".reference/wordpress-7.1.3/wp-includes/class-wp-hook.php":  "b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e",
+                   "crates/recastpress-wp/tests/dispatcher_contract.rs":  "a46848f2363931522332835b6faa0b275bc5e22edda7c8069e680dc8ffd03cb4",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/overlay.json":  "73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/plugin.php":  "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+                   "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/wp-includes/class-wp-hook.php":  "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+               }
+}
