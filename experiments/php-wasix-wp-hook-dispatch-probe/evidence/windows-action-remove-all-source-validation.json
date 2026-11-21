@@ -1,7 +1,7 @@
 {
   "schema": "recastpress.php-wasix-wp-hook-dispatch-windows-remove-all-source-validation.v0.1",
   "status": "passed",
-  "observed_at_utc": "2026-11-21T01:58:24.752848+00:00",
+  "observed_at_utc": "2026-11-21T02:02:20.256845+00:00",
   "tested_git_head": "317f97d712e35d27d00acbc6e66bd35c31644bad",
   "validation_basis": "Current worktree. Native oracle/fixture source is committed. Dispatcher runtime code remains uncommitted and is bound separately by the local attempts below.",
   "input_files_sha256": {
@@ -257,5 +257,27 @@
     "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs": "164830de0c4d708df22fb3074a3d67b92bde06aacdc58b012601f04265eb7cee",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php": "acecb92d8f831a9a53bf71af7d9375ce5cb9e99425c388ad3e091e897b360276",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_oracle.php": "3ebeb2906cb870a94f1a75c333edad2edbefaef08cada60f0744bfa55cf200b3"
+  },
+  "local_runtime_alternative_search": {
+    "checked_at_utc": "2026-11-21T02:02:20.256815+00:00",
+    "php_wasix_archive": ".reference/php-wasix-8.5.12/php-wasix-64.zip contains php.wasm but no runner executable",
+    "wasmtime_candidate": {
+      "manifest": "experiments/php-wasi-host-probe/src/main.rs",
+      "artifact": ".reference/php-wasi-8.2.6/php-cgi-8.2.6-slim.wasm",
+      "accepted_import_namespace": "wasi_snapshot_preview1",
+      "usable_for_php_wasix_8_5_12": false
+    },
+    "singlepass_backend": "not present in Cargo.lock or local cargo registry cache",
+    "llvm_backend": "Visual Studio VC Tools/Llvm has clang-format and clang-tidy only; no compiler libraries/configuration",
+    "cli_tools": [
+      "wasmer",
+      "wasmtime",
+      "docker",
+      "clang",
+      "zig"
+    ],
+    "cli_tools_available": false,
+    "wsl_used": false,
+    "github_used": false
   }
 }
