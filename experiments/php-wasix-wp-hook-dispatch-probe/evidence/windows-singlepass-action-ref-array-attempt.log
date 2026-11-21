@@ -1,0 +1,10 @@
+--- stdout ---
+--- stderr ---
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_start
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_done
+PHP_WASIX_WP_HOOK_PHASE=module_compile_start
+Error: compile pinned PHP-WASIX
+
+Caused by:
+    compile error: Validate("exceptions proposal not enabled (at offset 0xa044)")
+exit_code=1

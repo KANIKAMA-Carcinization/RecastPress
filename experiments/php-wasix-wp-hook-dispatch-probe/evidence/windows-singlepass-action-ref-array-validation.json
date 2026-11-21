@@ -1,0 +1,48 @@
+{
+    "schema":  "recastpress.php-wasix-wp-hook-dispatch-windows-singlepass-action-ref-array-validation.v0.1",
+    "status":  "passed_negative_backend_validation",
+    "observed_at_utc":  "2026-11-21T02:50:05Z",
+    "tested_git_head":  "fae770dfcf336720609d8a841ad162a4cb3afbb5",
+    "validation_basis":  "Temporary isolated feature patch; restored before finalizing this receipt. The pinned PHP-WASIX artifact was read and rejected by module validation before guest start.",
+    "backend":  "Wasmer 7.2.0 Singlepass",
+    "temporary_patch":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-singlepass-backend.patch.b64",
+    "checks":  {
+                   "singlepass_host_check":  {
+                                                 "exit_code":  0,
+                                                 "command":  "cargo +1.94.0 check --no-default-features --features singlepass --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\\recastpress-singlepass-review"
+                                             },
+                   "singlepass_runner_build_and_attempt":  {
+                                                               "build_succeeded":  true,
+                                                               "runner_sha256":  "0403a00e108786d8ff02a65464e4e7b1bc1910c0cb724743a573dea0ec39189e",
+                                                               "command":  "\u003ctemp\u003e/recastpress-singlepass-review/debug/recastpress-wp-hook-dispatch-probe.exe action-ref-array",
+                                                               "exit_code":  1,
+                                                               "phases":  [
+                                                                              "PHP_WASIX_WP_HOOK_PHASE=artifact_read_start",
+                                                                              "PHP_WASIX_WP_HOOK_PHASE=artifact_read_done",
+                                                                              "PHP_WASIX_WP_HOOK_PHASE=module_compile_start"
+                                                                          ],
+                                                               "guest_started":  false,
+                                                               "failure":  "Validate(\"exceptions proposal not enabled (at offset 0xa044)\")",
+                                                               "capture":  "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-singlepass-action-ref-array-attempt.log",
+                                                               "capture_sha256":  "eda802a7b3d9d3dfb2d87010857b0975b98d02d780e752baf612f177e8e3abbc",
+                                                               "pinned_php_wasix_sha256":  "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
+                                                           }
+               },
+    "input_files_sha256":  {
+                               "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml":  "f0fdd14938bc49e629b3877ea8a0478560b6378da79c6b42f1454ffd65f664ad",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.lock":  "6764c6e6d650744bf8add40e6464c27b14e5daf9e27264c5240626218b779e92",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs":  "9010a5f45f810206cad802eda844a3a7eb20b403f508c922bb5aee01dd5c0012",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/README.runtime.ja.md":  "fe81f329b6dab41911c4cd41c65144a4b0b1fe59123dec64c24ab18403c92582",
+                               ".reference/php-wasix-8.5.12/php.wasm":  "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-singlepass-action-ref-array-attempt.log":  "eda802a7b3d9d3dfb2d87010857b0975b98d02d780e752baf612f177e8e3abbc",
+                               "experiments/php-wasix-wp-hook-dispatch-probe/evidence/windows-singlepass-backend.patch.b64":  "6372e44a292d6a864adaa86f755af96dd65c8c18d174b85556b9806dae8bbc86"
+                           },
+    "scope":  {
+                  "actual_php_wasm_execution":  false,
+                  "actual_php_wasix_execution":  false,
+                  "ci_checked":  false,
+                  "github_used":  false,
+                  "wsl_used":  false
+              },
+    "acceptance_note":  "Singlepass can compile the Rust runner but Wasmer 7.2.0 rejects the pinned PHP-WASIX exception proposal before guest start. The temporary backend change is not retained and does not provide a Windows workaround."
+}
