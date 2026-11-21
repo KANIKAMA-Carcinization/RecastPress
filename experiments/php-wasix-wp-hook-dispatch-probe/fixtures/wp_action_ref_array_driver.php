@@ -184,7 +184,7 @@ function recastpress_wp_dispatch_selected_action(
                     static fn (array $row): bool => !array_key_exists($row['uid'], $handles),
                 ));
                 if (count($newRows) !== 1
-                    || $newRows[0]['priority'] !== 7
+                    || $newRows[0]['priority'] !== 8
                     || $newRows[0]['uid'] !== 'rp_action_ref_array_added'
                     || $newRows[0]['accepted_args'] !== 2
                     || $newRows[0]['function'] !== 'rp_action_ref_array_added'
@@ -221,7 +221,7 @@ function recastpress_wp_dispatch_selected_action(
                 if ($ack['kind'] !== 'action_mutation_ack'
                     || $ack['payload']['target'] !== RP_ACTION_REF_ARRAY_TARGET
                     || $ack['payload']['uid'] !== $newRows[0]['uid']
-                    || $ack['payload']['priority'] !== 7
+                    || $ack['payload']['priority'] !== 8
                 ) {
                     throw new RuntimeException('wp_action_ref_array_mutation_ack_identity');
                 }
@@ -345,23 +345,30 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
     ];
     $value = 'value-mutated-by-first';
     $extra = 'extra-mutated-by-first';
-    add_action(RP_ACTION_REF_ARRAY_NAME, 'rp_action_ref_array_added', 7, 2);
+    if (isset($hook->callbacks[8]['rp_action_ref_array_added'])) {
+        throw new RuntimeException('wp_action_ref_array_direct_add_duplicate_entry');
+    }
+    $hook->callbacks[8]['rp_action_ref_array_added'] = [
+        'function' => 'rp_action_ref_array_added',
+        'accepted_args' => 2,
+    ];
     if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
         throw new RuntimeException('wp_action_ref_array_direct_unset_missing_entry');
     }
     unset($hook->callbacks[8]['rp_action_ref_array_pending']);
     $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
-    $emptyBucketRetained = array_key_exists(8, $hook->callbacks) && $hook->callbacks[8] === [];
+    $bucketUids = array_keys($hook->callbacks[8] ?? []);
     $priorityStillScheduled = in_array(8, $priorities, true);
     $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
         ['direct_table_edit'] = [
-            'operation' => 'unset_callback_entry',
-            'uid' => 'rp_action_ref_array_pending',
+            'operation' => 'replace_bucket_entries_directly',
+            'inserted_uid' => 'rp_action_ref_array_added',
+            'removed_uid' => 'rp_action_ref_array_pending',
             'priority' => 8,
-            'empty_bucket_retained' => $emptyBucketRetained,
+            'bucket_uids' => $bucketUids,
             'priority_still_scheduled' => $priorityStillScheduled,
         ];
-    if (!$emptyBucketRetained || !$priorityStillScheduled) {
+    if ($bucketUids !== ['rp_action_ref_array_added'] || !$priorityStillScheduled) {
         throw new RuntimeException('wp_action_ref_array_direct_unset_state');
     }
     return 'ignored-first-action-result';
@@ -466,17 +473,18 @@ try {
             'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 1,
             'current_priority' => 5, 'wp_hook_doing_action' => true,
             'direct_table_edit' => [
-                'operation' => 'unset_callback_entry',
-                'uid' => 'rp_action_ref_array_pending',
+                'operation' => 'replace_bucket_entries_directly',
+                'inserted_uid' => 'rp_action_ref_array_added',
+                'removed_uid' => 'rp_action_ref_array_pending',
                 'priority' => 8,
-                'empty_bucket_retained' => true,
+                'bucket_uids' => ['rp_action_ref_array_added'],
                 'priority_still_scheduled' => true,
             ],
         ],
         [
             'callback' => 'added', 'args' => ['value-mutated-by-first', 'extra-mutated-by-first'],
             'current_action' => RP_ACTION_REF_ARRAY_NAME, 'doing_action' => true, 'did_action' => 1,
-            'current_priority' => 7, 'wp_hook_doing_action' => true,
+            'current_priority' => 8, 'wp_hook_doing_action' => true,
         ],
         [
             'callback' => 'second', 'args' => ['value-mutated-by-added', 'extra-mutated-by-added'],

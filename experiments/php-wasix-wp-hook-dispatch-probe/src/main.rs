@@ -2421,7 +2421,7 @@ fn run_action_ref_array_dispatch(
                     ensure!(
                         reply["payload"]["target"] == "wp-action-ref-array-1"
                             && reply["payload"]["parent_uid"] == uid
-                            && row["priority"] == 7
+                            && row["priority"] == 8
                             && row["uid"] == "rp_action_ref_array_added"
                             && row["accepted_args"] == 2
                             && row["function"] == "rp_action_ref_array_added"
@@ -2453,7 +2453,7 @@ fn run_action_ref_array_dispatch(
                     callback_labels
                         .insert(added_uid.clone(), "rp_action_ref_array_added".to_string());
                     accepted_args_by_uid.insert(added_uid.clone(), 2);
-                    priorities_by_uid.insert(added_uid.clone(), 7);
+                    priorities_by_uid.insert(added_uid.clone(), 8);
                     let callback = ContextCallback::php_callable(
                         CallbackId {
                             module: "wordpress".into(),
@@ -2465,7 +2465,7 @@ fn run_action_ref_array_dispatch(
                     .map_err(|error| {
                         anyhow::anyhow!("added reference-array callback import: {error:?}")
                     })?;
-                    dispatcher.add_typed(&name, HookPriority::integer(7), callback);
+                    dispatcher.add_typed(&name, HookPriority::integer(8), callback);
                     imported_rows.push(row);
                     imported_rows.sort_by_key(|row| row["priority"].as_i64().unwrap_or_default());
                     let updated_projection: Vec<Value> = imported_rows
@@ -2493,7 +2493,7 @@ fn run_action_ref_array_dispatch(
                         writer,
                         out_seq,
                         "action_mutation_ack",
-                        json!({"target":"wp-action-ref-array-1","uid":added_uid,"priority":7}),
+                        json!({"target":"wp-action-ref-array-1","uid":added_uid,"priority":8}),
                         total_out,
                         &mut out_seq,
                     )?;
@@ -2779,10 +2779,11 @@ fn run_action_ref_array_dispatch(
                     {
                         "callback":"first", "args":["seed", "left"],
                         "direct_table_edit":{
-                            "operation":"unset_callback_entry",
-                            "uid":"rp_action_ref_array_pending",
+                            "operation":"replace_bucket_entries_directly",
+                            "inserted_uid":"rp_action_ref_array_added",
+                            "removed_uid":"rp_action_ref_array_pending",
                             "priority":8,
-                            "empty_bucket_retained":true,
+                            "bucket_uids":["rp_action_ref_array_added"],
                             "priority_still_scheduled":true
                         },
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
@@ -2791,7 +2792,7 @@ fn run_action_ref_array_dispatch(
                     {
                         "callback":"added", "args":["value-mutated-by-first", "extra-mutated-by-first"],
                         "current_action":"rp-probe-action-ref-array", "doing_action":true, "did_action":1,
-                        "current_priority":7, "wp_hook_doing_action":true
+                        "current_priority":8, "wp_hook_doing_action":true
                     },
                     {
                         "callback":"second", "args":["value-mutated-by-added", "extra-mutated-by-added"],

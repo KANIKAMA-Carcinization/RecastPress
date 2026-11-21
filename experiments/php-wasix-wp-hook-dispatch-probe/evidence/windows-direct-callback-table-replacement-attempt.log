@@ -1,0 +1,43 @@
+--- stdout ---
+
+--- stderr ---
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_start
+PHP_WASIX_WP_HOOK_PHASE=artifact_read_done
+PHP_WASIX_WP_HOOK_PHASE=module_compile_start
+
+thread '<unnamed>' (20160) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread '<unnamed>' (9044) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (27596) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (19628) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (26232) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (26612) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (4612) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (10388) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (25456) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (22096) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (26940) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0
+
+thread '<unnamed>' (7900) panicked at C:\Users\nodew\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cranelift-codegen-0.133.0\src\machinst\lower.rs:1107:74:
+index out of bounds: the len is 0 but the index is 0

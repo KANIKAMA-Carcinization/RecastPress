@@ -944,6 +944,82 @@ fn mutating_dispatcher(trace: Arc<Mutex<Vec<&'static str>>>) -> Dispatcher {
 }
 
 #[test]
+fn resumable_future_priority_bucket_add_remove_releases_after_dispatch_cleanup() {
+    let mut dispatcher = Dispatcher::new();
+    let mutator = callable_handle(930);
+    let pending = callable_handle(931);
+    let added = callable_handle(932);
+    let trace = Arc::new(Mutex::new(Vec::new()));
+    let tail_trace = Arc::clone(&trace);
+
+    dispatcher.add(
+        "direct-table-priority",
+        5,
+        DispatcherCallback::php_callable(id("mutator"), 0, mutator).unwrap(),
+    );
+    dispatcher.add(
+        "direct-table-priority",
+        8,
+        DispatcherCallback::php_callable(id("pending"), 0, pending).unwrap(),
+    );
+    dispatcher.add(
+        "direct-table-priority",
+        10,
+        DispatcherCallback::new(id("tail"), 0, move |_, _| {
+            tail_trace.lock().unwrap().push("tail");
+            Ok(PhpValue::Null)
+        }),
+    );
+
+    let name = HookArgument::bytes("direct-table-priority");
+    let ticket = dispatcher
+        .begin_action_after_counter_typed(&name, &[])
+        .unwrap();
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(ticket).unwrap() else {
+        panic!("priority-5 PHP callback should suspend the action")
+    };
+    assert_eq!(invocation.callback, id("mutator"));
+
+    dispatcher.add_typed(
+        &name,
+        HookPriority::integer(8),
+        DispatcherCallback::php_callable(id("added"), 0, added).unwrap(),
+    );
+    assert!(dispatcher.remove_typed(&name, &HookPriority::integer(8), &id("pending")));
+    dispatcher.resume_php(ticket, PhpValue::Null).unwrap();
+
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::ReleasePhp(pending)
+    );
+    dispatcher.resume_php_release(ticket, pending).unwrap();
+    let DispatchStep::InvokePhp(invocation) = dispatcher.advance(ticket).unwrap() else {
+        panic!("directly inserted priority-8 PHP callback should run")
+    };
+    assert_eq!(invocation.callback, id("added"));
+    dispatcher.resume_php(ticket, PhpValue::Null).unwrap();
+
+    assert_eq!(
+        dispatcher.advance(ticket).unwrap(),
+        DispatchStep::Complete(PhpValue::Null)
+    );
+    assert_eq!(*trace.lock().unwrap(), ["tail"]);
+    assert!(!dispatcher.has_at("direct-table-priority", 8, &id("pending")));
+    assert!(dispatcher.has_at("direct-table-priority", 8, &id("added")));
+    assert_eq!(dispatcher.hook_stack_depth(), 0);
+    dispatcher.remove_all_typed(&name, None);
+    let releases = dispatcher.take_php_releases();
+    assert!(
+        releases.contains(&mutator),
+        "missing mutator release: {releases:?}"
+    );
+    assert!(
+        releases.contains(&added),
+        "missing added row release: {releases:?}"
+    );
+}
+
+#[test]
 fn resumable_native_dispatch_matches_sync_all_and_named_binding_mutation() {
     let sync_trace = Arc::new(Mutex::new(Vec::new()));
     let mut sync = mutating_dispatcher(Arc::clone(&sync_trace));
