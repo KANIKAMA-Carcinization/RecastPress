@@ -222,7 +222,7 @@
     ],
     "exit_code": 0,
     "tests_passed": 39,
-    "stdout_sha256": "63a440980cf6b204fb8f3f2aa39a09734591275fae127b975ff38fec9dbf04ce",
+    "stdout_sha256": "cb5c9ba4de7969ec058651bb861c6e97a0778216774434b638f04b000fb77cb3",
     "stderr_bytes": 280,
     "scope": "host unit contracts including pinned catalog overlay replacement; no Wasm guest execution"
   }
