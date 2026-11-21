@@ -1,5 +1,5 @@
 {
-  "schema": "recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.2",
+  "schema": "recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.3",
   "passed": true,
   "outcome": "native_real_wp_hook_overlay_passed",
   "scope": "Pinned PHP 8.5.12 CLI + WordPress 7.1.3 plugin.php/WP_Hook overlay; original loop and overlay handoff observation comparison plus exact PHP adapter execution against a deterministic simulated Rust peer. No wp-settings.php bootstrap or PHP-Wasm guest.",
@@ -20,8 +20,8 @@
     },
     "adapter_fixture": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/hook_adapter_native_oracle.php",
-      "bytes": 19435,
-      "sha256": "716b0e34f5ce75178ce4618cfa1789e7a98a4d3ec867556f73bd9c02cb438d60"
+      "bytes": 23017,
+      "sha256": "30d1e0dd919e622799ec684ff85534d8dbfd9345420efe2cae344b6cab0115e8"
     },
     "adapter_sources": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/fixtures/hook_adapter.php",
@@ -60,7 +60,7 @@
     },
     "runner": {
       "path": "experiments/php-wasix-wp-bootstrap-probe/record_native_hook_overlay.py",
-      "sha256": "f526149b06f4b1c1cdb21ef3dd8b01e2924d42204d5065884aa86c173609e61c"
+      "sha256": "3515ac9cb54f5bcc6294b074cdb39b09892b623f8ad036cee67ca71047461175"
     },
     "host_sources": {
       "experiments/php-wasix-wp-bootstrap-probe/src/catalog.rs": "872af01b2af48e07eeb637dc3a9da8398635a90f7c52b6dcd97995db4e5fa8ed",
@@ -347,6 +347,50 @@
     },
     "temporary_cleanup": true
   },
+  "adapter_failure_native_oracle": {
+    "schema": "recastpress.wp-bootstrap-hook-adapter-native-oracle.v0.1",
+    "status": "passed",
+    "scenario": "bad-invoke",
+    "scope": "native adapter rejects a malformed first invoke, closes all PHP handles and aborts the channel. The failing WP_Hook iteration/filter stack remains active; this fixture terminates the PHP request and does not claim in-guest recovery.",
+    "failure": "hook_dispatch_invoke_contract",
+    "callback_count": 0,
+    "registry_closed": true,
+    "registry_live_handles_after": 0,
+    "channel_closed_without_close_operation": true,
+    "mock_peer_operations": [
+      {
+        "op": "begin",
+        "seq": 1
+      }
+    ],
+    "wp_current_filter_after_failure": [
+      "option_blogname"
+    ],
+    "hook_state_after_failure": {
+      "nesting_level": 1,
+      "iterations": [
+        [
+          10,
+          20
+        ]
+      ],
+      "current_priority": [],
+      "doing_action": false
+    },
+    "same_guest_recovery_verified": false,
+    "adapter_path_transform_count": 1,
+    "source_sha256": {
+      "adapter": "9e4c6c3cca280e94b7079f2dcf473b6b6ae941d7a4c9d358b6b68f2870bc1483",
+      "transformed_adapter": "63a53a55ea4f41be02648b63da68861808fa385396f6da744a9d33bed3043d14",
+      "handle_registry": "28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8",
+      "overlay_receipt": "73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360",
+      "overlay_files": {
+        "wp-includes/plugin.php": "db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c",
+        "wp-includes/class-wp-hook.php": "76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4"
+      }
+    },
+    "temporary_cleanup": true
+  },
   "execution": {
     "exit_code": 0,
     "stdout_bytes": 1578,
@@ -358,6 +402,15 @@
     "exit_code": 0,
     "stdout_bytes": 1758,
     "stdout_sha256": "b42b9104e6335659bf694edaacd45288f5cc4055061c5e24bba35bea09913a2d",
+    "stderr_bytes": 0,
+    "php_cli_mode": "-n",
+    "simulated_peer": true,
+    "wasm_executed": false
+  },
+  "adapter_failure_execution": {
+    "exit_code": 0,
+    "stdout_bytes": 1390,
+    "stdout_sha256": "cd5eef677da9209568099eb2b4a59b4b649146db68c90b6cc4f89a518a18b615",
     "stderr_bytes": 0,
     "php_cli_mode": "-n",
     "simulated_peer": true,
@@ -381,7 +434,7 @@
     ],
     "exit_code": 0,
     "tests_passed": 39,
-    "stdout_sha256": "91c1039a54f46b773e1f4c677b1322d0bf283a2adb2a3d2536a2f778accf66b8",
+    "stdout_sha256": "149f2167a590c846267c720148f93d871b71f495103f5a9c507359db024182e0",
     "stderr_bytes": 280,
     "scope": "host unit contracts including pinned catalog overlay replacement; no Wasm guest execution"
   }

@@ -16,6 +16,8 @@ const RP_ADAPTER_ORACLE_OVERLAY = [
 ];
 const RP_ADAPTER_ORACLE_SENTINEL = '68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c';
 
+final class RpBootstrapFailure extends RuntimeException {}
+
 function rp_adapter_oracle_emit(array $value): never
 {
     $value['temporary_cleanup'] = rp_adapter_oracle_cleanup();
@@ -62,6 +64,7 @@ final class RpAdapterOracleStream
     private array $observed = [];
 
     public static array $last = [];
+    public static string $scenario = 'normal';
 
     public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
     {
@@ -134,7 +137,8 @@ final class RpAdapterOracleStream
                     throw new RuntimeException('mock_begin_fingerprint');
                 }
                 $event = 'invoke';
-                $eventPayload = ['target' => 'rp-option-blogname-1', 'uid' => 'rp_boot_hook_first',
+                $target = self::$scenario === 'bad-invoke' ? 'rp-wrong-target' : 'rp-option-blogname-1';
+                $eventPayload = ['target' => $target, 'uid' => 'rp_boot_hook_first',
                     'priority' => 10, 'handle' => $this->handles['rp_boot_hook_first'], 'value' => 'RP Bootstrap Fixture',
                     'call_mode' => 'array', 'args' => ['RP Bootstrap Fixture']];
                 $this->phase = 1;
@@ -240,9 +244,13 @@ final class RpAdapterOracleStream
 }
 
 try {
-    if (PHP_SAPI !== 'cli' || $argc !== 1 || !stream_wrapper_register('recastpress-rp-hook-test', RpAdapterOracleStream::class)) {
+    $scenario = $argc === 1 ? 'normal'
+        : (($argc === 2 && $argv[1] === 'bad-invoke') ? 'bad-invoke' : '');
+    if (PHP_SAPI !== 'cli' || $scenario === ''
+        || !stream_wrapper_register('recastpress-rp-hook-test', RpAdapterOracleStream::class)) {
         throw new RuntimeException('entry_guard');
     }
+    RpAdapterOracleStream::$scenario = $scenario;
     $root = dirname(__DIR__, 2);
     $site = $root . DIRECTORY_SEPARATOR . 'target' . DIRECTORY_SEPARATOR . 'wp-bootstrap-probe' . DIRECTORY_SEPARATOR . 'site';
     $overlay = $root . DIRECTORY_SEPARATOR . 'experiments' . DIRECTORY_SEPARATOR . 'php-wasix-wp-hook-dispatch-probe'
@@ -303,7 +311,53 @@ try {
     $hook = $GLOBALS['wp_filter']['option_blogname'] ?? null;
     if (!$hook instanceof WP_Hook) { throw new RuntimeException('wp_hook_missing'); }
     $GLOBALS['rp_boot_hook_object'] = $hook;
-    $value = apply_filters('option_blogname', 'RP Bootstrap Fixture', 'blogname');
+    try {
+        $value = apply_filters('option_blogname', 'RP Bootstrap Fixture', 'blogname');
+    } catch (RpBootstrapFailure $failure) {
+        if ($scenario !== 'bad-invoke' || $failure->getMessage() !== 'hook_dispatch_invoke_contract') {
+            throw $failure;
+        }
+        $failedState = [
+            'nesting_level' => (new ReflectionProperty(WP_Hook::class, 'nesting_level'))->getValue($hook),
+            'iterations' => (new ReflectionProperty(WP_Hook::class, 'iterations'))->getValue($hook),
+            'current_priority' => (new ReflectionProperty(WP_Hook::class, 'current_priority'))->getValue($hook),
+            'doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook),
+        ];
+        if (($GLOBALS['rp_boot_hook_registry']->liveCount() ?? -1) !== 0
+            || !$GLOBALS['rp_boot_hook_registry']->isClosed()
+            || RpAdapterOracleStream::$last['closed'] !== true
+            || RpAdapterOracleStream::$last['operations'] !== [['op' => 'begin', 'seq' => 1]]
+            || ($GLOBALS['rp_boot_hook_trace'] ?? []) !== []
+            || current_filter() !== 'option_blogname' || !doing_filter('option_blogname')
+            || $GLOBALS['wp_current_filter'] !== ['option_blogname']
+            || $failedState !== ['nesting_level' => 1, 'iterations' => [[10, 20]],
+                'current_priority' => [], 'doing_action' => false]) {
+            throw new RuntimeException('adapter_failure_cleanup_observation_mismatch');
+        }
+        rp_adapter_oracle_emit([
+            'schema' => RP_ADAPTER_ORACLE_SCHEMA,
+            'status' => 'passed',
+            'scenario' => 'bad-invoke',
+            'scope' => 'native adapter rejects a malformed first invoke, closes all PHP handles and aborts the channel. The failing WP_Hook iteration/filter stack remains active; this fixture terminates the PHP request and does not claim in-guest recovery.',
+            'failure' => $failure->getMessage(),
+            'callback_count' => count($GLOBALS['rp_boot_hook_trace'] ?? []),
+            'registry_closed' => $GLOBALS['rp_boot_hook_registry']->isClosed(),
+            'registry_live_handles_after' => $GLOBALS['rp_boot_hook_registry']->liveCount(),
+            'channel_closed_without_close_operation' => RpAdapterOracleStream::$last['closed'] === true
+                && RpAdapterOracleStream::$last['operations'] === [['op' => 'begin', 'seq' => 1]],
+            'mock_peer_operations' => RpAdapterOracleStream::$last['operations'],
+            'wp_current_filter_after_failure' => $GLOBALS['wp_current_filter'],
+            'hook_state_after_failure' => $failedState,
+            'same_guest_recovery_verified' => false,
+            'adapter_path_transform_count' => $replacementCount,
+            'source_sha256' => ['adapter' => hash('sha256', $adapterBytes),
+                'transformed_adapter' => hash('sha256', $transformed),
+                'handle_registry' => hash('sha256', $registryBytes),
+                'overlay_receipt' => RP_ADAPTER_ORACLE_RECEIPT,
+                'overlay_files' => array_map(static fn(array $row): string => $row['overlay_sha256'], RP_ADAPTER_ORACLE_OVERLAY)],
+        ]);
+    }
+    if ($scenario !== 'normal') { throw new RuntimeException('expected_native_failure_missing'); }
     $events = $GLOBALS['rp_boot_hook_trace'] ?? [];
     $state = [
         'nesting_level' => (new ReflectionProperty(WP_Hook::class, 'nesting_level'))->getValue($hook),

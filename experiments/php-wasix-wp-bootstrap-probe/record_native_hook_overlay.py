@@ -111,6 +111,15 @@ def run():
             or not adapter_result.stdout.endswith(b'\n') or adapter_result.stdout.count(b'\n') != 1:
         raise ValueError('native_hook_adapter_execution')
     adapter_observation = json.loads(adapter_result.stdout)
+    adapter_failure_result = subprocess.run([str(PHP), '-n', str(ADAPTER_FIXTURE), 'bad-invoke'], cwd=ROOT,
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        timeout=30, check=False)
+    if adapter_failure_result.returncode != 0 or adapter_failure_result.stderr \
+            or len(adapter_failure_result.stdout) > 16384 \
+            or not adapter_failure_result.stdout.endswith(b'\n') \
+            or adapter_failure_result.stdout.count(b'\n') != 1:
+        raise ValueError('native_hook_adapter_failure_execution')
+    adapter_failure_observation = json.loads(adapter_failure_result.stdout)
     expected_operations = [
         {'op': 'begin', 'seq': 1}, {'op': 'resume', 'seq': 2}, {'op': 'resume', 'seq': 3},
         {'op': 'release_ack', 'seq': 4}, {'op': 'release_ack', 'seq': 5}, {'op': 'close', 'seq': 6},
@@ -132,6 +141,28 @@ def run():
             or adapter_observation.get('source_sha256', {}).get('handle_registry') != sha(handle_registry_source) \
             or adapter_observation.get('source_sha256', {}).get('overlay_receipt') != RECEIPT_SHA:
         raise ValueError('native_hook_adapter_contract')
+    expected_failed_state = {'nesting_level': 1, 'iterations': [[10, 20]],
+        'current_priority': [], 'doing_action': False}
+    if adapter_failure_observation.get('schema') != 'recastpress.wp-bootstrap-hook-adapter-native-oracle.v0.1' \
+            or adapter_failure_observation.get('status') != 'passed' \
+            or adapter_failure_observation.get('scenario') != 'bad-invoke' \
+            or adapter_failure_observation.get('failure') != 'hook_dispatch_invoke_contract' \
+            or adapter_failure_observation.get('callback_count') != 0 \
+            or adapter_failure_observation.get('registry_closed') is not True \
+            or adapter_failure_observation.get('registry_live_handles_after') != 0 \
+            or adapter_failure_observation.get('channel_closed_without_close_operation') is not True \
+            or adapter_failure_observation.get('mock_peer_operations') != [{'op': 'begin', 'seq': 1}] \
+            or adapter_failure_observation.get('wp_current_filter_after_failure') != ['option_blogname'] \
+            or adapter_failure_observation.get('hook_state_after_failure') != expected_failed_state \
+            or adapter_failure_observation.get('same_guest_recovery_verified') is not False \
+            or adapter_failure_observation.get('adapter_path_transform_count') != 1 \
+            or adapter_failure_observation.get('temporary_cleanup') is not True \
+            or adapter_failure_observation.get('source_sha256', {}).get('adapter') != sha(adapter_source) \
+            or adapter_failure_observation.get('source_sha256', {}).get('transformed_adapter') != sha(transformed_adapter) \
+            or adapter_failure_observation.get('source_sha256', {}).get('handle_registry') != sha(handle_registry_source) \
+            or adapter_failure_observation.get('source_sha256', {}).get('overlay_receipt') != RECEIPT_SHA \
+            or adapter_failure_observation.get('source_sha256', {}).get('overlay_files') != PATCHED:
+        raise ValueError('native_hook_adapter_failure_contract')
 
     cargo = subprocess.run(['cargo', 'test', '--manifest-path', str(HERE / 'Cargo.toml'),
         '--locked', '--offline'], cwd=ROOT, stdin=subprocess.DEVNULL,
@@ -173,7 +204,7 @@ def run():
         },
     }
     return {
-        'schema': 'recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.2',
+        'schema': 'recastpress.wp-bootstrap-real-hook-overlay-native-evidence.v0.3',
         'passed': True,
         'outcome': 'native_real_wp_hook_overlay_passed',
         'scope': 'Pinned PHP 8.5.12 CLI + WordPress 7.1.3 plugin.php/WP_Hook overlay; original loop and overlay handoff observation comparison plus exact PHP adapter execution against a deterministic simulated Rust peer. No wp-settings.php bootstrap or PHP-Wasm guest.',
@@ -186,6 +217,7 @@ def run():
         'unpatched_wordpress_oracle': baseline_observation,
         'cross_oracle_contract': cross_oracle,
         'adapter_native_oracle': adapter_observation,
+        'adapter_failure_native_oracle': adapter_failure_observation,
         'execution': {
             'exit_code': result.returncode,
             'stdout_bytes': len(result.stdout),
@@ -198,6 +230,15 @@ def run():
             'stdout_bytes': len(adapter_result.stdout),
             'stdout_sha256': sha(adapter_result.stdout),
             'stderr_bytes': len(adapter_result.stderr),
+            'php_cli_mode': '-n',
+            'simulated_peer': True,
+            'wasm_executed': False,
+        },
+        'adapter_failure_execution': {
+            'exit_code': adapter_failure_result.returncode,
+            'stdout_bytes': len(adapter_failure_result.stdout),
+            'stdout_sha256': sha(adapter_failure_result.stdout),
+            'stderr_bytes': len(adapter_failure_result.stderr),
             'php_cli_mode': '-n',
             'simulated_peer': True,
             'wasm_executed': False,
