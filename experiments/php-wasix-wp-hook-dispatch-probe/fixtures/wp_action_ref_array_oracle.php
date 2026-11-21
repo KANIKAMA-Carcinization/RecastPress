@@ -156,6 +156,48 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
         }
         return 'ignored-first-action-result';
     }
+    if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace') {
+        if (!isset($hook->callbacks[8]['rp_action_ref_array_pending'])) {
+            throw new RuntimeException('wp_action_ref_array_oracle_global_replace_missing_pending');
+        }
+        $hook->callbacks[8] = [];
+        $replacement = new WP_Hook();
+        $GLOBALS['wp_filter']['rp-probe-action-ref-array'] = $replacement;
+        add_action('rp-probe-action-ref-array', 'rp_action_ref_array_global_marker', 3, 2);
+        $hook->callbacks[8]['rp_action_ref_array_added'] = [
+            'function' => 'rp_action_ref_array_added',
+            'accepted_args' => 2,
+        ];
+        unset($hook->callbacks[8]['rp_action_ref_array_pending']);
+        $priorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($hook);
+        $replacementPriorities = (new ReflectionProperty(WP_Hook::class, 'priorities'))->getValue($replacement);
+        $GLOBALS['rp_action_ref_array_events'][array_key_last($GLOBALS['rp_action_ref_array_events'])]
+            ['direct_table_edit'] = [
+                'operation' => 'replace_global_wp_hook_while_old_receiver_runs',
+                'active_hook_is_global' => $hook === $GLOBALS['wp_filter']['rp-probe-action-ref-array'],
+                'old_priorities' => $priorities,
+                'global_priorities' => $replacementPriorities,
+                'old_added_priority' => $hook->has_filter('rp-probe-action-ref-array', 'rp_action_ref_array_added'),
+                'global_marker_priority' => has_action('rp-probe-action-ref-array', 'rp_action_ref_array_global_marker'),
+                'global_added_priority' => has_action('rp-probe-action-ref-array', 'rp_action_ref_array_added'),
+                'doing_action_from_stack' => doing_action('rp-probe-action-ref-array'),
+                'old_hook_private_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook),
+                'global_hook_private_doing_action' => (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($replacement),
+            ];
+        if ($hook === $replacement
+            || $priorities !== [1, 2, 5, 8, 10]
+            || $replacementPriorities !== [3]
+            || $hook->has_filter('rp-probe-action-ref-array', 'rp_action_ref_array_added') !== 8
+            || has_action('rp-probe-action-ref-array', 'rp_action_ref_array_global_marker') !== 3
+            || has_action('rp-probe-action-ref-array', 'rp_action_ref_array_added') !== false
+            || !doing_action('rp-probe-action-ref-array')
+            || !(new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($hook)
+            || (new ReflectionProperty(WP_Hook::class, 'doing_action'))->getValue($replacement)
+        ) {
+            throw new RuntimeException('wp_action_ref_array_oracle_global_replace_state');
+        }
+        return 'ignored-first-action-result';
+    }
     if (isset($hook->callbacks[8]['rp_action_ref_array_added'])) {
         throw new RuntimeException('wp_action_ref_array_oracle_direct_add_duplicate_entry');
     }
@@ -188,6 +230,11 @@ function rp_action_ref_array_first(string &$value, string &$extra): string
 function rp_action_ref_array_pending(string &$value, string &$extra): void
 {
     throw new RuntimeException('wp_action_ref_array_oracle_removed_callback_invoked');
+}
+
+function rp_action_ref_array_global_marker(string &$value, string &$extra): void
+{
+    throw new RuntimeException('wp_action_ref_array_oracle_global_marker_should_not_run_in_old_iteration');
 }
 
 function rp_action_ref_array_added(string &$value, string &$extra): void
@@ -292,7 +339,20 @@ $expected = [
     'wp_hook_doing_action' => false,
     'current_priority' => false,
 ];
-if ($emptyBucketAddActionMode) {
+if ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace') {
+    $expected['events'][3]['direct_table_edit'] = [
+        'operation' => 'replace_global_wp_hook_while_old_receiver_runs',
+        'active_hook_is_global' => false,
+        'old_priorities' => [1, 2, 5, 8, 10],
+        'global_priorities' => [3],
+        'old_added_priority' => 8,
+        'global_marker_priority' => 3,
+        'global_added_priority' => false,
+        'doing_action_from_stack' => true,
+        'old_hook_private_doing_action' => true,
+        'global_hook_private_doing_action' => false,
+    ];
+} elseif ($emptyBucketAddActionMode) {
     $expected['events'][3]['direct_table_edit'] = [
         'operation' => 'empty_bucket_then_add_action',
         'removed_uid' => 'rp_action_ref_array_pending',
@@ -339,11 +399,13 @@ if ($observation !== $expected) {
 
 echo json_encode([
     'status' => 'passed',
-    'scenario' => $emptyBucketAddActionMode
+    'scenario' => $GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-global-replace'
+        ? 'wp_action_ref_array_global_replace_native_oracle'
+        : ($emptyBucketAddActionMode
         ? 'wp_action_ref_array_empty_bucket_add_action_native_oracle'
         : ($emptyBucketReinsertMode
         ? 'wp_action_ref_array_empty_bucket_reinsert_native_oracle'
-        : ($emptyBucketMode ? 'wp_action_ref_array_empty_bucket_native_oracle' : 'wp_action_ref_array_native_oracle')),
+        : ($emptyBucketMode ? 'wp_action_ref_array_empty_bucket_native_oracle' : 'wp_action_ref_array_native_oracle'))),
     'wordpress' => '7.1.3',
     'source_sha256' => [
         'wp-includes/plugin.php' => $pinned[$root . '/wp-includes/plugin.php'],

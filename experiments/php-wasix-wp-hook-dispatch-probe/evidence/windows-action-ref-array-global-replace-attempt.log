@@ -1,0 +1,5 @@
+Command: cargo +1.94.0 run --quiet --offline --locked --manifest-path experiments/php-wasix-wp-hook-dispatch-probe/Cargo.toml --target-dir %TEMP%\recastpress-hook-dispatch-review -- action-ref-array-global-replace
+Observed phases: artifact_read_start, artifact_read_done, module_compile_start
+Exit code: 1
+Failure: cranelift-codegen 0.133.0 machinst/lower.rs:1107:74 panic, index out of bounds: len is 0 but index is 0
+Boundary: before PHP-WASM guest start; no actual guest execution is claimed

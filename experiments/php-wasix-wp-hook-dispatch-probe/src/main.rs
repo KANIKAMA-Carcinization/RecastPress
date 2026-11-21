@@ -2196,6 +2196,8 @@ fn run_action_ref_array_dispatch(
         == Some("action-ref-array-empty-bucket-reinsert");
     let empty_bucket_add_action_mode = std::env::args().nth(1).as_deref()
         == Some("action-ref-array-empty-bucket-add-action");
+    let global_replace_mode =
+        std::env::args().nth(1).as_deref() == Some("action-ref-array-global-replace");
     let deadline = Instant::now() + TIMEOUT;
     let start = read_frame(reader, deadline, total_in, 0)?;
     expect_frame(
@@ -2867,6 +2869,19 @@ fn run_action_ref_array_dispatch(
                         "bucket_uids":["rp_action_ref_array_added"],
                         "priority_still_scheduled":true,
                         "priority_occurrences":1
+                    });
+                } else if global_replace_mode {
+                    expected_events[3]["direct_table_edit"] = json!({
+                        "operation":"replace_global_wp_hook_while_old_receiver_runs",
+                        "active_hook_is_global":false,
+                        "old_priorities":[1,2,5,8,10],
+                        "global_priorities":[3],
+                        "old_added_priority":8,
+                        "global_marker_priority":3,
+                        "global_added_priority":false,
+                        "doing_action_from_stack":true,
+                        "old_hook_private_doing_action":true,
+                        "global_hook_private_doing_action":false
                     });
                 }
                 let final_projection: Vec<Value> = imported_rows
@@ -4466,10 +4481,13 @@ fn main() -> Result<()> {
         == Some("action-ref-array-empty-bucket-reinsert");
     let action_ref_array_empty_bucket_add_action_mode = std::env::args().nth(1).as_deref()
         == Some("action-ref-array-empty-bucket-add-action");
+    let action_ref_array_global_replace_mode =
+        std::env::args().nth(1).as_deref() == Some("action-ref-array-global-replace");
     let action_ref_array_mode = std::env::args().nth(1).as_deref() == Some("action-ref-array")
         || action_ref_array_empty_bucket_mode
         || action_ref_array_empty_bucket_reinsert_mode
-        || action_ref_array_empty_bucket_add_action_mode;
+        || action_ref_array_empty_bucket_add_action_mode
+        || action_ref_array_global_replace_mode;
     let action_throwable_mode = std::env::args().nth(1).as_deref() == Some("action-throwable");
     let action_nested_mode = std::env::args().nth(1).as_deref() == Some("action-nested");
     let action_mutation_mode = std::env::args().nth(1).as_deref() == Some("action-mutation");
@@ -4729,7 +4747,7 @@ fn main() -> Result<()> {
     );
     println!(
         "{}",
-        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_empty_bucket_add_action_mode {"action-ref-array-empty-bucket-add-action"} else if action_ref_array_empty_bucket_reinsert_mode {"action-ref-array-empty-bucket-reinsert"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
+        json!({"status":"passed","scenario":if action_same_priority_mode {"action-deferred-add"} else if action_remove_all_mode {"action-remove-all"} else if action_removal_mode {"action-removal"} else if action_mutation_mode {"action-mutation"} else if action_nested_mode {"action-nested"} else if action_throwable_mode {"action-throwable"} else if action_ref_array_global_replace_mode {"action-ref-array-global-replace"} else if action_ref_array_empty_bucket_add_action_mode {"action-ref-array-empty-bucket-add-action"} else if action_ref_array_empty_bucket_reinsert_mode {"action-ref-array-empty-bucket-reinsert"} else if action_ref_array_empty_bucket_mode {"action-ref-array-empty-bucket"} else if action_ref_array_mode {"action-ref-array"} else if action_mode {"action"} else if ref_array_mode {"ref-array"} else {"filter"},"php_wasm_sha256":PHP_SHA256,"php_wasm_bytes":PHP_BYTES,"overlay_files":FILES.iter().map(|(n,b)|json!({"path":n,"sha256":sha256(b)})).collect::<Vec<_>>(),"observation":observed})
     );
     Ok(())
 }
@@ -4806,6 +4824,10 @@ fn run_guest(
                 == Some("action-ref-array-empty-bucket-add-action")
             {
                 "action-ref-array-empty-bucket-add-action".to_string()
+            } else if std::env::args().nth(1).as_deref()
+                == Some("action-ref-array-global-replace")
+            {
+                "action-ref-array-global-replace".to_string()
             } else {
                 "action-ref-array".to_string()
             },
