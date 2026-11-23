@@ -19,6 +19,7 @@ WORK = ROOT / 'target/wpdb-rpc-probe'
 WORKSPACE = WORK / 'workspace'
 TARGET = WORK / 'cargo-target'
 PLAN = HERE / 'driver-plan.json'
+LEGACY_SEED = HERE / 'fixtures/binlog-Cargo.lock.v0.5'
 CARGO_HOME = Path(os.environ.get('CARGO_HOME', str(Path.home() / '.cargo'))).resolve()
 MANIFEST = b'''[workspace]
 members = ["source/mysql_async-0.37.1"]
@@ -73,7 +74,19 @@ def load_plan():
     require([r['path'] for r in plan['patch']['files']] == ['src/conn/mod.rs', 'src/opts/mod.rs'], 'exact patched source set')
     for key in ['cargo_manifest', 'cargo_lock']:
         path = ROOT.joinpath(*relative(plan['existing_reference'][key]))
-        require(sha(read_fixed(path, 1024 * 1024)) == plan['existing_reference'][key + '_sha256'], 'existing reference changed')
+        wire = read_fixed(path, 1024 * 1024)
+        expected = plan['existing_reference'][key + '_sha256']
+        if sha(wire) == expected:
+            continue
+        require(key == 'cargo_lock', 'existing reference changed')
+        old = read_fixed(LEGACY_SEED, 1024 * 1024)
+        require(sha(old) == expected, 'historical v0.5 seed changed')
+        # Only the two first-party package versions may differ from the v0.5 plan.
+        expected_v06, replacements = re.subn(
+            rb'^(\[\[package\]\]\nname = "recastpress-(?:core|db)"\nversion = ")0\.5\.0(?="$)',
+            rb'\g<1>0.6.0', old, flags=re.MULTILINE)
+        require(replacements == 2 and wire == expected_v06,
+            'existing reference changed beyond v0.6 internal package version delta')
     return plan
 
 

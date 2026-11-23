@@ -78,7 +78,7 @@ def verify_fixture():
 
 
 CLI_ORACLE = ROOT / 'experiments/php-runtime-candidate-probe/evidence/native-contract.json'
-CLI_ORACLE_SHA256 = '10265c9acf7935f09678911d43e3093c62bbcec868d0b236fed3714d8be7b0b2'
+CLI_ORACLE_SHA256 = '0798461b6ad073fab0f1b16553f09f551d5eab65bd1862a4d50ad8daf8845307'
 ORDINARY = native.ORDINARY
 READONLY = native.READONLY
 

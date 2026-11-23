@@ -78,8 +78,8 @@ def inputs():
     paths = [p for p in HERE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
         and p.relative_to(HERE).parts[0] != 'target'
         and p.name != 'import_evidence.py'
-        and (p.suffix in ('.rs', '.php', '.py', '.toml') or p.name == 'Cargo.lock')]
-    paths += derivation.inputs()
+        and (p.suffix in ('.rs', '.php', '.py', '.sh', '.toml') or p.name == 'Cargo.lock')]
+    paths += [*derivation.inputs(), driver.LEGACY_SEED]
     paths += [ROOT / p for p in prepared.input_hashes()]
     paths += [ROOT / p for p in sourcefs.inputs()]
     paths += [ROOT / p for p in managed.source_hashes()]

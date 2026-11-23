@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 
+from hook_oracle_contract import validate as compare_native_hook_oracles
+
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -171,6 +173,8 @@ def compare_hook_oracle(php,native_hook):
         and [event['callback'] for event in actual_trace]==native_hook['event_order'],
         'native_wasm_hook_order_differs')
     native_reset=native_hook['after_dispatch']
+    require(hook.get('wp_hook_state')==native_reset['hook_state'],
+        'native_wasm_wp_hook_state_differs')
     wasm_reset=hook.get('after_dispatch')
     wasm_after_count=wasm_reset.get('did_filter') if isinstance(wasm_reset,dict) else None
     require(isinstance(wasm_after_count,int) and not isinstance(wasm_after_count,bool)
@@ -200,7 +204,8 @@ def compare_hook_oracle(php,native_hook):
             'native_reset_did_filter':native_reset.get('did_filter'),
             'wasm_reset_did_filter':wasm_after_count,
             'normalized_reset_did_filter':normalized_wasm_reset['did_filter'],
-            'trace_equal':True,'reset_equal':True,'current_filter_reset_false':True}}
+            'trace_equal':True,'reset_equal':True,'wp_hook_state_equal':True,
+            'current_filter_reset_false':True}}
 
 
 def validate(value,mode,native,native_hook):
@@ -331,10 +336,12 @@ def main():
         native_hook_overlay,native_hook_overlay_execution=native_hook_overlay_oracle()
         report['native_hook_overlay_oracle']=native_hook_overlay
         report['native_hook_overlay_oracle_execution']=native_hook_overlay_execution
+        report['native_hook_cross_oracle']=compare_native_hook_oracles(native_hook,native_hook_overlay)
         stage='hook_failure_cleanup'
         hook_failure_cleanup,hook_failure_cleanup_execution=native_hook_failure_cleanup()
         report['hook_failure_cleanup']=hook_failure_cleanup
         report['hook_failure_cleanup_execution']=hook_failure_cleanup_execution
+        stage='database_startup'
         database=linux.Database(args.backend,report)
         with database:
             for mode in ['install','read']:

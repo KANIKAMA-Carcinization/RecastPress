@@ -6,6 +6,7 @@ final class RpBootstrapFailure extends RuntimeException
 }
 
 require __DIR__ . '/../fixtures/hook_adapter.php';
+require dirname(__DIR__, 3) . '/target/wp-bootstrap-probe/site/wp-includes/plugin.php';
 
 final class RpBootstrapRecordingHookChannel extends RpBootstrapHookChannel
 {
@@ -18,43 +19,51 @@ final class RpBootstrapRecordingHookChannel extends RpBootstrapHookChannel
     }
 }
 
-$registry = new \RecastPress\V06\Handles\HandleRegistry('1');
-$handles = [
-    'rp_boot_hook_first' => $registry->retainCallable('rp_boot_hook_first'),
-    'rp_boot_hook_second' => $registry->retainCallable('rp_boot_hook_second'),
-];
+function rp_test_failed_dispatch(
+    RpBootstrapHookChannel $channel,
+    \RecastPress\V06\Handles\HandleRegistry $registry,
+): void {
+    remove_all_filters(RP_BOOT_HOOK_NAME);
+    add_filter(RP_BOOT_HOOK_NAME, 'rp_boot_hook_first', 10, 1);
+    add_filter(RP_BOOT_HOOK_NAME, 'rp_boot_hook_second', 20, 1);
+    $hook = $GLOBALS['wp_filter'][RP_BOOT_HOOK_NAME];
+    $GLOBALS['rp_boot_hook_object'] = $hook;
+    $GLOBALS['rp_boot_hook_registry'] = $registry;
+    $GLOBALS['rp_boot_hook_channel'] = $channel;
+    $GLOBALS['rp_boot_hook_dispatched'] = false;
+    $GLOBALS['rp_boot_hook_exported_handles'] = [];
+    $syncAttempted = false;
+    try {
+        recastpress_wp_dispatch_selected_hook(
+            RP_BOOT_HOOK_NAME,
+            $hook,
+            'RP Bootstrap Fixture',
+            ['RP Bootstrap Fixture', 'blogname'],
+            0,
+            static function () use (&$syncAttempted): bool {
+                $syncAttempted = true;
+                return false;
+            },
+        );
+        throw new RuntimeException('failure_injection_not_triggered');
+    } catch (RpBootstrapFailure $failure) {
+        if ($failure->getMessage() !== 'hook_dispatch_begin' || $syncAttempted
+            || array_keys($GLOBALS['rp_boot_hook_exported_handles']) !== [
+                'rp_boot_hook_first', 'rp_boot_hook_second',
+            ]) {
+            throw new RuntimeException('failure_stage_changed');
+        }
+    }
+}
 
+$registry = new \RecastPress\V06\Handles\HandleRegistry(RP_BOOT_HOOK_HANDLE_REQUEST);
 $channelClass = new ReflectionClass(RpBootstrapHookChannel::class);
 $channel = $channelClass->newInstanceWithoutConstructor();
 $stream = fopen('php://memory', 'r+');
 $channelClass->getProperty('stream')->setValue($channel, $stream);
 
-$hookClass = new ReflectionClass(RpBootstrapDispatcherHook::class);
-$hook = $hookClass->newInstanceWithoutConstructor();
-$hook->callbacks = [
-    10 => ['rp_boot_hook_first' => [
-        'function' => 'rp_boot_hook_first',
-        'accepted_args' => 1,
-    ]],
-    20 => ['rp_boot_hook_second' => [
-        'function' => 'rp_boot_hook_second',
-        'accepted_args' => 1,
-    ]],
-];
-$hookClass->getProperty('registry')->setValue($hook, $registry);
-$hookClass->getProperty('channel')->setValue($hook, $channel);
-$hookClass->getProperty('handles')->setValue($hook, $handles);
-
-try {
-    // The channel's nonce is intentionally uninitialized so begin fails inside
-    // the adapter's guarded dispatch path before it can write a protocol frame.
-    $hook->apply_filters('RP Bootstrap Fixture', ['RP Bootstrap Fixture', 'blogname']);
-    throw new RuntimeException('failure_injection_not_triggered');
-} catch (RpBootstrapFailure $failure) {
-    if ($failure->getMessage() !== 'hook_dispatch_begin') {
-        throw new RuntimeException('failure_stage_changed');
-    }
-}
+// The nonce is intentionally uninitialized, so begin fails before writing.
+rp_test_failed_dispatch($channel, $registry);
 
 if (!$registry->isClosed() || $registry->liveCount() !== 0
     || $channelClass->getProperty('closed')->getValue($channel) !== true
@@ -67,30 +76,13 @@ $channel->abort();
 
 // With a valid nonce, begin reaches the transport; force its write to fail and
 // assert catch cleanup closes locally without attempting a protocol `close`.
-$failureRegistry = new \RecastPress\V06\Handles\HandleRegistry('2');
-$failureHandles = [
-    'rp_boot_hook_first' => $failureRegistry->retainCallable('rp_boot_hook_first'),
-    'rp_boot_hook_second' => $failureRegistry->retainCallable('rp_boot_hook_second'),
-];
+$failureRegistry = new \RecastPress\V06\Handles\HandleRegistry(RP_BOOT_HOOK_HANDLE_REQUEST);
 $failureChannel = (new ReflectionClass(RpBootstrapRecordingHookChannel::class))
     ->newInstanceWithoutConstructor();
 $failureStream = fopen('php://memory', 'r+');
 $channelClass->getProperty('nonce')->setValue($failureChannel, str_repeat('a', 48));
 $channelClass->getProperty('stream')->setValue($failureChannel, $failureStream);
-$failureHook = (new ReflectionClass(RpBootstrapDispatcherHook::class))
-    ->newInstanceWithoutConstructor();
-$failureHook->callbacks = $hook->callbacks;
-$hookClass->getProperty('registry')->setValue($failureHook, $failureRegistry);
-$hookClass->getProperty('channel')->setValue($failureHook, $failureChannel);
-$hookClass->getProperty('handles')->setValue($failureHook, $failureHandles);
-try {
-    $failureHook->apply_filters('RP Bootstrap Fixture', ['RP Bootstrap Fixture', 'blogname']);
-    throw new RuntimeException('transport_failure_not_triggered');
-} catch (RpBootstrapFailure $failure) {
-    if ($failure->getMessage() !== 'hook_dispatch_begin') {
-        throw new RuntimeException('transport_failure_stage_changed');
-    }
-}
+rp_test_failed_dispatch($failureChannel, $failureRegistry);
 if (!$failureRegistry->isClosed() || $failureRegistry->liveCount() !== 0
     || $channelClass->getProperty('closed')->getValue($failureChannel) !== true
     || is_resource($failureStream) || $failureChannel->operations !== ['begin']) {

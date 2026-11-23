@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "schema": "recastpress.php-wasix-cgi-runtime-native.v0.5",
-  "observed_at_utc": "2026-11-01T16:33:32.533238+00:00",
+  "observed_at_utc": "2026-11-19T20:17:03.621432+00:00",
   "role": "native CGI runtime PHP comparison oracle only; never a Wasm or production fallback",
   "platform": {
     "system": "Windows",
@@ -51,13 +51,13 @@
     "No exception stack traces, object IDs or absolute source locations are published."
   ],
   "input_files": {
-    "experiments/php-wasix-cgi-runtime-probe/native_contract.py": "4981126bf27b3750fa623f520d865d6617b50aa3e499dc8c6f9b94e6132b6ada",
+    "experiments/php-wasix-cgi-runtime-probe/native_contract.py": "efb130dd0fea60a577f14350fb17a78a2b8912b7069d34498b1525c9a8430881",
     "experiments/php-wasix-fiber-probe/native_contract.py": "14e768a301284cb462d526491af39448a580391584052430571f4d2469850f08",
     "experiments/php-runtime-candidate-probe/fixtures/runtime_contract.php": "5ab341e1207fc6bfb8634758bc38b6af7f6b60ba3c621c8acf52b603e5023080",
     "experiments/php-wasix-cgi-runtime-probe/fixtures/runtime_cgi_contract.php": "9690cbe445386e7a779bf6ec2719f17953c9f818ae1e220bdd17a3ea2230d8f1",
-    "experiments/php-runtime-candidate-probe/evidence/native-contract.json": "10265c9acf7935f09678911d43e3093c62bbcec868d0b236fed3714d8be7b0b2",
+    "experiments/php-runtime-candidate-probe/evidence/native-contract.json": "0798461b6ad073fab0f1b16553f09f551d5eab65bd1862a4d50ad8daf8845307",
     "experiments/php-runtime-candidate-probe/native_contract.py": "d4b7268982df8cc9c223d7610cc2c0242db05f18f5ed65f470ed143639807b82",
-    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-wasi-host-probe/wordpress-fixture.json": "f25b298591e266cb2eaa8001807ff89aff44c60d46bade4224f7834ba0385543"
   },
   "native_reference": {
@@ -273,7 +273,7 @@
     "-d",
     "register_argc_argv=0"
   ],
-  "owned_process_pid": 22948,
+  "owned_process_pid": 31888,
   "exit_code": 0,
   "stdout_eof": true,
   "stderr_eof": true,

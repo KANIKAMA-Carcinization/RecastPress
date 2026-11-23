@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "observed_at_utc": "2026-11-01T09:12:57.764786+00:00",
+  "observed_at_utc": "2026-11-19T20:15:58.526635+00:00",
   "role": "native PHP comparison reference only; not a production fallback",
   "wasm_executed": false,
   "platform": {
@@ -10,7 +10,7 @@
   "input_files": {
     "experiments/php-runtime-candidate-probe/native_contract.py": "d4b7268982df8cc9c223d7610cc2c0242db05f18f5ed65f470ed143639807b82",
     "experiments/php-runtime-candidate-probe/fixtures/runtime_contract.php": "5ab341e1207fc6bfb8634758bc38b6af7f6b60ba3c621c8acf52b603e5023080",
-    "scripts/owned_probe.py": "b372f65a9fcedc2c3f498d747c5c2886ac662069124315d661edc3a615d20761",
+    "scripts/owned_probe.py": "a8a8d139b2dd71ea37af9520acd0fafafd15ee5e15c1658900f3c94bd7860ed4",
     "experiments/php-wasi-host-probe/wordpress-fixture.json": "f25b298591e266cb2eaa8001807ff89aff44c60d46bade4224f7834ba0385543"
   },
   "native_reference": {
@@ -117,7 +117,7 @@
       }
     }
   },
-  "owned_process_pid": 21036,
+  "owned_process_pid": 14368,
   "observation": {
     "format_version": 1,
     "runtime": {
