@@ -1,6 +1,7 @@
 /target/
 **/target/
 /.reference/
+/local-resources/
 __pycache__/
 .env
 .env.*

@@ -24,6 +24,16 @@ mainには試作コードや未決の設計詳細を入れず、共通部分へ�
 
 ブランチ分割前のREADMEは、設計・実装ブランチの `docs/history/README.before-branch-split.txt` に保持する。実装由来の出典・検証履歴は、実装ブランチの `NOTICE.md` と対応する記録を参照する。
 
+## インストールとデモ
+
+- [Macで公開ページのデモを起動する](docs/local-demo-macos.ja.md)。Docker DesktopとGitの準備から、ビルド、ブラウザでの確認、停止まで。
+- [M1 Macでエージェントにデモ構築を依頼する](docs/local-demo-macos-agent.ja.md)。環境確認と結果の報告を含む実行手順。
+- [LinuxでPHP-WASIX上のWordPressを起動する](docs/demo-full-wp-bootstrap-hook.ja.md)。MariaDBへの新規インストールと、別プロセスからの読み取りを検証する。
+
+## リソースの管理
+
+インストール・再現手順、サンプル、ビルドや検証の入力、文書から参照する検証証跡、採用ロゴとその再生成に必要な資料はGitで管理する。発表スライド、スライド制作中のファイル、手元で保管する試行ログとキャプチャは `local-resources/` にまとめる。
+
 ## ライセンスとロゴ
 
 本体のライセンス方針はGPL-2.0-or-later。[LICENSE](LICENSE)と[NOTICE.md](NOTICE.md)を参照。以前のGPLv3本文は `LICENSES/GPL-3.0.txt` に保持する。
