@@ -15,6 +15,13 @@ python3 -B scripts/run_local_wasix_wp_boot.py --mariadb-root /path/to/extracted/
 
 既定の結果ファイルは `target/php-wasix-wp-bootstrap-probe/local-wp-boot.json`。成功時に `install` と `read` の両方で CGI 200、ネイティブ観測との一致、WP フックの状態リセット、DB 接続の切断を記録する。[ローカル起動ハーネス](../scripts/run_local_wasix_wp_boot.py)
 
+固定 MySQL 8.4.13でも、公式署名を照合して展開した Linux バイナリと、その環境で必要な共有ライブラリを用意すれば同じ検査を実行できる。DB は一時領域に初期化し、ループバックで起動する。`--report` で MariaDB と別の結果ファイルを指定する。
+
+```sh
+python3 -B scripts/run_local_wasix_wp_boot.py --mysql-root /path/to/extracted/mysql-8.4.13 \
+  --report target/php-wasix-wp-bootstrap-probe/local-wp-boot-mysql.json
+```
+
 ## Docker を使った統合検証
 
 起動ワークフローはダイジェストで固定した MySQL と MariaDB で実行する。現行の実 `WP_Hook` オーバーレイの結果は、対象コミットの run に紐づく `linux-mysql.json` と `linux-mariadb.json` で確認する。ローカル MariaDB の証跡では、独立したローカルプロセスでの起動を確認している。[GitHub Actions の実行一覧](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/workflows/php-wasix-wp-bootstrap.yml)

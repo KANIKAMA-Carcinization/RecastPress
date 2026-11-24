@@ -228,12 +228,13 @@ function recastpress_wp_dispatch_selected_action(
                         'handle' => $addedHandle,
                     ];
                     $exported[] = $added;
+                    // Preserve insertion order within a priority in the wire fingerprint.
                     usort(
                         $exported,
-                        static fn (array $left, array $right): int => [$left['priority'], $left['uid']] <=> [$right['priority'], $right['uid']],
+                        static fn (array $left, array $right): int => $left['priority'] <=> $right['priority'],
                     );
                     $expectedRows = $current;
-            $GLOBALS['rp_action_ref_array_handles_by_pass'][$pass] = $handles;
+                    $GLOBALS['rp_action_ref_array_handles_by_pass'][$pass] = $handles;
                     $wire->send('action_callback_added', [
                         'target' => RP_ACTION_REF_ARRAY_TARGET,
                         'parent_uid' => $payload['uid'],
@@ -728,6 +729,15 @@ try {
                 'current_priority' => 3, 'wp_hook_doing_action' => true,
             ];
         }
+    } elseif ($GLOBALS['rp_action_ref_array_scenario'] === 'action-ref-array-empty-bucket-reinsert') {
+        $expected[3]['direct_table_edit'] = [
+            'operation' => 'empty_bucket_then_insert_callback_directly',
+            'removed_uid' => 'rp_action_ref_array_pending',
+            'inserted_uid' => 'rp_action_ref_array_added',
+            'priority' => 8,
+            'bucket_uids' => ['rp_action_ref_array_added'],
+            'priority_still_scheduled' => true,
+        ];
     } elseif ($emptyBucketAddActionMode) {
         $expected[3]['direct_table_edit'] = [
             'operation' => 'empty_bucket_then_add_action',

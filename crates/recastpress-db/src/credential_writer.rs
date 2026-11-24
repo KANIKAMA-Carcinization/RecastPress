@@ -5,7 +5,7 @@
 //! Stable InnoDB schema/no triggers is the supported scope; value equality is
 //! not an ABA-safe revision, source identity or arbitrary DDL/trigger guarantee.
 
-use super::{INCOMPATIBLE_SQL_MODES, Table, TablePrefix, UserRow};
+use super::{INCOMPATIBLE_SQL_MODES, Table, TablePrefix, UserRow, table_engine};
 use sqlx::{
     ConnectOptions, MySql, MySqlPool, QueryBuilder, Row, Transaction,
     mysql::{MySqlConnectOptions, MySqlPoolOptions, MySqlRow},
@@ -223,9 +223,10 @@ impl EditingCredentialWriter {
         // The table read obtains metadata protection. Stable-schema scope;
         // nontransactional tables must be rejected before any UPDATE.
         let name = self.prefix.raw_table(Table::Users);
-        let engine: Option<(Option<String>,)> = sqlx::query_as("SELECT ENGINE FROM information_schema.TABLES WHERE (@@lower_case_table_names=0 AND CAST(TABLE_SCHEMA AS BINARY)=CAST(DATABASE() AS BINARY) AND CAST(TABLE_NAME AS BINARY)=CAST(? AS BINARY)) OR (@@lower_case_table_names<>0 AND TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?)")
-            .bind(&name).bind(&name).fetch_optional(&mut **tx).await.map_err(|_| UserCredentialWriteError::Database)?;
-        if !matches!(engine, Some((Some(engine),)) if engine.eq_ignore_ascii_case("InnoDB")) {
+        let engine = table_engine(tx, &name)
+            .await
+            .map_err(|_| UserCredentialWriteError::Database)?;
+        if !matches!(engine, Some(Some(engine)) if engine.eq_ignore_ascii_case("InnoDB")) {
             return Err(UserCredentialWriteError::Database);
         }
         let decision = admit(current.as_ref(), expected, replacement);

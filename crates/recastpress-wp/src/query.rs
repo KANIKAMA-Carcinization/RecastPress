@@ -1,10 +1,104 @@
-//! Selected parse_str grammar for explicit callers, not an HTTP request parser.
+//! Selected PHP query-string grammar and WordPress public query variables.
 
 use crate::{
     CompatibilityError,
+    numbers::supported_integer,
     strings::decode_form_bytes,
     value::{PhpArray, PhpKey, PhpValue},
 };
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PublicQueryKind {
+    Home,
+    Single,
+    Page,
+    Search,
+    NotFound,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PublicQuery<'a> {
+    pub kind: PublicQueryKind,
+    pub post_id: u64,
+    pub page_id: u64,
+    pub paged: u64,
+    pub is_paged: bool,
+    pub search: &'a [u8],
+}
+
+/// Interpret the initial `WP_Query::parse_query` flags for an anonymous public
+/// request with `show_on_front=posts` and no privacy-policy page. Input is the
+/// query-variable array after request routing. Only `p`, `page_id`, `paged`,
+/// `s` and the rewrite error are supported. Numeric strings are restricted to
+/// the existing integer conversion profile. The result precedes `parse_query`
+/// and `pre_get_posts` callbacks, SQL execution and missing-post resolution.
+pub fn parse_public_query_vars(vars: &PhpArray) -> Result<PublicQuery<'_>, CompatibilityError> {
+    for (key, _) in vars.iter() {
+        if !matches!(key, PhpKey::Bytes(key) if matches!(key.as_slice(),
+            b"p" | b"page_id" | b"paged" | b"s" | b"error"))
+        {
+            return Err(CompatibilityError::UnsupportedValue);
+        }
+    }
+
+    let post = vars.get_bytes(b"p");
+    let invalid_post = matches!(post, Some(PhpValue::Array(_)));
+    let post = if invalid_post {
+        0
+    } else {
+        query_integer(post)?
+    };
+    let page_id = query_absolute_integer(vars.get_bytes(b"page_id"))?;
+    let paged = query_absolute_integer(vars.get_bytes(b"paged"))?;
+    let search_var = vars.get_bytes(b"s");
+    let search = match search_var {
+        Some(PhpValue::Bytes(bytes)) if bytes.len() <= 1600 => bytes,
+        None | Some(PhpValue::Null | PhpValue::Array(_) | PhpValue::Bytes(_)) => &[][..],
+        _ => return Err(CompatibilityError::UnsupportedValue),
+    };
+    let rewrite_error = match vars.get_bytes(b"error") {
+        None | Some(PhpValue::Null) => false,
+        Some(PhpValue::Bytes(bytes)) if bytes.is_empty() => false,
+        Some(PhpValue::Integer(404)) => true,
+        Some(PhpValue::Bytes(bytes)) if bytes == b"404" => true,
+        _ => return Err(CompatibilityError::UnsupportedValue),
+    };
+    let kind = if invalid_post || post < 0 || rewrite_error {
+        PublicQueryKind::NotFound
+    } else if post > 0 {
+        PublicQueryKind::Single
+    } else if page_id > 0 {
+        PublicQueryKind::Page
+    } else if search_var.is_some_and(|value| !matches!(value, PhpValue::Null)) {
+        PublicQueryKind::Search
+    } else {
+        PublicQueryKind::Home
+    };
+
+    Ok(PublicQuery {
+        kind,
+        post_id: u64::try_from(post).unwrap_or(0),
+        page_id,
+        paged,
+        is_paged: paged > 1 && kind != PublicQueryKind::NotFound,
+        search,
+    })
+}
+
+fn query_integer(value: Option<&PhpValue>) -> Result<i64, CompatibilityError> {
+    value.map_or(Ok(0), supported_integer)
+}
+
+fn query_absolute_integer(value: Option<&PhpValue>) -> Result<u64, CompatibilityError> {
+    let integer = match value {
+        Some(PhpValue::Array(_)) => 0,
+        other => query_integer(other)?,
+    };
+    integer
+        .checked_abs()
+        .map(|value| value as u64)
+        .ok_or(CompatibilityError::UnsupportedValue)
+}
 
 /// PHP's default ampersand separator, at most 1,000 nonempty components, and
 /// byte-string input only. Array notation, NUL in input/decoded keys, configurable

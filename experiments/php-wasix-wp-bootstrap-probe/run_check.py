@@ -8,8 +8,6 @@ import re
 import subprocess
 import sys
 
-from hook_oracle_contract import validate as compare_native_hook_oracles
-
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -24,6 +22,7 @@ def load(name,path):
 build=load('rp_full_bootstrap_build',HERE/'build_check.py')
 prepared=load('rp_full_bootstrap_prepared',HERE/'prepare.py')
 linux=load('rp_full_bootstrap_database',HERE/'linux_database.py')
+compare_native_hook_oracles=load('rp_full_bootstrap_hook_oracle',HERE/'hook_oracle_contract.py').validate
 managed=load('rp_full_bootstrap_module',ROOT/'experiments/php-wasix-managed-access-probe/managed_check.py')
 require,sha=build.require,build.sha
 BASELINES={'mysql':'61c331e5e9f316dd6e2f241a54f1de337bbff397d405c6a5f4ae55cc49dc2c91',
@@ -208,7 +207,7 @@ def compare_hook_oracle(php,native_hook):
             'current_filter_reset_false':True}}
 
 
-def validate(value,mode,native,native_hook):
+def validate(value,mode,native,native_hook=None):
     require(value['schema']=='recastpress.php-wasix-wp-bootstrap-observation.v0.5'
         and value['mode']==mode and value['passed'] is True
         and value['outcome']=='fixed_wasix_wp_bootstrap_passed'
@@ -233,6 +232,8 @@ def validate(value,mode,native,native_hook):
         and php['rust_executed'] is True and php['wasm_executed'] is True
         and php['native_mysqli_handle'] is False and php['owned_db_dropin_loaded'] is True,
         'php_rust_bootstrap_contract')
+    if native_hook is None:
+        native_hook,_=native_hook_oracle()
     hook_validation=compare_hook_oracle(php,native_hook)
     for key in COMPARE:
         if key=='public_options':

@@ -123,6 +123,24 @@ impl fmt::Display for SnapshotSchemaError {
 }
 impl std::error::Error for SnapshotSchemaError {}
 
+// The outer option represents table visibility; the inner one is the nullable ENGINE column.
+async fn table_engine(
+    transaction: &mut Transaction<'_, MySql>,
+    name: &str,
+) -> Result<Option<Option<String>>, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT ENGINE FROM information_schema.TABLES \
+         WHERE (@@lower_case_table_names=0 \
+         AND CAST(TABLE_SCHEMA AS BINARY)=CAST(DATABASE() AS BINARY) \
+         AND CAST(TABLE_NAME AS BINARY)=CAST(? AS BINARY)) \
+         OR (@@lower_case_table_names<>0 AND TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?)",
+    )
+    .bind(name)
+    .bind(name)
+    .fetch_optional(&mut **transaction)
+    .await
+}
+
 /// Raw editing fields. Status/type/password and zero dates remain distinct;
 /// this is not a WP_Post API or an anonymous-public data projection.
 #[derive(Clone, Eq, PartialEq)]
@@ -320,10 +338,9 @@ impl EditingRepository {
             Table::Links,
         ] {
             let name = self.prefix.raw_table(table);
-            let row:Option<(Option<String>,)>=sqlx::query_as("SELECT ENGINE FROM information_schema.TABLES WHERE (@@lower_case_table_names=0 AND CAST(TABLE_SCHEMA AS BINARY)=CAST(DATABASE() AS BINARY) AND CAST(TABLE_NAME AS BINARY)=CAST(? AS BINARY)) OR (@@lower_case_table_names<>0 AND TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?)").bind(&name).bind(&name).fetch_optional(&mut *transaction).await?;
-            let error = match row {
+            let error = match table_engine(&mut transaction, &name).await? {
                 None => Some(SnapshotSchemaError::MissingTable { table: name }),
-                Some((engine,))
+                Some(engine)
                     if !engine
                         .as_ref()
                         .is_some_and(|value| value.eq_ignore_ascii_case("InnoDB")) =>

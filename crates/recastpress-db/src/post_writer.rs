@@ -6,7 +6,7 @@
 //! concurrent schema/engine changes and arbitrary trigger side effects are not.
 //! Value equality is not an ABA-safe monotonic revision or source identity.
 
-use super::{INCOMPATIBLE_SQL_MODES, POST_FIELDS, PostRow, Table, TablePrefix};
+use super::{INCOMPATIBLE_SQL_MODES, POST_FIELDS, PostRow, Table, TablePrefix, table_engine};
 use sqlx::{
     MySql, MySqlPool, QueryBuilder, Transaction,
     mysql::{MySqlConnectOptions, MySqlPoolOptions},
@@ -217,9 +217,10 @@ impl EditingWriter {
         // The preceding table read acquires metadata protection. The supported
         // schema remains stable; reject nontransactional tables before UPDATE.
         let name = self.prefix.raw_table(Table::Posts);
-        let engine: Option<(Option<String>,)> = sqlx::query_as("SELECT ENGINE FROM information_schema.TABLES WHERE (@@lower_case_table_names=0 AND CAST(TABLE_SCHEMA AS BINARY)=CAST(DATABASE() AS BINARY) AND CAST(TABLE_NAME AS BINARY)=CAST(? AS BINARY)) OR (@@lower_case_table_names<>0 AND TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?)")
-            .bind(&name).bind(&name).fetch_optional(&mut **tx).await.map_err(|_| PostTextWriteError::Database)?;
-        if !matches!(engine, Some((Some(engine),)) if engine.eq_ignore_ascii_case("InnoDB")) {
+        let engine = table_engine(tx, &name)
+            .await
+            .map_err(|_| PostTextWriteError::Database)?;
+        if !matches!(engine, Some(Some(engine)) if engine.eq_ignore_ascii_case("InnoDB")) {
             return Err(PostTextWriteError::Database);
         }
         let decision = admit(current.as_ref(), expected, replacement);

@@ -1,5 +1,7 @@
 """Build, execute, and source-bind the actual PHP-WASIX hook dispatch run."""
 
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -19,15 +21,6 @@ ARTIFACT = ROOT / ".reference/php-wasix-8.5.12/php.wasm"
 ARTIFACT_SHA256 = "e64850fde91d98dff0bce2b95ed467591376586469b1f4d8bad5c8759c4edbe4"
 ARTIFACT_BYTES = 39_727_549
 SENTINEL_SHA256 = "68c9c675d3805a343835728d98a0efedf0df9833cb904bebf909c7e0fda5c61c"
-REF_ARRAY_ORACLE = HERE / "fixtures/wp_ref_array_oracle.php"
-ACTION_REF_ARRAY_ORACLE = HERE / "fixtures/wp_action_ref_array_oracle.php"
-ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE = HERE / "fixtures/wp_action_overlarge_accepted_args_oracle.php"
-ACTION_THROWABLE_ORACLE = HERE / "fixtures/wp_action_throwable_oracle.php"
-ACTION_NESTED_ORACLE = HERE / "fixtures/wp_action_nested_oracle.php"
-ACTION_MUTATION_ORACLE = HERE / "fixtures/wp_action_mutation_oracle.php"
-ACTION_REMOVAL_ORACLE = HERE / "fixtures/wp_action_removal_oracle.php"
-ACTION_REMOVE_ALL_ORACLE = HERE / "fixtures/wp_action_remove_all_oracle.php"
-ACTION_SAME_PRIORITY_ORACLE = HERE / "fixtures/wp_action_deferred_add_oracle.php"
 TIMEOUT = 600
 RUN_TIMEOUT = 300
 CHECK_STARTED_AT = datetime.now(timezone.utc)
@@ -39,7 +32,10 @@ INPUTS = [
     "experiments/php-wasix-wp-hook-dispatch-probe/Cargo.lock",
     "experiments/php-wasix-wp-hook-dispatch-probe/check.py",
     "experiments/php-wasix-wp-hook-dispatch-probe/check_overlay.py",
-    "experiments/php-wasix-wp-hook-dispatch-probe/src/main.rs",
+    *(
+        path.relative_to(ROOT).as_posix()
+        for path in sorted((HERE / "src").rglob("*.rs"))
+    ),
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_hook_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_driver.php",
     "experiments/php-wasix-wp-hook-dispatch-probe/fixtures/wp_action_ref_array_driver.php",
@@ -88,7 +84,8 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def ref_array_contract_matches(native_observation, wasm_observation):
+def ref_array_contract_matches(native_result, wasm_observation):
+    native_observation = native_result["observation"]
     guest = wasm_observation.get("guest", {})
     actual_events = []
     for event in guest.get("events", []):
@@ -110,7 +107,8 @@ def ref_array_contract_matches(native_observation, wasm_observation):
     )
 
 
-def action_ref_array_contract_matches(native_observation, wasm_observation):
+def action_ref_array_contract_matches(native_result, wasm_observation):
+    native_observation = native_result["observation"]
     guest = wasm_observation.get("guest", {})
     actual = {
         "events": guest.get("events"),
@@ -137,7 +135,8 @@ def action_ref_array_contract_matches(native_observation, wasm_observation):
     return actual == expected
 
 
-def action_throwable_contract_matches(native_observation, wasm_observation):
+def action_throwable_contract_matches(native_result, wasm_observation):
+    native_observation = native_result["observation"]
     guest = wasm_observation.get("guest", {})
     return (
         guest.get("observation") == native_observation
@@ -153,6 +152,167 @@ def action_throwable_contract_matches(native_observation, wasm_observation):
     )
 
 
+def accepted_args_match(native_result, wasm_observation):
+    return wasm_observation.get("accepted_args_overlarge") == (
+        native_result.get("observation", {}).get("received_args")
+    )
+
+
+def guest_observation_matches(native_result, wasm_observation):
+    return wasm_observation.get("guest", {}).get("observation") == native_result.get("observation")
+
+
+@dataclass(frozen=True)
+class NativeOracle:
+    fixture: str
+    expected_scenario: str
+    label: str
+    matches: Callable[[dict, dict], bool]
+    evidence_key: str | None = None
+    pass_scenario_arg: bool = False
+    match_key: str = "native_oracle_contract_match"
+    mismatch_subject: str = "observation"
+    stop_on_mismatch: bool = True
+
+
+ACTION_REF_ARRAY_FIXTURE = "wp_action_ref_array_oracle.php"
+# Native preflight order is independent of the WASIX execution order.
+NATIVE_ORACLES = {
+    "ref-array": NativeOracle(
+        "wp_ref_array_oracle.php",
+        "wp_ref_array_native_oracle",
+        "apply_filters_ref_array",
+        ref_array_contract_matches,
+        evidence_key="reference_oracle",
+    ),
+    "action-ref-array": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_native_oracle",
+        "do_action_ref_array",
+        action_ref_array_contract_matches,
+        evidence_key="action_reference_oracle",
+    ),
+    "action-ref-array-empty-bucket": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_empty_bucket_native_oracle",
+        "empty-bucket action",
+        action_ref_array_contract_matches,
+        pass_scenario_arg=True,
+    ),
+    "action-ref-array-empty-bucket-reinsert": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_empty_bucket_reinsert_native_oracle",
+        "empty-bucket reinsert",
+        action_ref_array_contract_matches,
+        pass_scenario_arg=True,
+    ),
+    "action-ref-array-empty-bucket-add-action": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_empty_bucket_add_action_native_oracle",
+        "empty-bucket add_action",
+        action_ref_array_contract_matches,
+        pass_scenario_arg=True,
+    ),
+    "action-ref-array-global-replace": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_global_replace_native_oracle",
+        "global-replacement action",
+        action_ref_array_contract_matches,
+        pass_scenario_arg=True,
+    ),
+    "action-ref-array-global-replace-second-dispatch": NativeOracle(
+        ACTION_REF_ARRAY_FIXTURE,
+        "wp_action_ref_array_global_replace_second_dispatch_native_oracle",
+        "global-replacement second-dispatch",
+        action_ref_array_contract_matches,
+        pass_scenario_arg=True,
+    ),
+    "action": NativeOracle(
+        "wp_action_overlarge_accepted_args_oracle.php",
+        "wp_action_overlarge_accepted_args_native_oracle",
+        "overlarge accepted_args",
+        accepted_args_match,
+        evidence_key="action_overlarge_accepted_args_reference_oracle",
+        match_key="native_oracle_accepted_args_match",
+        mismatch_subject="accepted_args observation",
+        stop_on_mismatch=False,
+    ),
+    "action-throwable": NativeOracle(
+        "wp_action_throwable_oracle.php",
+        "wp_action_throwable_native_oracle",
+        "action Throwable",
+        action_throwable_contract_matches,
+        evidence_key="action_throwable_reference_oracle",
+    ),
+    "action-nested": NativeOracle(
+        "wp_action_nested_oracle.php",
+        "wp_action_nested_native_oracle",
+        "nested action",
+        guest_observation_matches,
+        evidence_key="action_nested_reference_oracle",
+    ),
+    "action-mutation": NativeOracle(
+        "wp_action_mutation_oracle.php",
+        "wp_action_mutation_native_oracle",
+        "action mutation",
+        guest_observation_matches,
+        evidence_key="action_mutation_reference_oracle",
+    ),
+    "action-removal": NativeOracle(
+        "wp_action_removal_oracle.php",
+        "wp_action_removal_native_oracle",
+        "action removal",
+        guest_observation_matches,
+        evidence_key="action_removal_reference_oracle",
+    ),
+    "action-remove-all": NativeOracle(
+        "wp_action_remove_all_oracle.php",
+        "wp_action_remove_all_native_oracle",
+        "action remove-all",
+        guest_observation_matches,
+        evidence_key="action_remove_all_reference_oracle",
+    ),
+    "action-deferred-add": NativeOracle(
+        "wp_action_deferred_add_oracle.php",
+        "wp_action_deferred_add_native_oracle",
+        "same-priority action",
+        guest_observation_matches,
+        evidence_key="action_same_priority_reference_oracle",
+    ),
+}
+FIRST_WASIX_SCENARIOS = ("filter", "ref-array", "action")
+WASIX_SCENARIOS = (
+    *FIRST_WASIX_SCENARIOS,
+    *(scenario for scenario in NATIVE_ORACLES if scenario not in FIRST_WASIX_SCENARIOS),
+)
+
+
+def run_native_oracle(scenario, oracle):
+    command = [
+        "php", "-n", str(HERE / "fixtures" / oracle.fixture), str(ROOT / ".reference/wordpress-7.1.3"),
+    ]
+    if oracle.pass_scenario_arg:
+        command.append(scenario)
+    run = subprocess.run(
+        command,
+        cwd=ROOT,
+        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if run.returncode != 0 or run.stderr:
+        raise SystemExit(
+            f"pinned WordPress {oracle.label} oracle failed:\n"
+            + run.stderr.decode("utf-8", "replace")[-8192:]
+        )
+    result = json.loads(run.stdout.decode("utf-8", "strict"))
+    if result.get("status") != "passed" or result.get("scenario") != oracle.expected_scenario:
+        raise SystemExit(f"pinned WordPress {oracle.label} oracle reported an unexpected result")
+    return result
+
+
 def main():
     global SOURCE_INPUTS_AT_START, COMPLETED_SCENARIOS
     if platform.system() != "Linux":
@@ -163,206 +323,10 @@ def main():
         raise SystemExit("Pinned WordPress filter sentinel changed.")
     before = {name: digest(ROOT / name) for name in INPUTS}
     SOURCE_INPUTS_AT_START = before
-    oracle = subprocess.run(
-        ["php", "-n", str(REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if oracle.returncode != 0 or oracle.stderr:
-        raise SystemExit(
-            "pinned WordPress apply_filters_ref_array oracle failed:\n"
-            + oracle.stderr.decode("utf-8", "replace")[-8192:]
-        )
-    reference_oracle = json.loads(oracle.stdout.decode("utf-8", "strict"))
-    if reference_oracle.get("status") != "passed" or reference_oracle.get("scenario") != "wp_ref_array_native_oracle":
-        raise SystemExit("pinned WordPress apply_filters_ref_array oracle reported an unexpected result")
-    action_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_oracle_run.returncode != 0 or action_oracle_run.stderr:
-        raise SystemExit(
-            "pinned WordPress do_action_ref_array oracle failed:\n"
-            + action_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
-        )
-    action_reference_oracle = json.loads(action_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_reference_oracle.get("status") != "passed" or action_reference_oracle.get("scenario") != "wp_action_ref_array_native_oracle":
-        raise SystemExit("pinned WordPress do_action_ref_array oracle reported an unexpected result")
-    action_empty_bucket_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-empty-bucket"],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_empty_bucket_oracle_run.returncode != 0 or action_empty_bucket_oracle_run.stderr:
-        raise SystemExit(
-            "pinned WordPress empty-bucket action oracle failed:\n"
-            + action_empty_bucket_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
-        )
-    action_empty_bucket_reference_oracle = json.loads(action_empty_bucket_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_empty_bucket_reference_oracle.get("status") != "passed" or action_empty_bucket_reference_oracle.get("scenario") != "wp_action_ref_array_empty_bucket_native_oracle":
-        raise SystemExit("pinned WordPress empty-bucket action oracle reported an unexpected result")
-    action_empty_bucket_reinsert_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-empty-bucket-reinsert"],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_empty_bucket_reinsert_oracle_run.returncode != 0 or action_empty_bucket_reinsert_oracle_run.stderr:
-        raise SystemExit("pinned WordPress empty-bucket reinsert oracle failed:\n" +
-            action_empty_bucket_reinsert_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_empty_bucket_reinsert_reference_oracle = json.loads(action_empty_bucket_reinsert_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_empty_bucket_reinsert_reference_oracle.get("status") != "passed" or action_empty_bucket_reinsert_reference_oracle.get("scenario") != "wp_action_ref_array_empty_bucket_reinsert_native_oracle":
-        raise SystemExit("pinned WordPress empty-bucket reinsert oracle reported an unexpected result")
-    action_empty_bucket_add_action_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-empty-bucket-add-action"],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_empty_bucket_add_action_oracle_run.returncode != 0 or action_empty_bucket_add_action_oracle_run.stderr:
-        raise SystemExit("pinned WordPress empty-bucket add_action oracle failed:\n" +
-            action_empty_bucket_add_action_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_empty_bucket_add_action_reference_oracle = json.loads(action_empty_bucket_add_action_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_empty_bucket_add_action_reference_oracle.get("status") != "passed" or action_empty_bucket_add_action_reference_oracle.get("scenario") != "wp_action_ref_array_empty_bucket_add_action_native_oracle":
-        raise SystemExit("pinned WordPress empty-bucket add_action oracle reported an unexpected result")
-    action_global_replace_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-global-replace"],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_global_replace_oracle_run.returncode != 0 or action_global_replace_oracle_run.stderr:
-        raise SystemExit("pinned WordPress global-replacement action oracle failed:\n" +
-            action_global_replace_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_global_replace_reference_oracle = json.loads(action_global_replace_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_global_replace_reference_oracle.get("status") != "passed" or action_global_replace_reference_oracle.get("scenario") != "wp_action_ref_array_global_replace_native_oracle":
-        raise SystemExit("pinned WordPress global-replacement action oracle reported an unexpected result")
-    action_global_replace_second_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REF_ARRAY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3"), "action-ref-array-global-replace-second-dispatch"],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_global_replace_second_oracle_run.returncode != 0 or action_global_replace_second_oracle_run.stderr:
-        raise SystemExit("pinned WordPress global-replacement second-dispatch oracle failed:\n" +
-            action_global_replace_second_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_global_replace_second_reference_oracle = json.loads(action_global_replace_second_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_global_replace_second_reference_oracle.get("status") != "passed" or action_global_replace_second_reference_oracle.get("scenario") != "wp_action_ref_array_global_replace_second_dispatch_native_oracle":
-        raise SystemExit("pinned WordPress global-replacement second-dispatch oracle reported an unexpected result")
-    action_overlarge_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_OVERLARGE_ACCEPTED_ARGS_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
-    )
-    if action_overlarge_oracle_run.returncode != 0 or action_overlarge_oracle_run.stderr:
-        raise SystemExit("pinned WordPress overlarge accepted_args oracle failed:\n" +
-            action_overlarge_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_overlarge_reference_oracle = json.loads(action_overlarge_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_overlarge_reference_oracle.get("status") != "passed" or action_overlarge_reference_oracle.get("scenario") != "wp_action_overlarge_accepted_args_native_oracle":
-        raise SystemExit("pinned WordPress overlarge accepted_args oracle reported an unexpected result")
-    action_throwable_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_THROWABLE_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_throwable_oracle_run.returncode != 0 or action_throwable_oracle_run.stderr:
-        raise SystemExit(
-            "pinned WordPress action Throwable oracle failed:\n"
-            + action_throwable_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
-        )
-    action_throwable_reference_oracle = json.loads(action_throwable_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_throwable_reference_oracle.get("status") != "passed" or action_throwable_reference_oracle.get("scenario") != "wp_action_throwable_native_oracle":
-        raise SystemExit("pinned WordPress action Throwable oracle reported an unexpected result")
-    action_nested_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_NESTED_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT,
-        env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    if action_nested_oracle_run.returncode != 0 or action_nested_oracle_run.stderr:
-        raise SystemExit(
-            "pinned WordPress nested action oracle failed:\n"
-            + action_nested_oracle_run.stderr.decode("utf-8", "replace")[-8192:]
-        )
-    action_nested_reference_oracle = json.loads(action_nested_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_nested_reference_oracle.get("status") != "passed" or action_nested_reference_oracle.get("scenario") != "wp_action_nested_native_oracle":
-        raise SystemExit("pinned WordPress nested action oracle reported an unexpected result")
-    action_mutation_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_MUTATION_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
-    )
-    if action_mutation_oracle_run.returncode != 0 or action_mutation_oracle_run.stderr:
-        raise SystemExit("pinned WordPress action mutation oracle failed:\n" +
-            action_mutation_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_mutation_reference_oracle = json.loads(action_mutation_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_mutation_reference_oracle.get("status") != "passed" or action_mutation_reference_oracle.get("scenario") != "wp_action_mutation_native_oracle":
-        raise SystemExit("pinned WordPress action mutation oracle reported an unexpected result")
-    action_removal_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REMOVAL_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
-    )
-    if action_removal_oracle_run.returncode != 0 or action_removal_oracle_run.stderr:
-        raise SystemExit("pinned WordPress action removal oracle failed:\n" +
-            action_removal_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_removal_reference_oracle = json.loads(action_removal_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_removal_reference_oracle.get("status") != "passed" or action_removal_reference_oracle.get("scenario") != "wp_action_removal_native_oracle":
-        raise SystemExit("pinned WordPress action removal oracle reported an unexpected result")
-    action_remove_all_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_REMOVE_ALL_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
-    )
-    if action_remove_all_oracle_run.returncode != 0 or action_remove_all_oracle_run.stderr:
-        raise SystemExit("pinned WordPress action remove-all oracle failed:\n" +
-            action_remove_all_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_remove_all_reference_oracle = json.loads(action_remove_all_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_remove_all_reference_oracle.get("status") != "passed" or action_remove_all_reference_oracle.get("scenario") != "wp_action_remove_all_native_oracle":
-        raise SystemExit("pinned WordPress action remove-all oracle reported an unexpected result")
-    action_same_priority_oracle_run = subprocess.run(
-        ["php", "-n", str(ACTION_SAME_PRIORITY_ORACLE), str(ROOT / ".reference/wordpress-7.1.3")],
-        cwd=ROOT, env={"PATH": os.environ.get("PATH", ""), "LC_ALL": "C"},
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, check=False,
-    )
-    if action_same_priority_oracle_run.returncode != 0 or action_same_priority_oracle_run.stderr:
-        raise SystemExit("pinned WordPress same-priority action oracle failed:\n" +
-            action_same_priority_oracle_run.stderr.decode("utf-8", "replace")[-8192:])
-    action_same_priority_reference_oracle = json.loads(action_same_priority_oracle_run.stdout.decode("utf-8", "strict"))
-    if action_same_priority_reference_oracle.get("status") != "passed" or action_same_priority_reference_oracle.get("scenario") != "wp_action_deferred_add_native_oracle":
-        raise SystemExit("pinned WordPress deferred-add action oracle reported an unexpected result")
+    native_results = {
+        scenario: run_native_oracle(scenario, oracle)
+        for scenario, oracle in NATIVE_ORACLES.items()
+    }
     target = ROOT / "target/php-wasix-wp-hook-dispatch-probe"
     env = {
         "PATH": os.environ.get("PATH", ""),
@@ -395,25 +359,9 @@ def main():
         run_ms = 0
         outputs = []
         run_codes = {}
-        scenarios = [
-            ("filter", []),
-            ("ref-array", ["ref-array"]),
-            ("action", ["action"]),
-            ("action-ref-array", ["action-ref-array"]),
-            ("action-ref-array-empty-bucket", ["action-ref-array-empty-bucket"]),
-            ("action-ref-array-empty-bucket-reinsert", ["action-ref-array-empty-bucket-reinsert"]),
-            ("action-ref-array-empty-bucket-add-action", ["action-ref-array-empty-bucket-add-action"]),
-            ("action-ref-array-global-replace", ["action-ref-array-global-replace"]),
-            ("action-ref-array-global-replace-second-dispatch", ["action-ref-array-global-replace-second-dispatch"]),
-            ("action-throwable", ["action-throwable"]),
-            ("action-nested", ["action-nested"]),
-            ("action-mutation", ["action-mutation"]),
-            ("action-removal", ["action-removal"]),
-            ("action-remove-all", ["action-remove-all"]),
-            ("action-deferred-add", ["action-deferred-add"]),
-        ]
         status = "passed"
-        for scenario, args in scenarios:
+        for scenario in WASIX_SCENARIOS:
+            args = [] if scenario == "filter" else [scenario]
             t0 = time.monotonic()
             run = subprocess.run([str(binary), *args], cwd=ROOT, env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -430,96 +378,24 @@ def main():
                 scenario_result = json.loads(stdout)
                 if scenario_result.get("status") != "passed" or scenario_result.get("scenario") != scenario:
                     raise SystemExit(f"{scenario} runner reported a non-passing or mismatched result")
-                if scenario == "action":
-                    contract_match = (
-                        scenario_result.get("observation", {}).get("accepted_args_overlarge")
-                        == action_overlarge_reference_oracle.get("observation", {}).get("received_args")
+                oracle = NATIVE_ORACLES.get(scenario)
+                if oracle is not None:
+                    scenario_result[oracle.match_key] = oracle.matches(
+                        native_results[scenario], scenario_result.get("observation", {})
                     )
-                    scenario_result["native_oracle_accepted_args_match"] = contract_match
-                elif scenario == "ref-array":
-                    contract_match = ref_array_contract_matches(
-                        reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array":
-                    contract_match = action_ref_array_contract_matches(
-                        action_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array-empty-bucket":
-                    contract_match = action_ref_array_contract_matches(
-                        action_empty_bucket_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array-empty-bucket-reinsert":
-                    contract_match = action_ref_array_contract_matches(
-                        action_empty_bucket_reinsert_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array-empty-bucket-add-action":
-                    contract_match = action_ref_array_contract_matches(
-                        action_empty_bucket_add_action_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array-global-replace":
-                    contract_match = action_ref_array_contract_matches(
-                        action_global_replace_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-ref-array-global-replace-second-dispatch":
-                    contract_match = action_ref_array_contract_matches(
-                        action_global_replace_second_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-throwable":
-                    contract_match = action_throwable_contract_matches(
-                        action_throwable_reference_oracle["observation"], scenario_result.get("observation", {})
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-nested":
-                    nested_guest_observation = (
-                        scenario_result.get("observation", {})
-                        .get("guest", {})
-                        .get("observation")
-                    )
-                    contract_match = (
-                        nested_guest_observation == action_nested_reference_oracle.get("observation")
-                    )
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-mutation":
-                    guest_observation = (
-                        scenario_result.get("observation", {}).get("guest", {}).get("observation")
-                    )
-                    contract_match = guest_observation == action_mutation_reference_oracle.get("observation")
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-removal":
-                    guest_observation = (
-                        scenario_result.get("observation", {}).get("guest", {}).get("observation")
-                    )
-                    contract_match = guest_observation == action_removal_reference_oracle.get("observation")
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-remove-all":
-                    guest_observation = (
-                        scenario_result.get("observation", {}).get("guest", {}).get("observation")
-                    )
-                    contract_match = guest_observation == action_remove_all_reference_oracle.get("observation")
-                    scenario_result["native_oracle_contract_match"] = contract_match
-                elif scenario == "action-deferred-add":
-                    guest_observation = scenario_result.get("observation", {}).get("guest", {}).get("observation")
-                    contract_match = guest_observation == action_same_priority_reference_oracle.get("observation")
-                    scenario_result["native_oracle_contract_match"] = contract_match
                 result[scenario] = scenario_result
                 COMPLETED_SCENARIOS = result.copy()
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}")
-                if scenario == "action" and not contract_match:
+                if oracle is not None and not scenario_result[oracle.match_key]:
                     status = "oracle_mismatch"
-                    outputs.append("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.\n")
-                    print("PHP-WASIX action accepted_args observation differs from its pinned native WordPress oracle.", file=sys.stderr)
-                elif scenario in ("ref-array", "action-ref-array", "action-ref-array-empty-bucket", "action-ref-array-empty-bucket-reinsert", "action-ref-array-empty-bucket-add-action", "action-ref-array-global-replace", "action-ref-array-global-replace-second-dispatch", "action-throwable", "action-nested", "action-mutation", "action-removal", "action-remove-all", "action-deferred-add") and not contract_match:
-                    status = "oracle_mismatch"
-                    outputs.append(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.\n")
-                    print(f"PHP-WASIX {scenario} observation differs from its pinned native WordPress oracle.", file=sys.stderr)
-                    break
+                    message = (
+                        f"PHP-WASIX {scenario} {oracle.mismatch_subject} "
+                        "differs from its pinned native WordPress oracle."
+                    )
+                    outputs.append(message + "\n")
+                    print(message, file=sys.stderr)
+                    if oracle.stop_on_mismatch:
+                        break
             else:
                 status = "runtime_failed"
                 outputs.append(f"--- {scenario} stdout ---\n{stdout}\n--- {scenario} stderr ---\n{stderr}")
@@ -552,15 +428,11 @@ def main():
         "build": {"exit_code": build.returncode, "duration_ms": build_ms, "timeout_seconds": TIMEOUT},
         "run": {"exit_code": run_code, "exit_codes": run_codes if build.returncode == 0 else {},
                 "duration_ms": run_ms, "timeout_seconds_per_scenario": RUN_TIMEOUT, "result": result},
-        "reference_oracle": reference_oracle,
-        "action_reference_oracle": action_reference_oracle,
-        "action_overlarge_accepted_args_reference_oracle": action_overlarge_reference_oracle,
-        "action_throwable_reference_oracle": action_throwable_reference_oracle,
-        "action_nested_reference_oracle": action_nested_reference_oracle,
-        "action_mutation_reference_oracle": action_mutation_reference_oracle,
-        "action_removal_reference_oracle": action_removal_reference_oracle,
-        "action_remove_all_reference_oracle": action_remove_all_reference_oracle,
-        "action_same_priority_reference_oracle": action_same_priority_reference_oracle,
+        **{
+            oracle.evidence_key: native_results[scenario]
+            for scenario, oracle in NATIVE_ORACLES.items()
+            if oracle.evidence_key is not None
+        },
         "source_inputs_before": before,
         "source_inputs_after": after,
         "source_inputs_unchanged": unchanged,

@@ -1,10 +1,11 @@
-"""Run the WordPress PHP-WASIX install/read contract with a local MariaDB distribution."""
+"""Run the WordPress PHP-WASIX install/read contract with a local MySQL or MariaDB distribution."""
 import argparse
 import getpass
 import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import socket
 import subprocess
@@ -28,18 +29,24 @@ def loopback_port():
         return reservation.getsockname()[1]
 
 
-def run(binary_root, report, private):
+def run(binary_root, report, private, *, backend):
     binary_root = binary_root.resolve(strict=True)
-    if (binary_root / 'usr/sbin/mariadbd').is_file():
+    if backend == 'mysql':
+        basedir = binary_root
+        server = basedir / 'bin/mysqld'
+        client = basedir / 'bin/mysql'
+        initializer = server
+    elif (binary_root / 'usr/sbin/mariadbd').is_file():
         basedir = binary_root / 'usr'
         server = basedir / 'sbin/mariadbd'
         initializer = basedir / 'bin/mariadb-install-db'
+        client = basedir / 'bin/mariadb'
     else:
         basedir = binary_root
         server = basedir / 'bin/mariadbd'
         initializer = basedir / 'scripts/mariadb-install-db'
-    client = basedir / 'bin/mariadb'
-    check(all(path.is_file() for path in (initializer, server, client)), 'local_mariadb_distribution')
+        client = basedir / 'bin/mariadb'
+    check(all(path.is_file() for path in (initializer, server, client)), 'local_database_distribution')
     env = probe.build.environment()
     library_paths = [str(binary_root / name) for name in (
         'usr/lib/x86_64-linux-gnu', 'lib/x86_64-linux-gnu', 'lib')]
@@ -59,7 +66,7 @@ def run(binary_root, report, private):
     report.update(module=module['module'], host_executable_sha256=receipt['executable_identity']['sha256'],
                   source_inputs=receipt['input_files'], native_hook_comparison=cross['status'],
                   native_hook_failure_cleanup=cleanup['status'])
-    native_wp = probe.reference('mariadb')
+    native_wp = probe.reference(backend)
 
     user = getpass.getuser()
     with tempfile.TemporaryDirectory(prefix='recastpress-wp-') as workspace:
@@ -69,18 +76,39 @@ def run(binary_root, report, private):
         pidfile = work / 'db.pid'
         port = loopback_port()
         shared = basedir / 'lib/mysql/plugin'
-        commands = [str(client), '--no-defaults', f'--user={user}', f'--socket={endpoint}',
-                    '--protocol=socket', '--batch', '--skip-column-names', '--raw', '--connect-timeout=3']
+        common = ['--no-defaults', f'--datadir={data}', f'--basedir={basedir}']
+        if backend == 'mysql':
+            init_args = ['--initialize', '--skip-log-bin', '--innodb-buffer-pool-size=64M']
+        else:
+            init_args = ['--auth-root-authentication-method=socket', f'--auth-root-socket-user={user}',
+                         '--skip-test-db']
         init = subprocess.run(
-            [str(initializer), '--no-defaults', f'--datadir={data}', f'--basedir={basedir}',
-             '--auth-root-authentication-method=socket', f'--auth-root-socket-user={user}', '--skip-test-db'],
+            [str(initializer), *common, *init_args],
             env=env, cwd=work, capture_output=True, timeout=60)
+        # MySQL's initialization log contains the temporary root password.
         if init.returncode:
-            print(init.stderr.decode(errors='replace')[-1800:], file=sys.stderr)
-            raise RuntimeError('mariadb_install_db')
-        argv = [str(server), '--no-defaults', f'--basedir={basedir}', f'--datadir={data}',
+            if backend == 'mariadb':
+                print(init.stderr.decode(errors='replace')[-1800:], file=sys.stderr)
+            raise RuntimeError('local_database_initialization')
+        client_options = ['--no-defaults', f'--user={user}']
+        admin_config = work / 'admin.cnf'
+        temporary_password = None
+        if backend == 'mysql':
+            match = re.search(rb'A temporary password is generated for root@localhost: ([!-~]+)\r?\n', init.stderr)
+            check(match is not None, 'local_mysql_initial_password_missing')
+            temporary_password = match[1].decode('ascii')
+            private.append(temporary_password)
+            admin_config.touch(mode=0o600, exist_ok=False)
+            admin_config.write_text('[client]\nuser=root\npassword=' + json.dumps(temporary_password) + '\n',
+                                    encoding='ascii')
+            client_options = [f'--defaults-file={admin_config}', '--no-login-paths', '--connect-expired-password']
+        commands = [str(client), *client_options, f'--socket={endpoint}', '--protocol=socket',
+                    '--batch', '--skip-column-names', '--raw', '--connect-timeout=3']
+        argv = [str(server), *common,
                 f'--pid-file={pidfile}', f'--socket={endpoint}', f'--port={port}', '--bind-address=127.0.0.1',
                 '--skip-name-resolve', '--skip-log-bin', f'--tmpdir={work}', '--innodb-buffer-pool-size=64M']
+        if backend == 'mysql':
+            argv.extend(['--mysqlx=OFF', '--performance-schema=OFF', '--innodb-redo-log-capacity=32M'])
         if shared.is_dir():
             argv.append(f'--plugin-dir={shared}')
         log = work / 'server.log'
@@ -99,7 +127,20 @@ def run(binary_root, report, private):
             while time.monotonic() < until:
                 if daemon.poll() is not None:
                     print(log.read_text(errors='replace')[-1600:], file=sys.stderr)
-                    raise RuntimeError('local_mariadb_exited')
+                    raise RuntimeError('local_database_exited')
+                if temporary_password is not None:
+                    if not endpoint.is_socket() or not pidfile.is_file():
+                        time.sleep(0.25)
+                        continue
+                    check(int(pidfile.read_text().strip()) == daemon.pid, 'local_database_pid')
+                    password = secrets.token_hex(24)
+                    result = sql(f"ALTER USER USER() IDENTIFIED BY '{password}';\n", fail=False)
+                    if result.returncode:
+                        time.sleep(0.25)
+                        continue
+                    private.append(password)
+                    admin_config.write_text(f'[client]\nuser=root\npassword={password}\n', encoding='ascii')
+                    temporary_password = None
                 reply = sql('SELECT VERSION(),@@datadir,@@port,@@pid_file,@@bind_address;\n', fail=False)
                 if reply.returncode == 0:
                     rows = reply.stdout.decode().strip().split('\t')
@@ -108,13 +149,17 @@ def run(binary_root, report, private):
                 time.sleep(0.25)
             else:
                 print(log.read_text(errors='replace')[-1000:], file=sys.stderr)
-                raise RuntimeError('local_mariadb_not_ready')
+                raise RuntimeError('local_database_not_ready')
             version, server_data, server_port, server_pidfile, bind = rows
             check((Path(server_data), int(server_port), Path(server_pidfile), bind,
                    int(pidfile.read_text().strip())) ==
-                  (data, port, pidfile, '127.0.0.1', daemon.pid), 'local_mariadb_identity')
-            report.update(database_version=version, database_loopback_only=True, database_transport='owned_local_process')
-            print(f'Owned MariaDB {version} is ready', flush=True)
+                  (data, port, pidfile, '127.0.0.1', daemon.pid), 'local_database_identity')
+            if backend == 'mysql':
+                image_pins = json.loads((ROOT / 'experiments/php-wasix-wpdb-probe/container-images.json').read_bytes())
+                check(version.split('-')[0] == image_pins['images']['mysql']['tag'], 'local_mysql_version')
+            report.update(database_backend=backend, database_version=version, database_loopback_only=True,
+                          database_transport='owned_local_process')
+            print(f'Owned {backend} {version} is ready', flush=True)
             password = {mode: secrets.token_hex(24) for mode in ('install', 'read')}
             wp_password = secrets.token_hex(24)
             salts = {name: secrets.token_hex(24) for name in probe.linux.SALT_NAMES}
@@ -172,7 +217,7 @@ def run(binary_root, report, private):
                     report['database_process_exit_code'] = daemon.wait()
     check(report.get('normal_database_shutdown_requested') is True
           and not report.get('forced_database_shutdown')
-          and report['database_process_exit_code'] == 0, 'mariadb_shutdown')
+          and report['database_process_exit_code'] == 0, 'local_database_shutdown')
     check(probe.build.verify_build() == receipt and probe.prepared.verify_prepared() == prepared
           and probe.managed.verify_build() == module, 'source_recheck')
     report['source_reverified_after'] = True
@@ -180,12 +225,15 @@ def run(binary_root, report, private):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mariadb-root', type=Path, required=True,
-                        help='extracted MariaDB tarball or directory containing extracted usr/')
+    distribution = parser.add_mutually_exclusive_group(required=True)
+    distribution.add_argument('--mariadb-root', type=Path,
+                              help='extracted MariaDB tarball or directory containing extracted usr/')
+    distribution.add_argument('--mysql-root', type=Path, help='extracted fixed MySQL Linux distribution')
     parser.add_argument('--report', type=Path,
                         default=ROOT / 'target/php-wasix-wp-bootstrap-probe/local-wp-boot.json')
     args = parser.parse_args()
-    binary_root = args.mariadb_root.absolute()
+    backend = 'mysql' if args.mysql_root else 'mariadb'
+    binary_root = (args.mysql_root or args.mariadb_root).absolute()
     output = args.report.absolute()
     os.chdir(ROOT)
     report = {'schema': 'recastpress.v06-local-wp-boot.v1', 'passed': False,
@@ -193,7 +241,7 @@ def main():
               'observations': {}, 'validations': {}}
     private = []
     try:
-        run(binary_root, report, private)
+        run(binary_root, report, private, backend=backend)
         report['passed'] = True
     except Exception as error:
         report['failure'] = str(error)
