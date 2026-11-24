@@ -1,70 +1,24 @@
-# WordPress bootstrap / PHP-Wasm hook デモ
+# PHP-WASIX で WordPress を起動する
 
-## 目的
+## 確認済みの動作
 
-この PoC の目標は、固定した WordPress 7.1.3 を `wp-settings.php` から起動し、PHP-WASIX CGI で install と新規 runtime の read を行うことです。`get_option('blogname')` から公開 `apply_filters()` を通り、`option_blogname` の値が Rust `Dispatcher` を経由して戻ることを検証します。期待値は `RP Bootstrap Fixture|first|second` です。
+WordPress 7.1.3 の `wp-settings.php` と `wp_install()` を PHP-WASIX CGI で実行し、新規インストールと、別インスタンスでの読み取りを確認する。DB は Rust の接続処理を経由する。起動後の `get_option('blogname')` は実 `WP_Hook` と Rust Dispatcher を通り、`RP Bootstrap Fixture|first|second` を返す。検証用の MariaDB はループバックで起動し、試験終了時に停止する。ブラウザ向けの常駐 HTTP リスナーはこのデモの対象外。[進捗](v0.6-development.ja.md) · [実行証跡](../experiments/php-wasix-wp-bootstrap-probe/evidence/linux-local-wp-boot-mariadb.json)
 
-WordPress core、theme、plugin のソースは変更しません。DB は専用 drop-in から Rust actor に接続し、PHP callback は request-scoped handle で識別します。hook channel は close ACK 後に余分な byte がなく EOF になること、handle が解放されることも確認対象です。
+## ローカルで再実行する
 
-## 今すぐ再生できる Windows デモ
-
-固定 PHP 8.5.12 CLI が配置済みの Windows checkout では、次のコマンドで native WordPress hook oracle を再生できます。
-
-```powershell
-python -B scripts/run_recastpress_native_hook_demo.py
-```
-
-初回の checkout では、固定 WordPress archive と PHP CLI を配置し、source と fixture の準備を先に行います。
-
-```powershell
-python -B experiments/wp-bootstrap-probe/prepare.py
-python -B experiments/php-wasix-wp-bootstrap-probe/prepare.py
-python -B experiments/php-wasix-wp-bootstrap-probe/prepare.py --verify-only
-```
-
-このコマンドは固定 PHP バイナリと archive、WordPress source manifest と hook source、fixture、149件の host build inputs を hash 検証してから、WordPress 7.1.3 の `plugin.php` / `WP_Hook` fixture を実行します。成功時は callback 順と最終値を表示し、実行証跡を `experiments/php-wasix-wp-bootstrap-probe/evidence/windows-native-hook-demo-run.json` に記録します。
-
-これは発表用に動かせる native-only の fallback デモです。`wp-settings.php` の全体 bootstrap、Rust `Dispatcher`、PHP-Wasm、DB 接続は実行しません。完全統合デモの達成証拠として扱わないでください。
-
-## 検証範囲と制限
-
-PoC の hook シナリオは `option_blogname` に限定しています。WordPress の `WP_Hook` は final class のため、実装経路では公開 `apply_filters()` wrapper が選択 hook を専用 adapter に渡し、callback table を Rust `Dispatcher` に送ります。native oracle は同じ固定 WordPress 7.1.3 の `WP_Hook` を直接実行し、値・callback 順・filter state の比較基準を作ります。これは WordPress 本来の `WP_Hook::apply_filters()` の全挙動や任意 plugin の互換性を証明するものではありません。
-
-対象 DB は MySQL と MariaDB です。HTTP listener、管理画面、theme/plugin の一般実行、全 `wpdb` API、製品 runtime への接続はこのデモの範囲外です。
-
-## 完全統合の実行環境
-
-完全な統合実行には Linux、Rust 1.94.0、PHP CLI/XML、固定 PHP-WASIX toolchain、Docker 互換の MySQL/MariaDB container runtime が必要です。`run_check.py` は Linux 専用で、native oracle に PHP CLI、DB 検証に container runtime を使います。Windows 上の Rust build は host gate の証拠であり、PHP-Wasm や DB の実行証拠ではありません。
-
-準備と host gate は次のとおりです。
+WordPress ソース、PHP-WASIX CGI、Rust ホストとビルド証跡を準備済みの Linux 作業ツリーで実行する。比較用 PHP 8.5.12 を `PATH` に置く。MariaDB は公式アーカイブの展開先、または Ubuntu パッケージを `usr/` 以下に展開したディレクトリを指定する。固定ソース、ツールとホストを準備する手順はワークフローにある。[起動ワークフロー](../.github/workflows/php-wasix-wp-bootstrap.yml) · [比較用 PHP 準備手順](../experiments/php-wasix-wp-bootstrap-probe/prepare_native_php.sh)
 
 ```sh
-python3 experiments/php-wasix-cgi-build/prepare.py --record
-python3 experiments/php-wasix-managed-access-probe/build.py --record
-python3 experiments/wp-bootstrap-probe/prepare.py
-python3 experiments/php-wasix-wp-bootstrap-probe/prepare.py
-rustup toolchain install 1.94.0 --profile minimal --no-self-update
-cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
-python3 experiments/wpdb-rpc-probe/prepare_driver.py
-cargo fetch --locked --manifest-path experiments/php-wasix-wp-bootstrap-probe/Cargo.toml
-python3 -B experiments/php-wasix-wp-bootstrap-probe/build_check.py
+export PATH="$PWD/target/php-wasix-wp-bootstrap-probe/native-php:$PATH"
+python3 -B scripts/run_local_wasix_wp_boot.py --mariadb-root /path/to/extracted/mariadb-11.8.9
 ```
 
-Linux では MySQL と MariaDB の統合実行を個別に行います。
+既定の結果ファイルは `target/php-wasix-wp-bootstrap-probe/local-wp-boot.json`。成功時に `install` と `read` の両方で CGI 200、ネイティブ観測との一致、WP フックの状態リセット、DB 接続の切断を記録する。[ローカル起動ハーネス](../scripts/run_local_wasix_wp_boot.py)
 
-```sh
-python3 -B experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend mysql --record
-python3 -B experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend mariadb --record
-```
+## Docker を使った統合検証
 
-## 現在の証跡
+起動ワークフローはダイジェストで固定した MySQL と MariaDB で実行する。現行の実 `WP_Hook` オーバーレイの結果は、対象コミットの run に紐づく `linux-mysql.json` と `linux-mariadb.json` で確認する。ローカル MariaDB の証跡では、独立したローカルプロセスでの起動を確認している。[GitHub Actions の実行一覧](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/workflows/php-wasix-wp-bootstrap.yml)
 
-Windows の隔離 clone と専用 target で `build_check.py` の locked/offline host gate が成功しています。[build receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build.json) は149 source inputs の前後 hash、固定 DB driver source の準備、37 unit tests と4段階の build/test 成功を記録します。更新前の34-test receipt は[前版記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build-before-7337631ec0c4b974.json)、追加テストで最初に誤った期待値を使った失敗runは[診断記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-build-before-09b8a41a31444406.json)に保持しています。これは host 側の検証で、PHP-Wasm、DB、全体 bootstrap は実行していません。
+## 従来の CI 証跡
 
-固定 WordPress 7.1.3 archive から core source tree と専用 DB drop-in の準備も成功し、`prepare.py --verify-only` で入力一致を確認しました。[source preparation metadata](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-source-preparation.json) と[実行記録](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-source-preparation-run.json) は archive hash、3,782 files、467 directories、host build receipt と一致する33入力を記録します。source manifest 本体は repository に保存せず、サイズ・hash・集計を記録しています。
-
-固定 PHP 8.5.12 CLI (`-n`) で WordPress 7.1.3 の `option_blogname` native hook oracle を実行しました。[native oracle receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-native-hook-oracle.json) は固定 PHP binary と fixture の hash、callback 順、filter state reset、最終値を記録します。[再生ランナーの証跡](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-native-hook-demo-run.json) は上記 PowerShell コマンドの直近結果です。oracle は `plugin.php` と `WP_Hook` の限定的な native 確認で、全体 bootstrap、Rust `Dispatcher`、PHP-Wasm、DB 接続の証明ではありません。
-
-固定 PHP 8.5.12 CLI (`-n -l`) で install/read、bootstrap、DB adapter/drop-in、hook adapter/registry、native oracle の9 fixtureすべてに構文エラーがないことも確認しました。[PHP fixture lint receipt](../experiments/php-wasix-wp-bootstrap-probe/evidence/windows-php-fixture-lint.json) は各 fixture と PHP binary の hash、終了コードを記録します。これは lint のみで、fixture の実行、PHP-Wasm、DB 接続の証明ではありません。
-
-完全統合の MySQL/MariaDB receipt が成功するまでは、この PoC を「全体統合デモ済み」と表示しません。
+2026-11-20 の run 44649976739 では、従来の専用アダプターで MySQL と MariaDB の install/read が成功した。観測値は固定 WordPress のネイティブ基準と一致した。成功時のコード、取得済みの成果物と SHA-256、検証範囲は各証跡に記録している。[CI run](https://github.com/KANIKAMA-Carcinization/RecastPress/actions/runs/44649976739) · [MySQL 証跡](https://github.com/KANIKAMA-Carcinization/RecastPress/blob/82a12c9ba6e7d01e494666b0f2898801bf11ed82/experiments/php-wasix-wp-bootstrap-probe/evidence/ci-44649976739-mysql/provenance.json) · [MariaDB 証跡](https://github.com/KANIKAMA-Carcinization/RecastPress/blob/82a12c9ba6e7d01e494666b0f2898801bf11ed82/experiments/php-wasix-wp-bootstrap-probe/evidence/ci-44649976739-mariadb/provenance.json)
