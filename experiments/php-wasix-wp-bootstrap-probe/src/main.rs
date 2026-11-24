@@ -502,9 +502,18 @@ fn public_hook_dispatch(value: &Value) -> Option<Value> {
     let callbacks = ["rp_boot_hook_first", "rp_boot_hook_second"];
     let values = ["RP Bootstrap Fixture", "RP Bootstrap Fixture|first"];
     let priorities = [10, 20];
+    let callback_table = json!([
+        {"priority":10,"uid":"rp_boot_hook_first","function":"rp_boot_hook_first","accepted_args":1},
+        {"priority":20,"uid":"rp_boot_hook_second","function":"rp_boot_hook_second","accepted_args":1}
+    ]);
+    let clean_wp_hook_state = json!({
+        "nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false
+    });
     if value["hook"] != "option_blogname"
         || value["value"] != "RP Bootstrap Fixture|first|second"
         || value["invocations"] != json!(callbacks)
+        || value["callback_table"] != callback_table
+        || value["wp_hook_state"] != clean_wp_hook_state
         || events.len() != 2
     {
         return None;
@@ -541,7 +550,7 @@ fn public_hook_dispatch(value: &Value) -> Option<Value> {
         "invocations":callbacks,"events":safe_events,"after_dispatch":{
             "current_filter":false,"doing_filter":false,"doing_selected_filter":false,
             "did_filter":1,"stack":[],"current_priority":false
-        }}),
+        },"callback_table":callback_table,"wp_hook_state":clean_wp_hook_state}),
     )
 }
 fn public_literal(name: &str) -> Vec<String> {
@@ -717,6 +726,100 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn hook_dispatch_fixture(did_filter_before: u64) -> Value {
+        let did_filter = did_filter_before + 1;
+        json!({
+            "hook":"option_blogname",
+            "did_filter_before":did_filter_before,
+            "value":"RP Bootstrap Fixture|first|second",
+            "invocations":["rp_boot_hook_first","rp_boot_hook_second"],
+            "events":[
+                {"callback":"rp_boot_hook_first","value":"RP Bootstrap Fixture","did_filter":did_filter,"current_filter":"option_blogname","current_priority":10,"doing_filter":true},
+                {"callback":"rp_boot_hook_second","value":"RP Bootstrap Fixture|first","did_filter":did_filter,"current_filter":"option_blogname","current_priority":20,"doing_filter":true}
+            ],
+            "callback_table":[
+                {"priority":10,"uid":"rp_boot_hook_first","function":"rp_boot_hook_first","accepted_args":1},
+                {"priority":20,"uid":"rp_boot_hook_second","function":"rp_boot_hook_second","accepted_args":1}
+            ],
+            "wp_hook_state":{"nesting_level":0,"iterations":[],"current_priority":[],"doing_action":false},
+            "after_dispatch":{
+                "current_filter":false,"doing_filter":false,"doing_selected_filter":false,
+                "did_filter":did_filter,"stack":[],"current_priority":false
+            }
+        })
+    }
+
+    #[test]
+    fn public_hook_dispatch_normalizes_nonzero_baseline() {
+        for baseline in [0, 1, 37, 4096] {
+            let safe = public_hook_dispatch(&hook_dispatch_fixture(baseline)).unwrap();
+            assert_eq!(safe["did_filter_before"], baseline);
+            assert_eq!(safe["events"][0]["did_filter"], 1);
+            assert_eq!(safe["events"][1]["did_filter"], 1);
+            assert_eq!(safe["after_dispatch"]["did_filter"], 1);
+            assert_eq!(safe["after_dispatch"]["stack"], json!([]));
+        }
+    }
+
+    #[test]
+    fn public_hook_dispatch_rejects_invalid_baseline_and_event_identity() {
+        assert!(public_hook_dispatch(&hook_dispatch_fixture(4097)).is_none());
+        for invalid_baseline in [json!(-1), json!(true), json!("8")] {
+            let mut invalid = hook_dispatch_fixture(8);
+            invalid["did_filter_before"] = invalid_baseline;
+            assert!(public_hook_dispatch(&invalid).is_none());
+        }
+        let mut wrong_count = hook_dispatch_fixture(8);
+        wrong_count["events"][0]["did_filter"] = json!(10);
+        assert!(public_hook_dispatch(&wrong_count).is_none());
+        let mut wrong_callback = hook_dispatch_fixture(8);
+        wrong_callback["events"][1]["callback"] = json!("unapproved_callback");
+        assert!(public_hook_dispatch(&wrong_callback).is_none());
+        let mut wrong_event_value = hook_dispatch_fixture(8);
+        wrong_event_value["events"][0]["value"] = json!("unexpected");
+        assert!(public_hook_dispatch(&wrong_event_value).is_none());
+        let mut wrong_hook = hook_dispatch_fixture(8);
+        wrong_hook["hook"] = json!("unapproved_hook");
+        assert!(public_hook_dispatch(&wrong_hook).is_none());
+        let mut wrong_final_value = hook_dispatch_fixture(8);
+        wrong_final_value["value"] = json!("unexpected");
+        assert!(public_hook_dispatch(&wrong_final_value).is_none());
+        let mut wrong_invocations = hook_dispatch_fixture(8);
+        wrong_invocations["invocations"][0] = json!("unapproved_callback");
+        assert!(public_hook_dispatch(&wrong_invocations).is_none());
+        let mut wrong_event_order = hook_dispatch_fixture(8);
+        wrong_event_order["events"].as_array_mut().unwrap().reverse();
+        assert!(public_hook_dispatch(&wrong_event_order).is_none());
+        let mut wrong_doing_filter = hook_dispatch_fixture(8);
+        wrong_doing_filter["events"][0]["doing_filter"] = json!(false);
+        assert!(public_hook_dispatch(&wrong_doing_filter).is_none());
+    }
+
+    #[test]
+    fn public_hook_dispatch_requires_clean_dispatch_reset() {
+        let mut leftover_filter = hook_dispatch_fixture(3);
+        leftover_filter["after_dispatch"]["current_filter"] = json!("option_blogname");
+        assert!(public_hook_dispatch(&leftover_filter).is_none());
+        let mut leftover_stack = hook_dispatch_fixture(3);
+        leftover_stack["after_dispatch"]["stack"] = json!(["option_blogname"]);
+        assert!(public_hook_dispatch(&leftover_stack).is_none());
+        let mut wrong_priority = hook_dispatch_fixture(3);
+        wrong_priority["events"][0]["current_priority"] = json!(20);
+        assert!(public_hook_dispatch(&wrong_priority).is_none());
+        let mut wrong_did_filter = hook_dispatch_fixture(3);
+        wrong_did_filter["after_dispatch"]["did_filter"] = json!(3);
+        assert!(public_hook_dispatch(&wrong_did_filter).is_none());
+        let mut doing_filter = hook_dispatch_fixture(3);
+        doing_filter["after_dispatch"]["doing_filter"] = json!(true);
+        assert!(public_hook_dispatch(&doing_filter).is_none());
+        let mut doing_selected_filter = hook_dispatch_fixture(3);
+        doing_selected_filter["after_dispatch"]["doing_selected_filter"] = json!(true);
+        assert!(public_hook_dispatch(&doing_selected_filter).is_none());
+        let mut wrong_after_priority = hook_dispatch_fixture(3);
+        wrong_after_priority["after_dispatch"]["current_priority"] = json!(10);
+        assert!(public_hook_dispatch(&wrong_after_priority).is_none());
+    }
+
     #[test]
     fn complete_cgi_failure_keeps_only_source_bound_public_diagnostics() {
         let php = json!({"schema":"recastpress.php-wasix-wp-bootstrap-php-observation.v0.5","mode":"install","passed":false,"phase":"wp_settings","failure":"php_warning","failure_class":"RpBootstrapFailure","message":"private-secret-SQL"});

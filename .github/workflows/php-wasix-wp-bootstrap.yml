@@ -11,9 +11,12 @@ name: PHP WASIX full WordPress bootstrap
       - ".github/workflows/php-wasix-wp-bootstrap.yml"
       - "experiments/wp-source-fs-probe/src/**"
       - "experiments/wp-bootstrap-probe/fixtures/**"
+      - "experiments/binlog-probe/Cargo.lock"
       - "experiments/wpdb-rpc-probe/prepare_driver.py"
+      - "experiments/wpdb-rpc-probe/test_prepare_driver.py"
       - "experiments/wpdb-rpc-probe/driver-plan.json"
       - "experiments/wpdb-rpc-probe/fixtures/binlog-Cargo.lock.v0.5"
+      - "experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/**"
   workflow_dispatch: {}
 
 permissions:
@@ -108,6 +111,7 @@ jobs:
         run: |
           set -euo pipefail
           rustup toolchain install 1.94.0 --profile minimal --no-self-update
+          python3 -B -m unittest discover -s experiments/wpdb-rpc-probe -p test_prepare_driver.py
           cargo fetch --locked --manifest-path experiments/binlog-probe/Cargo.toml
           python3 experiments/wpdb-rpc-probe/prepare_driver.py
           cargo fetch --locked --manifest-path experiments/php-wasix-wp-bootstrap-probe/Cargo.toml
@@ -116,9 +120,13 @@ jobs:
         id: host
         run: python3 experiments/php-wasix-wp-bootstrap-probe/build_check.py
 
-      - name: Install and read unchanged WordPress using php-wasm and Rust DB
+      - name: Install and read WordPress with the pinned hook overlay and Rust DB
         id: contract
-        run: python3 experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend ${{ matrix.backend }} --record
+        run: |
+          set -euo pipefail
+          bash experiments/php-wasix-wp-bootstrap-probe/prepare_native_php.sh
+          export PATH="$PWD/target/php-wasix-wp-bootstrap-probe/native-php:$PATH"
+          python3 experiments/php-wasix-wp-bootstrap-probe/run_check.py --backend ${{ matrix.backend }} --record
 
       - name: Record CI stage outcomes
         if: ${{ always() }}

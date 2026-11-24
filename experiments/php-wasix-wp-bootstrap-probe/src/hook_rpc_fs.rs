@@ -70,6 +70,8 @@ struct State {
     cleanup_releases: VecDeque<PhpHandle>,
     invoked: Vec<String>,
     dispatcher_complete: bool,
+    dispatcher_cancel_attempted: bool,
+    dispatcher_cancelled: bool,
     complete_sent: bool,
     target_seen: bool,
     current_value: Vec<u8>,
@@ -614,6 +616,8 @@ impl HookRpcFs {
             cleanup_releases: VecDeque::new(),
             invoked: Vec::new(),
             dispatcher_complete: false,
+            dispatcher_cancel_attempted: false,
+            dispatcher_cancelled: false,
             complete_sent: false,
             target_seen: false,
             current_value: Vec::new(),
@@ -649,6 +653,8 @@ impl HookRpcFs {
                 "finished": state.finished,
                 "close_dispatched": state.close_dispatched,
                 "dispatcher_complete": state.dispatcher_complete,
+                "dispatcher_cancel_attempted": state.dispatcher_cancel_attempted,
+                "dispatcher_cancelled": state.dispatcher_cancelled,
                 "complete_sent": state.complete_sent,
                 "invoked_callbacks": state.invoked,
                 "live_handles": state.live_handles.len(),
@@ -686,6 +692,21 @@ impl HookRpcFs {
                 || !state.cleanup_releases.is_empty()
             {
                 state.fail("wp_hooks_dispatch_not_clean_at_finish");
+            }
+            if state.failure.is_some()
+                && !state.dispatcher_complete
+                && !state.dispatcher_cancel_attempted
+            {
+                let cancel_ticket = state.ticket;
+                let cancelled = match (state.dispatcher.as_mut(), cancel_ticket) {
+                    (Some(dispatcher), Some(ticket)) => {
+                        let result = dispatcher.cancel(ticket).is_ok();
+                        state.dispatcher_cancel_attempted = true;
+                        result
+                    }
+                    _ => false,
+                };
+                state.dispatcher_cancelled = cancelled;
             }
             state.finished = true;
         }
@@ -986,5 +1007,390 @@ impl VirtualFile for Channel {
         Poll::Ready(Ok(
             MAX_FRAME.min(MAX_TOTAL.saturating_sub(state.request_bytes))
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+
+    const NONCE: &str = "0123456789abcdef0123456789abcdef0123456789abcdef";
+    const FILTERED_VALUES: [&str; 2] = [
+        "RP Bootstrap Fixture|first",
+        "RP Bootstrap Fixture|first|second",
+    ];
+
+    fn handle(slot: u64, token: &str) -> Value {
+        json!({
+            "request": "1",
+            "kind": "callable",
+            "slot": slot,
+            "generation": 1,
+            "token": token
+        })
+    }
+
+    fn rows() -> Vec<Value> {
+        CALLBACKS
+            .iter()
+            .enumerate()
+            .map(|(index, (uid, priority))| {
+                let (slot, token) = if index == 0 {
+                    (1, "0000000000000001")
+                } else {
+                    (2, "0000000000000002")
+                };
+                json!({
+                    "priority": priority,
+                    "uid": uid,
+                    "accepted_args": 1,
+                    "function": uid,
+                    "handle": handle(slot, token)
+                })
+            })
+            .collect()
+    }
+
+    fn begin_payload() -> Value {
+        let rows = rows();
+        let fingerprint_rows: Vec<Value> = rows
+            .iter()
+            .map(|row| {
+                let handle = &row["handle"];
+                json!([
+                    row["priority"],
+                    row["uid"],
+                    row["accepted_args"],
+                    row["function"],
+                    handle["request"],
+                    handle["kind"],
+                    handle["slot"],
+                    handle["generation"],
+                    handle["token"]
+                ])
+            })
+            .collect();
+        let fingerprint = crate::db::sha(&serde_json::to_vec(&fingerprint_rows).unwrap());
+        json!({
+            "hook": HOOK_NAME,
+            "target": TARGET,
+            "value": INPUT_VALUE,
+            "extra": ["blogname"],
+            "rows": rows,
+            "fingerprint": fingerprint
+        })
+    }
+
+    fn frame(nonce: &str, sequence: u64, operation: &str, payload: Value) -> Vec<u8> {
+        frame_with_schema(nonce, REQUEST_SCHEMA, sequence, operation, payload)
+    }
+
+    fn frame_with_schema(
+        nonce: &str,
+        schema: &str,
+        sequence: u64,
+        operation: &str,
+        payload: Value,
+    ) -> Vec<u8> {
+        let mut wire = serde_json::to_vec(&json!({
+            "schema": schema,
+            "nonce": nonce,
+            "seq": sequence,
+            "op": operation,
+            "payload": payload
+        }))
+        .unwrap();
+        wire.push(b'\n');
+        wire
+    }
+
+    fn open(fs: &HookRpcFs) -> Box<dyn VirtualFile + Send + Sync> {
+        fs.new_open_options()
+            .read(true)
+            .write(true)
+            .open("/channel")
+            .unwrap()
+    }
+
+    async fn exchange(
+        file: &mut Box<dyn VirtualFile + Send + Sync>,
+        sequence: u64,
+        operation: &str,
+        payload: Value,
+    ) -> Value {
+        file.seek(SeekFrom::Start(0)).await.unwrap();
+        file.write_all(&frame(NONCE, sequence, operation, payload))
+            .await
+            .unwrap();
+        file.seek(SeekFrom::Start(0)).await.unwrap();
+        let mut reply = Vec::new();
+        file.read_to_end(&mut reply).await.unwrap();
+        assert!(reply.ends_with(b"\n"));
+        let reply: Value = serde_json::from_slice(&reply[..reply.len() - 1]).unwrap();
+        assert_eq!(reply["schema"], REPLY_SCHEMA);
+        assert_eq!(reply["nonce"], NONCE);
+        assert_eq!(reply["seq"], sequence);
+        reply
+    }
+
+    #[test]
+    fn full_two_callback_dispatch_release_complete_and_close() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let expected_handles: Vec<Value> =
+                rows().iter().map(|row| row["handle"].clone()).collect();
+            let mut next_sequence = 1;
+            let mut reply = exchange(&mut file, next_sequence, "begin", begin_payload()).await;
+            next_sequence += 1;
+            assert_eq!(reply["event"], "invoke");
+
+            let callback_names = CALLBACKS.map(|(uid, _)| uid);
+            let input_values = [INPUT_VALUE, FILTERED_VALUES[0]];
+            let mut next_callback = 0;
+            let mut releases = 0;
+            loop {
+                match reply["event"].as_str().unwrap() {
+                    "invoke" => {
+                        assert!(next_callback < callback_names.len());
+                        let uid = callback_names[next_callback];
+                        assert_eq!(reply["payload"]["uid"], uid);
+                        assert_eq!(reply["payload"]["target"], TARGET);
+                        assert_eq!(reply["payload"]["priority"], CALLBACKS[next_callback].1);
+                        assert_eq!(reply["payload"]["call_mode"], "array");
+                        assert_eq!(reply["payload"]["handle"], expected_handles[next_callback]);
+                        assert_eq!(reply["payload"]["value"], input_values[next_callback]);
+                        assert_eq!(
+                            reply["payload"]["args"],
+                            json!([input_values[next_callback]])
+                        );
+                        reply = exchange(
+                            &mut file,
+                            next_sequence,
+                            "resume",
+                            json!({
+                                "target": TARGET,
+                                "uid": uid,
+                                "value": FILTERED_VALUES[next_callback]
+                            }),
+                        )
+                        .await;
+                        next_sequence += 1;
+                        next_callback += 1;
+                    }
+                    "release" => {
+                        let released = reply["payload"]["handle"].clone();
+                        assert!(releases < expected_handles.len());
+                        assert_eq!(released, expected_handles[releases]);
+                        reply = exchange(
+                            &mut file,
+                            next_sequence,
+                            "release_ack",
+                            json!({"handle": released}),
+                        )
+                        .await;
+                        next_sequence += 1;
+                        releases += 1;
+                    }
+                    "complete" => break,
+                    event => panic!("unexpected hook RPC event: {event}"),
+                }
+                assert!(next_sequence <= MAX_OPERATIONS as u64);
+            }
+
+            assert_eq!(next_callback, 2);
+            assert_eq!(releases, expected_handles.len());
+            assert_eq!(reply["payload"]["target"], TARGET);
+            assert_eq!(reply["payload"]["value"], FILTERED_VALUES[1]);
+            assert_eq!(reply["payload"]["invocations"], 2);
+            let live = fs.snapshot();
+            assert_eq!(live["dispatcher_complete"], true);
+            assert_eq!(live["complete_sent"], true);
+            assert_eq!(live["live_handles"], 0);
+            assert_eq!(live["invoked_callbacks"], json!(callback_names));
+            assert_eq!(live["pending_invoke"], false);
+            assert_eq!(live["pending_release"], false);
+
+            let closed = exchange(&mut file, next_sequence, "close", json!({})).await;
+            assert_eq!(closed["event"], "close");
+            assert_eq!(closed["payload"]["closed"], true);
+            file.shutdown().await.unwrap();
+            drop(file);
+
+            let finished = fs.finish();
+            assert_eq!(finished["failure"], Value::Null);
+            assert_eq!(finished["finished"], true);
+            assert_eq!(finished["close_dispatched"], true);
+            assert_eq!(finished["dispatcher_complete"], true);
+            assert_eq!(finished["dispatcher_cancel_attempted"], false);
+            assert_eq!(finished["dispatcher_cancelled"], false);
+            assert_eq!(finished["complete_sent"], true);
+            assert_eq!(finished["live_handles"], 0);
+            assert_eq!(finished["unread_response_bytes"], 0);
+            assert_eq!(finished["response_read_bytes"], finished["response_bytes"]);
+        });
+    }
+
+    #[test]
+    fn rejects_bad_schema_fingerprint_and_release_ack_identity() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            assert!(
+                file.write_all(&frame_with_schema(
+                    NONCE,
+                    "recastpress.wp-hooks-request.invalid",
+                    1,
+                    "begin",
+                    begin_payload()
+                ))
+                .await
+                .is_err()
+            );
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_request_schema");
+
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let mut payload = begin_payload();
+            payload["fingerprint"] = Value::String("0".repeat(64));
+            assert!(
+                file.write_all(&frame(NONCE, 1, "begin", payload))
+                    .await
+                    .is_err()
+            );
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_callback_fingerprint");
+
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let first_invoke = exchange(&mut file, 1, "begin", begin_payload()).await;
+            assert_eq!(first_invoke["event"], "invoke");
+            let second_invoke = exchange(
+                &mut file,
+                2,
+                "resume",
+                json!({
+                    "target": TARGET,
+                    "uid": CALLBACKS[0].0,
+                    "value": FILTERED_VALUES[0]
+                }),
+            )
+            .await;
+            assert_eq!(second_invoke["event"], "invoke");
+            assert_eq!(second_invoke["payload"]["uid"], CALLBACKS[1].0);
+            let release = exchange(
+                &mut file,
+                3,
+                "resume",
+                json!({
+                    "target": TARGET,
+                    "uid": CALLBACKS[1].0,
+                    "value": FILTERED_VALUES[1]
+                }),
+            )
+            .await;
+            assert_eq!(release["event"], "release");
+            file.seek(SeekFrom::Start(0)).await.unwrap();
+            let wrong_handle = handle(9, "0000000000000009");
+            assert!(
+                file.write_all(&frame(
+                    NONCE,
+                    4,
+                    "release_ack",
+                    json!({"handle": wrong_handle})
+                ))
+                .await
+                .is_err()
+            );
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_release_ack_identity");
+        });
+    }
+
+    #[test]
+    fn finish_cancels_incomplete_dispatch_once_and_preserves_first_failure() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let invoke = exchange(&mut file, 1, "begin", begin_payload()).await;
+            assert_eq!(invoke["event"], "invoke");
+
+            file.seek(SeekFrom::Start(0)).await.unwrap();
+            assert!(file
+                .write_all(&frame(NONCE, 2, "invalid", json!({})))
+                .await
+                .is_err());
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_unknown_operation");
+            file.shutdown().await.unwrap();
+            drop(file);
+
+            let failed = fs.finish();
+            assert_eq!(failed["failure"], "wp_hooks_unknown_operation");
+            assert_eq!(failed["dispatcher_cancel_attempted"], true);
+            assert_eq!(failed["dispatcher_cancelled"], true);
+
+            let repeated = fs.finish();
+            assert_eq!(repeated["failure"], "wp_hooks_unknown_operation");
+            assert_eq!(repeated["dispatcher_cancel_attempted"], true);
+            assert_eq!(repeated["dispatcher_cancelled"], true);
+        });
+    }
+
+    #[test]
+    fn unread_reply_wrong_sequence_nonce_and_multiple_frames_fail_closed() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            file.seek(SeekFrom::Start(0)).await.unwrap();
+            file.write_all(&frame(NONCE, 1, "begin", begin_payload()))
+                .await
+                .unwrap();
+            file.seek(SeekFrom::Start(0)).await.unwrap();
+            let next = frame(NONCE, 2, "resume", json!({}));
+            assert!(file.write_all(&next).await.is_err());
+            assert_eq!(
+                fs.snapshot()["failure"],
+                "wp_hooks_request_before_reply_consumed"
+            );
+            drop(file);
+            assert!(!fs.finish()["failure"].is_null());
+
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            assert!(
+                file.write_all(&frame(NONCE, 2, "begin", begin_payload()))
+                    .await
+                    .is_err()
+            );
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_request_sequence_order");
+
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let other_nonce = "f".repeat(48);
+            assert!(
+                file.write_all(&frame(&other_nonce, 1, "begin", begin_payload()))
+                    .await
+                    .is_err()
+            );
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_request_nonce");
+
+            let fs = HookRpcFs::new(NONCE.to_owned());
+            let mut file = open(&fs);
+            let mut joined = frame(NONCE, 1, "begin", begin_payload());
+            joined.extend_from_slice(&frame(NONCE, 2, "resume", json!({})));
+            assert!(file.write_all(&joined).await.is_err());
+            assert_eq!(fs.snapshot()["failure"], "wp_hooks_multiple_frames");
+        });
     }
 }

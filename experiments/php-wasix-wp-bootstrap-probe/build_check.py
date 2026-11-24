@@ -49,6 +49,12 @@ TESTS = sorted([
     *['rpc_fs::tests::' + x for x in ['async_reply_pending_then_consumed_and_closed',
         'incomplete_unread_and_open_handles_cannot_finish',
         'namespace_denial_no_reopen_and_identity_before_dispatch']],
+    *['hook_rpc_fs::tests::' + x for x in [
+        'full_two_callback_dispatch_release_complete_and_close',
+        'rejects_bad_schema_fingerprint_and_release_ack_identity',
+        'unread_reply_wrong_sequence_nonce_and_multiple_frames_fail_closed',
+        'finish_cancels_incomplete_dispatch_once_and_preserves_first_failure']],
+    'catalog::tests::validates_original_catalog_then_mounts_two_pinned_hook_files_and_owned_dropin',
     *['result_budget::tests::' + x for x in ['metadata_and_zero_rows_are_preserved',
         'binary_null_empty_and_raw_bytes_are_exact', 'row_and_width_limits_return_no_materialized_result',
         'cell_and_raw_boundaries_are_exact', 'encoded_boundary_and_metadata_limits_fail_closed',
@@ -60,6 +66,9 @@ TESTS = sorted([
     *['tests::' + x for x in ['public_php_excludes_unexpected_rows_secrets_and_nonfixture_titles',
         'complete_cgi_failure_keeps_only_source_bound_public_diagnostics',
         'cgi_environment_carries_neither_database_nor_nonce_context',
+        'public_hook_dispatch_normalizes_nonzero_baseline',
+        'public_hook_dispatch_rejects_invalid_baseline_and_event_identity',
+        'public_hook_dispatch_requires_clean_dispatch_reset',
         'expanded_columns_are_explicit_and_other_result_limits_stay_fixed']],
 ])
 STAGES = [('unit-build', 1200), ('unit-list', 10), ('unit-run', 60), ('normal-build', 1200)]
@@ -67,10 +76,10 @@ STAGES = [('unit-build', 1200), ('unit-list', 10), ('unit-run', 60), ('normal-bu
 
 def inputs():
     paths = [p for p in HERE.rglob('*') if p.is_file() and '__pycache__' not in p.parts
-        and 'target' not in p.relative_to(HERE).parts
+        and p.relative_to(HERE).parts[0] != 'target'
         and p.name != 'import_evidence.py'
-        and (p.suffix in ('.rs', '.php', '.py', '.toml') or p.name == 'Cargo.lock')]
-    paths += derivation.inputs()
+        and (p.suffix in ('.rs', '.php', '.py', '.sh', '.toml') or p.name == 'Cargo.lock')]
+    paths += [*derivation.inputs(), driver.LEGACY_SEED]
     paths += [ROOT / p for p in prepared.input_hashes()]
     paths += [ROOT / p for p in sourcefs.inputs()]
     paths += [ROOT / p for p in managed.source_hashes()]

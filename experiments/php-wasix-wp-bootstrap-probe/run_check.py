@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 
+from hook_oracle_contract import validate as compare_native_hook_oracles
+
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -34,7 +36,10 @@ COMPARE=['bootstrap_completed','install_completed','physical_disconnect_complete
 HOOK_TRACE_FIELDS=['callback','value','current_filter','doing_filter','did_filter','current_priority']
 HOOK_RESET_FIELDS=['current_filter','doing_filter','doing_selected_filter','did_filter','stack']
 HOOK_ORACLE_SCHEMA='recastpress.wp-bootstrap-hook-native-oracle.v0.1'
-HOOK_PHP_FILES=['fixtures/hook_adapter.php','fixtures/hook_native_oracle.php']
+HOOK_OVERLAY_ORACLE_SCHEMA='recastpress.wp-bootstrap-hook-overlay-native-oracle.v0.1'
+HOOK_PHP_FILES=['fixtures/hook_adapter.php','fixtures/hook_handle_registry.php',
+    'fixtures/hook_native_oracle.php','fixtures/hook_overlay_native_oracle.php',
+    'tests/hook_failure_cleanup.php']
 
 
 def canonical(value):
@@ -78,6 +83,49 @@ def native_hook_oracle():
     return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
         'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
         'php_cli_mode':'-n'}
+
+
+def native_hook_overlay_oracle():
+    version=subprocess.run(['php','-n','-r','echo PHP_VERSION_ID;'],cwd=ROOT,
+        stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=15,check=False)
+    require(version.returncode==0 and not version.stderr and version.stdout==b'80512',
+        'native_hook_overlay_php_version')
+    path=HERE/'fixtures/hook_overlay_native_oracle.php'
+    result=subprocess.run(['php','-n',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=8192
+        and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
+        'native_hook_overlay_oracle_execution_failed')
+    value=json.loads(result.stdout)
+    require(value.get('schema')==HOOK_OVERLAY_ORACLE_SCHEMA and value.get('status')=='passed',
+        'native_hook_overlay_oracle_failed')
+    require(value.get('wordpress_version')=='7.1.3'
+        and value.get('event_order')==['rp_overlay_oracle_first','rp_overlay_oracle_second']
+        and value.get('value')=='RP Bootstrap Fixture|first|second'
+        and value.get('after_dispatch',{}).get('wp_hook_state')=={
+            'nesting_level':0,'iterations':[],'current_priority':[],'doing_action':False},
+        'native_hook_overlay_oracle_contract')
+    return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
+        'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),
+        'php_version_id':80512,'php_cli_mode':'-n'}
+
+
+def native_hook_failure_cleanup():
+    path=HERE/'tests/hook_failure_cleanup.php'
+    result=subprocess.run(['php','-n',str(path)],cwd=ROOT,stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False)
+    require(result.returncode==0 and not result.stderr and 0<len(result.stdout)<=4096
+        and result.stdout.endswith(b'\n') and result.stdout.count(b'\n')==1,
+        'hook_failure_cleanup_test_execution_failed')
+    value=json.loads(result.stdout)
+    require(value=={'status':'passed','failure_stage':'hook_dispatch_begin',
+        'registry_closed':True,'live_handles':0,'channel_aborted':True,'stream_closed':True,
+        'transport_failure_stage':'hook_dispatch_begin','transport_registry_closed':True,
+        'transport_channel_aborted':True,'transport_stream_closed':True,
+        'protocol_operations':['begin'],'protocol_close_not_attempted':True},
+        'hook_failure_cleanup_test_contract')
+    return value,{'exit_code':result.returncode,'stdout_bytes':len(result.stdout),
+        'stdout_sha256':sha(result.stdout),'stderr_bytes':len(result.stderr),'php_cli_mode':'-n'}
 
 
 def lint_hook_fixtures():
@@ -125,6 +173,8 @@ def compare_hook_oracle(php,native_hook):
         and [event['callback'] for event in actual_trace]==native_hook['event_order'],
         'native_wasm_hook_order_differs')
     native_reset=native_hook['after_dispatch']
+    require(hook.get('wp_hook_state')==native_reset['hook_state'],
+        'native_wasm_wp_hook_state_differs')
     wasm_reset=hook.get('after_dispatch')
     wasm_after_count=wasm_reset.get('did_filter') if isinstance(wasm_reset,dict) else None
     require(isinstance(wasm_after_count,int) and not isinstance(wasm_after_count,bool)
@@ -154,7 +204,8 @@ def compare_hook_oracle(php,native_hook):
             'native_reset_did_filter':native_reset.get('did_filter'),
             'wasm_reset_did_filter':wasm_after_count,
             'normalized_reset_did_filter':normalized_wasm_reset['did_filter'],
-            'trace_equal':True,'reset_equal':True,'current_filter_reset_false':True}}
+            'trace_equal':True,'reset_equal':True,'wp_hook_state_equal':True,
+            'current_filter_reset_false':True}}
 
 
 def validate(value,mode,native,native_hook):
@@ -281,6 +332,16 @@ def main():
         native_hook,native_hook_execution=native_hook_oracle()
         report['native_hook_oracle']=native_hook
         report['native_hook_oracle_execution']=native_hook_execution
+        stage='native_hook_overlay_oracle'
+        native_hook_overlay,native_hook_overlay_execution=native_hook_overlay_oracle()
+        report['native_hook_overlay_oracle']=native_hook_overlay
+        report['native_hook_overlay_oracle_execution']=native_hook_overlay_execution
+        report['native_hook_cross_oracle']=compare_native_hook_oracles(native_hook,native_hook_overlay)
+        stage='hook_failure_cleanup'
+        hook_failure_cleanup,hook_failure_cleanup_execution=native_hook_failure_cleanup()
+        report['hook_failure_cleanup']=hook_failure_cleanup
+        report['hook_failure_cleanup_execution']=hook_failure_cleanup_execution
+        stage='database_startup'
         database=linux.Database(args.backend,report)
         with database:
             for mode in ['install','read']:

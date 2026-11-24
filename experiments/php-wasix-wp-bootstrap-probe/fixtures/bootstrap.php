@@ -2,9 +2,10 @@
 declare(strict_types=1);
 require __DIR__ . '/helpers.php';
 const RP_PUBLIC_PHASES = ["input","source_inventory","wp_settings","wp_install","public_observations","source_after","complete"];
-const RP_PUBLIC_FAILURE_CODES = ["autoload_stats","bootstrap_hook_result","cgi_entry_guard","closed_bootstrap_mode","context_admin_shape","context_duplicate_keys","context_exact_keys","context_nonce_or_salts","context_object","context_open","context_profile","context_read","context_salt_keys","context_salt_shape","context_size","core_source_changed_during_bootstrap","fixed_guest_site","full_rpc_bootstrap_required","hook_dispatch_begin","hook_dispatch_callback","hook_dispatch_complete","hook_dispatch_invoke_contract","hook_dispatch_release","hook_dispatch_resume","input_string_token","installer_not_complete","installer_return","local","native_disconnect_failed","native_outbound_guard_configuration","native_php_profile","owned_dropin_bytes","owned_dropin_context","owned_dropin_nonce","php_throwable","php_warning","public_observation_contract","public_secret_guard","rb","rp_unused_guest_db","rp_unused_guest_user","rpc_actual_session_charset_mismatch","rpc_channel_closed_or_budget","rpc_channel_open_failed","rpc_close_reply_keys","rpc_close_reply_not_eof","rpc_close_without_channel","rpc_column_integer","rpc_column_keys","rpc_column_object","rpc_column_offset_out_of_range","rpc_connect_reuse_refused","rpc_escape_failed","rpc_escape_out_of_fixed_scope","rpc_escape_reply_keys","rpc_flush_failed","rpc_hello_contract","rpc_hello_failed","rpc_hello_keys","rpc_hex_decode_failed","rpc_host_close_failed","rpc_host_close_not_completed","rpc_integer_out_of_native_range","rpc_internal_query_failed","rpc_invalid_hex","rpc_invalid_json","rpc_invalid_unsigned_decimal","rpc_mysqli_column_metadata_out_of_fixed_scope","rpc_query_collection_bounds","rpc_query_data_keys","rpc_query_string_required","rpc_query_u16","rpc_reconnect_not_supported","rpc_reply_exact_keys","rpc_reply_identity","rpc_reply_incomplete_or_quota","rpc_reply_object_required","rpc_reply_total_quota","rpc_request_frame_or_total_quota","rpc_request_shape","rpc_result_raw_byte_quota","rpc_rewind_before_read_failed","rpc_rewind_before_write_failed","rpc_row_width","rpc_server_error_keys","rpc_server_error_out_of_fixed_scope","rpc_server_info_before_connect","rpc_session_snapshot_shape","rpc_sql_mode_out_of_fixed_scope","rpc_sql_mode_shape","rpc_write_failed","single_site_table_set","source_complete_tree","source_extra_or_special_file","source_file_bytes_changed","source_link","source_manifest_fixed_inventory","source_manifest_profile","source_manifest_size","source_noncanonical_path","unclassified_failure","unexpected_php_shutdown","utf8mb4","utf8mb4_unicode_520_ci"];
+const RP_PUBLIC_FAILURE_CODES = ["autoload_stats","bootstrap_hook_result","cgi_entry_guard","closed_bootstrap_mode","context_admin_shape","context_duplicate_keys","context_exact_keys","context_nonce_or_salts","context_object","context_open","context_profile","context_read","context_salt_keys","context_salt_shape","context_size","core_source_changed_during_bootstrap","fixed_guest_site","full_rpc_bootstrap_required","hook_dispatch_begin","hook_dispatch_callback","hook_dispatch_complete","hook_dispatch_invoke_contract","hook_dispatch_release","hook_dispatch_resume","input_string_token","installer_not_complete","installer_return","local","native_disconnect_failed","native_outbound_guard_configuration","native_php_profile","owned_dropin_bytes","owned_dropin_context","owned_dropin_nonce","owned_hook_overlay_bytes","php_throwable","php_warning","public_observation_contract","public_secret_guard","rb","rp_unused_guest_db","rp_unused_guest_user","rpc_actual_session_charset_mismatch","rpc_channel_closed_or_budget","rpc_channel_open_failed","rpc_close_reply_keys","rpc_close_reply_not_eof","rpc_close_without_channel","rpc_column_integer","rpc_column_keys","rpc_column_object","rpc_column_offset_out_of_range","rpc_connect_reuse_refused","rpc_escape_failed","rpc_escape_out_of_fixed_scope","rpc_escape_reply_keys","rpc_flush_failed","rpc_hello_contract","rpc_hello_failed","rpc_hello_keys","rpc_hex_decode_failed","rpc_host_close_failed","rpc_host_close_not_completed","rpc_integer_out_of_native_range","rpc_internal_query_failed","rpc_invalid_hex","rpc_invalid_json","rpc_invalid_unsigned_decimal","rpc_mysqli_column_metadata_out_of_fixed_scope","rpc_query_collection_bounds","rpc_query_data_keys","rpc_query_string_required","rpc_query_u16","rpc_reconnect_not_supported","rpc_reply_exact_keys","rpc_reply_identity","rpc_reply_incomplete_or_quota","rpc_reply_object_required","rpc_reply_total_quota","rpc_request_frame_or_total_quota","rpc_request_shape","rpc_result_raw_byte_quota","rpc_rewind_before_read_failed","rpc_rewind_before_write_failed","rpc_row_width","rpc_server_error_keys","rpc_server_error_out_of_fixed_scope","rpc_server_info_before_connect","rpc_session_snapshot_shape","rpc_sql_mode_out_of_fixed_scope","rpc_sql_mode_shape","rpc_write_failed","single_site_table_set","source_complete_tree","source_extra_or_special_file","source_file_bytes_changed","source_link","source_manifest_fixed_inventory","source_manifest_profile","source_manifest_size","source_noncanonical_path","unclassified_failure","unexpected_php_shutdown","utf8mb4","utf8mb4_unicode_520_ci"];
 const RP_PUBLIC_FAILURE_CLASSES = ["RpBootstrapFailure","RpNativeFailure","JsonException","Error","TypeError","ValueError","ArgumentCountError","RuntimeException","Exception","ParseError","ErrorException","unclassified_exception"];
 const RP_DROPIN_SHA = '2fcc77cd88d2432ea40c65b6a3f425f80f40064857688de64d0a71e68d6d5be8';
+const RP_HOOK_OVERLAY = ['wp-includes/plugin.php'=>['source_bytes'=>37123,'source_sha256'=>'d70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d','overlay_bytes'=>37171,'overlay_sha256'=>'db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c'],'wp-includes/class-wp-hook.php'=>['source_bytes'=>17584,'source_sha256'=>'b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e','overlay_bytes'=>20078,'overlay_sha256'=>'76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4']];
 
 final class RpBootstrapFailure extends RuntimeException {}
 function rp_boot_check(bool $value, string $code): void {
@@ -68,7 +69,7 @@ function rp_boot_inventory(string $site, string $manifest_path): array {
         === 'afacbaee85821a793af5964b0b797d2aa2d0e6b27bf8cb76763dc3c0cb5d911c'
         && hash('sha256', json_encode($directories, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES))
         === '7d8e0d997ccd9c7e565c8804a2d8c00a5502eec10c578338fbbd347dc37e57a5', 'source_manifest_fixed_inventory');
-    $actual_files = []; $actual_dirs = []; $total = 0; $overlay_seen = false;
+    $actual_files = []; $actual_dirs = []; $total = 0; $overlay_seen = false; $hook_overlay_seen = [];
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($site, FilesystemIterator::SKIP_DOTS),
         RecursiveIteratorIterator::SELF_FIRST);
     foreach ($iterator as $entry) {
@@ -84,13 +85,29 @@ function rp_boot_inventory(string $site, string $manifest_path): array {
         rp_boot_check($entry->isFile() && isset($files[$relative]) && $entry->getSize() <= 16777216,
             'source_extra_or_special_file');
         $row = $files[$relative];
+        if (isset(RP_HOOK_OVERLAY[$relative])) {
+            $identity = RP_HOOK_OVERLAY[$relative];
+            rp_boot_check($row['bytes'] === $identity['source_bytes']
+                && $row['sha256'] === $identity['source_sha256']
+                && $entry->getSize() === $identity['overlay_bytes']
+                && hash_file('sha256', $path) === $identity['overlay_sha256'], 'owned_hook_overlay_bytes');
+            $hook_overlay_seen[$relative] = true;
+            $total += $row['bytes'];
+            $actual_files[] = $relative;
+            continue;
+        }
         rp_boot_check($entry->getSize() === $row['bytes'] && hash_file('sha256', $path) === $row['sha256'],
             'source_file_bytes_changed');
         $actual_files[] = $relative; $total += $entry->getSize();
     }
     sort($actual_files, SORT_STRING); sort($actual_dirs, SORT_STRING);
+    $expected_hook_overlay = array_keys(RP_HOOK_OVERLAY);
+    sort($expected_hook_overlay, SORT_STRING);
+    $actual_hook_overlay = array_keys($hook_overlay_seen);
+    sort($actual_hook_overlay, SORT_STRING);
     rp_boot_check($actual_files === array_keys($files) && $actual_dirs === $directories
-        && $overlay_seen && $total === 110077999 && !file_exists($site . '/wp-config.php'), 'source_complete_tree');
+        && $overlay_seen && $actual_hook_overlay === $expected_hook_overlay
+        && $total === 110077999 && !file_exists($site . '/wp-config.php'), 'source_complete_tree');
     return ['files' => count($actual_files), 'directories' => count($actual_dirs), 'bytes' => $total,
         'file_inventory_sha256' => $manifest['file_inventory_sha256'], 'manifest_sha256' => hash('sha256', $wire)];
 }
@@ -209,13 +226,39 @@ try {
             'bootstrap_hook_result');
     }
     $rp_hook_object = $GLOBALS['rp_boot_hook_object'] ?? null;
-    rp_boot_check($rp_hook_object instanceof RpBootstrapDispatcherHook, 'bootstrap_hook_result');
+    rp_boot_check($rp_hook_object instanceof WP_Hook, 'bootstrap_hook_result');
+    $rp_hook_private = static fn(string $name): mixed => (new ReflectionProperty(WP_Hook::class, $name))->getValue($rp_hook_object);
+    $rp_hook_state = [
+        'nesting_level' => $rp_hook_private('nesting_level'),
+        'iterations' => $rp_hook_private('iterations'),
+        'current_priority' => $rp_hook_private('current_priority'),
+        'doing_action' => $rp_hook_private('doing_action'),
+    ];
+    $rp_hook_callback_table = [];
+    foreach ($rp_hook_object->callbacks as $rp_priority => $rp_bucket) {
+        foreach ($rp_bucket as $rp_uid => $rp_entry) {
+            $rp_hook_callback_table[] = [
+                'priority' => $rp_priority,
+                'uid' => $rp_uid,
+                'function' => $rp_entry['function'],
+                'accepted_args' => $rp_entry['accepted_args'],
+            ];
+        }
+    }
+    rp_boot_check($rp_hook_state === [
+        'nesting_level' => 0, 'iterations' => [], 'current_priority' => [], 'doing_action' => false,
+    ] && $rp_hook_callback_table === [
+        ['priority' => 10, 'uid' => 'rp_boot_hook_first', 'function' => 'rp_boot_hook_first', 'accepted_args' => 1],
+        ['priority' => 20, 'uid' => 'rp_boot_hook_second', 'function' => 'rp_boot_hook_second', 'accepted_args' => 1],
+    ], 'bootstrap_hook_result');
     $rp_report['hook_dispatch'] = [
         'hook' => 'option_blogname',
         'value' => $rp_blogname,
         'invocations' => $rp_hook_invocations,
         'did_filter_before' => $rp_hook_did_filter_before,
         'events' => $rp_hook_trace,
+        'callback_table' => $rp_hook_callback_table,
+        'wp_hook_state' => $rp_hook_state,
         'after_dispatch' => [
             'current_filter' => current_filter(),
             'doing_filter' => doing_filter(),

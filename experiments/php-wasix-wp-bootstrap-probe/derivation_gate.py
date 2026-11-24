@@ -1,5 +1,6 @@
 """Read-only exact derivations; no existing experiment is modified."""
 import hashlib
+import difflib
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -27,7 +28,8 @@ def inputs():
         ROOT / 'experiments/wpdb-result-budget-probe/src/lib.rs',
         ROOT / 'experiments/php-wasix-wpdb-probe/src/rpc_fs.rs',
         ROOT / 'experiments/php-wasix-wpdb-probe/src/capture.rs',
-        ROOT / 'experiments/php-wasix-host-probe/src/managed_access_fs.rs']
+        ROOT / 'experiments/php-wasix-host-probe/src/managed_access_fs.rs',
+        HERE / 'catalog-hook-overlay.patch']
 
 
 def verify():
@@ -49,7 +51,16 @@ def verify():
     check(overlay.file_count()==3783 && overlay.directory_count()==467,"owned_dropin_tree_counts")?;
     Ok(overlay)
 }''')
-    require(expected == (HERE / 'src/catalog.rs').read_bytes(), 'bootstrap_catalog_exact_derivation')
+    catalog = (HERE / 'src/catalog.rs').read_bytes()
+    catalog_patch = ''.join(difflib.unified_diff(
+        expected.decode('utf-8').splitlines(keepends=True),
+        catalog.decode('utf-8').splitlines(keepends=True),
+        fromfile='a/catalog.rs', tofile='b/catalog.rs', n=3)).encode('utf-8')
+    patch_path = HERE / 'catalog-hook-overlay.patch'
+    patch = patch_path.read_bytes()
+    require(hashlib.sha256(patch).hexdigest() ==
+        'fe9ebe1ccb178c2aa719f6cbe61a5a344751b9f35004d9dec948340b5db9fc83'
+        and catalog_patch == patch, 'bootstrap_catalog_hook_overlay_derivation')
     budget = inputs()[1].read_bytes()
     require(budget.count(b'columns: 16,') == 1, 'bootstrap_original_column_budget')
     require(budget.replace(b'columns: 16,', b'columns: 32,') == (HERE / 'src/result_budget.rs').read_bytes(),
@@ -74,7 +85,8 @@ def verify():
                 scratch,
             },''', b'            policy: Policy {wp,php,context},')
     require(expected_access.rstrip() == access.rstrip(), 'bootstrap_access_transaction_body_changed')
-    return {'original_catalog_sha256': sha(original), 'derived_catalog_sha256': sha(expected),
+    return {'original_catalog_sha256': sha(original), 'derived_catalog_sha256': sha(catalog),
+        'catalog_hook_overlay_patch_sha256': sha(patch),
         'original_budget_sha256': sha(budget), 'derived_budget_sha256': sha(budget.replace(b'columns: 16,', b'columns: 32,')),
         'changed_default_columns': [16, 32], 'other_collector_bytes_unchanged': True,
         'async_channel_and_capture_bytes_unchanged': True,

@@ -17,7 +17,29 @@ PREPARED = WORK / 'prepared.json'
 NATIVE = ROOT / 'experiments/wp-bootstrap-probe'
 OLD_WASM = ROOT / 'experiments/php-wasix-wpdb-probe'
 FIXTURES = ['install.php','read.php','bootstrap.php','helpers.php','adapter.php','db.php','hook_adapter.php','hook_handle_registry.php']
-NATIVE_FIXTURES = ['hook_native_oracle.php']
+NATIVE_FIXTURES = ['hook_native_oracle.php','hook_overlay_native_oracle.php']
+HOOK_OVERLAY_DIR = ROOT / 'experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5'
+HOOK_OVERLAY_FILES = {
+    'wp-includes/plugin.php': {
+        'source_bytes': 37123,
+        'source_sha256': 'd70b9e18d34ab3fe46e15548a5e8e089ea5920832f06a4d89a9d64b2f7938b0d',
+        'overlay_bytes': 37171,
+        'overlay_sha256': 'db8dc3d3c61a43ff225e01881187f47ce8eedfb1a65a56c9cd60bf13aea04d5c',
+    },
+    'wp-includes/class-wp-hook.php': {
+        'source_bytes': 17584,
+        'source_sha256': 'b839c0e5672246bca8db1ab781ec8835f7732f253c375a237cbf6ec536e8d12e',
+        'overlay_bytes': 20078,
+        'overlay_sha256': '76eacf182c0e07c4285be0eff1df5bfd5cf4ce2a08c748a1085b241ffff473e4',
+    },
+}
+HOOK_OVERLAY_RECEIPT_SHA256 = '73a7efccef5e52e4cbf5ff5f7e2544ec654ef3f7faa03f830f5e333a0a4eb360'
+HOOK_FIXTURE_PINS = {
+    'hook_adapter.php': (14908,'9e4c6c3cca280e94b7079f2dcf473b6b6ae941d7a4c9d358b6b68f2870bc1483'),
+    'hook_handle_registry.php': (11351,'28b6291f5f428b21458f3a103c97cf1eb896ec523bc057a85c3b36a240e8d8f8'),
+    'hook_native_oracle.php': (9900,'6f3e824229984e1a34abbc81d0bf1e97254e43028c762c67ae52af7ff11dfbf4'),
+    'hook_overlay_native_oracle.php': (10325,'6e076ea8a6849e8fa564c05ccddfe416be6d3157df81f4e8a5eceedbb889728d'),
+}
 BASE_COMMIT = 'a1bb591c19dc897f1d41a42d17f8c33088f4362b'
 PINS = {
     'experiments/wp-bootstrap-probe/fixtures/bootstrap.php': (15581,'36cb1216727442fb61712b459e2b2fadea81de0c0aadb0a2041351570c826da1'),
@@ -92,6 +114,20 @@ def canonical(value):
     return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=True,allow_nan=False).encode()
 
 
+def php_literal(value):
+    if isinstance(value, dict):
+        return b'[' + b','.join(php_literal(k)+b'=>'+php_literal(v) for k,v in value.items()) + b']'
+    if isinstance(value, list):
+        return b'[' + b','.join(php_literal(v) for v in value) + b']'
+    if isinstance(value, bool):
+        return b'true' if value else b'false'
+    if isinstance(value, int):
+        return str(value).encode()
+    if isinstance(value, str):
+        return b"'" + value.replace("\\", "\\\\").replace("'", "\\'").encode() + b"'"
+    raise ValueError('php_literal_type')
+
+
 def read(path, maximum=2*1024*1024):
     require(path.resolve(strict=True)==path and path.is_file() and 0<path.stat().st_size<=maximum,'fixed_source_path_or_size')
     wire=path.read_bytes();require(len(wire)<=maximum,'fixed_source_grew');return wire
@@ -157,14 +193,38 @@ def expected_fixtures(original, wpdb):
     adapter=once(adapter,b"return ['transport' => $this->rpc->stats(), 'internal_session_setup' => $this->setup,\n            'escape_scope' => 'ASCII-only-fixed-utf8mb4-and-cached-last-OK-NO_BACKSLASH_ESCAPES',",
         b"return ['transport' => $this->rpc->stats(), 'internal_setup_queries' => $this->setupQueries,\n            'escape_scope' => 'valid-UTF8-only-fixed-utf8mb4-and-cached-last-OK-NO_BACKSLASH_ESCAPES',")
     bootstrap=once(native,b'declare(strict_types=1);\n',b"declare(strict_types=1);\nrequire __DIR__ . '/helpers.php';\nconst RP_DROPIN_SHA = '"+sha(DROPIN).encode()+b"';\n")
+    bootstrap=once(bootstrap,b"const RP_DROPIN_SHA = '"+sha(DROPIN).encode()+b"';\n",
+        b"const RP_DROPIN_SHA = '"+sha(DROPIN).encode()+b"';\n"
+        +b'const RP_HOOK_OVERLAY = '+php_literal(HOOK_OVERLAY_FILES)+b';\n')
     bootstrap=once(bootstrap,section(bootstrap,b'function rp_boot_input(',b'function rp_boot_inventory('),CGI_INPUT+b'\n')
-    bootstrap=once(bootstrap,b'$actual_files = []; $actual_dirs = []; $total = 0;',b'$actual_files = []; $actual_dirs = []; $total = 0; $overlay_seen = false;')
+    bootstrap=once(bootstrap,b'$actual_files = []; $actual_dirs = []; $total = 0;',b'$actual_files = []; $actual_dirs = []; $total = 0; $overlay_seen = false; $hook_overlay_seen = [];')
     bootstrap=once(bootstrap,b"        if ($entry->isDir()) { $actual_dirs[] = $relative; continue; }\n",
         b"        if ($entry->isDir()) { $actual_dirs[] = $relative; continue; }\n"
         b"        if ($relative === 'wp-content/db.php') {\n"
         b"            rp_boot_check(!$overlay_seen && $entry->isFile() && hash_file('sha256', $path) === RP_DROPIN_SHA, 'owned_dropin_bytes');\n"
         b"            $overlay_seen = true; continue;\n        }\n")
-    bootstrap=once(bootstrap,b"&& $total === 110077999 && !file_exists($site . '/wp-config.php')",b"&& $overlay_seen && $total === 110077999 && !file_exists($site . '/wp-config.php')")
+    bootstrap=once(bootstrap,b"        $row = $files[$relative];\n",
+        b"        $row = $files[$relative];\n"
+        b"        if (isset(RP_HOOK_OVERLAY[$relative])) {\n"
+        b"            $identity = RP_HOOK_OVERLAY[$relative];\n"
+        b"            rp_boot_check($row['bytes'] === $identity['source_bytes']\n"
+        b"                && $row['sha256'] === $identity['source_sha256']\n"
+        b"                && $entry->getSize() === $identity['overlay_bytes']\n"
+        b"                && hash_file('sha256', $path) === $identity['overlay_sha256'], 'owned_hook_overlay_bytes');\n"
+        b"            $hook_overlay_seen[$relative] = true;\n"
+        b"            $total += $row['bytes'];\n"
+        b"            $actual_files[] = $relative;\n"
+        b"            continue;\n"
+        b"        }\n")
+    bootstrap=once(bootstrap,b"    sort($actual_files, SORT_STRING); sort($actual_dirs, SORT_STRING);\n",
+        b"    sort($actual_files, SORT_STRING); sort($actual_dirs, SORT_STRING);\n"
+        b"    $expected_hook_overlay = array_keys(RP_HOOK_OVERLAY);\n"
+        b"    sort($expected_hook_overlay, SORT_STRING);\n"
+        b"    $actual_hook_overlay = array_keys($hook_overlay_seen);\n"
+        b"    sort($actual_hook_overlay, SORT_STRING);\n")
+    bootstrap=once(bootstrap,b"&& $total === 110077999 && !file_exists($site . '/wp-config.php')",
+        b"&& $overlay_seen && $actual_hook_overlay === $expected_hook_overlay\n"
+        b"        && $total === 110077999 && !file_exists($site . '/wp-config.php')")
     bootstrap=bootstrap.replace(b'recastpress.wp-bootstrap-native-observation.v0.5',b'recastpress.php-wasix-wp-bootstrap-php-observation.v0.5')
     bootstrap=bootstrap.replace(b'fixed_native_bootstrap_failed',b'fixed_wasix_bootstrap_failed').replace(b'fixed_native_bootstrap_passed',b'fixed_wasix_bootstrap_passed')
     bootstrap=once(bootstrap,b"'rust_executed' => false, 'wasm_executed' => false",b"'rust_executed' => true, 'wasm_executed' => true")
@@ -212,13 +272,39 @@ def expected_fixtures(original, wpdb):
         b"            'bootstrap_hook_result');\n"
         b"    }\n"
         b"    $rp_hook_object = $GLOBALS['rp_boot_hook_object'] ?? null;\n"
-        b"    rp_boot_check($rp_hook_object instanceof RpBootstrapDispatcherHook, 'bootstrap_hook_result');\n"
+        b"    rp_boot_check($rp_hook_object instanceof WP_Hook, 'bootstrap_hook_result');\n"
+        b"    $rp_hook_private = static fn(string $name): mixed => (new ReflectionProperty(WP_Hook::class, $name))->getValue($rp_hook_object);\n"
+        b"    $rp_hook_state = [\n"
+        b"        'nesting_level' => $rp_hook_private('nesting_level'),\n"
+        b"        'iterations' => $rp_hook_private('iterations'),\n"
+        b"        'current_priority' => $rp_hook_private('current_priority'),\n"
+        b"        'doing_action' => $rp_hook_private('doing_action'),\n"
+        b"    ];\n"
+        b"    $rp_hook_callback_table = [];\n"
+        b"    foreach ($rp_hook_object->callbacks as $rp_priority => $rp_bucket) {\n"
+        b"        foreach ($rp_bucket as $rp_uid => $rp_entry) {\n"
+        b"            $rp_hook_callback_table[] = [\n"
+        b"                'priority' => $rp_priority,\n"
+        b"                'uid' => $rp_uid,\n"
+        b"                'function' => $rp_entry['function'],\n"
+        b"                'accepted_args' => $rp_entry['accepted_args'],\n"
+        b"            ];\n"
+        b"        }\n"
+        b"    }\n"
+        b"    rp_boot_check($rp_hook_state === [\n"
+        b"        'nesting_level' => 0, 'iterations' => [], 'current_priority' => [], 'doing_action' => false,\n"
+        b"    ] && $rp_hook_callback_table === [\n"
+        b"        ['priority' => 10, 'uid' => 'rp_boot_hook_first', 'function' => 'rp_boot_hook_first', 'accepted_args' => 1],\n"
+        b"        ['priority' => 20, 'uid' => 'rp_boot_hook_second', 'function' => 'rp_boot_hook_second', 'accepted_args' => 1],\n"
+        b"    ], 'bootstrap_hook_result');\n"
         b"    $rp_report['hook_dispatch'] = [\n"
         b"        'hook' => 'option_blogname',\n"
         b"        'value' => $rp_blogname,\n"
         b"        'invocations' => $rp_hook_invocations,\n"
         b"        'did_filter_before' => $rp_hook_did_filter_before,\n"
         b"        'events' => $rp_hook_trace,\n"
+        b"        'callback_table' => $rp_hook_callback_table,\n"
+        b"        'wp_hook_state' => $rp_hook_state,\n"
         b"        'after_dispatch' => [\n"
         b"            'current_filter' => current_filter(),\n"
         b"            'doing_filter' => doing_filter(),\n"
@@ -238,6 +324,7 @@ def expected_fixtures(original, wpdb):
     codes.update(re.findall(rb"new Rp(?:Native|Bootstrap)Failure\('([a-z][a-z0-9_]*)'\)",bootstrap+helpers+adapter))
     codes.update([b'hook_dispatch_begin',b'hook_dispatch_invoke_contract',b'hook_dispatch_callback',
         b'hook_dispatch_resume',b'hook_dispatch_release',b'hook_dispatch_complete'])
+    codes.add(b'owned_hook_overlay_bytes')
     codes.update([b'php_throwable',b'public_secret_guard',b'unexpected_php_shutdown',b'unclassified_failure'])
     phases=['input','source_inventory','wp_settings','wp_install','public_observations','source_after','complete']
     classes=['RpBootstrapFailure','RpNativeFailure','JsonException','Error','TypeError','ValueError',
@@ -249,6 +336,9 @@ def expected_fixtures(original, wpdb):
     expected={'bootstrap.php':bootstrap,'helpers.php':helpers,'adapter.php':adapter,'db.php':DROPIN}
     for name in ['hook_adapter.php','hook_handle_registry.php',*NATIVE_FIXTURES]:
         expected[name]=read(HERE/'fixtures'/name)
+        require(identity(expected[name])=={
+            'bytes':HOOK_FIXTURE_PINS[name][0], 'sha256':HOOK_FIXTURE_PINS[name][1],
+        },'hook_fixture_source_pin')
     for mode in ['install','read']:
         expected[mode+'.php']=once(original['experiments/wp-bootstrap-probe/fixtures/'+mode+'.php'],b'declare(strict_types=1);\n',b"declare(strict_types=1);\nheader('Content-Type: application/json');\n")
     return expected,validation
@@ -259,6 +349,21 @@ def derivation_gate():
     wpdb=read(NATIVE.parents[1]/'target/wp-bootstrap-probe/site/wp-includes/class-wpdb.php')
     require(identity(wpdb)=={'bytes':121437,'sha256':'e15403e90032dd0508811301505e491d4212de5152581a98f51b744a1a3903bd'},'untouched_wpdb_source')
     expected,validation=expected_fixtures(original,wpdb)
+    overlay_receipt=read(HOOK_OVERLAY_DIR/'overlay.json',65536)
+    overlay_paths={p.relative_to(HOOK_OVERLAY_DIR).as_posix() for p in HOOK_OVERLAY_DIR.rglob('*')}
+    require(overlay_paths=={'overlay.json','wp-includes',*HOOK_OVERLAY_FILES.keys()}
+        and all(not p.is_symlink() for p in HOOK_OVERLAY_DIR.rglob('*')),'hook_overlay_closed_file_set')
+    require(sha(overlay_receipt)==HOOK_OVERLAY_RECEIPT_SHA256,'hook_overlay_receipt_hash')
+    overlay=json.loads(overlay_receipt)
+    require(overlay['schema']=='recastpress.wp-hook-dispatch-overlay.v5'
+        and overlay['source_sha256']=={name:row['source_sha256'] for name,row in HOOK_OVERLAY_FILES.items()}
+        and overlay['overlay_sha256']=={name:row['overlay_sha256'] for name,row in HOOK_OVERLAY_FILES.items()}
+        and overlay['changed_files']==list(HOOK_OVERLAY_FILES)
+        and overlay['wp_hook_method_has_sync_handoff'] is True
+        and overlay['product_ready'] is False,'hook_overlay_profile')
+    for name,row in HOOK_OVERLAY_FILES.items():
+        require(identity(read(HOOK_OVERLAY_DIR/name,65536))=={
+            'bytes':row['overlay_bytes'],'sha256':row['overlay_sha256']},'hook_overlay_file_identity')
     all_fixtures=FIXTURES+NATIVE_FIXTURES
     for name in all_fixtures:
         wire=read(HERE/'fixtures'/name);require(b'\r' not in wire and wire==expected[name],'derived_bootstrap_fixture_changed')
@@ -274,6 +379,8 @@ def derivation_gate():
         'allowed_bootstrap_changes':['CGI-fixed-GET-and-private-context','owned-guest-source-paths-and-db-overlay',
             'dummy-DB-constants-and-Rust-handle','Wasm-observation-schema-and-context-flags','private-count-only-RPC-statistics',
             'single-selected-option_blogname-dispatch-after-full-bootstrap'],
+        'hook_overlay_receipt_sha256':HOOK_OVERLAY_RECEIPT_SHA256,
+        'hook_overlay_files':HOOK_OVERLAY_FILES,
         'original_core_theme_plugin_bytes_modified':False,'owned_db_overlay_files':1}
 
 
@@ -283,8 +390,13 @@ def modules():
 
 def input_hashes():
     native,old=modules();result={**old.input_hashes(),**native.inputs()}
-    for path in [Path(__file__).resolve(),*[HERE/'fixtures'/n for n in FIXTURES+NATIVE_FIXTURES],*[ROOT/n for n in PINS]]:
+    for path in [Path(__file__).resolve(),HERE/'Cargo.toml',HERE/'Cargo.lock',
+        *[HERE/'fixtures'/n for n in FIXTURES+NATIVE_FIXTURES],*[ROOT/n for n in PINS]]:
         result[path.relative_to(ROOT).as_posix()]=sha(read(path))
+    result['experiments/php-wasix-wp-hook-dispatch-probe/evidence/overlay-v5/overlay.json']=HOOK_OVERLAY_RECEIPT_SHA256
+    for name in HOOK_OVERLAY_FILES:
+        path=HOOK_OVERLAY_DIR/name
+        result[path.relative_to(ROOT).as_posix()]=sha(read(path,65536))
     return dict(sorted(result.items()))
 
 
@@ -338,4 +450,3 @@ def prepare():
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--verify-only',action='store_true')
     args=parser.parse_args();print((verify_prepared() if args.verify_only else prepare())['outcome'])
-

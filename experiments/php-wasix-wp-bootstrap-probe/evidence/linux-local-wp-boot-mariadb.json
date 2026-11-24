@@ -1,0 +1,84 @@
+{
+  "schema": "recastpress.v06-local-wp-boot-summary.v1",
+  "observed_at_utc": "2026-11-23T22:01:06.908751+00:00",
+  "artifact_scope": "PHP-WASIX CGI install and fresh read using a loopback-only local MariaDB process",
+  "runtime_source_commit": "0ee74d20fdc61682abdbfa042233b7cb0af42732",
+  "wordpress_version": "7.1.3",
+  "database_version": "11.8.9-MariaDB",
+  "database_archive": {
+    "url": "https://archive.mariadb.org/mariadb-11.8.9/bintar-linux-systemd-x86_64/mariadb-11.8.9-linux-systemd-x86_64.tar.gz",
+    "sha256": "32f8871a2aa38b36aa418b7f4abc6fc0c6ef1ba5a45798cacb2afa52c8a6113b",
+    "checksum_source": "https://downloads.mariadb.org/rest-api/mariadb/11.8.9/mariadb-11.8.9-linux-systemd-x86_64.tar.gz/checksum"
+  },
+  "host_build_receipt": {
+    "path": "experiments/php-wasix-wp-bootstrap-probe/evidence/linux-real-wp-hook-host-build.json",
+    "sha256": "70bca510f8dd8ebc12213bf336e851efbbe375a40ec4800ab6c631ecc9eb8b17",
+    "source_inputs": 160
+  },
+  "host_executable_sha256": "296554d16bc345f8411bc12ba860c8cfe8fcf7aaef3cd5c1190a06a5b8f5ca3f",
+  "php_wasix_module": {
+    "path": "target/php-wasix-managed-access-probe/php-fiber-cgi.wasm",
+    "bytes": 39150624,
+    "sha256": "6dbe7cd75fbeeeac3acdb263ee9e049bb4e77f0bd6c960585a03c9d31be4811d",
+    "wasm_header_verified": true,
+    "executed": false
+  },
+  "runner": {
+    "path": "scripts/run_local_wasix_wp_boot.py",
+    "sha256": "ed443f006df444770b0fa25218abef234f302c57fb1ef3c312010c005e181e11"
+  },
+  "raw_local_receipt": {
+    "path": "target/v06-bootstrap-validation/local-wp-boot-fixed-verified.json",
+    "sha256": "b365896f77f779363a4b8ced92b60d16f805e057ebd7df7d183c33f011e5219a"
+  },
+  "install": {
+    "cgi_status": 200,
+    "full_wordpress_bootstrap": true,
+    "guest_execution_started": true,
+    "physical_db_disconnect_completed": true,
+    "native_public_observations_match": true,
+    "dispatcher_hook": {
+      "name": "option_blogname",
+      "callback_order": [
+        "rp_boot_hook_first",
+        "rp_boot_hook_second"
+      ],
+      "value": "RP Bootstrap Fixture|first|second",
+      "reset_state_matches_native": true
+    },
+    "db_operation_counts": {
+      "hello": 1,
+      "query": 527,
+      "escape": 794,
+      "close": 1
+    }
+  },
+  "fresh_read": {
+    "cgi_status": 200,
+    "full_wordpress_bootstrap": true,
+    "guest_execution_started": true,
+    "physical_db_disconnect_completed": true,
+    "native_public_observations_match": true,
+    "dispatcher_hook": {
+      "name": "option_blogname",
+      "callback_order": [
+        "rp_boot_hook_first",
+        "rp_boot_hook_second"
+      ],
+      "value": "RP Bootstrap Fixture|first|second",
+      "reset_state_matches_native": true
+    },
+    "db_operation_counts": {
+      "hello": 1,
+      "query": 58,
+      "escape": 102,
+      "close": 1
+    }
+  },
+  "wordpress_table_count": 12,
+  "owned_database_normal_exit": true,
+  "source_reverified_after": true,
+  "docker_matrix_run": false,
+  "persistent_http_listener": false,
+  "passed": true
+}
